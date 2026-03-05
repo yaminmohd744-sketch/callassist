@@ -1,0 +1,40 @@
+.prob-meter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.prob-meter__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+}
+
+.prob-meter__value {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+}
+
+.prob-meter__value--high   { color: var(--color-accent-cyan); }
+.prob-meter__value--medium { color: var(--color-accent-yellow); }
+.prob-meter__value--low    { color: var(--color-accent-red); }
+
+.prob-meter__track {
+  height: 5px;
+  background: var(--color-bg-elevated);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.prob-meter__fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 600ms ease, background-color 400ms ease;
+}
+
+.prob-meter__fill--high   { background: var(--color-accent-cyan); }
+.prob-meter__fill--medium { background: var(--color-accent-yellow); }
+.prob-meter__fill--low    { background: var(--color-accent-red); }

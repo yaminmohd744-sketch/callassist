@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* ─── Color Palette ─────────────────────────────────────── */
+  --color-bg-base:        #0d1117;
+  --color-bg-surface:     #161b22;
+  --color-bg-elevated:    #21262d;
+  --color-bg-hover:       #2d333b;
+
+  --color-border:         #30363d;
+  --color-border-subtle:  #21262d;
+
+  --color-accent-cyan:    #00d4ff;
+  --color-accent-cyan-dim:#005f73;
+  --color-accent-green:   #39d353;
+  --color-accent-red:     #ff4444;
+  --color-accent-yellow:  #f0e040;
+  --color-accent-purple:  #bc8cff;
+  --color-accent-orange:  #ff7b3b;
+
+  --color-text-primary:   #e6edf3;
+  --color-text-secondary: #8b949e;
+  --color-text-muted:     #484f58;
+  --color-text-accent:    #00d4ff;
+
+  /* ─── Typography ────────────────────────────────────────── */
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+
+  --font-size-xs:   11px;
+  --font-size-sm:   12px;
+  --font-size-base: 13px;
+  --font-size-md:   14px;
+  --font-size-lg:   16px;
+  --font-size-xl:   20px;
+  --font-size-2xl:  28px;
+  --font-size-3xl:  40px;
+
+  /* ─── Spacing ────────────────────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ─── Layout ─────────────────────────────────────────────── */
+  --header-height:      52px;
+  --status-bar-height:  36px;
+  --input-bar-height:   56px;
+  --panel-left-width:   320px;
+  --panel-right-width:  280px;
+  --border-radius-sm:   3px;
+  --border-radius-md:   5px;
+  --border-radius-lg:   8px;
+
+  /* ─── Effects ────────────────────────────────────────────── */
+  --transition-fast:  120ms ease;
+  --transition-base:  220ms ease;
+  --glow-cyan:        0 0 12px rgba(0, 212, 255, 0.35);
+  --glow-red:         0 0 12px rgba(255, 68, 68, 0.35);
+  --glow-green:       0 0 12px rgba(57, 211, 83, 0.35);
+}

@@ -1,0 +1,13 @@
+.live-call {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.live-call__panels {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
