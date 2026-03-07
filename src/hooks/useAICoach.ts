@@ -34,6 +34,22 @@ export function useAICoach() {
     config?: { prospectName: string; company: string; yourPitch: string; callGoal: string }
   ) => {
     const current = stateRef.current;
+
+    // Called by mockAI on every streaming chunk and on final completion.
+    const onStream = (partial: AISuggestion) => {
+      setSuggestions(prev => {
+        const exists = prev.some(s => s.id === partial.id);
+        if (exists) {
+          // Remove empty finished placeholders (stream ended with no content).
+          if (!partial.streaming && !partial.body) {
+            return prev.filter(s => s.id !== partial.id);
+          }
+          return prev.map(s => s.id === partial.id ? partial : s);
+        }
+        return [partial, ...prev];
+      });
+    };
+
     const result = await analyzeTranscript(
       entry,
       fullTranscript,
@@ -43,7 +59,8 @@ export function useAICoach() {
       current.objectionsCount,
       recentTriggersRef.current,
       config,
-      memoryRef.current
+      memoryRef.current,
+      onStream
     );
 
     const nextState: AICoachState = {
@@ -57,7 +74,6 @@ export function useAICoach() {
 
     if (result.suggestions.length > 0) {
       const primary = result.suggestions[0];
-      // Update memory so next call knows what was last suggested
       memoryRef.current = {
         lastLabel: primary.headline,
         lastObjectionType: primary.type === 'objection-handler'
@@ -65,7 +81,11 @@ export function useAICoach() {
           : memoryRef.current.lastObjectionType,
         closeAttempted: memoryRef.current.closeAttempted || primary.type === 'closing-prompt',
       };
-      setSuggestions(s => [...result.suggestions, ...s]);
+      // Keyword-fallback path — suggestion not already in state via onStream.
+      setSuggestions(prev => {
+        if (prev.some(s => s.id === primary.id)) return prev;
+        return [primary, ...prev];
+      });
     }
   }, []);
 

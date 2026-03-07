@@ -12,31 +12,22 @@ function loadSessions(): CallSession[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as CallSession[]) : [];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
 }
 
 function saveSessions(sessions: CallSession[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-  } catch {
-    // storage full or unavailable — fail silently
-  }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions)); } catch { /* ignore */ }
 }
 
 type Screen = 'landing' | 'dashboard' | 'pre-call' | 'live-call' | 'post-call';
 
 export function App() {
-  const [screen, setScreen] = useState<Screen>('landing');
-  const [callConfig, setCallConfig] = useState<CallConfig | null>(null);
-  const [callSession, setCallSession] = useState<CallSession | null>(null);
+  const [screen, setScreen]             = useState<Screen>('landing');
+  const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
+  const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>(loadSessions);
 
-  // Persist to localStorage whenever pastSessions changes
-  useEffect(() => {
-    saveSessions(pastSessions);
-  }, [pastSessions]);
+  useEffect(() => { saveSessions(pastSessions); }, [pastSessions]);
 
   function handleStartCall(config: CallConfig) {
     setCallConfig(config);
@@ -55,6 +46,10 @@ export function App() {
     setScreen('post-call');
   }
 
+  function handleDeleteSession(endedAt: string) {
+    setPastSessions(prev => prev.filter(s => s.endedAt !== endedAt));
+  }
+
   return (
     <>
       {screen === 'landing' && (
@@ -65,6 +60,7 @@ export function App() {
           pastSessions={pastSessions}
           onStartCall={() => setScreen('pre-call')}
           onViewSession={handleViewSession}
+          onDeleteSession={handleDeleteSession}
         />
       )}
       {screen === 'pre-call' && (

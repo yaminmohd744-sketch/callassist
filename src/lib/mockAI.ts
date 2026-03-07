@@ -1,13 +1,6 @@
-import OpenAI from 'openai';
 import type { TranscriptEntry, AISuggestion, AIAnalysisResult, CallStage, SuggestionType } from '../types';
 
-const OPENAI_API_KEY = (import.meta as unknown as { env: Record<string, string> }).env.VITE_OPENAI_API_KEY;
-
-const openai = OPENAI_API_KEY
-  ? new OpenAI({ apiKey: OPENAI_API_KEY, dangerouslyAllowBrowser: true })
-  : null;
-
-// ─── Memory (tracks last suggestion to avoid repetition) ──────────────────────
+// ─── Memory ───────────────────────────────────────────────────────────────────
 
 export interface Memory {
   lastLabel: string | null;
@@ -15,61 +8,217 @@ export interface Memory {
   closeAttempted: boolean;
 }
 
-// ─── Keyword Fallback Maps ────────────────────────────────────────────────────
+// ─── Call config shorthand ────────────────────────────────────────────────────
 
-interface ObjectionDef { label: string; response: string; }
+type CallConfig = { prospectName: string; company: string; yourPitch: string; callGoal: string };
+
+function fill(text: string, config?: CallConfig): string {
+  if (!config) return text;
+  const name = config.prospectName || 'there';
+  const co   = config.company || 'your company';
+  return text
+    .replace(/\[Prospect\]/g, name)
+    .replace(/\[prospect\]/g, name)
+    .replace(/\[their company\]/gi, co)
+    .replace(/\[Company\]/g, co);
+}
+
+// ─── Objection Map ────────────────────────────────────────────────────────────
+// Body format: "Exact script to say"  — or —  "Script\n\nNote"
+// responses[0] = first time   |   responses[1] = repeat / escalation
+
+interface ObjectionDef { label: string; responses: [string, string]; }
 
 const OBJECTION_MAP: Record<string, ObjectionDef> = {
-  // Price resistance
-  'too expensive':      { label: 'Price Resistance', response: 'That\'s fair — can I ask, is it the total number or the timing that\'s the issue? Sometimes there\'s a way to structure this differently.' },
-  'too costly':         { label: 'Price Resistance', response: 'Understood. What would the value need to look like for it to make sense?' },
-  'too high':           { label: 'Price Resistance', response: 'I hear you. What were you expecting? Let me see if there\'s a structure that works better for you.' },
-  'price is too':       { label: 'Price Resistance', response: 'Is it the total investment or the payment structure? I want to make sure we find something that actually fits.' },
-  'costs too much':     { label: 'Price Resistance', response: 'If the price weren\'t a factor, would this solve the problem? I want to know if it\'s a fit issue or purely budget.' },
-  "can't afford":       { label: 'Price Resistance', response: 'Are there budget cycles coming up, or is this more of an indefinite hold? I can work with either scenario.' },
-  'out of budget':      { label: 'Price Resistance', response: 'Is there any flexibility, or would a scaled-down version be useful to build the case internally?' },
-  'not in the budget':  { label: 'Price Resistance', response: 'When does your next budget cycle start? I\'d rather time this right than push something that doesn\'t fit.' },
-  'no budget':          { label: 'Price Resistance', response: 'Are there funds allocated for Q2 or Q3? Or is there a pilot we could run to build the internal case?' },
-  'no money':           { label: 'Price Resistance', response: 'Is this a permanent blocker or a timing issue? We have phased options if that helps.' },
-  // Hard objections
-  'not interested':     { label: 'Hard Objection', response: 'What would need to change on your end for something like this to be relevant?' },
-  'not a good fit':     { label: 'Hard Objection', response: 'What specifically feels off? I don\'t want to waste your time — but I also don\'t want to miss something that could genuinely help.' },
-  'no thanks':          { label: 'Hard Objection', response: 'Before you go — what would have made this more relevant to you today?' },
-  // Timing resistance
-  'not right now':      { label: 'Timing Resistance', response: 'What\'s going on that makes now a bad time? Is there a better window in the next quarter?' },
-  'not the right time': { label: 'Timing Resistance', response: 'When would be the right time? I\'d rather follow up then than push something that doesn\'t fit your situation.' },
-  // Stalls
-  'send me info':       { label: 'Stall', response: 'What\'s the one thing you\'d most want to see addressed in that info? I want to make sure it\'s actually useful.' },
-  'send an email':      { label: 'Stall', response: 'Before I do — are you the right person to evaluate this, or is there someone I should address it to?' },
-  'too busy':           { label: 'Stall', response: 'Give me 60 seconds — I\'ll show you something specific to your situation. If it\'s not relevant, I\'ll let you go.' },
-  'call me back':       { label: 'Stall', response: 'When works better? And so I\'m prepared — what would be most useful to cover when we reconnect?' },
-  'need to think':      { label: 'Stall', response: 'What\'s the key thing you\'re thinking through? Sometimes I can help clarify right now and save you the back-and-forth.' },
-  // Authority deflection
-  'talk to my boss':    { label: 'Authority Deflection', response: 'Who would be the right person to loop in? I\'d love to make sure they have what they need to decide quickly.' },
-  // Competitor
-  'already have':       { label: 'Competitor', response: 'What do you like most about your current solution? And is there anything it doesn\'t do well that you\'d love to fix?' },
-  'using another':      { label: 'Competitor', response: 'When does your current contract renew? I\'d love to be in the conversation when you\'re evaluating options.' },
+  'too expensive': {
+    label: 'Price Objection',
+    responses: [
+      "Price is real — I get it. But quick question: what's this problem costing you every month right now? Most teams find the answer is more than they expected, and solving it is cheaper than living with it.",
+      "If I could show you the return covers the investment within 90 days, would that change the conversation? If not, I completely understand.",
+    ],
+  },
+  'too costly': {
+    label: 'Price Objection',
+    responses: [
+      "I hear you on cost. But here's what I keep seeing: the teams that push back on price are usually the ones losing the most to the problem we solve. What would the value need to look like for this to make sense for you?",
+      "Is it the total number that's the issue, or the timing? Sometimes there's a way to structure this differently.",
+    ],
+  },
+  'too high': {
+    label: 'Price Objection',
+    responses: [
+      "Fair — price is real. But the teams that say this are usually the ones losing the most to the problem we fix. What would the ROI need to look like for this to make sense?",
+      "Can we do this: if I put together a specific ROI model for your situation, would you look at it? If the numbers don't work, I'll move on.",
+    ],
+  },
+  'no budget': {
+    label: 'No Budget',
+    responses: [
+      "No budget is a real blocker — I'm not going to pretend otherwise. But what's the cost of leaving this unsolved for another quarter? Is there a small pilot we could run to prove the ROI first?",
+      "When does your next budget cycle open? The teams that planned ahead had the most leverage when it did. I'd rather time this right than miss the window entirely.",
+    ],
+  },
+  "can't afford": {
+    label: 'Budget Constraint',
+    responses: [
+      "Budget constraints are real — I get it. What would the numbers need to look like internally for this to make sense?",
+      "Is this a permanent constraint or a timing issue? If it's timing, I'd rather come back at the right moment than lose the conversation.",
+    ],
+  },
+  'out of budget': {
+    label: 'Budget Constraint',
+    responses: [
+      "I hear you — every month this goes unfixed, the gap gets wider. Would a phased approach or a small pilot be a way to get started without blowing the budget?",
+      "When does your next cycle start? I'll time this right instead of pushing at the wrong moment.",
+    ],
+  },
+  'not in the budget': {
+    label: 'Budget Constraint',
+    responses: [
+      "Totally understand. This issue tends to compound when it's underfunded. When does your next budget cycle start? Let's plan around it.",
+      "Who would need to approve this if you decided it was worth pursuing? I want to make sure the right conversation happens at the right time.",
+    ],
+  },
+  'not interested': {
+    label: 'Hard Objection',
+    responses: [
+      "I respect that — I won't push. One honest question before I go: what does your situation look like in 6 months if this stays unsolved? Give me 60 seconds — if it's not relevant, I'll let you go.",
+      "You've said it twice — I hear you. Before I go: what's your current plan for handling this? If you've got it covered, I'm genuinely done.",
+    ],
+  },
+  'not a good fit': {
+    label: 'Not a Fit',
+    responses: [
+      "Fair — you know your situation better than I do. What specifically feels off? Because the teams that said the same thing usually had one concern I hadn't addressed yet.",
+      "One honest question: what would a good fit look like for you right now? If I can't match it, I'll tell you straight and we're done.",
+    ],
+  },
+  'no thanks': {
+    label: 'Hard Objection',
+    responses: [
+      "Before you go — honest question: what would have made this relevant today? Because the problem we solve is getting worse for teams in your space. I'm not going to chase you.",
+      "Last thing — can I send you one page? No pitch, just one number showing what this problem typically costs teams in your space. Delete it if it's not relevant.",
+    ],
+  },
+  "don't want": {
+    label: 'Hard Rejection',
+    responses: [
+      "Heard — I won't push. Quick question before I go: what's your current plan for this? If you've got it handled, I'm done.",
+      "You've made it clear — I respect that. Last thing: if this got significantly worse over the next 6 months, what would you do? That's all I need to know, then I'm off your radar.",
+    ],
+  },
+  "don't wanna": {
+    label: 'Hard Rejection',
+    responses: [
+      "Fair enough — I'm not here to sell you something you don't want. Tell me: is it that this isn't the right fit, or is the timing just wrong? Those are very different things.",
+      "Last question and then I'm done: what would need to change for this to even be worth 5 minutes? If nothing, I genuinely respect that.",
+    ],
+  },
+  'i told you': {
+    label: 'Last Shot',
+    responses: [
+      "You're right — I apologize for pushing. One final thing and I'm gone: would it help if I sent you a quick 2-minute read, no strings attached? If no, I'll take you off my list right now.",
+      "I'm done — thank you for your time. I won't call again. If anything changes on your end, you have my contact.",
+    ],
+  },
+  'not buying': {
+    label: 'Hard Rejection',
+    responses: [
+      "I hear that — I won't fight it. One question: what's the one thing that would need to be true for you to reconsider? I want to know if there's even a path here.",
+      "Noted — you've been clear. I'll move on. If the situation changes, reach out. I won't keep calling.",
+    ],
+  },
+  'not right now': {
+    label: 'Timing Objection',
+    responses: [
+      "Timing matters — I get it. What concerns me is that this problem compounds: every quarter it goes unaddressed, the gap gets harder to close. What would have to be true for the timing to be right?",
+      "What's driving the delay? If I know what's in the way, I can either work around it or tell you honestly that I can't.",
+    ],
+  },
+  'not the right time': {
+    label: 'Timing Objection',
+    responses: [
+      "When would be the right time? The teams that waited usually said they wished they'd moved sooner. Help me understand your timeline and I'll build around it.",
+      "What's the earliest this could realistically move? I'd rather know now so I reach out at the right moment.",
+    ],
+  },
+  'send me info': {
+    label: 'Info Stall',
+    responses: [
+      "Happy to — but I want it to actually be useful. What's the one thing you'd most want it to address? Give me five minutes and I'll tell you if it's relevant before I send anything.",
+      "I'll send it. But honestly — can we schedule 10 minutes for after you read it, so it actually goes somewhere?",
+    ],
+  },
+  'send an email': {
+    label: 'Info Stall',
+    responses: [
+      "Happy to — before I do, what's the one problem you'd want it to address for your team? I'll lead with that so it's actually worth reading.",
+      "I'll send it right after this call. What's the one thing that matters most to you right now? I'll make that the whole email.",
+    ],
+  },
+  'too busy': {
+    label: 'Busy Stall',
+    responses: [
+      "I'll be fast — 60 seconds. This problem costs teams in your space more every month it goes unaddressed. If it's not relevant in 60 seconds, I'll let you go — deal?",
+      "I hear you on time. Last thing: if you had 10 minutes next week, would you hear one number that shows what this is quietly costing your team? That's it — yes or no.",
+    ],
+  },
+  'call me back': {
+    label: 'Delay',
+    responses: [
+      "Absolutely — when works best? To make the next call worth it: what's the one question you'd want answered when we reconnect?",
+      "I'll call you back — what day and time works? And what's the one thing that would make that call worth your time?",
+    ],
+  },
+  'need to think': {
+    label: 'Think It Over',
+    responses: [
+      "That's fair — what's the main thing you're thinking through? Sometimes it's a question I can answer in 30 seconds. Tell me what's on your mind — I'd rather address it now.",
+      "What's the outstanding question? I want to give you exactly what you need to make this decision, not drag it out.",
+    ],
+  },
+  'talk to my boss': {
+    label: 'Authority Deflection',
+    responses: [
+      "Makes sense — who would that be? I want to make sure they have exactly what they need. Can we get them on a 15-minute call together this week?",
+      "What's the best way to get 15 minutes with them? I can do a short, focused overview that covers the key points without taking much of their time.",
+    ],
+  },
+  'already have': {
+    label: 'Has a Solution',
+    responses: [
+      "Got it — what do you like most about it? Because the teams that came to us had something in place too, and the gap was usually one specific thing. Can I ask one quick comparison question?",
+      "When does your contract renew? I'm not asking you to switch today — I just want to be in the conversation before that window opens.",
+    ],
+  },
+  'using another': {
+    label: 'Has a Competitor',
+    responses: [
+      "Understood — when does your contract renew? The teams that planned ahead had the most leverage when it was time to evaluate. I'm not asking you to do anything today.",
+      "One honest question: what's the one thing your current solution doesn't do well? That's usually where we win the conversation.",
+    ],
+  },
 };
 
 interface BuyingSignalDef { label: string; response: string; }
 
 const BUYING_SIGNAL_MAP: Record<string, BuyingSignalDef> = {
-  'interested':       { label: 'Interest Signal', response: 'What does your current situation look like around [their pain point]? I want to make sure we\'re talking about a real fit.' },
-  'tell me more':     { label: 'Curiosity Signal', response: 'The key things that set us apart are [1, 2, 3]. Which of those is most relevant to your situation?' },
-  'how much':         { label: 'Pricing Signal', response: 'Pricing depends on your setup — what\'s your team size and main use case? I\'ll give you an accurate number.' },
-  'how does it work': { label: 'Demo Signal', response: 'Would it be easier to explain or just show you? I can do a quick screen share right now — 10 minutes.' },
-  'when can':         { label: 'Timeline Signal', response: 'We can move quickly. Realistically, you\'d be up and running in [X weeks]. How does your timeline look?' },
-  "what's included":  { label: 'Feature Curiosity', response: 'Core plan includes [features]. I can walk you through what our top customers find most valuable if that helps.' },
-  'sounds good':      { label: 'Positive Signal', response: 'Should we lock in a time to get the ball rolling, or is there someone else you\'d want to loop in first?' },
-  'makes sense':      { label: 'Agreement Signal', response: 'Given what you\'ve shared, I think the next step is [specific action]. Does that work for you?' },
-  'can you':          { label: 'Action Request', response: 'Absolutely. And while we\'re at it — would it make sense to [suggest next step] at the same time?' },
+  'interested':       { label: 'Interest Signal',  response: "That's great to hear. What does your current situation look like around this? I want to understand the specifics before saying anything else. If the fit is there, the next step is a 20-minute walkthrough — does this week work?" },
+  'tell me more':     { label: 'Curiosity Signal',  response: "Happy to. Most teams in your space are quietly losing time and money to this, and they don't fully realize it until we put a number on it. Which part is most relevant to what you're dealing with right now?" },
+  'how much':         { label: 'Pricing Signal',    response: "Good question — I want to give you a real number, not a range. First: what's this problem costing you right now? Most clients find the investment is a fraction of what they were already losing. Tell me your setup and I'll give you the exact number." },
+  'how does it work': { label: 'Demo Signal',       response: "Short version: we remove the friction that's quietly costing you the most — and the results happen without adding to your team's workload. Honestly the fastest way to get it is to see it. Can I show you in 10 minutes right now?" },
+  'when can':         { label: 'Timeline Signal',   response: "We can move fast — most clients are live and seeing results within a few weeks. If we start this week, what would need to happen on your end to make that smooth?" },
+  "what's included":  { label: 'Feature Curiosity', response: "The core includes everything you'd need to solve the main problem — and the part that moves the needle fastest is the one that directly addresses what you just described. Want to do a quick 15-minute walkthrough?" },
+  'sounds good':      { label: 'Positive Signal',   response: "Let's make it happen. The teams that moved on this quickly said they wished they hadn't waited. Should we lock in 20 minutes this week, or is there someone else you'd want in that conversation?" },
+  'makes sense':      { label: 'Agreement Signal',  response: "Glad it's landing — because what you just confirmed is exactly the position our best clients were in before they got started. What's your availability this week for a focused 20-minute session?" },
+  'can you':          { label: 'Action Request',    response: "Absolutely — and I want to make sure it's set up right from day one. Let me take care of that for you, and I'll make sure you're positioned for the best outcome at the same time. Does that work?" },
 };
 
 export const STAGE_TIPS: Record<CallStage, string> = {
-  opener:    'Build rapport first. Mirror their energy and pace. A warm open beats a cold pitch every time.',
-  discovery: 'Listen 70%, talk 30%. Ask open-ended questions: "What does that look like for you?" or "How are you handling X today?"',
-  pitch:     'Connect every feature to a pain they mentioned. Use their own words back to them to show you listened.',
-  close:     'Make a direct ask. After you ask, go silent — the next person to talk loses. Give them space to decide.',
+  opener:    "What does this problem look like for your team right now?\n\nAsk this, then stop. Let them describe it in their own words.",
+  discovery: "Help me understand this — how long has this been a challenge, and what's the biggest cost for your team?\n\nStay on this until they describe the pain in their own words.",
+  pitch:     "Here's what I keep hearing from teams in your space — and it's exactly what we solve. The companies that acted on this saw a real difference within 90 days. Does that connect?",
+  close:     "Based on what you've shared, the next step is a 20-minute walkthrough. Does [day/time] work for you?\n\nThen stop talking. The next person to speak loses.",
 };
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -99,7 +248,7 @@ function makeSuggestion(
   return { id: genId(), type, headline, body, triggeredBy, timestampSeconds };
 }
 
-// ─── Keyword Fallback ─────────────────────────────────────────────────────────
+// ─── Keyword Analysis ─────────────────────────────────────────────────────────
 
 function analyzeWithKeywords(
   newEntry: TranscriptEntry,
@@ -107,7 +256,8 @@ function analyzeWithKeywords(
   elapsedSeconds: number,
   currentProbability: number,
   currentObjectionsCount: number,
-  recentTriggers: Map<string, number>
+  recentTriggers: Map<string, number>,
+  config?: CallConfig
 ): AIAnalysisResult {
   const suggestions: AISuggestion[] = [];
   const text = newEntry.text.toLowerCase();
@@ -115,15 +265,18 @@ function analyzeWithKeywords(
   let objectionsCount = currentObjectionsCount;
   const now = elapsedSeconds;
 
+  const variantIndex = currentObjectionsCount >= 1 ? 1 : 0;
+
   for (const [keyword, def] of Object.entries(OBJECTION_MAP)) {
     if (text.includes(keyword)) {
       const lastTriggered = recentTriggers.get(keyword) ?? -999;
       if (now - lastTriggered > 30) {
         recentTriggers.set(keyword, now);
-        suggestions.push(makeSuggestion('objection-handler', def.label, def.response, newEntry.text, elapsedSeconds));
+        const raw = def.responses[Math.min(variantIndex, def.responses.length - 1)];
+        suggestions.push(makeSuggestion('objection-handler', def.label, fill(raw, config), newEntry.text, elapsedSeconds));
         probability -= 10;
         objectionsCount += 1;
-        break; // one objection card per message max
+        break;
       }
     }
   }
@@ -131,9 +284,9 @@ function analyzeWithKeywords(
   if (suggestions.length === 0) {
     for (const [keyword, def] of Object.entries(BUYING_SIGNAL_MAP)) {
       if (text.includes(keyword)) {
-        suggestions.push(makeSuggestion('closing-prompt', def.label, def.response, newEntry.text, elapsedSeconds));
+        suggestions.push(makeSuggestion('closing-prompt', def.label, fill(def.response, config), newEntry.text, elapsedSeconds));
         probability += 8;
-        break; // one buying signal card per message max
+        break;
       }
     }
   }
@@ -146,166 +299,246 @@ function analyzeWithKeywords(
   };
 }
 
-// ─── Claude API Analysis ──────────────────────────────────────────────────────
+// ─── Neutral Presets ──────────────────────────────────────────────────────────
+// Body format: "Script to say\n\nOptional brief note"
 
-const SYSTEM_PROMPT = `You are CallAssist — a real-time AI sales closer on a live cold call.
-
-Your job: after every prospect message, give the rep ONE thing to say that moves the deal forward toward a close.
-
-CLASSIFY every prospect message as one of:
-- buying_signal: Any positive engagement, curiosity, pricing questions, timeline questions, "sounds good"
-- soft_objection: Indirect hesitation, uncertainty, "maybe", "not sure", "we're okay for now"
-- hard_objection: Direct refusal — "no", "not interested", "we don't need it"
-- price_resistance: Any cost or budget pushback
-- timing_resistance: "Not now", "maybe later", "too busy", "next quarter"
-- authority_deflection: "Need to check with someone else", "not my decision"
-- stall: "Send me info", "let me think", "call me back"
-- neutral: General conversation, answering a question, no clear signal either way
-
-CLOSER MINDSET — every response should do ONE of these:
-1. Ask a question that makes the prospect sell themselves ("What would that mean for your team?")
-2. Surface urgency or pain ("What's it costing you to leave this unsolved?")
-3. Propose a concrete next step ("Want to set up 15 minutes to see it live?")
-4. Use their own words to advance ("You mentioned X — is that the main thing you're trying to fix?")
-
-RULES:
-1. Only respond to PROSPECT messages. Never after REP messages.
-2. ALWAYS provide a script — never return null. Every message is an opportunity.
-3. Keep it to 1-2 sentences. Sound like a human, not a sales script.
-4. Do NOT use generic phrases like "great question", "I understand your concern", or "absolutely".
-5. Do NOT repeat what was last suggested — always a fresh angle.
-6. Match the prospect's energy — if they're casual, be casual. If formal, be direct.
-
-MEMORY: The prompt shows what was last suggested. Use a completely different approach.
-
-Respond with valid JSON only — no markdown fences, no extra text:
-{
-  "analysis": "One line: what signal this message gives and what the rep should accomplish next",
-  "objectionType": "buying_signal" | "soft_objection" | "hard_objection" | "price_resistance" | "timing_resistance" | "authority_deflection" | "stall" | "neutral",
-  "script": "Exact words for the rep. 1-2 sentences. Natural, not scripted.",
-  "alternative": "A different angle — shorter or softer version.",
-  "probabilityDelta": integer from -15 to 15
-}`;
-
-interface ClaudeResponse {
-  analysis: string;
-  objectionType: 'hard_objection' | 'soft_objection' | 'price_resistance' | 'timing_resistance' | 'authority_deflection' | 'stall' | 'buying_signal' | 'neutral';
-  script: string | null;
-  alternative: string | null;
-  probabilityDelta: number;
+interface NeutralPreset {
+  keywords: string[];
+  label: string;
+  responses: Record<CallStage, string>;
 }
 
-const OBJECTION_TYPES = new Set([
-  'hard_objection', 'soft_objection', 'price_resistance',
-  'timing_resistance', 'authority_deflection', 'stall',
-]);
+const NEUTRAL_PRESETS: NeutralPreset[] = [
+  {
+    keywords: ['hello', 'hi ', 'hey ', 'good morning', 'good afternoon', 'good evening', 'howdy'],
+    label: 'Opener Hook',
+    responses: {
+      opener:    "I'll be quick — I work with businesses in your space because most are quietly dealing with a problem that costs them more every month. Is that on your radar?\n\nSay your name and company first.",
+      discovery: "Good to connect. Quick question — what does your current process look like for this? Where does it break down most for your team?",
+      pitch:     "Glad you're still with me. The core thing we solve is the exact problem most teams in your space are quietly dealing with. Does that connect to what you've been experiencing?",
+      close:     "Based on everything you've shared, the next step is a 20-minute walkthrough. Does [day/time] work for you?",
+    },
+  },
+  {
+    keywords: ['who is this', "who's this", 'who are you', "what's this about", "what's it about", 'what do you want', 'why are you calling', 'how did you get my'],
+    label: 'Identify & Hook',
+    responses: {
+      opener:    "Give me 60 seconds — I work with teams like yours because most are quietly dealing with a problem that compounds over time. Is that on your radar right now?\n\nSay your name and company first.",
+      discovery: "The reason I'm calling is that teams in your space are consistently running into a problem that costs them more every quarter. Can I ask one quick question about how you handle it?",
+      pitch:     "Businesses like yours are losing more than they realize to a specific problem — and we've fixed it for a lot of them. Does that resonate with what you're dealing with?",
+      close:     "I want to make this easy — can we get 20 minutes on the calendar to show you exactly what this looks like for your team?",
+    },
+  },
+  {
+    keywords: ['i see', 'alright', 'uh huh', 'mm-hmm', 'go on', 'i hear you', 'understood'],
+    label: 'Keep Going',
+    responses: {
+      opener:    "Appreciate that — so what does this problem look like for your team right now? I want to make sure I'm talking about the right thing before I say anything else.",
+      discovery: "Good — what's the biggest gap in how you're handling that today? There's usually one thing that's not quite working.",
+      pitch:     "The reason that matters is that it directly addresses what you just described — and the teams that fixed it saw the difference quickly. Does that connect?",
+      close:     "Then we're aligned. Let's get 20 minutes on the calendar. What's your availability this week?",
+    },
+  },
+  {
+    keywords: ["i don't know", "i dont know", "not sure", "we'll see", "i guess", "kind of", "sort of", "possibly"],
+    label: 'Surface Hesitation',
+    responses: {
+      opener:    "That's a fair reaction — what's the one thing making you hesitant right now? I'd rather know than guess.",
+      discovery: "What's holding you back? The teams that felt the same way usually had one specific question I could answer in 30 seconds.",
+      pitch:     "What part doesn't feel like a fit yet? There might be something I haven't shown you — tell me what's on your mind.",
+      close:     "What's the one thing that would need to be true for this to be a yes? Let's address it right now.",
+    },
+  },
+  {
+    keywords: ['what does it do', 'how does it help', 'what exactly', 'can you explain', 'tell me about it', 'what is it', 'what do you do'],
+    label: 'Pitch Cue',
+    responses: {
+      opener:    "We help businesses in your space solve the problem that quietly costs them the most — without adding work to your plate. Does that match anything you're dealing with?",
+      discovery: "We solve the core problem most teams in your space are dealing with — but let me make sure it's relevant. What does your current setup look like?",
+      pitch:     "The part most relevant to you is how we address the exact thing you described earlier. The teams we've worked with saw a real difference within 90 days.",
+      close:     "The best way to understand it is to see it applied to your situation. Can we do 20 minutes? I'll show you exactly how it works for a team like yours.",
+    },
+  },
+  {
+    keywords: ['we struggle', "it's a problem", "that's an issue", 'we spend a lot', 'takes too long', 'not efficient', 'frustrating', 'pain point'],
+    label: 'Pain Confirmed',
+    responses: {
+      opener:    "That's the exact reason I called. How long has that been going on — and what have you tried so far?",
+      discovery: "That's the problem we were built to solve. What's the biggest cost of it for your team — time, money, or both?",
+      pitch:     "That's exactly what a team in your space was dealing with before they worked with us — they turned it around within 90 days. Does that kind of result matter to you?",
+      close:     "You've confirmed the problem is real. The only question is timing — and the longer it sits, the more it costs. Can we lock in a session this week?",
+    },
+  },
+  {
+    keywords: ['interesting', "that's interesting", 'good point', 'fair enough', 'i like that', 'that makes sense', 'i agree'],
+    label: 'Momentum',
+    responses: {
+      opener:    "Good — what does that look like for your team right now? I want to understand your specific situation before I say anything else.",
+      discovery: "Glad it resonates. What's the biggest cost of this problem for you — time, revenue, or something else?",
+      pitch:     "That's what our best clients said too — and they saw real results within 90 days. We can get you to the same place.",
+      close:     "Then let's lock it in — 20 minutes this week. Should I send a calendar invite, or is there someone else you'd want in that conversation?",
+    },
+  },
+  {
+    keywords: ['we currently', 'we use', 'we have a', 'we do it', 'our process', 'right now we'],
+    label: 'Current State',
+    responses: {
+      opener:    "Good to know — what's the biggest weak spot in that setup? There's usually one thing teams wish it handled better.",
+      discovery: "Got it — where does that break down most? The teams we work with had the same setup and found one specific gap that was costing them without them realizing it.",
+      pitch:     "The gap we typically close is the one your current setup misses most — and that's usually where the biggest cost is hiding. Is that the weak spot for you?",
+      close:     "A team in your exact setup made the switch and saw the results within 90 days. Want to see exactly how?",
+    },
+  },
+  {
+    keywords: ['does it work', 'results', 'proof', 'case study', 'example', 'who else', 'other companies'],
+    label: 'Social Proof',
+    responses: {
+      opener:    "Fair question. A business in your space went from the exact problem you're describing to a full fix in under 90 days. Your situation sounds similar.",
+      discovery: "Two examples: one company in your space fixed this and eliminated the hidden cost within a quarter. Another saw significant improvement in their first month. Both started exactly where you are.",
+      pitch:     "A client in your exact setup made this switch and achieved a real, measurable result within 90 days. I can walk you through the specifics if that's useful.",
+      close:     "I can send you two relevant case studies right now — and then let's spend 20 minutes walking through the one most relevant to your team. Does that work?",
+    },
+  },
+  {
+    keywords: ['my team', 'our team', 'the team', 'my manager', 'my boss', 'the board', 'leadership'],
+    label: 'Stakeholder Map',
+    responses: {
+      opener:    "Who else would need to weigh in on something like this? I want to make sure I'm talking to the right people from the start.",
+      discovery: "Who feels the most pain from this problem day-to-day? That's usually the person who makes the internal case.",
+      pitch:     "Who else would need to be comfortable before you could move forward? Let's get them into a 20-minute conversation together — it moves much faster that way.",
+      close:     "Let's get the right people in one 20-minute call — decisions get made 3x faster. Can you get the decision-maker on a call this week?",
+    },
+  },
+  {
+    keywords: ['this week', 'next week', 'next month', 'end of quarter', 'q1', 'q2', 'q3', 'q4', 'this year'],
+    label: 'Timeline Signal',
+    responses: {
+      opener:    "That works — what would need to happen between now and then for this to be on track?",
+      discovery: "If you're thinking that timeline, we should start the evaluation now. Teams that wait usually miss the window.",
+      pitch:     "Teams we've helped with your timeline were live and seeing results within a few weeks of starting. If we begin this week, you're in a strong position.",
+      close:     "We can hit that timeline. Let's get 20 minutes this week so you have everything you need to move. Does [day] work?",
+    },
+  },
+  {
+    keywords: ['okay', 'ok', 'sure', 'yep', 'yeah', 'yes', 'right', 'exactly', 'correct', 'absolutely'],
+    label: 'Advance',
+    responses: {
+      opener:    "Good — so tell me: what does this problem look like for your team right now?",
+      discovery: "Perfect — what's the biggest cost of this for you? Time lost, revenue impact, or something else?",
+      pitch:     "Great — the part most relevant to you is how we solve the exact thing you described. Does that connect to what you've been dealing with?",
+      close:     "Then let's move. I'll send a calendar invite — does [day/time] work for a 20-minute walkthrough?",
+    },
+  },
+];
 
-async function analyzeWithAI(
+// ─── Context-Aware Fallback ───────────────────────────────────────────────────
+
+const CONTEXT_FALLBACKS = {
+  clean: {
+    label: 'Stage Move',
+    response: {
+      opener:    "What does this problem look like for your team right now?\n\nAsk this, then stop. Let them describe it.",
+      discovery: "Help me understand this — how long has this been a challenge, and what's the biggest cost for your team?\n\nStay on this until they describe the pain in their own words.",
+      pitch:     "The core thing we solve is the exact problem most teams in your space are quietly dealing with — and the companies that fixed it saw a real difference within 90 days. Does that connect?",
+      close:     "Based on what you've shared, the next step is a 20-minute walkthrough. Does [day/time] work for you?\n\nThen stop. Let them respond.",
+    },
+  },
+  'after-objection': {
+    label: 'Bridge',
+    response: {
+      opener:    "I hear you — I'm not here to push. One honest question: what would solving this actually be worth to your team if the timing was right? That's all I'm trying to understand.",
+      discovery: "Noted. What's your current plan for handling this without us? I want to make sure you have a path forward either way.",
+      pitch:     "Fair. Last thing: the one result that matters most to teams in your position is being able to handle this without it getting worse. Is that relevant to what you're dealing with?",
+      close:     "Before I go — is there a better time to revisit this, or is the answer a firm no? Either way is fine — I just don't want to guess.",
+    },
+  },
+  persistent: {
+    label: 'Hold the Frame',
+    response: {
+      opener:    "I hear you — I won't push further. One last thing: if this problem got worse over the next quarter, what's your plan? If you've got it covered, I'm genuinely done.",
+      discovery: "You've been consistent — I respect that. I'm going to let you go. If anything changes, I'm easy to reach. Thanks for your time.",
+      pitch:     "I hear you. I'm not going to keep going. I'll send you one page — no pitch, just one number showing what this costs teams in your space. Delete it if it's not relevant.",
+      close:     "Understood. I won't call again. If the situation changes and you want to revisit this, reach out. Good luck.",
+    },
+  },
+} as const;
+
+// ─── Preset-Based Analysis ────────────────────────────────────────────────────
+
+type StreamCallback = (s: AISuggestion) => void;
+
+function analyzeWithPresets(
   newEntry: TranscriptEntry,
-  fullTranscript: TranscriptEntry[],
   currentStage: CallStage,
   elapsedSeconds: number,
   currentProbability: number,
   currentObjectionsCount: number,
-  config: { prospectName: string; company: string; yourPitch: string; callGoal: string },
-  memory: Memory
-): Promise<AIAnalysisResult> {
-  const mins = Math.floor(elapsedSeconds / 60);
-  const secs = String(elapsedSeconds % 60).padStart(2, '0');
-  const recentContext = fullTranscript
-    .slice(-8)
-    .map(e => `${e.speaker === 'rep' ? 'REP' : 'PROSPECT'}: ${e.text}`)
-    .join('\n');
-
-  const memoryLines = [
-    memory.lastLabel ? `Last suggestion given: ${memory.lastLabel}` : null,
-    memory.lastObjectionType ? `Last objection type handled: ${memory.lastObjectionType}` : null,
-    memory.closeAttempted ? `Close already attempted: yes — do not suggest closing unless signal is stronger` : null,
-  ].filter(Boolean).join('\n');
-
-  const prompt = `Rep's pitch: ${config.yourPitch}
-Call goal: ${config.callGoal}
-Prospect: ${config.prospectName} at ${config.company}
-Stage: ${currentStage} | Time: ${mins}:${secs} | Close probability: ${currentProbability}%
-${memoryLines ? `\nMemory:\n${memoryLines}` : ''}
-Recent conversation:
-${recentContext || '(call just started)'}
-
-PROSPECT just said: "${newEntry.text}"
-
-Classify and respond with JSON.`;
-
-  try {
-    const response = await openai!.chat.completions.create({
-      model: 'gpt-4o-mini',
-      max_tokens: 400,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: prompt },
-      ],
-    });
-
-    const raw = response.choices[0].message.content?.trim() ?? '';
-    const parsed = JSON.parse(raw) as ClaudeResponse;
-
-    const suggestions: AISuggestion[] = [];
-    let objectionsCount = currentObjectionsCount;
-
-    const body = parsed.alternative
-      ? `${parsed.script ?? ''}\n\nALT: "${parsed.alternative}"`
-      : (parsed.script ?? '');
-
-    if (parsed.script) {
-      if (parsed.objectionType === 'buying_signal') {
-        suggestions.push(makeSuggestion('closing-prompt', parsed.analysis, body, newEntry.text, elapsedSeconds));
-      } else if (OBJECTION_TYPES.has(parsed.objectionType)) {
-        suggestions.push(makeSuggestion('objection-handler', parsed.analysis, body, newEntry.text, elapsedSeconds));
-        objectionsCount += 1;
-      } else {
-        // neutral and everything else — always show a tip to advance the deal
-        suggestions.push(makeSuggestion('tip', parsed.analysis, body, newEntry.text, elapsedSeconds));
-      }
-    }
-
-    return {
-      suggestions,
-      updatedProbability: clamp(currentProbability + parsed.probabilityDelta, 5, 95),
-      updatedStage: detectStage(elapsedSeconds),
-      updatedObjectionsCount: objectionsCount,
-    };
-  } catch {
-    return analyzeWithKeywords(newEntry, currentStage, elapsedSeconds, currentProbability, currentObjectionsCount, new Map());
+  recentTriggers: Map<string, number>,
+  config?: CallConfig,
+  onStream?: StreamCallback
+): AIAnalysisResult {
+  const keywordResult = analyzeWithKeywords(
+    newEntry, currentStage, elapsedSeconds,
+    currentProbability, currentObjectionsCount, recentTriggers, config
+  );
+  if (keywordResult.suggestions.length > 0) {
+    const s = keywordResult.suggestions[0];
+    if (onStream) onStream({ ...s, streaming: false });
+    return keywordResult;
   }
+
+  const lower = newEntry.text.toLowerCase();
+  for (const preset of NEUTRAL_PRESETS) {
+    if (preset.keywords.some(k => lower.includes(k))) {
+      const response = fill(preset.responses[currentStage], config);
+      const suggestion = makeSuggestion('tip', preset.label, response, newEntry.text, elapsedSeconds);
+      if (onStream) onStream({ ...suggestion, streaming: false });
+      return {
+        suggestions: [suggestion],
+        updatedProbability: clamp(currentProbability + 2, 5, 95),
+        updatedStage: detectStage(elapsedSeconds),
+        updatedObjectionsCount: currentObjectionsCount,
+      };
+    }
+  }
+
+  const fbKey = currentObjectionsCount >= 2 ? 'persistent' :
+                currentObjectionsCount >= 1 ? 'after-objection' : 'clean';
+  const fb = CONTEXT_FALLBACKS[fbKey];
+  const fallback = makeSuggestion('tip', fb.label, fill(fb.response[currentStage], config), newEntry.text, elapsedSeconds);
+  if (onStream) onStream({ ...fallback, streaming: false });
+  return {
+    suggestions: [fallback],
+    updatedProbability: currentProbability,
+    updatedStage: detectStage(elapsedSeconds),
+    updatedObjectionsCount: currentObjectionsCount,
+  };
 }
 
 // ─── Main Analysis Function ───────────────────────────────────────────────────
 
 export async function analyzeTranscript(
   newEntry: TranscriptEntry,
-  fullTranscript: TranscriptEntry[],
+  _fullTranscript: TranscriptEntry[],
   currentStage: CallStage,
   elapsedSeconds: number,
   currentProbability: number,
   currentObjectionsCount: number,
   recentTriggers: Map<string, number>,
-  config?: { prospectName: string; company: string; yourPitch: string; callGoal: string },
-  memory?: Memory
+  config?: CallConfig,
+  _memory?: Memory,
+  onStream?: StreamCallback
 ): Promise<AIAnalysisResult> {
-  if (openai && config) {
-    return analyzeWithAI(
-      newEntry, fullTranscript, currentStage, elapsedSeconds,
-      currentProbability, currentObjectionsCount, config,
-      memory ?? { lastLabel: null, lastObjectionType: null, closeAttempted: false }
-    );
-  }
-  return analyzeWithKeywords(newEntry, currentStage, elapsedSeconds, currentProbability, currentObjectionsCount, recentTriggers);
+  return analyzeWithPresets(
+    newEntry, currentStage, elapsedSeconds,
+    currentProbability, currentObjectionsCount, recentTriggers, config, onStream
+  );
 }
 
 // ─── Session Summary ──────────────────────────────────────────────────────────
 
 export function generateSessionSummary(
-  config: { prospectName: string; company: string; callGoal: string; yourPitch: string },
+  config: CallConfig,
   transcript: TranscriptEntry[],
   suggestions: AISuggestion[],
   closeProbability: number,
@@ -350,7 +583,7 @@ ${buyingSignals > 0 ? 'You showed interest in learning more, and I want to make 
 Next steps I'd suggest:
 ${closeProbability >= 60
   ? '• Schedule a 30-minute demo at your convenience\n• I\'ll prepare a tailored walkthrough based on your specific situation\n• We can discuss pricing and implementation timeline'
-  : '• I\'ll send over a one-pager with the key details\n• Let\'s reconnect in [X weeks] once you\'ve had a chance to review\n• Feel free to reply directly with any questions'}
+  : '• I\'ll send over a one-pager with the key details\n• Let\'s reconnect in a few weeks once you\'ve had a chance to review\n• Feel free to reply directly with any questions'}
 
 Looking forward to continuing the conversation.
 

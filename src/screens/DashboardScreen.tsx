@@ -18,9 +18,10 @@ interface DashboardScreenProps {
   pastSessions: CallSession[];
   onStartCall: () => void;
   onViewSession: (session: CallSession) => void;
+  onDeleteSession: (endedAt: string) => void;
 }
 
-export function DashboardScreen({ pastSessions, onStartCall, onViewSession }: DashboardScreenProps) {
+export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDeleteSession }: DashboardScreenProps) {
   const totalCalls = pastSessions.length;
   const avgProb = totalCalls
     ? Math.round(pastSessions.reduce((sum, s) => sum + s.finalCloseProbability, 0) / totalCalls)
@@ -136,6 +137,13 @@ export function DashboardScreen({ pastSessions, onStartCall, onViewSession }: Da
                         {session.callStage.toUpperCase()}
                       </span>
                       <span className="dashboard__call-view">VIEW →</span>
+                      <button
+                        className="dashboard__call-delete"
+                        title="Delete"
+                        onClick={e => { e.stopPropagation(); onDeleteSession(session.endedAt); }}
+                      >
+                        ✕
+                      </button>
                     </div>
                   </div>
                 );

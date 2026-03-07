@@ -2,58 +2,161 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 
 const DEEPGRAM_API_KEY = (import.meta as unknown as { env: Record<string, string> }).env.VITE_DEEPGRAM_API_KEY;
 
+// ─── Minimal Web Speech API types ─────────────────────────────────────────────
+
+interface WSRResult { isFinal: boolean; 0: { transcript: string }; }
+interface WSREvent  { resultIndex: number; results: WSRResult[]; }
+interface WSR {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((e: WSREvent) => void) | null;
+  onerror:  (() => void) | null;
+  onend:    (() => void) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+}
+
+function getWebSpeech(): WSR | null {
+  const W = window as unknown as { SpeechRecognition?: new () => WSR; webkitSpeechRecognition?: new () => WSR };
+  const Ctor = W.SpeechRecognition ?? W.webkitSpeechRecognition;
+  return Ctor ? new Ctor() : null;
+}
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
 interface UseSpeechRecognitionOptions {
   onFinalTranscript: (text: string) => void;
 }
 
 export function useSpeechRecognition({ onFinalTranscript }: UseSpeechRecognitionOptions) {
-  const [isListening, setIsListening] = useState(false);
-  const [interimText, setInterimText] = useState('');
+  const [isListening, setIsListening]   = useState(false);
+  const [interimText, setInterimText]   = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const wsRef = useRef<WebSocket | null>(null);
+  const wsRef           = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  // Prevents React Strict Mode double-mount from creating two WS connections
-  const activeRef = useRef(false);
-  // Deduplication: ignore transcript if >90% similar to the previous one
-  const lastTranscriptRef = useRef('');
-  const onFinalRef = useRef(onFinalTranscript);
+  const streamRef       = useRef<MediaStream | null>(null);
+  const wsrRef          = useRef<WSR | null>(null); // Web Speech Recognition fallback
+  const activeRef       = useRef(false);
+  const onFinalRef      = useRef(onFinalTranscript);
   onFinalRef.current = onFinalTranscript;
+
+  // Utterance buffer — accumulates is_final chunks and flushes them as one entry
+  // after 1200ms of silence, so fragmented mid-sentence commits get merged.
+  const bufferRef     = useRef<string[]>([]);
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const flushBuffer = useCallback(() => {
+    if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
+    flushTimerRef.current = setTimeout(() => {
+      const combined = bufferRef.current.join(' ').trim();
+      bufferRef.current = [];
+      if (combined) onFinalRef.current(combined);
+    }, 1200);
+  }, []);
+
+  // ── Web Speech API fallback ────────────────────────────────────────────────
+
+  const startWebSpeechFallback = useCallback(() => {
+    if (!activeRef.current) return;
+
+    const recognition = getWebSpeech();
+    if (!recognition) {
+      setErrorMessage('Mic unavailable — use the text input below.');
+      return;
+    }
+
+    wsrRef.current = recognition;
+    recognition.continuous     = true;
+    recognition.interimResults = true;
+    recognition.lang           = 'en-US';
+
+    recognition.onresult = (e) => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) {
+          const text = r[0].transcript.trim();
+          if (text) onFinalRef.current(text);
+          setInterimText('');
+        } else {
+          setInterimText(r[0].transcript);
+        }
+      }
+    };
+
+    recognition.onerror = () => {
+      if (!activeRef.current) return;
+      setIsListening(false);
+      setErrorMessage('Speech recognition error — try refreshing.');
+    };
+
+    // Browser speech stops after silence; auto-restart so it stays on.
+    recognition.onend = () => {
+      if (!activeRef.current) return;
+      try { recognition.start(); } catch { /* ignore if already started */ }
+    };
+
+    try {
+      recognition.start();
+      setIsListening(true);
+      setErrorMessage(null);
+    } catch {
+      setErrorMessage('Could not start browser speech recognition.');
+    }
+  }, []);
+
+  // ── Stop ──────────────────────────────────────────────────────────────────
 
   const stopListening = useCallback(() => {
     activeRef.current = false;
+
+    if (flushTimerRef.current) { clearTimeout(flushTimerRef.current); flushTimerRef.current = null; }
+    bufferRef.current = [];
+
+    if (wsrRef.current) {
+      try { wsrRef.current.abort(); } catch { /* ignore */ }
+      wsrRef.current = null;
+    }
+
     try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
     mediaRecorderRef.current = null;
+
     try { wsRef.current?.close(); } catch { /* ignore */ }
     wsRef.current = null;
+
     streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
+
     setIsListening(false);
     setInterimText('');
   }, []);
 
+  // ── Start (Deepgram primary, Web Speech fallback) ─────────────────────────
+
   const startListening = useCallback(async () => {
-    // Guard: prevent double-start from React Strict Mode or rapid calls
     if (activeRef.current) return;
     activeRef.current = true;
 
+    // No Deepgram key → go straight to browser speech.
     if (!DEEPGRAM_API_KEY) {
-      setErrorMessage('Add VITE_DEEPGRAM_API_KEY to .env.local and restart the dev server.');
-      activeRef.current = false;
+      startWebSpeechFallback();
       return;
     }
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      // If stopped while awaiting mic permission, clean up and bail
       if (!activeRef.current) {
         stream.getTracks().forEach(t => t.stop());
         return;
       }
 
+      // Kill any stale connection from React StrictMode double-invoke.
+      streamRef.current?.getTracks().forEach(t => t.stop());
       streamRef.current = stream;
+      try { wsRef.current?.close(); } catch { /* ignore */ }
 
       const url = [
         'wss://api.deepgram.com/v1/listen',
@@ -61,10 +164,16 @@ export function useSpeechRecognition({ onFinalTranscript }: UseSpeechRecognition
         '&language=en-US',
         '&interim_results=true',
         '&smart_format=true',
-        '&endpointing=400',
+        '&endpointing=600',
+        '&keywords=demo:3',
+        '&keywords=trial:2',
+        '&keywords=pricing:2',
+        '&keywords=integration:2',
+        '&keywords=software:2',
+        '&keywords=platform:2',
+        '&keywords=proposal:2',
       ].join('');
 
-      // API key passed as WebSocket subprotocol — no CORS preflight needed
       const ws = new WebSocket(url, ['token', DEEPGRAM_API_KEY]);
       wsRef.current = ws;
 
@@ -72,71 +181,67 @@ export function useSpeechRecognition({ onFinalTranscript }: UseSpeechRecognition
         const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
           ? 'audio/webm;codecs=opus'
           : 'audio/webm';
-
-        const mediaRecorder = new MediaRecorder(stream, { mimeType });
-        mediaRecorderRef.current = mediaRecorder;
-
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0 && ws.readyState === WebSocket.OPEN) {
-            ws.send(e.data);
-          }
+        const mr = new MediaRecorder(stream, { mimeType });
+        mediaRecorderRef.current = mr;
+        mr.ondataavailable = (e) => {
+          if (e.data.size > 0 && ws.readyState === WebSocket.OPEN) ws.send(e.data);
         };
-
-        mediaRecorder.start(250);
+        mr.start(250);
         setIsListening(true);
         setErrorMessage(null);
       };
 
       ws.onmessage = (event) => {
+        if (wsRef.current !== ws) return;
         interface DGResult {
-          type: string;
-          is_final: boolean;
-          speech_final: boolean;
+          type: string; is_final: boolean; speech_final: boolean;
           channel: { alternatives: { transcript: string }[] };
         }
         const data = JSON.parse(event.data as string) as DGResult;
         if (data.type !== 'Results') return;
         const transcript = data.channel?.alternatives?.[0]?.transcript;
         if (!transcript) return;
-
         if (data.is_final) {
-          // Dedup: skip if >90% word overlap with the previous final transcript
-          const prev = lastTranscriptRef.current.toLowerCase().trim().split(/\s+/);
-          const curr = transcript.toLowerCase().trim().split(/\s+/);
-          const prevSet = new Set(prev);
-          const overlap = curr.filter(w => prevSet.has(w)).length;
-          const sim = (2 * overlap) / (prev.length + curr.length);
-          if (sim < 0.9) {
-            lastTranscriptRef.current = transcript;
-            onFinalRef.current(transcript);
-          }
+          const text = transcript.trim();
+          if (!text) return;
+          bufferRef.current.push(text);
           setInterimText('');
+          flushBuffer();
         } else {
           setInterimText(transcript);
         }
       };
 
       ws.onerror = () => {
-        setErrorMessage('Deepgram connection failed — check your API key.');
-        stopListening();
+        if (wsRef.current !== ws) return;
+        // Deepgram auth/connection failed — silently fall back to browser speech.
+        wsRef.current = null;
+        try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
+        mediaRecorderRef.current = null;
+        stream.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
+        startWebSpeechFallback();
       };
 
       ws.onclose = (e) => {
+        if (wsRef.current !== ws) return;
         setIsListening(false);
-        if (e.code !== 1000 && e.code !== 1001) {
-          setErrorMessage(`Deepgram disconnected (${e.code}). Refresh to reconnect.`);
+        // Unexpected close → fall back to browser speech.
+        if (e.code !== 1000 && e.code !== 1001 && activeRef.current) {
+          startWebSpeechFallback();
         }
       };
+
     } catch (err) {
       activeRef.current = false;
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('notallowed')) {
-        setErrorMessage('Microphone access denied. Allow mic in your browser settings.');
+        setErrorMessage('Microphone access denied — allow mic in browser settings.');
       } else {
         setErrorMessage('Could not start microphone: ' + msg);
       }
     }
-  }, [stopListening]);
+  }, [stopListening, startWebSpeechFallback]);
 
   useEffect(() => {
     return () => { stopListening(); };

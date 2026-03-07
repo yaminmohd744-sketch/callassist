@@ -53,8 +53,8 @@ export function TranscriptPanel({
         {entries.length === 0 && !interimText && (
           <div className="transcript-panel__empty">
             {isListening
-              ? 'Listening... speak or type prospect dialogue below.'
-              : 'Mic starting... or type what the prospect is saying below.'}
+              ? 'Listening — speakers are detected automatically.'
+              : 'Mic starting... or type prospect dialogue below.'}
           </div>
         )}
 
@@ -88,7 +88,7 @@ export function TranscriptPanel({
       <div className="transcript-panel__input">
         <input
           className="transcript-panel__text"
-          placeholder="Enter prospect dialogue or context..."
+          placeholder="Type what the prospect said..."
           value={manualInput}
           onChange={e => onManualInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
