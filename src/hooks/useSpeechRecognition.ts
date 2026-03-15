@@ -87,14 +87,17 @@ export function useSpeechRecognition({ onFinalTranscript }: UseSpeechRecognition
     };
 
     recognition.onerror = () => {
-      if (!activeRef.current) return;
+      if (!activeRef.current || wsrRef.current !== recognition) return;
       setIsListening(false);
       setErrorMessage('Speech recognition error — try refreshing.');
     };
 
     // Browser speech stops after silence; auto-restart so it stays on.
+    // Guard against stale recognition instances (e.g. React StrictMode double-invoke):
+    // onend fires asynchronously, so by the time it runs a new recognition may already
+    // be active — only restart if this is still the current one.
     recognition.onend = () => {
-      if (!activeRef.current) return;
+      if (!activeRef.current || wsrRef.current !== recognition) return;
       try { recognition.start(); } catch { /* ignore if already started */ }
     };
 

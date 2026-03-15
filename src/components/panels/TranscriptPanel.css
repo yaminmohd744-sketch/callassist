@@ -279,3 +279,39 @@
   opacity: 0.3;
   cursor: not-allowed;
 }
+
+/* ─── Speaker flip button ─────────────────────────────────────────────────── */
+.transcript-entry__speaker--flip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  line-height: inherit;
+}
+
+.transcript-entry__speaker--flip:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.transcript-entry__flip-icon {
+  opacity: 0;
+  font-size: 9px;
+  transition: opacity var(--transition-fast);
+}
+
+.transcript-entry__speaker--flip:hover .transcript-entry__flip-icon {
+  opacity: 0.6;
+}
+
+.transcript-entry__speaker--flip:hover {
+  text-decoration: underline dashed;
+  text-underline-offset: 2px;
+}

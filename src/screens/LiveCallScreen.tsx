@@ -7,7 +7,7 @@ import { LeadProfilePanel } from '../components/panels/LeadProfilePanel';
 import { useCallTimer } from '../hooks/useCallTimer';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useAICoach } from '../hooks/useAICoach';
-import { generateSessionSummary } from '../lib/mockAI';
+import { generateSessionSummary } from '../lib/ai';
 import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSignal } from '../types';
 import './LiveCallScreen.css';
 
@@ -24,21 +24,24 @@ function classifySignal(text: string): TranscriptSignal {
   return 'neutral';
 }
 
-// Classify who is speaking based on content.
-// Prospect: asks about price/product, raises objections, talks about their own company/situation.
-// Rep: pitches, introduces themselves, talks about their product, asks discovery questions.
-function classifySpeaker(text: string): 'rep' | 'prospect' {
+// Classify who is speaking based on content + conversational context.
+// Prospect: asks about price/product, raises objections, reacts to the rep's pitch.
+// Rep: pitches, introduces themselves, asks discovery questions.
+function classifySpeaker(text: string, history: TranscriptEntry[]): 'rep' | 'prospect' {
   const lower = text.toLowerCase();
+  const lastEntry = history.length > 0 ? history[history.length - 1] : null;
+  const prevSpeaker = lastEntry?.speaker ?? null;
+  const wordCount = lower.trim().split(/\s+/).length;
 
   // ── Strong prospect signals ───────────────────────────────────────────────
   const prospectPhrases = [
     // Price & cost questions
     'how much', "what's the price", 'what does it cost', 'cost per', 'pricing', 'how expensive',
-    'what would it cost', 'what\'s the cost',
+    'what would it cost', "what's the cost",
     // Asking about the product
     'how does it work', 'tell me more', 'what does it do', "what's included", 'can it do',
     'does it integrate', 'does it work with', 'can you show', 'can we see a demo',
-    'how long does it take', 'how many', 'what kind of',
+    'how long does it take', 'what kind of',
     // Objections
     'not interested', 'not right now', 'not the right time', 'no thanks', 'not a good fit',
     'already have', 'already using', 'using another', 'we have a', 'we use a',
@@ -46,57 +49,82 @@ function classifySpeaker(text: string): 'rep' | 'prospect' {
     'send me info', 'send an email', 'too busy', 'call me back',
     'need to think', 'talk to my boss', 'let me check', 'not sure about',
     // Buying signals
-    'sounds good', 'sounds interesting', 'i\'m interested', 'we\'re interested',
-    'how soon can you', 'let\'s do it', 'sign me up',
+    'sounds good', 'sounds interesting', "i'm interested", "we're interested",
+    'how soon can you', "let's do it", 'sign me up',
     // Prospect talking about their own company/situation
-    'we currently', 'we\'re currently', 'our team', 'our company', 'our business',
-    'we\'ve been', 'we\'re looking', 'we need', 'we want', 'my team', 'my company',
-    'we don\'t', 'we do', 'i don\'t', 'i\'m not sure',
-    // Prospect short stalls / dismissals / permission (the hardest to catch without context)
-    'make it quick', 'make it fast',
-    'go ahead', 'go on', 'i\'m listening', 'you have', 'you\'ve got',
-    'what is it', 'what do you want', 'what\'s this about', 'what\'s it about',
-    'who is this', "who's this", 'who are you', 'who do you want', 'how did you get',
+    'we currently', "we're currently", 'our team', 'our company', 'our business',
+    "we've been", "we're looking", 'we need', 'we want', 'my team', 'my company',
+    "we don't", 'we do', "i don't", "i'm not sure",
+    // Permission / "go ahead" reactions (prospect responding to rep's pitch)
+    'let me hear', 'let me hear it', 'go ahead', 'go on', "i'm listening",
+    "you've got", 'you have my', 'make it quick', 'make it fast',
+    "i'll give you", 'go for it', 'fair enough', 'alright then',
+    // Identification challenges
+    'what is it', 'what do you want', "what's this about", "what's it about",
+    'who is this', "who's this", 'who are you', 'how did you get',
+    // Availability dismissals
     'not a good time', 'bad time', 'not the best time',
-    'i\'m in a meeting', 'i\'m driving', 'i\'m with',
+    "i'm in a meeting", "i'm driving", "i'm with",
   ];
 
   // ── Strong rep signals ────────────────────────────────────────────────────
   const repPhrases = [
     // Introducing / opening
-    'i\'m calling', 'i\'m reaching out', 'my name is', 'i work at', 'i\'m from', 'this is',
-    'the reason i\'m calling', 'i wanted to', 'i\'d like to', 'i\'d love to',
+    "i'm calling", "i'm reaching out", 'my name is', 'i work at', "i'm from",
+    'the reason i\'m calling', 'i wanted to', "i'd like to", "i'd love to",
     // Pitching the product/company
     'our platform', 'our product', 'our solution', 'our service', 'our software', 'our tool',
-    'what we do', 'we help', 'we work with', 'we specialize', 'we\'ve helped',
-    'we\'ve been working', 'we partner',
+    'what we do', 'we help', 'we work with', 'we specialize', "we've helped",
+    "we've been working", 'we partner',
     // Explaining / presenting
-    'let me explain', 'basically', 'the way it works', 'to give you an idea',
+    'let me explain', 'the way it works', 'to give you an idea',
     'what that means', 'the benefit is', 'what this allows', 'for example',
-    'imagine being able to', 'think about',
+    'imagine being able to',
     // Discovery questions (rep asking about prospect)
-    'what\'s your current', 'how are you currently', 'what challenges', 'are you currently',
+    "what's your current", 'how are you currently', 'what challenges', 'are you currently',
     'how do you currently', 'what would it mean', 'would it be helpful', 'what are you using',
-    'how many people', 'what\'s your biggest', 'how does your team',
-    // Closing / scheduling (rep asking for time or commitment)
-    'can we set aside', 'can we find', 'can we schedule', 'could we set aside',
-    'do you have time', 'do you have a few', 'do you have ten', 'do you have five',
-    'ten minutes', 'fifteen minutes', 'quick call', 'quick chat', 'quick conversation',
+    "what's your biggest", 'how does your team',
+    // Closing / scheduling
+    'can we set aside', 'can we schedule', 'do you have time', 'do you have a few',
+    'ten minutes', 'fifteen minutes', 'quick call', 'quick chat',
     'would you be open', 'would it make sense', 'are you open to',
-    'does that sound', 'does that make sense', 'what would it take',
-    'can i share', 'can i show you', 'could i show', 'let me share',
-    'i\'m yaman', 'i\'m calling from', 'calling from',
+    'does that make sense', 'can i share', 'can i show you', 'let me share',
+    "i'm calling from", 'calling from',
   ];
 
   if (prospectPhrases.some(p => lower.includes(p))) return 'prospect';
   if (repPhrases.some(p => lower.includes(p))) return 'rep';
 
-  // Short questions (≤ 7 words, ends with ?) → likely a brief prospect query (e.g. "How much?")
-  // Threshold kept tight so longer rep sentences (closing questions, etc.) fall through to default.
-  const wordCount = lower.trim().split(/\s+/).length;
+  // Short question (≤4 words, ends with ?) → likely a brief prospect query
   if (lower.trimEnd().endsWith('?') && wordCount <= 4) return 'prospect';
 
-  // Default to rep — reps talk more during a cold call
+  // ── Conversation rhythm analysis ─────────────────────────────────────────
+  // How many consecutive rep entries are at the end of history?
+  let consecutiveRep = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].speaker === 'rep') consecutiveRep++;
+    else break;
+  }
+  // After 2+ rep turns in a row, the next entry is almost certainly the prospect reacting.
+  if (consecutiveRep >= 2 && wordCount <= 15) return 'prospect';
+
+  // If the whole history so far is nothing but rep entries (call just started),
+  // treat the next short-to-medium utterance as the prospect.
+  if (history.length >= 3 && history.every(e => e.speaker === 'rep') && wordCount <= 20) {
+    return 'prospect';
+  }
+
+  // ── Turn-taking: after the rep speaks, reaction words signal the prospect ──
+  if (prevSpeaker === 'rep' && wordCount <= 10) {
+    const prospectReactions = [
+      'ok', 'okay', 'sure', 'alright', 'right', 'yeah', 'yes', 'fine', 'yep',
+      'i see', 'i hear', 'understood', 'interesting', 'really', 'uh huh', 'mm',
+      'how so', 'what do you mean', 'go on', 'tell me', 'i got it',
+    ];
+    if (prospectReactions.some(r => lower.includes(r))) return 'prospect';
+  }
+
+  // Default to rep — reps tend to speak more during cold calls
   return 'rep';
 }
 
@@ -120,7 +148,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     const isFirst = transcriptRef.current.length === 0;
     const mentionsProspect = config.prospectName.trim().length > 0 &&
       text.toLowerCase().includes(config.prospectName.trim().toLowerCase());
-    const speaker = (isFirst || mentionsProspect) ? 'rep' : classifySpeaker(text);
+    const speaker = (isFirst || mentionsProspect) ? 'rep' : classifySpeaker(text, transcriptRef.current);
     const entry: TranscriptEntry = {
       id: genId(),
       speaker,
@@ -171,10 +199,10 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     addQuickActionSuggestion(action, { prospectName: config.prospectName, callGoal: config.callGoal }, elapsedSeconds);
   }
 
-  function handleEndCall() {
+  async function handleEndCall() {
     stopListening();
     stopTimer();
-    const { aiSummary, followUpEmail, leadScore } = generateSessionSummary(
+    const { aiSummary, followUpEmail, leadScore } = await generateSessionSummary(
       config,
       transcript,
       suggestions,

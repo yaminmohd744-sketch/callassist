@@ -19,9 +19,10 @@ interface DashboardScreenProps {
   onStartCall: () => void;
   onViewSession: (session: CallSession) => void;
   onDeleteSession: (endedAt: string) => void;
+  onSignOut: () => void;
 }
 
-export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDeleteSession }: DashboardScreenProps) {
+export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDeleteSession, onSignOut }: DashboardScreenProps) {
   const totalCalls = pastSessions.length;
   const avgProb = totalCalls
     ? Math.round(pastSessions.reduce((sum, s) => sum + s.finalCloseProbability, 0) / totalCalls)
@@ -47,6 +48,7 @@ export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDe
 
         <div className="dashboard__sidebar-footer">
           <div className="dashboard__version">v1.0 MVP</div>
+          <button className="dashboard__signout" onClick={onSignOut}>Sign out</button>
         </div>
       </aside>
 

@@ -14,6 +14,7 @@ interface TranscriptPanelProps {
   manualInput: string;
   onManualInputChange: (val: string) => void;
   onManualSubmit: () => void;
+  onFlipSpeaker?: (id: string) => void;
 }
 
 export function TranscriptPanel({
@@ -24,6 +25,7 @@ export function TranscriptPanel({
   manualInput,
   onManualInputChange,
   onManualSubmit,
+  onFlipSpeaker,
 }: TranscriptPanelProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -58,20 +60,33 @@ export function TranscriptPanel({
           </div>
         )}
 
-        {entries.map(entry => (
-          <div
-            key={entry.id}
-            className={`transcript-entry transcript-entry--${entry.signal} transcript-entry--${entry.speaker}`}
-          >
-            <div className="transcript-entry__meta">
-              <span className="transcript-entry__speaker">
-                {entry.speaker === 'rep' ? 'YOU' : entry.speaker === 'prospect' ? 'PROSPECT' : 'SYSTEM'}
-              </span>
-              <span className="transcript-entry__time">{formatTime(entry.timestampSeconds)}</span>
+        {entries.map(entry => {
+          const isFlippable = entry.speaker !== 'system' && !!onFlipSpeaker;
+          const label = entry.speaker === 'rep' ? 'YOU' : entry.speaker === 'prospect' ? 'PROSPECT' : 'SYSTEM';
+          return (
+            <div
+              key={entry.id}
+              className={`transcript-entry transcript-entry--${entry.signal} transcript-entry--${entry.speaker}`}
+            >
+              <div className="transcript-entry__meta">
+                {isFlippable ? (
+                  <button
+                    type="button"
+                    className="transcript-entry__speaker transcript-entry__speaker--flip"
+                    onClick={() => onFlipSpeaker(entry.id)}
+                    title="Click to reassign speaker"
+                  >
+                    {label}<span className="transcript-entry__flip-icon" aria-hidden="true">⇄</span>
+                  </button>
+                ) : (
+                  <span className="transcript-entry__speaker">{label}</span>
+                )}
+                <span className="transcript-entry__time">{formatTime(entry.timestampSeconds)}</span>
+              </div>
+              <div className="transcript-entry__text">{entry.text}</div>
             </div>
-            <div className="transcript-entry__text">{entry.text}</div>
-          </div>
-        ))}
+          );
+        })}
 
         {interimText && (
           <div className="transcript-entry transcript-entry--interim">

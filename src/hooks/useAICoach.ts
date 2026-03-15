@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { analyzeTranscript, getQuickActionSuggestion, type Memory } from '../lib/mockAI';
+import { analyzeTranscript, getQuickActionSuggestion, type Memory } from '../lib/ai';
 import type { AISuggestion, CallStage, TranscriptEntry, QuickAction } from '../types';
 
 interface AICoachState {

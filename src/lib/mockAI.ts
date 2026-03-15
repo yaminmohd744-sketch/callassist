@@ -8,19 +8,29 @@ export interface Memory {
   closeAttempted: boolean;
 }
 
+const LABEL_COOLDOWN    = 75; // seconds before the same neutral-preset label can repeat
+const FALLBACK_COOLDOWN = 50; // seconds before the same fallback label can repeat
+
 // ─── Call config shorthand ────────────────────────────────────────────────────
 
 type CallConfig = { prospectName: string; company: string; yourPitch: string; callGoal: string };
 
 function fill(text: string, config?: CallConfig): string {
   if (!config) return text;
-  const name = config.prospectName || 'there';
-  const co   = config.company || 'your company';
+  const name  = config.prospectName || 'there';
+  const co    = config.company      || 'your company';
+  const pitch = config.yourPitch    || 'what I have for you';
+  const goal  = config.callGoal     || 'connect with you today';
   return text
-    .replace(/\[Prospect\]/g, name)
-    .replace(/\[prospect\]/g, name)
+    .replace(/\[Prospect\]/g,       name)
+    .replace(/\[prospect\]/g,       name)
     .replace(/\[their company\]/gi, co)
-    .replace(/\[Company\]/g, co);
+    .replace(/\[Company\]/g,        co)
+    .replace(/\[company\]/g,        co)
+    .replace(/\[Pitch\]/g,          pitch)
+    .replace(/\[pitch\]/g,          pitch)
+    .replace(/\[Goal\]/g,           goal)
+    .replace(/\[goal\]/g,           goal);
 }
 
 // ─── Objection Map ────────────────────────────────────────────────────────────
@@ -221,6 +231,81 @@ export const STAGE_TIPS: Record<CallStage, string> = {
   close:     "Based on what you've shared, the next step is a 20-minute walkthrough. Does [day/time] work for you?\n\nThen stop talking. The next person to speak loses.",
 };
 
+// ─── Conversation Context ─────────────────────────────────────────────────────
+
+interface ConversationContext {
+  /** Overall prospect engagement tone derived from objection/buying-signal counts */
+  tone: 'hostile' | 'hesitant' | 'neutral' | 'curious' | 'interested';
+  /** Text of the first entry where the prospect confirmed a pain point */
+  confirmedPain: string | null;
+  /** Competing tool or existing solution the prospect mentioned */
+  mentionedTool: string | null;
+  /** Most recent prospect utterance (for quoting back) */
+  lastProspectQuote: string | null;
+  /** How many times the prospect has spoken */
+  prospectTurnCount: number;
+}
+
+function extractContext(transcript: TranscriptEntry[]): ConversationContext {
+  const prospectEntries = transcript.filter(e => e.speaker === 'prospect');
+
+  const objections   = prospectEntries.filter(e => e.signal === 'objection').length;
+  const buyingSignals = prospectEntries.filter(e => e.signal === 'buying-signal').length;
+
+  let tone: ConversationContext['tone'] = 'neutral';
+  if (objections >= 2)       tone = 'hostile';
+  else if (objections === 1) tone = 'hesitant';
+  else if (buyingSignals >= 2) tone = 'interested';
+  else if (buyingSignals === 1) tone = 'curious';
+
+  const painKeywords = ['struggle', 'problem', 'issue', 'challenge', 'difficult', 'frustrat',
+    'waste', 'slow', 'manual', 'expensive', 'costly', 'broken', 'miss', 'losing', 'pain'];
+  const confirmedPain = prospectEntries.find(e =>
+    painKeywords.some(k => e.text.toLowerCase().includes(k)))?.text ?? null;
+
+  const toolKeywords = ['salesforce', 'hubspot', 'zoho', 'pipedrive', 'monday', 'notion',
+    'slack', 'microsoft', 'google', 'excel', 'spreadsheet', 'sheets', 'airtable',
+    'dynamics', 'close.io', 'outreach', 'salesloft'];
+  let mentionedTool: string | null = null;
+  for (const e of prospectEntries) {
+    const low = e.text.toLowerCase();
+    const found = toolKeywords.find(t => low.includes(t));
+    if (found) { mentionedTool = found; break; }
+  }
+
+  const lastProspectQuote = prospectEntries.length > 0
+    ? prospectEntries[prospectEntries.length - 1].text
+    : null;
+
+  return { tone, confirmedPain, mentionedTool, lastProspectQuote, prospectTurnCount: prospectEntries.length };
+}
+
+/** Builds a 1-2 line personalized note appended to suggestion bodies. Returns null if nothing useful. */
+function buildContextHint(ctx: ConversationContext, currentTrigger: string): string | null {
+  const hints: string[] = [];
+
+  if (ctx.mentionedTool) {
+    hints.push(`They mentioned ${ctx.mentionedTool} — tie your angle to the gap their current tool leaves.`);
+  }
+
+  if (ctx.confirmedPain && ctx.confirmedPain !== currentTrigger) {
+    const q = ctx.confirmedPain.length > 65
+      ? ctx.confirmedPain.slice(0, 62) + '...'
+      : ctx.confirmedPain;
+    hints.push(`They confirmed earlier: "${q}" — anchor back to that.`);
+  }
+
+  if (ctx.tone === 'hostile') {
+    hints.push('They\'re resisting hard. One short question, then stop — let them talk.');
+  } else if (ctx.tone === 'interested') {
+    hints.push('They\'re engaged. Push for a concrete next step now.');
+  } else if (ctx.tone === 'curious') {
+    hints.push('They\'re leaning in. Keep the momentum — ask one specific question.');
+  }
+
+  return hints.length > 0 ? hints.join(' ') : null;
+}
+
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
 function genId(): string {
@@ -257,7 +342,8 @@ function analyzeWithKeywords(
   currentProbability: number,
   currentObjectionsCount: number,
   recentTriggers: Map<string, number>,
-  config?: CallConfig
+  config?: CallConfig,
+  ctx?: ConversationContext
 ): AIAnalysisResult {
   const suggestions: AISuggestion[] = [];
   const text = newEntry.text.toLowerCase();
@@ -273,7 +359,10 @@ function analyzeWithKeywords(
       if (now - lastTriggered > 30) {
         recentTriggers.set(keyword, now);
         const raw = def.responses[Math.min(variantIndex, def.responses.length - 1)];
-        suggestions.push(makeSuggestion('objection-handler', def.label, fill(raw, config), newEntry.text, elapsedSeconds));
+        const base = fill(raw, config);
+        const hint = ctx ? buildContextHint(ctx, newEntry.text) : null;
+        const body = hint ? `${base}\n\n— ${hint}` : base;
+        suggestions.push(makeSuggestion('objection-handler', def.label, body, newEntry.text, elapsedSeconds));
         probability -= 10;
         objectionsCount += 1;
         break;
@@ -284,7 +373,10 @@ function analyzeWithKeywords(
   if (suggestions.length === 0) {
     for (const [keyword, def] of Object.entries(BUYING_SIGNAL_MAP)) {
       if (text.includes(keyword)) {
-        suggestions.push(makeSuggestion('closing-prompt', def.label, fill(def.response, config), newEntry.text, elapsedSeconds));
+        const base = fill(def.response, config);
+        const hint = ctx ? buildContextHint(ctx, newEntry.text) : null;
+        const body = hint ? `${base}\n\n— ${hint}` : base;
+        suggestions.push(makeSuggestion('closing-prompt', def.label, body, newEntry.text, elapsedSeconds));
         probability += 8;
         break;
       }
@@ -313,20 +405,20 @@ const NEUTRAL_PRESETS: NeutralPreset[] = [
     keywords: ['hello', 'hi ', 'hey ', 'good morning', 'good afternoon', 'good evening', 'howdy'],
     label: 'Opener Hook',
     responses: {
-      opener:    "I'll be quick — I work with businesses in your space because most are quietly dealing with a problem that costs them more every month. Is that on your radar?\n\nSay your name and company first.",
-      discovery: "Good to connect. Quick question — what does your current process look like for this? Where does it break down most for your team?",
-      pitch:     "Glad you're still with me. The core thing we solve is the exact problem most teams in your space are quietly dealing with. Does that connect to what you've been experiencing?",
-      close:     "Based on everything you've shared, the next step is a 20-minute walkthrough. Does [day/time] work for you?",
+      opener:    "Quick intro — [Pitch]. My goal today is to [goal]. Is that worth 60 seconds?\n\nState your name and company first, then this line.",
+      discovery: "Good to connect, [Prospect]. I want to make sure this is relevant — how does [pitch] line up with what you're focused on right now?",
+      pitch:     "Here's the core of it: [Pitch]. Based on what you've shared, that connects directly. Does that land for you?",
+      close:     "Based on everything we've covered, the next step is to [goal]. Does [day/time] work for you?",
     },
   },
   {
     keywords: ['who is this', "who's this", 'who are you', "what's this about", "what's it about", 'what do you want', 'why are you calling', 'how did you get my'],
     label: 'Identify & Hook',
     responses: {
-      opener:    "Give me 60 seconds — I work with teams like yours because most are quietly dealing with a problem that compounds over time. Is that on your radar right now?\n\nSay your name and company first.",
-      discovery: "The reason I'm calling is that teams in your space are consistently running into a problem that costs them more every quarter. Can I ask one quick question about how you handle it?",
-      pitch:     "Businesses like yours are losing more than they realize to a specific problem — and we've fixed it for a lot of them. Does that resonate with what you're dealing with?",
-      close:     "I want to make this easy — can we get 20 minutes on the calendar to show you exactly what this looks like for your team?",
+      opener:    "My name is [your name] — I'm calling because [Pitch], and my goal is to [goal]. Worth 60 seconds?\n\nSay your actual name and company before this line.",
+      discovery: "The reason I'm calling: [Pitch]. And based on what you've told me, I think there's a real fit. Can I ask one quick question to confirm?",
+      pitch:     "To be direct — [Pitch]. For [Company] specifically, the ask is simple: [goal]. Does that make sense?",
+      close:     "The simplest next step: [goal]. Can we lock that in right now?",
     },
   },
   {
@@ -353,10 +445,10 @@ const NEUTRAL_PRESETS: NeutralPreset[] = [
     keywords: ['what does it do', 'how does it help', 'what exactly', 'can you explain', 'tell me about it', 'what is it', 'what do you do'],
     label: 'Pitch Cue',
     responses: {
-      opener:    "We help businesses in your space solve the problem that quietly costs them the most — without adding work to your plate. Does that match anything you're dealing with?",
-      discovery: "We solve the core problem most teams in your space are dealing with — but let me make sure it's relevant. What does your current setup look like?",
-      pitch:     "The part most relevant to you is how we address the exact thing you described earlier. The teams we've worked with saw a real difference within 90 days.",
-      close:     "The best way to understand it is to see it applied to your situation. Can we do 20 minutes? I'll show you exactly how it works for a team like yours.",
+      opener:    "[Pitch] — and my goal today is to [goal]. Does that match what you were asking about?",
+      discovery: "[Pitch] — but let me make sure it's relevant to you first. What does your situation look like right now?",
+      pitch:     "The core of what I'm offering: [Pitch]. That's what we've been building toward in this conversation. Does that fit?",
+      close:     "The best way to understand it fully is to [goal]. Can we do that now?",
     },
   },
   {
@@ -376,7 +468,7 @@ const NEUTRAL_PRESETS: NeutralPreset[] = [
       opener:    "Good — what does that look like for your team right now? I want to understand your specific situation before I say anything else.",
       discovery: "Glad it resonates. What's the biggest cost of this problem for you — time, revenue, or something else?",
       pitch:     "That's what our best clients said too — and they saw real results within 90 days. We can get you to the same place.",
-      close:     "Then let's lock it in — 20 minutes this week. Should I send a calendar invite, or is there someone else you'd want in that conversation?",
+      close:     "Then let's lock it in — the next step is to [goal]. Should I take care of that now, or is there someone else you'd want involved?",
     },
   },
   {
@@ -437,10 +529,10 @@ const CONTEXT_FALLBACKS = {
   clean: {
     label: 'Stage Move',
     response: {
-      opener:    "What does this problem look like for your team right now?\n\nAsk this, then stop. Let them describe it.",
-      discovery: "Help me understand this — how long has this been a challenge, and what's the biggest cost for your team?\n\nStay on this until they describe the pain in their own words.",
-      pitch:     "The core thing we solve is the exact problem most teams in your space are quietly dealing with — and the companies that fixed it saw a real difference within 90 days. Does that connect?",
-      close:     "Based on what you've shared, the next step is a 20-minute walkthrough. Does [day/time] work for you?\n\nThen stop. Let them respond.",
+      opener:    "Quick question — what's your situation with [pitch] right now? I want to understand where you're at before I say anything else.\n\nAsk this, then stop. Let them describe it.",
+      discovery: "Help me understand — how does [pitch] fit into what you're working on? What would the ideal outcome look like for you?\n\nStay on this until they describe their situation in their own words.",
+      pitch:     "Here's what it comes down to: [Pitch]. And for you, the goal is [goal]. Does that feel like the right direction?\n\nIf they're quiet: 'What part isn't landing yet?'",
+      close:     "Based on what you've shared, the next step is [goal]. Shall we lock that in?\n\nThen stop. Let them respond.",
     },
   },
   'after-objection': {
@@ -475,11 +567,13 @@ function analyzeWithPresets(
   currentObjectionsCount: number,
   recentTriggers: Map<string, number>,
   config?: CallConfig,
+  memory?: Memory,
+  ctx?: ConversationContext,
   onStream?: StreamCallback
 ): AIAnalysisResult {
   const keywordResult = analyzeWithKeywords(
     newEntry, currentStage, elapsedSeconds,
-    currentProbability, currentObjectionsCount, recentTriggers, config
+    currentProbability, currentObjectionsCount, recentTriggers, config, ctx
   );
   if (keywordResult.suggestions.length > 0) {
     const s = keywordResult.suggestions[0];
@@ -487,11 +581,22 @@ function analyzeWithPresets(
     return keywordResult;
   }
 
-  const lower = newEntry.text.toLowerCase();
-  for (const preset of NEUTRAL_PRESETS) {
-    if (preset.keywords.some(k => lower.includes(k))) {
-      const response = fill(preset.responses[currentStage], config);
-      const suggestion = makeSuggestion('tip', preset.label, response, newEntry.text, elapsedSeconds);
+  // Only coach based on what the PROSPECT says — rep entries don't drive suggestions
+  if (newEntry.speaker !== 'rep') {
+    const lower = newEntry.text.toLowerCase();
+    for (const preset of NEUTRAL_PRESETS) {
+      if (!preset.keywords.some(k => lower.includes(k))) continue;
+      // Per-label cooldown: same label can't fire more than once per LABEL_COOLDOWN seconds
+      const labelKey = `label:${preset.label}`;
+      const lastFired = recentTriggers.get(labelKey) ?? -999;
+      if (elapsedSeconds - lastFired < LABEL_COOLDOWN) continue;
+      // Memory dedup: don't repeat the exact same label back-to-back
+      if (memory?.lastLabel === preset.label) continue;
+      recentTriggers.set(labelKey, elapsedSeconds);
+      const base = fill(preset.responses[currentStage], config);
+      const hint = ctx ? buildContextHint(ctx, newEntry.text) : null;
+      const body = hint ? `${base}\n\n— ${hint}` : base;
+      const suggestion = makeSuggestion('tip', preset.label, body, newEntry.text, elapsedSeconds);
       if (onStream) onStream({ ...suggestion, streaming: false });
       return {
         suggestions: [suggestion],
@@ -500,15 +605,31 @@ function analyzeWithPresets(
         updatedObjectionsCount: currentObjectionsCount,
       };
     }
+
+    // Fallback: only fire when enough time has passed and it's a new label
+    const fbKey = currentObjectionsCount >= 2 ? 'persistent' :
+                  currentObjectionsCount >= 1 ? 'after-objection' : 'clean';
+    const fb = CONTEXT_FALLBACKS[fbKey];
+    const fallbackLabelKey = `label:${fb.label}`;
+    const lastFbFired = recentTriggers.get(fallbackLabelKey) ?? -999;
+    if (elapsedSeconds - lastFbFired >= FALLBACK_COOLDOWN && memory?.lastLabel !== fb.label) {
+      recentTriggers.set(fallbackLabelKey, elapsedSeconds);
+      const fbBase = fill(fb.response[currentStage], config);
+      const fbHint = ctx ? buildContextHint(ctx, newEntry.text) : null;
+      const fbBody = fbHint ? `${fbBase}\n\n— ${fbHint}` : fbBase;
+      const fallback = makeSuggestion('tip', fb.label, fbBody, newEntry.text, elapsedSeconds);
+      if (onStream) onStream({ ...fallback, streaming: false });
+      return {
+        suggestions: [fallback],
+        updatedProbability: currentProbability,
+        updatedStage: detectStage(elapsedSeconds),
+        updatedObjectionsCount: currentObjectionsCount,
+      };
+    }
   }
 
-  const fbKey = currentObjectionsCount >= 2 ? 'persistent' :
-                currentObjectionsCount >= 1 ? 'after-objection' : 'clean';
-  const fb = CONTEXT_FALLBACKS[fbKey];
-  const fallback = makeSuggestion('tip', fb.label, fill(fb.response[currentStage], config), newEntry.text, elapsedSeconds);
-  if (onStream) onStream({ ...fallback, streaming: false });
   return {
-    suggestions: [fallback],
+    suggestions: [],
     updatedProbability: currentProbability,
     updatedStage: detectStage(elapsedSeconds),
     updatedObjectionsCount: currentObjectionsCount,
@@ -519,19 +640,20 @@ function analyzeWithPresets(
 
 export async function analyzeTranscript(
   newEntry: TranscriptEntry,
-  _fullTranscript: TranscriptEntry[],
+  fullTranscript: TranscriptEntry[],
   currentStage: CallStage,
   elapsedSeconds: number,
   currentProbability: number,
   currentObjectionsCount: number,
   recentTriggers: Map<string, number>,
   config?: CallConfig,
-  _memory?: Memory,
+  memory?: Memory,
   onStream?: StreamCallback
 ): Promise<AIAnalysisResult> {
+  const ctx = extractContext(fullTranscript);
   return analyzeWithPresets(
     newEntry, currentStage, elapsedSeconds,
-    currentProbability, currentObjectionsCount, recentTriggers, config, onStream
+    currentProbability, currentObjectionsCount, recentTriggers, config, memory, ctx, onStream
   );
 }
 
