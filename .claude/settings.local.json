@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm install)",
+      "Bash(npm install @supabase/supabase-js)",
+      "Bash(npx tsc --noEmit)",
+      "Skill(claude-developer-platform)",
+      "Skill(claude-developer-platform:*)",
+      "Bash(npx supabase --version)",
+      "Bash(npx supabase functions deploy analyze-transcript)",
+      "Bash(npx supabase functions deploy analyze-transcript --no-verify-jwt)",
+      "Bash(npx supabase functions deploy generate-summary --no-verify-jwt)"
+    ]
+  }
+}
