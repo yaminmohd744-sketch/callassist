@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { analyzeTranscript, getQuickActionSuggestion, type Memory } from '../lib/ai';
-import type { AISuggestion, CallStage, TranscriptEntry, QuickAction } from '../types';
+import type { AISuggestion, CallConfig, CallStage, TranscriptEntry, QuickAction } from '../types';
 
 interface AICoachState {
   closeProbability: number;
@@ -31,7 +31,7 @@ export function useAICoach() {
     entry: TranscriptEntry,
     fullTranscript: TranscriptEntry[],
     elapsedSeconds: number,
-    config?: { prospectName: string; company: string; yourPitch: string; callGoal: string }
+    config?: CallConfig
   ) => {
     const current = stateRef.current;
 

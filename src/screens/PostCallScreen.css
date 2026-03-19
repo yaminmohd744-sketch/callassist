@@ -217,3 +217,24 @@
   padding: var(--space-8);
   text-align: center;
 }
+
+/* ─── Header actions ───────────────────────────────────────── */
+
+.postcall__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.postcall__crm-badge {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-accent-green);
+  background: rgba(57, 211, 83, 0.08);
+  border: 1px solid rgba(57, 211, 83, 0.25);
+  border-radius: var(--border-radius-pill);
+  padding: 6px 14px;
+  white-space: nowrap;
+}

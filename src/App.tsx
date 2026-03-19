@@ -4,13 +4,19 @@ import { DashboardScreen } from './screens/DashboardScreen';
 import { PreCallScreen }   from './screens/PreCallScreen';
 import { LiveCallScreen }  from './screens/LiveCallScreen';
 import { PostCallScreen }  from './screens/PostCallScreen';
+import { TrainingScreen }  from './screens/TrainingScreen';
 import { AuthScreen }      from './screens/AuthScreen';
+import { ThemeToggle }     from './components/ThemeToggle';
 import { useAuth }         from './hooks/useAuth';
 import './screens/AuthScreen.css';
 import { supabase }        from './lib/supabase';
 import type { CallConfig, CallSession, CallStage, TranscriptEntry, AISuggestion } from './types';
 
-type Screen = 'landing' | 'dashboard' | 'pre-call' | 'live-call' | 'post-call';
+// Prevent flash of wrong theme on initial load
+const _savedTheme = localStorage.getItem('theme');
+if (_savedTheme === 'light') document.documentElement.dataset.theme = 'light';
+
+type Screen = 'landing' | 'auth' | 'dashboard' | 'training' | 'pre-call' | 'live-call' | 'post-call';
 
 // ─── DB row ↔ CallSession helpers ────────────────────────────────────────────
 
@@ -54,10 +60,28 @@ function sessionToRow(s: CallSession, userId: string) {
 export function App() {
   const { user, loading: authLoading } = useAuth();
 
+  const [theme, setTheme] = useState<'dark' | 'light'>(
+    () => (localStorage.getItem('theme') ?? 'dark') as 'dark' | 'light'
+  );
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    localStorage.setItem('theme', next);
+    document.documentElement.dataset.theme = next === 'light' ? 'light' : '';
+  }
+
   const [screen, setScreen]             = useState<Screen>('landing');
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
+
+  // Auto-redirect authenticated users away from landing/auth to dashboard
+  useEffect(() => {
+    if (user && (screen === 'landing' || screen === 'auth')) {
+      setScreen('dashboard');
+    }
+  }, [user, screen]);
 
   // Load sessions from Supabase whenever the authenticated user changes
   useEffect(() => {
@@ -109,21 +133,37 @@ export function App() {
 
   // ── Auth gate ──────────────────────────────────────────────────────────────
   if (authLoading) return <div className="app-loading">LOADING...</div>;
-  if (!user) return <AuthScreen />;
+
+  if (!user) {
+    if (screen === 'auth') return (
+      <>
+        <AuthScreen onBack={() => setScreen('landing')} />
+        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      </>
+    );
+    return (
+      <>
+        <LandingScreen onGetStarted={() => setScreen('auth')} />
+        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      </>
+    );
+  }
 
   return (
     <>
-      {screen === 'landing' && (
-        <LandingScreen onGetStarted={() => setScreen('dashboard')} />
-      )}
+      <ThemeToggle theme={theme} onToggle={toggleTheme} />
       {screen === 'dashboard' && (
         <DashboardScreen
           pastSessions={pastSessions}
           onStartCall={() => setScreen('pre-call')}
+          onTraining={() => setScreen('training')}
           onViewSession={handleViewSession}
           onDeleteSession={handleDeleteSession}
           onSignOut={() => supabase.auth.signOut()}
         />
+      )}
+      {screen === 'training' && (
+        <TrainingScreen onBack={() => setScreen('dashboard')} />
       )}
       {screen === 'pre-call' && (
         <PreCallScreen

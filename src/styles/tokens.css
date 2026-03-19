@@ -1,39 +1,44 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=gambarino@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;900&family=Fragment+Mono:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 
 :root {
   /* ─── Color Palette ─────────────────────────────────────── */
-  --color-bg-base:        #0d1117;
-  --color-bg-surface:     #161b22;
-  --color-bg-elevated:    #21262d;
-  --color-bg-hover:       #2d333b;
+  --color-bg-base:        #000000;
+  --color-bg-surface:     #0a0a0a;
+  --color-bg-elevated:    #111111;
+  --color-bg-hover:       #1a1a1a;
 
-  --color-border:         #30363d;
-  --color-border-subtle:  #21262d;
+  --color-border:         #1a1a1a;
+  --color-border-subtle:  #111111;
 
-  --color-accent-cyan:    #00d4ff;
-  --color-accent-cyan-dim:#005f73;
+  --color-accent-purple:  #814ac8;
+  --color-accent-magenta: #df7afe;
+  --color-accent-purple-dim: #3d1f66;
+  --color-accent-gradient: linear-gradient(135deg, #814ac8, #df7afe);
+  --color-accent-cyan:    #814ac8; /* alias — keeps old references working */
+  --color-accent-cyan-dim:#3d1f66;
   --color-accent-green:   #39d353;
   --color-accent-red:     #ff4444;
   --color-accent-yellow:  #f0e040;
-  --color-accent-purple:  #bc8cff;
   --color-accent-orange:  #ff7b3b;
 
-  --color-text-primary:   #e6edf3;
-  --color-text-secondary: #8b949e;
-  --color-text-muted:     #484f58;
-  --color-text-accent:    #00d4ff;
+  --color-text-primary:   #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.72);
+  --color-text-muted:     rgba(255, 255, 255, 0.35);
+  --color-text-accent:    #df7afe;
 
   /* ─── Typography ────────────────────────────────────────── */
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+  --font-sans: 'Gambarino', 'Figtree', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fragment Mono', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
 
   --font-size-xs:   11px;
   --font-size-sm:   12px;
   --font-size-base: 13px;
-  --font-size-md:   14px;
-  --font-size-lg:   16px;
-  --font-size-xl:   20px;
-  --font-size-2xl:  28px;
-  --font-size-3xl:  40px;
+  --font-size-md:   15px;
+  --font-size-lg:   17px;
+  --font-size-xl:   22px;
+  --font-size-2xl:  30px;
+  --font-size-3xl:  44px;
 
   /* ─── Spacing ────────────────────────────────────────────── */
   --space-1:  4px;
@@ -53,14 +58,52 @@
   --input-bar-height:   56px;
   --panel-left-width:   320px;
   --panel-right-width:  280px;
-  --border-radius-sm:   3px;
-  --border-radius-md:   5px;
-  --border-radius-lg:   8px;
+  --border-radius-sm:   6px;
+  --border-radius-md:   12px;
+  --border-radius-lg:   20px;
+  --border-radius-pill: 100px;
 
   /* ─── Effects ────────────────────────────────────────────── */
-  --transition-fast:  120ms ease;
-  --transition-base:  220ms ease;
-  --glow-cyan:        0 0 12px rgba(0, 212, 255, 0.35);
+  --transition-fast:  150ms ease;
+  --transition-base:  250ms ease;
+  --glow-cyan:        0 0 20px rgba(129, 74, 200, 0.4);
+  --glow-purple:      0 0 20px rgba(129, 74, 200, 0.4);
   --glow-red:         0 0 12px rgba(255, 68, 68, 0.35);
   --glow-green:       0 0 12px rgba(57, 211, 83, 0.35);
+}
+
+[data-theme="light"] {
+  /* ─── Backgrounds ────────────────────────────────────── */
+  --color-bg-base:        #f2f0f8;
+  --color-bg-surface:     #ffffff;
+  --color-bg-elevated:    #f8f6ff;
+  --color-bg-hover:       #ece9f6;
+
+  /* ─── Borders ────────────────────────────────────────── */
+  --color-border:         #d4d0e8;
+  --color-border-subtle:  #e4e1f2;
+
+  /* ─── Accents ────────────────────────────────────────── */
+  --color-accent-purple:     #7b3fbd;
+  --color-accent-magenta:    #b830e8;
+  --color-accent-purple-dim: #ece4f9;
+  --color-accent-gradient:   linear-gradient(135deg, #7b3fbd, #b830e8);
+  --color-accent-cyan:       #7b3fbd;
+  --color-accent-cyan-dim:   #ece4f9;
+  --color-accent-green:      #1a8f35;
+  --color-accent-red:        #d42020;
+  --color-accent-yellow:     #9a7800;
+  --color-accent-orange:     #b84800;
+
+  /* ─── Text ───────────────────────────────────────────── */
+  --color-text-primary:   #1a1726;
+  --color-text-secondary: rgba(26, 23, 38, 0.65);
+  --color-text-muted:     rgba(26, 23, 38, 0.38);
+  --color-text-accent:    #7b3fbd;
+
+  /* ─── Effects ────────────────────────────────────────── */
+  --glow-cyan:   0 0 20px rgba(123, 63, 189, 0.18);
+  --glow-purple: 0 0 20px rgba(123, 63, 189, 0.18);
+  --glow-red:    0 0 12px rgba(212, 32, 32, 0.2);
+  --glow-green:  0 0 12px rgba(26, 143, 53, 0.2);
 }

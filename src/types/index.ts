@@ -5,6 +5,7 @@ export interface CallConfig {
   company: string;
   yourPitch: string;
   callGoal: string;
+  language: string; // BCP 47 language code, e.g. 'en-US', 'es-ES'
 }
 
 // ─── Transcript ──────────────────────────────────────────────────────────────
@@ -47,6 +48,40 @@ export interface AIAnalysisResult {
   updatedProbability: number;
   updatedStage: CallStage;
   updatedObjectionsCount: number;
+}
+
+// ─── Training ────────────────────────────────────────────────────────────────
+
+export type TrainingScenario =
+  | 'price-objection'
+  | 'not-interested'
+  | 'think-it-over'
+  | 'send-me-info'
+  | 'cold-opener'
+  | 'discovery'
+  | 'closing'
+  | 'random';
+
+export interface TrainingFeedback {
+  score: number;
+  pros: string[];
+  cons: string[];
+  idealResponse: string;
+  idealReason: string;
+}
+
+export interface TrainingMessage {
+  id: string;
+  role: 'prospect' | 'rep';
+  text: string;
+  feedback?: TrainingFeedback;
+}
+
+export interface TrainingSession {
+  scenario: TrainingScenario;
+  scenarioDescription: string;
+  messages: TrainingMessage[];
+  overallScore?: number;
 }
 
 // ─── Session ─────────────────────────────────────────────────────────────────

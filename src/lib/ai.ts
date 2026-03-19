@@ -62,6 +62,7 @@ export async function analyzeTranscript(
       objectionsCount: currentObjectionsCount,
       config,
       lastLabel: memory?.lastLabel ?? null,
+      language: config?.language ?? 'en-US',
     }) as Record<string, unknown>;
 
     if (!data.shouldShow) {
@@ -110,6 +111,7 @@ export async function generateSessionSummary(
   try {
     const data = await callFunction('generate-summary', {
       config, transcript, suggestions, closeProbability, objectionsCount,
+      language: config.language ?? 'en-US',
     }) as Record<string, unknown>;
 
     return {

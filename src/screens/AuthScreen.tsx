@@ -4,7 +4,11 @@ import './AuthScreen.css';
 
 type Mode = 'sign-in' | 'sign-up';
 
-export function AuthScreen() {
+interface AuthScreenProps {
+  onBack?: () => void;
+}
+
+export function AuthScreen({ onBack }: AuthScreenProps) {
   const [mode, setMode]           = useState<Mode>('sign-in');
   const [email, setEmail]         = useState('');
   const [password, setPassword]   = useState('');
@@ -56,6 +60,9 @@ export function AuthScreen() {
   return (
     <div className="auth-screen">
       <div className="auth-card">
+        {onBack && (
+          <button className="auth-back" onClick={onBack}>← Back</button>
+        )}
         <div className="auth-logo">
           <span className="auth-logo__dot" />
           <span className="auth-logo__name">CALL<span className="auth-logo__accent">ASSIST</span></span>

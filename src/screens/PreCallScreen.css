@@ -147,3 +147,56 @@
 @media (max-width: 600px) {
   .precall__row { grid-template-columns: 1fr; }
 }
+
+
+/* ─── Language picker ──────────────────────────────────────── */
+
+.precall__lang-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--space-2);
+}
+
+.precall__lang-btn span:first-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 15px;
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.precall__lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+  letter-spacing: 0.04em;
+}
+
+.precall__lang-btn:hover {
+  border-color: var(--color-accent-cyan-dim);
+  color: var(--color-text-secondary);
+}
+
+.precall__lang-btn--active {
+  border-color: var(--color-accent-purple);
+  color: var(--color-accent-magenta);
+  background: rgba(129, 74, 200, 0.08);
+}

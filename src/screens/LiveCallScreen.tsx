@@ -166,6 +166,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
   const { isListening, interimText, errorMessage, startListening, stopListening } = useSpeechRecognition({
     onFinalTranscript: handleFinalTranscript,
+    language: config.language ?? 'en-US',
   });
 
   useEffect(() => {

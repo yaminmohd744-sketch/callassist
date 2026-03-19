@@ -13,7 +13,11 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { config, transcript, suggestions, closeProbability, objectionsCount } = await req.json();
+    const { config, transcript, suggestions, closeProbability, objectionsCount, language } = await req.json();
+
+    const langNote = language && language !== 'en-US'
+      ? `\n\nIMPORTANT: "aiSummary" and "followUpEmail" MUST be written in the language for BCP 47 code "${language}".`
+      : '';
 
     const buyingSignals = (suggestions as Array<{ type: string }>).filter(
       (s) => s.type === "closing-prompt"
@@ -35,7 +39,7 @@ Schema: { "aiSummary": string, "followUpEmail": string, "leadScore": number }
 
 - "aiSummary": 3-5 concise sentences covering what was discussed, key objections raised, buying signals detected, overall sentiment, and the recommended next step. Be specific and reference the actual conversation.
 - "followUpEmail": A complete follow-up email the rep can send immediately. Include subject line at the top (format: "Subject: ..."). Personalize it to the actual conversation. Professional but not stiff.
-- "leadScore": Integer 0-100. Weight: close probability (50%), buying signals (25%), minus objections (25%).`;
+- "leadScore": Integer 0-100. Weight: close probability (50%), buying signals (25%), minus objections (25%).${langNote}`;
 
     const userMessage = `Call details:
 Prospect: ${config.prospectName} at ${config.company}
@@ -72,6 +76,9 @@ ${formattedSuggestions || "(none)"}`;
     });
 
     const data = await response.json();
+    if (data.error) {
+      throw new Error(`OpenAI error: ${data.error.message ?? JSON.stringify(data.error)}`);
+    }
     const result = JSON.parse(data.choices[0].message.content);
 
     return new Response(JSON.stringify(result), {

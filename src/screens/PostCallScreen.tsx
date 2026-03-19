@@ -89,9 +89,12 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
             <span>{formatDate(session.endedAt)}</span>
           </div>
         </div>
-        <Button variant="primary" size="md" onClick={onNewCall}>
-          ▶ NEW CALL
-        </Button>
+        <div className="postcall__header-actions">
+          <div className="postcall__crm-badge">✓ Saved to CRM</div>
+          <Button variant="primary" size="md" onClick={onNewCall}>
+            ▶ NEW CALL
+          </Button>
+        </div>
       </div>
 
       <div className="postcall__stats-row">

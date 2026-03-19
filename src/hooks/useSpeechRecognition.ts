@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { getDeepgramCode } from '../lib/languages';
 
 const DEEPGRAM_API_KEY = (import.meta as unknown as { env: Record<string, string> }).env.VITE_DEEPGRAM_API_KEY;
 
@@ -28,9 +29,10 @@ function getWebSpeech(): WSR | null {
 
 interface UseSpeechRecognitionOptions {
   onFinalTranscript: (text: string) => void;
+  language?: string; // BCP 47 code, e.g. 'en-US', 'es-ES'
 }
 
-export function useSpeechRecognition({ onFinalTranscript }: UseSpeechRecognitionOptions) {
+export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: UseSpeechRecognitionOptions) {
   const [isListening, setIsListening]   = useState(false);
   const [interimText, setInterimText]   = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export function useSpeechRecognition({ onFinalTranscript }: UseSpeechRecognition
     wsrRef.current = recognition;
     recognition.continuous     = true;
     recognition.interimResults = true;
-    recognition.lang           = 'en-US';
+    recognition.lang           = language;
 
     recognition.onresult = (e) => {
       for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -164,7 +166,7 @@ export function useSpeechRecognition({ onFinalTranscript }: UseSpeechRecognition
       const url = [
         'wss://api.deepgram.com/v1/listen',
         '?model=nova-2',
-        '&language=en-US',
+        `&language=${getDeepgramCode(language)}`,
         '&interim_results=true',
         '&smart_format=true',
         '&endpointing=600',

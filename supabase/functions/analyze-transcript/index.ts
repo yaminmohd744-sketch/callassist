@@ -13,41 +13,43 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { entry, transcript, stage, elapsedSeconds, probability, objectionsCount, config, lastLabel } =
+    const { entry, transcript, stage, elapsedSeconds, probability, objectionsCount, config, lastLabel, language } =
       await req.json();
+
+    const langNote = language && language !== 'en-US'
+      ? `\n\nIMPORTANT: The sales call is being conducted in language "${language}" (BCP 47). The "body" field (the script the rep says) MUST be in that language. "headline" stays in English.`
+      : '';
 
     const recentEntries = (transcript as Array<{ speaker: string; text: string }>)
       .slice(-6)
       .map((e) => `${e.speaker === "rep" ? "REP" : "PROSPECT"}: ${e.text}`)
       .join("\n");
 
-    const systemPrompt = `You are an expert sales coach giving real-time guidance to a sales rep on a live cold call.
+    const systemPrompt = `You are one of the best closers in the world, whispering in real time to a sales rep on a live call. You have closed every type of deal — high ticket, low ticket, B2B, B2C, services, products, anything. You read people instantly and you always know the exact right thing to say to move the sale forward.
 
-The rep has shared background context about their prospect, pitch, and goal. Use this as BACKGROUND UNDERSTANDING ONLY — do NOT repeat, quote, or echo the pitch text or goal text verbatim in your suggestion.
+You are NOT a script reader. You are NOT a template filler. You think on your feet, you adapt to whatever the prospect says, and you always keep control of the conversation without the prospect ever feeling pressured.
 
-Your job: read what the prospect just said and give the rep ONE short, natural script they can say RIGHT NOW.
+Your job: listen to what the prospect just said and give the rep the single best line they can say RIGHT NOW to keep the conversation moving toward a close. One line. Decisive. Natural. Confident.
 
-The script must:
-- Directly respond to what the prospect just said
-- Sound like a skilled human rep — conversational, not robotic or corporate
-- Use the prospect's name or reference their company when it helps
-- Advance toward the call goal without sounding pushy
-- Be under 60 words
-
-BAD (do not do this):
-  Prospect: "Who's this?" → "I'm calling because [raw pitch copied here]..."
-
-GOOD:
-  Prospect: "Who's this?" → "Hey [name] — this is [rep name]. I work with founders on getting more leads through their website. Give me 45 seconds — I'll tell you one thing we did for a founder like you last month. Worth it?"
+Rules:
+- Never sound salesy, robotic, or corporate
+- Never repeat or quote the pitch back word for word — use it as background intelligence only
+- Always sound like a real human who genuinely believes in what they're selling
+- Use the prospect's name or company naturally when it adds impact
+- If there's an objection, neutralize it without being defensive — then redirect
+- If there's a buying signal, capitalize on it immediately and push for the next step
+- If the prospect is being vague or stalling, call it out gently and get them to commit
+- Every response should move closer to the goal — never just maintain the status quo
+- Under 60 words
 
 Respond ONLY with valid JSON, no markdown:
 { "shouldShow": boolean, "type": "objection-handler"|"closing-prompt"|"tip", "headline": string, "body": string, "probabilityDelta": number, "objectionsCountDelta": number }
 
-- "body": exact script the rep says. Under 60 words. Natural first-person speech.
-- "headline": 2-4 word label (e.g. "Identify & Hook", "Push for Demo", "Price Objection")
+- "body": the exact words the rep says. Under 60 words. First-person, natural speech.
+- "headline": 2-4 word label describing the move (e.g. "Flip the Frame", "Lock the Close", "Kill the Stall")
 - "probabilityDelta": integer -15 to +15
 - "objectionsCountDelta": 0 or 1
-- If nothing useful to say, return shouldShow: false with empty headline/body`;
+- If the prospect said something with no meaningful sales implication, return shouldShow: false${langNote}`;
 
     const userMessage = `Background context (understand the situation — do NOT quote these directly):
 - Prospect: ${config.prospectName} at ${config.company}
@@ -80,7 +82,7 @@ Write a natural script the rep can say right now to move this forward.`;
         ],
         response_format: { type: "json_object" },
         max_tokens: 300,
-        temperature: 0.6,
+        temperature: 0.7,
       }),
     });
 

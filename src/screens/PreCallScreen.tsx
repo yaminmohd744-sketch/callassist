@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../components/ui/Button';
+import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { CallConfig } from '../types';
 import './PreCallScreen.css';
 
@@ -14,6 +15,7 @@ export function PreCallScreen({ onStartCall, onBack }: PreCallScreenProps) {
     company: '',
     yourPitch: '',
     callGoal: '',
+    language: 'en-US',
   });
   const [errors, setErrors] = useState<Partial<CallConfig>>({});
 
@@ -91,6 +93,23 @@ export function PreCallScreen({ onStartCall, onBack }: PreCallScreenProps) {
               onChange={e => handleChange('yourPitch', e.target.value)}
               rows={4}
             />
+          </div>
+
+          <div className="precall__field">
+            <label className="precall__label">CALL LANGUAGE</label>
+            <div className="precall__lang-grid">
+              {SUPPORTED_LANGUAGES.map(l => (
+                <button
+                  key={l.code}
+                  type="button"
+                  className={`precall__lang-btn ${form.language === l.code ? 'precall__lang-btn--active' : ''}`}
+                  onClick={() => setForm(f => ({ ...f, language: l.code }))}
+                >
+                  <span>{l.flag}</span>
+                  <span>{l.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="precall__hints">
