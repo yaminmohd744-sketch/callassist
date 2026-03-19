@@ -17,7 +17,7 @@
 }
 
 .postcall__back {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   letter-spacing: 0.1em;
   color: var(--color-text-muted);
@@ -100,7 +100,7 @@
 }
 
 .postcall__tab {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   letter-spacing: 0.1em;
   padding: var(--space-3) var(--space-5);
@@ -127,7 +127,7 @@
 }
 
 .postcall__pre {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   line-height: 1.7;

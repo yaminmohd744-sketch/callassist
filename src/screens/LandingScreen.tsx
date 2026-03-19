@@ -69,16 +69,16 @@ const STEPS = [
 ];
 
 const LANGUAGES = [
-  { flag: '🇺🇸', label: 'English' },
-  { flag: '🇪🇸', label: 'Spanish' },
-  { flag: '🇫🇷', label: 'French' },
-  { flag: '🇧🇷', label: 'Portuguese' },
-  { flag: '🇩🇪', label: 'German' },
-  { flag: '🇮🇹', label: 'Italian' },
-  { flag: '🇳🇱', label: 'Dutch' },
-  { flag: '🇨🇳', label: 'Mandarin' },
-  { flag: '🇯🇵', label: 'Japanese' },
-  { flag: '🇸🇦', label: 'Arabic' },
+  { country: 'us', label: 'English' },
+  { country: 'es', label: 'Spanish' },
+  { country: 'fr', label: 'French' },
+  { country: 'br', label: 'Portuguese' },
+  { country: 'de', label: 'German' },
+  { country: 'it', label: 'Italian' },
+  { country: 'nl', label: 'Dutch' },
+  { country: 'cn', label: 'Mandarin' },
+  { country: 'jp', label: 'Japanese' },
+  { country: 'sa', label: 'Arabic' },
 ];
 
 const COMPARE_ROWS = [
@@ -286,7 +286,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         <div className="lp__lang-grid">
           {LANGUAGES.map((l, i) => (
             <div key={i} className="lp__lang-chip">
-              <span className="lp__lang-flag">{l.flag}</span>
+              <img className="lp__lang-flag" src={`https://flagcdn.com/w20/${l.country}.png`} alt={l.label} />
               <span>{l.label}</span>
             </div>
           ))}

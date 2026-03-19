@@ -105,7 +105,7 @@ export function PreCallScreen({ onStartCall, onBack }: PreCallScreenProps) {
                   className={`precall__lang-btn ${form.language === l.code ? 'precall__lang-btn--active' : ''}`}
                   onClick={() => setForm(f => ({ ...f, language: l.code }))}
                 >
-                  <span>{l.flag}</span>
+                  <img className="precall__lang-flag" src={`https://flagcdn.com/w20/${l.code.split('-')[1].toLowerCase()}.png`} alt={l.label} />
                   <span>{l.label}</span>
                 </button>
               ))}

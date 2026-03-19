@@ -1,14 +1,14 @@
 export const SUPPORTED_LANGUAGES = [
-  { code: 'en-US', label: 'English',    flag: 'US', deepgramCode: 'en-US' },
-  { code: 'es-ES', label: 'Spanish',    flag: 'ES', deepgramCode: 'es'    },
-  { code: 'fr-FR', label: 'French',     flag: 'FR', deepgramCode: 'fr'    },
-  { code: 'pt-BR', label: 'Portuguese', flag: 'BR', deepgramCode: 'pt'    },
-  { code: 'de-DE', label: 'German',     flag: 'DE', deepgramCode: 'de'    },
-  { code: 'it-IT', label: 'Italian',    flag: 'IT', deepgramCode: 'it'    },
-  { code: 'nl-NL', label: 'Dutch',      flag: 'NL', deepgramCode: 'nl'    },
-  { code: 'zh-CN', label: 'Mandarin',   flag: 'CN', deepgramCode: 'zh-CN' },
-  { code: 'ja-JP', label: 'Japanese',   flag: 'JP', deepgramCode: 'ja'    },
-  { code: 'ar-SA', label: 'Arabic',     flag: 'AR', deepgramCode: 'ar'    },
+  { code: 'en-US', label: 'English',    flag: '🇺🇸', deepgramCode: 'en-US' },
+  { code: 'es-ES', label: 'Spanish',    flag: '🇪🇸', deepgramCode: 'es'    },
+  { code: 'fr-FR', label: 'French',     flag: '🇫🇷', deepgramCode: 'fr'    },
+  { code: 'pt-BR', label: 'Portuguese', flag: '🇧🇷', deepgramCode: 'pt'    },
+  { code: 'de-DE', label: 'German',     flag: '🇩🇪', deepgramCode: 'de'    },
+  { code: 'it-IT', label: 'Italian',    flag: '🇮🇹', deepgramCode: 'it'    },
+  { code: 'nl-NL', label: 'Dutch',      flag: '🇳🇱', deepgramCode: 'nl'    },
+  { code: 'zh-CN', label: 'Mandarin',   flag: '🇨🇳', deepgramCode: 'zh-CN' },
+  { code: 'ja-JP', label: 'Japanese',   flag: '🇯🇵', deepgramCode: 'ja'    },
+  { code: 'ar-SA', label: 'Arabic',     flag: '🇸🇦', deepgramCode: 'ar'    },
 ] as const;
 
 export type LanguageCode = typeof SUPPORTED_LANGUAGES[number]['code'];

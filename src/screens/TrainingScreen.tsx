@@ -236,7 +236,7 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                     className={`training__lang-btn ${language === l.code ? 'training__lang-btn--active' : ''}`}
                     onClick={() => setLanguage(l.code)}
                   >
-                    <span className="training__lang-flag">{l.flag}</span>
+                    <img className="training__lang-flag" src={`https://flagcdn.com/w20/${l.code.split('-')[1].toLowerCase()}.png`} alt={l.label} />
                     {l.label}
                   </button>
                 ))}

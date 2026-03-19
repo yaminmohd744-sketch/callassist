@@ -24,7 +24,7 @@
 }
 
 .precall__back {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   letter-spacing: 0.1em;
   color: var(--color-text-muted);
@@ -94,7 +94,7 @@
   padding: var(--space-3) var(--space-4);
   font-size: var(--font-size-base);
   color: var(--color-text-primary);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   transition: border-color var(--transition-fast);
   width: 100%;
   resize: none;
@@ -162,15 +162,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 15px;
-  background: var(--color-bg-base);
-  border: 1px solid var(--color-border);
-  border-radius: 3px;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  color: var(--color-text-muted);
+  font-size: 16px;
+  line-height: 1;
   flex-shrink: 0;
 }
 
@@ -182,7 +175,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-md);
   padding: 4px 10px;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   cursor: pointer;

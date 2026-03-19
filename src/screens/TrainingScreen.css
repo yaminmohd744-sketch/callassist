@@ -2,7 +2,7 @@
   display: flex;
   height: 100vh;
   background: var(--color-bg-base);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   color: var(--color-text-primary);
   overflow: hidden;
 }
@@ -101,7 +101,7 @@
   border: 1px solid var(--color-accent-red);
   color: var(--color-accent-red);
   border-radius: var(--border-radius-md);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   letter-spacing: 0.08em;
   cursor: pointer;
@@ -164,7 +164,7 @@
   padding: var(--space-5) var(--space-5);
   text-align: left;
   cursor: pointer;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
   display: flex;
   flex-direction: column;
@@ -381,7 +381,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-md);
   color: var(--color-text-primary);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-base);
   padding: var(--space-3) var(--space-4);
   resize: none;
@@ -403,7 +403,7 @@
   color: var(--color-bg-base);
   border: none;
   border-radius: var(--border-radius-md);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -536,7 +536,7 @@
 .training__btn {
   padding: var(--space-3) var(--space-6);
   border-radius: var(--border-radius-md);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -588,18 +588,10 @@
 }
 
 .training__lang-flag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 15px;
-  background: var(--color-bg-base);
-  border: 1px solid var(--color-border);
-  border-radius: 3px;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  color: var(--color-text-secondary);
+  width: 20px;
+  height: auto;
+  border-radius: 2px;
+  display: block;
   flex-shrink: 0;
 }
 
@@ -611,7 +603,7 @@
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-md);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   cursor: pointer;
