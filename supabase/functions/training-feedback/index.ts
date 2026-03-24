@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { scenario, scenarioDescription, saleContext, difficulty, messages, userResponse, language } = await req.json();
+    const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, userResponse, language } = await req.json();
 
     const langNote = language && language !== 'en-US'
       ? `\n\nIMPORTANT: All feedback, pros, cons, idealResponse, and idealReason MUST be written in the language for BCP 47 code "${language}".`
@@ -23,10 +23,8 @@ Deno.serve(async (req: Request) => {
       .map((m) => `${m.role === 'rep' ? 'REP' : 'PROSPECT'}: ${m.text}`)
       .join("\n");
 
-    const saleNote = saleContext
-      ? `\nWhat the rep is selling: ${saleContext}`
-      : '';
-
+    const saleNote = saleContext ? `\nWhat the rep is selling: ${saleContext}` : '';
+    const subNote = subScenarioContext ? `\nSpecific situation: ${subScenarioContext}` : '';
     const difficultyNote = difficulty === 'easy'
       ? '\n\nDifficulty: EASY — Be encouraging. Score generously (a decent response should get 6-7). Focus on what they did well and keep cons constructive.'
       : difficulty === 'hard'
@@ -38,14 +36,14 @@ Deno.serve(async (req: Request) => {
 A sales rep is practicing a training simulation. Analyze their latest response and give them precise, honest, actionable feedback.
 
 Scenario: ${scenario}
-Prospect persona: ${scenarioDescription}${saleNote}
+Prospect persona: ${scenarioDescription}${saleNote}${subNote}
 
 Conversation so far:
 ${conversationSoFar}
 
 REP JUST SAID: "${userResponse}"
 
-Evaluate this response as a sales trainer. Be honest — not harsh, not soft. Give real feedback that makes them better. Reference the specific product/deal when relevant.
+Evaluate this response as a sales trainer. Be honest — not harsh, not soft. Give real feedback that makes them better. Reference the specific product/deal and scenario when relevant.
 
 Respond ONLY with valid JSON:
 {

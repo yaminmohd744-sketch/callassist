@@ -13,20 +13,17 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { scenario, scenarioDescription, saleContext, difficulty, messages, userResponse, language } = await req.json();
+    const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, userResponse, language } = await req.json();
 
     const isInit = !userResponse;
 
-    const saleNote = saleContext
-      ? `\nThe rep is selling: ${saleContext}.`
-      : '';
-
+    const saleNote = saleContext ? `\nThe rep is selling: ${saleContext}.` : '';
+    const subNote = subScenarioContext ? `\nSpecific situation: ${subScenarioContext}` : '';
     const difficultyNote = difficulty === 'easy'
       ? '\n\nDifficulty: EASY — Be mildly resistant. You have concerns but you\'re open to reasonable arguments. Soften relatively quickly when the rep makes decent points.'
       : difficulty === 'hard'
       ? '\n\nDifficulty: HARD — Be very resistant and skeptical. Push back firmly on everything. Only soften slightly if the rep handles the situation exceptionally well. Make it genuinely challenging.'
       : '\n\nDifficulty: MEDIUM — Be realistically resistant. Don\'t cave easily, but don\'t be irrational. React proportionally to the quality of the rep\'s response.';
-
     const langNote = language && language !== 'en-US'
       ? `\n\nIMPORTANT: All prospect dialogue and scenario descriptions MUST be written in the language for BCP 47 code "${language}".`
       : '';
@@ -34,21 +31,21 @@ Deno.serve(async (req: Request) => {
     const systemPrompt = isInit
       ? `You are simulating a sales training scenario for a sales rep to practice on.
 
-Scenario type: ${scenario}${saleNote}
+Scenario type: ${scenario}${saleNote}${subNote}
 
 Generate:
-1. A realistic prospect persona (name, company, role, situation) — 1-2 sentences, specific to what the rep is selling
-2. The prospect's opening line that sets up the scenario naturally
+1. A realistic prospect persona (name, company, role, situation) — 1-2 sentences, specific to what the rep is selling and the situation described above
+2. The prospect's opening line that sets up the exact scenario naturally
 
 Respond ONLY with valid JSON:
 { "scenarioDescription": string, "openingLine": string }
 
-- "scenarioDescription": Who the prospect is and what their situation is. Make it specific to the product being sold.
-- "openingLine": What the prospect says to kick off the scenario. Make it realistic and challenging but not impossible.${difficultyNote}${langNote}`
+- "scenarioDescription": Who the prospect is and their specific situation. Make it match the scenario context above.
+- "openingLine": What the prospect says to kick off the scenario. It must reflect the specific situation described.${difficultyNote}${langNote}`
       : `You are playing a realistic sales prospect in a training simulation.
 
 Your persona: ${scenarioDescription}
-Scenario type: ${scenario}${saleNote}
+Scenario type: ${scenario}${saleNote}${subNote}
 
 The sales rep just said: "${userResponse}"
 

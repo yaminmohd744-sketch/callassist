@@ -420,6 +420,61 @@
   50% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
 }
 
+/* ── Sub-scenario Cards ──────────────────────────────────────────────────────*/
+
+.training__sub-scenarios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.training__sub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+.training__sub-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.training__sub-card:hover {
+  border-color: var(--color-text-muted);
+}
+
+.training__sub-card--selected.training__sub-card--easy   { border-color: var(--color-accent-green);  background: rgba(57, 211, 83, 0.06); }
+.training__sub-card--selected.training__sub-card--medium { border-color: var(--color-accent-yellow); background: rgba(255, 196, 0, 0.06); }
+.training__sub-card--selected.training__sub-card--hard   { border-color: var(--color-accent-red);    background: rgba(255, 68, 68, 0.06); }
+
+.training__sub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.training__sub-label {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.training__sub-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
 /* ── Difficulty Selector ─────────────────────────────────────────────────────*/
 
 .training__diff-row {
