@@ -119,7 +119,7 @@ export function PreCallScreen({ onStartCall, onBack }: PreCallScreenProps) {
             </div>
             <div className="precall__hint">
               <span className="precall__hint-icon">◎</span>
-              Voice recognition works best in Chrome — or use manual text input
+              Voice recognition works best in Chrome - or use manual text input
             </div>
           </div>
 

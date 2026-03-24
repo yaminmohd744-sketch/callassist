@@ -55,7 +55,7 @@ export function TranscriptPanel({
         {entries.length === 0 && !interimText && (
           <div className="transcript-panel__empty">
             {isListening
-              ? 'Listening — speakers are detected automatically.'
+              ? 'Listening - speakers are detected automatically.'
               : 'Mic starting... or type prospect dialogue below.'}
           </div>
         )}

@@ -84,6 +84,14 @@ export interface TrainingSession {
   overallScore?: number;
 }
 
+export interface SessionSummary {
+  headline: string;
+  assessment: string;
+  strengths: string[];
+  improvements: string[];
+  keyTakeaway: string;
+}
+
 // ─── Session ─────────────────────────────────────────────────────────────────
 
 export interface CallSession {

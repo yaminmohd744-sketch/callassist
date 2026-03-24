@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, userResponse, language } = await req.json();
+    const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, userResponse, previousFeedback, language } = await req.json();
 
     const langNote = language && language !== 'en-US'
       ? `\n\nIMPORTANT: All feedback, pros, cons, idealResponse, and idealReason MUST be written in the language for BCP 47 code "${language}".`
@@ -26,9 +26,21 @@ Deno.serve(async (req: Request) => {
     const saleNote = saleContext ? `\nWhat the rep is selling: ${saleContext}` : '';
     const subNote = subScenarioContext ? `\nSpecific situation: ${subScenarioContext}` : '';
     const difficultyNote = difficulty === 'easy'
-      ? '\n\nDifficulty: EASY — Be encouraging. Score generously (a decent response should get 6-7). Focus on what they did well and keep cons constructive.'
+      ? '\n\nDifficulty: EASY - Be encouraging. Score generously (a decent response should get 6-7). Focus on what they did well and keep cons constructive.'
       : difficulty === 'hard'
-      ? '\n\nDifficulty: HARD — Be strict. Hold them to a very high standard. A good-but-not-great response scores 5-6. Only give 8+ for genuinely excellent responses. Point out even minor missed opportunities.'
+      ? '\n\nDifficulty: HARD - Be strict. Hold them to a very high standard. A good-but-not-great response scores 5-6. Only give 8+ for genuinely excellent responses. Point out even minor missed opportunities.'
+      : '';
+
+    // Build previous feedback context to prevent repetition
+    const prevFeedbackNote = previousFeedback && previousFeedback.length > 0
+      ? `\n\nFeedback already given this session:\n${(previousFeedback as Array<{ score: number; pros: string[]; cons: string[] }>)
+          .map((f, i) => {
+            const parts = [];
+            if (f.pros.length) parts.push(`Praised: ${f.pros.join('; ')}`);
+            if (f.cons.length) parts.push(`Flagged: ${f.cons.join('; ')}`);
+            return `Exchange ${i + 1} (${f.score}/10): ${parts.join(' | ')}`;
+          })
+          .join('\n')}\n\nCRITICAL: Do NOT repeat feedback points already given above. If the same mistake recurs, acknowledge the pattern (e.g. "Again, you skipped a discovery question - this is becoming a pattern"). If the same strength appears, note their consistency. Every exchange must give the rep something NEW to act on.`
       : '';
 
     const systemPrompt = `You are a world-class sales trainer with decades of experience coaching top closers.
@@ -43,7 +55,7 @@ ${conversationSoFar}
 
 REP JUST SAID: "${userResponse}"
 
-Evaluate this response as a sales trainer. Be honest — not harsh, not soft. Give real feedback that makes them better. Reference the specific product/deal and scenario when relevant.
+Evaluate this response as a sales trainer. Be honest - not harsh, not soft. Give real feedback that makes them better. Reference the specific product/deal and scenario when relevant.${prevFeedbackNote}
 
 Respond ONLY with valid JSON:
 {
@@ -58,7 +70,7 @@ Respond ONLY with valid JSON:
 - "pros": 1-2 specific things they did well (be concrete, not generic). Empty array if nothing good.
 - "cons": 1-2 specific things they did wrong or missed (be concrete). Empty array if response was excellent.
 - "idealResponse": The exact words a top closer would say in this situation (natural, first-person, under 50 words)
-- "idealReason": 1-2 sentences explaining WHY that response works — the psychology or sales principle behind it${difficultyNote}${langNote}`;
+- "idealReason": 1-2 sentences explaining WHY that response works - the psychology or sales principle behind it${difficultyNote}${langNote}`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -71,7 +83,7 @@ Respond ONLY with valid JSON:
         messages: [{ role: "system", content: systemPrompt }, { role: "user", content: "Give feedback on the rep's response." }],
         response_format: { type: "json_object" },
         max_tokens: 400,
-        temperature: 0.5,
+        temperature: 0.6,
       }),
     });
 

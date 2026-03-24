@@ -124,7 +124,7 @@ function classifySpeaker(text: string, history: TranscriptEntry[]): 'rep' | 'pro
     if (prospectReactions.some(r => lower.includes(r))) return 'prospect';
   }
 
-  // Default to rep — reps tend to speak more during cold calls
+  // Default to rep - reps tend to speak more during cold calls
   return 'rep';
 }
 

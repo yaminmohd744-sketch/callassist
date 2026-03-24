@@ -26,10 +26,10 @@ function downloadFile(filename: string, content: string) {
 
 function buildTranscriptText(session: CallSession): string {
   const header = [
-    `CALL ASSIST — TRANSCRIPT`,
+    `CALL ASSIST - TRANSCRIPT`,
     `═══════════════════════════════════════`,
-    `Prospect : ${session.config.prospectName || '—'}`,
-    `Company  : ${session.config.company || '—'}`,
+    `Prospect : ${session.config.prospectName || '-'}`,
+    `Company  : ${session.config.company || '-'}`,
     `Goal     : ${session.config.callGoal}`,
     `Date     : ${formatDate(session.endedAt)}`,
     `Duration : ${formatDuration(session.durationSeconds)}`,

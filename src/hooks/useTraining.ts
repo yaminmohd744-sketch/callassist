@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import type { TrainingScenario, TrainingMessage, TrainingFeedback } from '../types';
+import type { TrainingScenario, TrainingMessage, TrainingFeedback, SessionSummary } from '../types';
 
 const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -37,6 +37,7 @@ export interface TrainingState {
   difficulty: TrainingDifficulty;
   messages: TrainingMessage[];
   overallScore: number | null;
+  summary: SessionSummary | null;
   isLoading: boolean;
   error: string | null;
   language: string;
@@ -51,6 +52,7 @@ const initialState: TrainingState = {
   difficulty: 'medium',
   messages: [],
   overallScore: null,
+  summary: null,
   isLoading: false,
   error: null,
   language: 'en-US',
@@ -95,14 +97,15 @@ export function useTraining() {
         difficulty,
         messages: [openingMessage],
         overallScore: null,
+        summary: null,
         isLoading: false,
         error: null,
         language,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      const display = msg.includes('quota') ? 'OpenAI quota exceeded — add credits at platform.openai.com'
-        : msg.includes('401') ? 'Auth error — check your API key'
+      const display = msg.includes('quota') ? 'OpenAI quota exceeded - add credits at platform.openai.com'
+        : msg.includes('401') ? 'Auth error - check your API key'
         : 'Failed to start scenario. Check your connection.';
       setState(s => ({ ...s, isLoading: false, error: display }));
     }
@@ -116,6 +119,11 @@ export function useTraining() {
 
     setState(s => ({ ...s, messages: messagesWithRep, isLoading: true, error: null }));
 
+    // Collect previous feedback so the AI doesn't repeat the same points
+    const previousFeedback = messages
+      .filter(m => m.role === 'rep' && m.feedback)
+      .map(m => ({ score: m.feedback!.score, pros: m.feedback!.pros, cons: m.feedback!.cons }));
+
     try {
       const [feedbackData, prospectData] = await Promise.all([
         callFunction('training-feedback', {
@@ -126,6 +134,7 @@ export function useTraining() {
           difficulty,
           messages,
           userResponse: userText,
+          previousFeedback,
           language,
         }) as Promise<TrainingFeedback>,
         callFunction('training-prospect', {
@@ -158,22 +167,39 @@ export function useTraining() {
       }));
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      const display = msg.includes('quota') ? 'OpenAI quota exceeded — add credits at platform.openai.com'
+      const display = msg.includes('quota') ? 'OpenAI quota exceeded - add credits at platform.openai.com'
         : 'Failed to get response. Try again.';
       setState(s => ({ ...s, isLoading: false, error: display }));
     }
   }, []);
 
-  const endSession = useCallback(() => {
-    setState(s => {
-      const scoredMessages = s.messages.filter(m => m.role === 'rep' && m.feedback);
-      const overallScore = scoredMessages.length > 0
-        ? Math.round(
-            scoredMessages.reduce((sum, m) => sum + (m.feedback?.score ?? 0), 0) / scoredMessages.length * 10
-          ) / 10
-        : null;
-      return { ...s, phase: 'summary', overallScore };
-    });
+  const endSession = useCallback(async () => {
+    const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, language } = stateRef.current;
+    const scoredMessages = messages.filter(m => m.role === 'rep' && m.feedback);
+    const overallScore = scoredMessages.length > 0
+      ? Math.round(
+          scoredMessages.reduce((sum, m) => sum + (m.feedback?.score ?? 0), 0) / scoredMessages.length * 10
+        ) / 10
+      : null;
+
+    setState(s => ({ ...s, phase: 'summary', overallScore, isLoading: true }));
+
+    try {
+      const summary = await callFunction('training-summary', {
+        scenario,
+        scenarioDescription,
+        saleContext,
+        subScenarioContext,
+        difficulty,
+        messages: messages.map(m => ({ role: m.role, text: m.text, feedback: m.feedback })),
+        overallScore,
+        language,
+      }) as SessionSummary;
+      setState(s => ({ ...s, summary, isLoading: false }));
+    } catch {
+      // Summary generation failed - degrade gracefully, don't block the screen
+      setState(s => ({ ...s, isLoading: false }));
+    }
   }, []);
 
   const reset = useCallback(() => setState(initialState), []);

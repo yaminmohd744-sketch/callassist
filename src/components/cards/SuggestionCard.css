@@ -36,7 +36,7 @@
   color: var(--color-text-muted);
 }
 
-/* The main "say this" text — large and prominent */
+/* The main "say this" text - large and prominent */
 .suggestion-card__script {
   font-size: var(--font-size-base);
   font-weight: 600;
@@ -45,7 +45,7 @@
   margin-bottom: var(--space-3);
 }
 
-/* Small note below the script — coaching context, not what to say */
+/* Small note below the script - coaching context, not what to say */
 .suggestion-card__note {
   font-size: var(--font-size-xs);
   font-weight: 400;
@@ -57,7 +57,7 @@
   opacity: 0.75;
 }
 
-/* The "why" explanation — small and muted */
+/* The "why" explanation - small and muted */
 .suggestion-card__why {
   display: flex;
   align-items: baseline;

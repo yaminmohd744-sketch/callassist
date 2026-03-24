@@ -147,19 +147,19 @@ export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDe
             </div>
             <div className="dashboard__stat-card">
               <div className={`dashboard__stat-val ${avgProb >= 61 ? 'dashboard__stat-val--high' : avgProb >= 31 ? 'dashboard__stat-val--medium' : totalCalls ? 'dashboard__stat-val--low' : ''}`}>
-                {totalCalls ? `${avgProb}%` : '—'}
+                {totalCalls ? `${avgProb}%` : '-'}
               </div>
               <div className="dashboard__stat-label">AVG CLOSE PROB</div>
             </div>
             <div className="dashboard__stat-card">
               <div className={`dashboard__stat-val ${totalObjections > 0 ? 'dashboard__stat-val--low' : ''}`}>
-                {totalCalls ? totalObjections : '—'}
+                {totalCalls ? totalObjections : '-'}
               </div>
               <div className="dashboard__stat-label">TOTAL OBJECTIONS</div>
             </div>
             <div className="dashboard__stat-card">
               <div className="dashboard__stat-val dashboard__stat-val--high">
-                {totalCalls ? formatDuration(Math.round(pastSessions.reduce((sum, s) => sum + s.durationSeconds, 0) / totalCalls)) : '—'}
+                {totalCalls ? formatDuration(Math.round(pastSessions.reduce((sum, s) => sum + s.durationSeconds, 0) / totalCalls)) : '-'}
               </div>
               <div className="dashboard__stat-label">AVG DURATION</div>
             </div>
@@ -194,7 +194,7 @@ export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDe
                           {session.config.prospectName || 'Unknown prospect'}
                         </div>
                         <div className="dashboard__call-company">
-                          {session.config.company || '—'} · {session.config.callGoal}
+                          {session.config.company || '-'} · {session.config.callGoal}
                         </div>
                       </div>
 
@@ -278,7 +278,7 @@ export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDe
                     </div>
                     <div className="dashboard__crm-info">
                       <div className="dashboard__crm-name">{contact.name}</div>
-                      <div className="dashboard__crm-company">{contact.company || '—'}</div>
+                      <div className="dashboard__crm-company">{contact.company || '-'}</div>
                     </div>
                     <div className="dashboard__crm-meta">
                       <span className={`dashboard__crm-score dashboard__crm-score--${level}`}>

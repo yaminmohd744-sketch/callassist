@@ -45,7 +45,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   const onFinalRef      = useRef(onFinalTranscript);
   onFinalRef.current = onFinalTranscript;
 
-  // Utterance buffer — accumulates is_final chunks and flushes them as one entry
+  // Utterance buffer - accumulates is_final chunks and flushes them as one entry
   // after 1200ms of silence, so fragmented mid-sentence commits get merged.
   const bufferRef     = useRef<string[]>([]);
   const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -66,7 +66,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
     const recognition = getWebSpeech();
     if (!recognition) {
-      setErrorMessage('Mic unavailable — use the text input below.');
+      setErrorMessage('Mic unavailable - use the text input below.');
       return;
     }
 
@@ -91,13 +91,13 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
     recognition.onerror = () => {
       if (!activeRef.current || wsrRef.current !== recognition) return;
       setIsListening(false);
-      setErrorMessage('Speech recognition error — try refreshing.');
+      setErrorMessage('Speech recognition error - try refreshing.');
     };
 
     // Browser speech stops after silence; auto-restart so it stays on.
     // Guard against stale recognition instances (e.g. React StrictMode double-invoke):
     // onend fires asynchronously, so by the time it runs a new recognition may already
-    // be active — only restart if this is still the current one.
+    // be active - only restart if this is still the current one.
     recognition.onend = () => {
       if (!activeRef.current || wsrRef.current !== recognition) return;
       try { recognition.start(); } catch { /* ignore if already started */ }
@@ -219,7 +219,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
       ws.onerror = () => {
         if (wsRef.current !== ws) return;
-        // Deepgram auth/connection failed — silently fall back to browser speech.
+        // Deepgram auth/connection failed - silently fall back to browser speech.
         wsRef.current = null;
         try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
         mediaRecorderRef.current = null;
@@ -241,7 +241,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
       activeRef.current = false;
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('notallowed')) {
-        setErrorMessage('Microphone access denied — allow mic in browser settings.');
+        setErrorMessage('Microphone access denied - allow mic in browser settings.');
       } else {
         setErrorMessage('Could not start microphone: ' + msg);
       }

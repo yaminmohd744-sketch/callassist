@@ -8,6 +8,41 @@
   overflow: hidden;
 }
 
+/* ── Mode Tabs ───────────────────────────────────────────────────────────────*/
+
+.training__mode-tabs {
+  display: flex;
+  gap: 2px;
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.training__mode-tab {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--border-radius-pill);
+  border: 1px solid transparent;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.training__mode-tab--active {
+  background: var(--color-bg-elevated);
+  color: var(--color-accent-cyan);
+  border-color: var(--color-border);
+}
+
+.training__mode-tab:hover:not(.training__mode-tab--active) {
+  color: var(--color-text-secondary);
+}
+
 /* ── Session Header (active phase) ──────────────────────────────────────────*/
 
 .training__session-header {
@@ -653,9 +688,49 @@
   transition: width 0.8s ease;
 }
 
-.training__score-label {
+.training__summary-loading {
   font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.training__summary-assessment {
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
+  line-height: 1.7;
+  border-left: 3px solid var(--color-accent-cyan);
+  padding-left: var(--space-4);
+}
+
+.training__summary-takeaway {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent-yellow);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.training__summary-takeaway-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-yellow);
+}
+
+.training__summary-takeaway-text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  font-weight: 500;
 }
 
 .training__summary-sections {

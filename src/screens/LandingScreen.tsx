@@ -9,11 +9,11 @@ const DEMO_FRAMES = [
   { type: 'status',   text: '● ACTIVE  02:14  OBJECTIONS 2  CLOSE PROB 68%' },
   { type: 'prospect', text: 'PROSPECT: "We already have a tool for that..."' },
   { type: 'ai',       badge: 'OBJECTION DETECTED', badgeColor: 'red',
-    body: 'Competitor Objection — "That\'s great, what do you love most about it? And what\'s the one thing you wish it did better?"' },
+    body: 'Competitor Objection - "That\'s great, what do you love most about it? And what\'s the one thing you wish it did better?"' },
   { type: 'status',   text: 'Signal: Objection neutralized  +6% close probability' },
   { type: 'prospect', text: 'PROSPECT: "Honestly, the reporting could be better..."' },
   { type: 'ai',       badge: 'BUYING SIGNAL', badgeColor: 'green',
-    body: 'Pain confirmed — "So if I showed you exactly how we fix that, would you be open to a 20-min demo this week?"' },
+    body: 'Pain confirmed - "So if I showed you exactly how we fix that, would you be open to a 20-min demo this week?"' },
   { type: 'status',   text: 'Close probability: 81%  ↑  Stage: CLOSE' },
 ];
 
@@ -21,12 +21,17 @@ const FEATURES = [
   {
     icon: '⚡',
     title: 'Real-time coaching',
-    desc: 'AI whispers the perfect response the moment your prospect speaks. Objection handlers, closing prompts, and discovery questions — live.',
+    desc: 'AI whispers the perfect response the moment your prospect speaks. Objection handlers, closing prompts, and discovery questions - live.',
   },
   {
     icon: '◈',
-    title: 'Training mode',
-    desc: 'Practice against an AI prospect that fights back. 8 scenarios: cold openers, objection handling, discovery, closing — before every call.',
+    title: 'Practice scenarios',
+    desc: 'Practice against an AI prospect that fights back. 8 scenarios with 3 sub-scenarios each - cold openers, objections, discovery, closing - before every call.',
+  },
+  {
+    icon: '🎓',
+    title: 'AI Sales Academy',
+    desc: 'Structured sales curriculum from beginner to advanced. Track your score across 9 lessons, watch your improvement over time, and master every skill.',
   },
   {
     icon: '🌍',
@@ -41,12 +46,7 @@ const FEATURES = [
   {
     icon: '◎',
     title: 'Post-call analysis',
-    desc: 'Full transcript, AI summary, lead score, and a ready-to-send personalised follow-up email — generated the moment you hang up.',
-  },
-  {
-    icon: '📞',
-    title: 'Works everywhere',
-    desc: 'Phone calls, Zoom, Teams, Google Meet — any browser, Chrome, Firefox, Safari, Edge. No extension, no download, no IT approval.',
+    desc: 'Full transcript, AI summary, lead score, and a ready-to-send personalised follow-up email - generated the moment you hang up.',
   },
 ];
 
@@ -64,7 +64,7 @@ const STEPS = [
   {
     num: '03',
     title: 'Close the deal',
-    desc: 'Act on live coaching prompts. End the call — get the AI summary and everything saved to your CRM automatically.',
+    desc: 'Act on live coaching prompts. End the call - get the AI summary and everything saved to your CRM automatically.',
   },
 ];
 
@@ -142,7 +142,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </h1>
           <p className="lp__hero-sub">
             Real-time coaching. Training mode. Post-call AI analysis. Works on phone calls,
-            Zoom, Teams, Meet — in 10 languages. No downloads, no extensions.
+            Zoom, Teams, Meet - in 10 languages. No downloads, no extensions.
           </p>
           <div className="lp__hero-actions">
             <button className="lp__btn lp__btn--primary" onClick={onGetStarted}>
@@ -163,7 +163,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
               <span className="lp__dot lp__dot--red" />
               <span className="lp__dot lp__dot--yellow" />
               <span className="lp__dot lp__dot--green" />
-              <span className="lp__terminal-title">CALLASSIST — LIVE</span>
+              <span className="lp__terminal-title">CALLASSIST - LIVE</span>
             </div>
             <div className="lp__terminal-body">
               {DEMO_FRAMES.slice(0, visibleFrames).map((frame, i) => (
@@ -228,16 +228,15 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
       {/* ── Training mode highlight ── */}
       <section id="training" className="lp__section">
-        <div className="lp__split">
-          <div className="lp__split-left">
-            <div className="lp__section-label">TRAINING MODE</div>
-            <h2 className="lp__section-h2 lp__section-h2--left">
-              Train before you call.<br />
-              Beat objections before<br />they happen.
-            </h2>
-            <p className="lp__split-desc">
-              Practice against an AI prospect that fights back — in your language.
-              8 scenarios covering every situation you'll face on a real call.
+        <div className="lp__section-label">TRAINING MODE</div>
+        <h2 className="lp__section-h2">Two ways to train. One goal: more closed deals.</h2>
+        <div className="lp__training-modes">
+
+          <div className="lp__training-mode-card">
+            <div className="lp__training-mode-icon">◈</div>
+            <div className="lp__training-mode-title">Practice Scenarios</div>
+            <p className="lp__training-mode-desc">
+              Pick any scenario and jump straight into a live AI roleplay. 8 scenarios with Easy / Medium / Hard sub-scenarios - cold openers, price objections, discovery, closing, and more.
             </p>
             <ul className="lp__split-list">
               <li>Cold call openers</li>
@@ -247,31 +246,53 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
               <li>Closing techniques</li>
               <li>Random AI-generated scenarios</li>
             </ul>
-            <button className="lp__btn lp__btn--primary" onClick={onGetStarted}>
-              Try Training Mode →
-            </button>
           </div>
-          <div className="lp__split-right">
-            <div className="lp__mock-training">
-              <div className="lp__mock-training-bar">
-                <span>◈</span> TRAINING MODE &nbsp;·&nbsp; Price Objection &nbsp;·&nbsp; 🇪🇸 Spanish
-              </div>
-              <div className="lp__mock-msg lp__mock-msg--prospect">
-                PROSPECT: "Honestamente, el precio está fuera de nuestro presupuesto ahora mismo."
-              </div>
-              <div className="lp__mock-msg lp__mock-msg--rep">
-                YOU: "Entiendo, ¿puedo preguntarte qué parte del presupuesto es el obstáculo?"
-              </div>
-              <div className="lp__mock-feedback">
-                <span className="lp__mock-score lp__mock-score--good">8/10</span>
-                <span>✓ Good — you turned it into a discovery question</span>
-              </div>
-              <div className="lp__mock-ideal">
-                <div className="lp__mock-ideal-label">IDEAL RESPONSE</div>
-                "¿Qué parte del costo es el obstáculo principal? ¿Es el total o el timing?"
-              </div>
+
+          <div className="lp__training-mode-card lp__training-mode-card--academy">
+            <div className="lp__training-mode-badge">NEW</div>
+            <div className="lp__training-mode-icon">🎓</div>
+            <div className="lp__training-mode-title">AI Sales Academy</div>
+            <p className="lp__training-mode-desc">
+              A structured curriculum that teaches sales from scratch. Track your scores across 9 lessons, watch your improvement rep by rep, and unlock advanced modules as you master each skill.
+            </p>
+            <ul className="lp__split-list">
+              <li>Cold Call Foundations (Beginner)</li>
+              <li>Objection Handling (Intermediate)</li>
+              <li>Discovery &amp; Closing (Advanced)</li>
+              <li>Score tracking &amp; improvement analytics</li>
+              <li>Coaching tips before every lesson</li>
+              <li>Modules unlock as you progress</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div className="lp__training-demo">
+          <div className="lp__mock-training">
+            <div className="lp__mock-training-bar">
+              <span>◈</span> TRAINING MODE &nbsp;·&nbsp; Price Objection &nbsp;·&nbsp; 🇪🇸 Spanish
+            </div>
+            <div className="lp__mock-msg lp__mock-msg--prospect">
+              PROSPECT: "Honestamente, el precio está fuera de nuestro presupuesto ahora mismo."
+            </div>
+            <div className="lp__mock-msg lp__mock-msg--rep">
+              YOU: "Entiendo, ¿puedo preguntarte qué parte del presupuesto es el obstáculo?"
+            </div>
+            <div className="lp__mock-feedback">
+              <span className="lp__mock-score lp__mock-score--good">8/10</span>
+              <span>✓ Good - you turned it into a discovery question</span>
+            </div>
+            <div className="lp__mock-ideal">
+              <div className="lp__mock-ideal-label">IDEAL RESPONSE</div>
+              "¿Qué parte del costo es el obstáculo principal? ¿Es el total o el timing?"
             </div>
           </div>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: 'var(--space-10)' }}>
+          <button className="lp__btn lp__btn--primary" onClick={onGetStarted}>
+            Start Training Free →
+          </button>
         </div>
       </section>
 
@@ -280,7 +301,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         <div className="lp__section-label">MULTILINGUAL</div>
         <h2 className="lp__section-h2">Sell in 10 languages</h2>
         <p className="lp__section-sub">
-          Competitors coach only in English. CallAssist coaches in your language —
+          Competitors coach only in English. CallAssist coaches in your language -
           real-time objection handling, training, and post-call analysis, all localised.
         </p>
         <div className="lp__lang-grid">
@@ -365,7 +386,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         </div>
 
         <div className="lp__guarantee">
-          ✓ 7-day money-back guarantee on Pro — no questions asked
+          ✓ 7-day money-back guarantee on Pro - no questions asked
         </div>
       </section>
 
@@ -373,7 +394,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
       <section className="lp__cta-banner">
         <h2 className="lp__cta-banner-h2">Ready to close more deals?</h2>
         <p className="lp__cta-banner-sub">
-          Join sales reps using AI to win more calls — in any language, on any device.
+          Join sales reps using AI to win more calls - in any language, on any device.
         </p>
         <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
           ▶ Start for Free

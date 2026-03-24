@@ -81,7 +81,7 @@ export function useAICoach() {
           : memoryRef.current.lastObjectionType,
         closeAttempted: memoryRef.current.closeAttempted || primary.type === 'closing-prompt',
       };
-      // Keyword-fallback path — suggestion not already in state via onStream.
+      // Keyword-fallback path - suggestion not already in state via onStream.
       setSuggestions(prev => {
         if (prev.some(s => s.id === primary.id)) return prev;
         return [primary, ...prev];

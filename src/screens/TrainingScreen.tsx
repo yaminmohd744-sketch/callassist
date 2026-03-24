@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTraining } from '../hooks/useTraining';
-import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
+import { useAuth } from '../hooks/useAuth';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
+import { AcademySection } from './AcademySection';
 import type { TrainingScenario } from '../types';
 import type { TrainingDifficulty } from '../hooks/useTraining';
 import './TrainingScreen.css';
@@ -36,7 +37,7 @@ const SUB_SCENARIOS: Record<TrainingScenario, SubScenario[]> = {
     { id: 'po-hard',   label: 'Cheaper Competitor', difficulty: 'hard',   description: '"Your competitor is 40% cheaper."',               prompt: 'The prospect is actively comparing you to a named competitor who charges significantly less. They want a price match or a compelling reason to pay more.' },
   ],
   'not-interested': [
-    { id: 'ni-easy',   label: 'Bad Timing',  difficulty: 'easy',   description: '"It\'s just not the right time."',         prompt: 'The prospect says it\'s not the right time, but is vague about why. They\'re not hostile — they\'re just not ready.' },
+    { id: 'ni-easy',   label: 'Bad Timing',  difficulty: 'easy',   description: '"It\'s just not the right time."',         prompt: 'The prospect says it\'s not the right time, but is vague about why. They\'re not hostile - they\'re just not ready.' },
     { id: 'ni-medium', label: 'Status Quo',  difficulty: 'medium', description: '"We\'re happy with what we have."',         prompt: 'The prospect is comfortable with their current solution and sees no reason to change. They\'re politely dismissive.' },
     { id: 'ni-hard',   label: 'Hard No',     difficulty: 'hard',   description: '"Don\'t call me again."',                   prompt: 'The prospect is immediately hostile and wants to end the call. They\'ve heard pitches like this before and are actively trying to hang up.' },
   ],
@@ -53,7 +54,7 @@ const SUB_SCENARIOS: Record<TrainingScenario, SubScenario[]> = {
   'cold-opener': [
     { id: 'co-easy',   label: 'Open Listener',  difficulty: 'easy',   description: '"I have a minute. What\'s this about?"',  prompt: 'The prospect is reasonably open. They\'re busy but willing to hear the rep out for a minute if it sounds relevant.' },
     { id: 'co-medium', label: 'Skeptical Pro',  difficulty: 'medium', description: '"Who is this? Make it quick."',            prompt: 'The prospect is professional but skeptical of cold calls. They give the rep 30 seconds to prove relevance before cutting them off.' },
-    { id: 'co-hard',   label: 'Ten Seconds',    difficulty: 'hard',   description: '"You have 10 seconds. Go."',               prompt: 'The prospect gets dozens of cold calls. They\'re immediately defensive and give the rep a very short window — if the opener doesn\'t hook them instantly, they\'re gone.' },
+    { id: 'co-hard',   label: 'Ten Seconds',    difficulty: 'hard',   description: '"You have 10 seconds. Go."',               prompt: 'The prospect gets dozens of cold calls. They\'re immediately defensive and give the rep a very short window - if the opener doesn\'t hook them instantly, they\'re gone.' },
   ],
   'discovery': [
     { id: 'di-easy',   label: 'Opens Up',   difficulty: 'easy',   description: '"Actually, we do have some issues."',    prompt: 'The prospect has real pain they\'re willing to discuss. They just needed someone to ask the right question. They\'re forthcoming.' },
@@ -73,40 +74,18 @@ const SUB_SCENARIOS: Record<TrainingScenario, SubScenario[]> = {
 };
 
 export function TrainingScreen({ onBack }: TrainingScreenProps) {
+  const { user } = useAuth();
   const { state, startScenario, confirmContext, sendResponse, endSession, reset } = useTraining();
+  const [mode, setMode] = useState<'practice' | 'academy'>('practice');
   const [input, setInput] = useState('');
   const [contextInput, setContextInput] = useState('');
   const [selectedSub, setSelectedSub] = useState<SubScenario | null>(null);
   const [language, setLanguage] = useState('en-US');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { isListening, interimText, errorMessage: voiceError, startListening, stopListening } = useSpeechRecognition({
-    onFinalTranscript: (text) => {
-      if (!state.isLoading) {
-        void sendResponse(text);
-      }
-    },
-    language: state.language,
-  });
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [state.messages]);
-
-  // Stop listening when leaving active phase
-  useEffect(() => {
-    if (state.phase !== 'active') {
-      stopListening();
-    }
-  }, [state.phase, stopListening]);
-
-  // Auto-start mic when session becomes active
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (state.phase === 'active') {
-      void startListening();
-    }
-  }, [state.phase]);
 
   function handleSend() {
     const text = input.trim();
@@ -122,30 +101,58 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
     }
   }
 
-  function handleMicClick() {
-    if (isListening) {
-      stopListening();
-    } else {
-      void startListening();
-    }
+  const scoredMessages = state.messages.filter(m => m.role === 'rep' && m.feedback);
+
+  // ── Academy Mode ────────────────────────────────────────────────────────────
+  if (mode === 'academy') {
+    return (
+      <div className="training">
+        <div className="training__mode-tabs">
+          <button
+            className="training__mode-tab"
+            onClick={() => { setMode('practice'); reset(); }}
+          >
+            ⊞ Practice Scenarios
+          </button>
+          <button className="training__mode-tab training__mode-tab--active">
+            ◈ Academy
+          </button>
+        </div>
+        <AcademySection user={user} />
+      </div>
+    );
   }
 
-  const scoredMessages = state.messages.filter(m => m.role === 'rep' && m.feedback);
+  // ── Mode Tabs (shown in selection phase) ────────────────────────────────────
+  const modeTabs = state.phase === 'selection' ? (
+    <div className="training__mode-tabs">
+      <button className="training__mode-tab training__mode-tab--active">
+        ⊞ Practice Scenarios
+      </button>
+      <button
+        className="training__mode-tab"
+        onClick={() => setMode('academy')}
+      >
+        ◈ Academy
+      </button>
+    </div>
+  ) : null;
 
   // ── Summary Screen ──────────────────────────────────────────────────────────
   if (state.phase === 'summary') {
     const score = state.overallScore ?? 0;
-    const allPros = scoredMessages.flatMap(m => m.feedback?.pros ?? []);
-    const allCons = scoredMessages.flatMap(m => m.feedback?.cons ?? []);
+    const { summary } = state;
 
     return (
       <div className="training">
         <main className="training__main">
           <div className="training__summary">
             <div className="training__summary-header">
-              <h2 className="training__summary-title">Session Complete</h2>
+              <h2 className="training__summary-title">
+                {summary ? summary.headline : 'Session Complete'}
+              </h2>
               <p className="training__summary-sub">
-                {SCENARIOS.find(s => s.id === state.scenario)?.label ?? 'Training'} — {scoredMessages.length} exchange{scoredMessages.length !== 1 ? 's' : ''} scored
+                {SCENARIOS.find(s => s.id === state.scenario)?.label ?? 'Training'} - {scoredMessages.length} exchange{scoredMessages.length !== 1 ? 's' : ''} scored
               </p>
             </div>
 
@@ -154,25 +161,37 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
               <div className="training__score-bar">
                 <div className="training__score-fill" style={{ width: `${score * 10}%`, backgroundColor: score >= 7 ? 'var(--color-accent-green)' : score >= 5 ? 'var(--color-accent-yellow)' : 'var(--color-accent-red)' }} />
               </div>
-              <div className="training__score-label">
-                {score >= 8 ? 'Excellent — keep it up' : score >= 6 ? 'Good — a few things to sharpen' : score >= 4 ? 'Needs work — study the ideal responses' : 'Keep practicing — this takes reps'}
-              </div>
             </div>
 
-            <div className="training__summary-sections">
-              {allPros.length > 0 && (
-                <div className="training__summary-section training__summary-section--pros">
-                  <div className="training__summary-section-title">✓ What you did well</div>
-                  <ul>{allPros.slice(0, 4).map((p, i) => <li key={i}>{p}</li>)}</ul>
+            {state.isLoading && (
+              <div className="training__summary-loading">Generating your coaching report...</div>
+            )}
+
+            {summary && (
+              <>
+                <div className="training__summary-assessment">{summary.assessment}</div>
+
+                <div className="training__summary-sections">
+                  {summary.strengths.length > 0 && (
+                    <div className="training__summary-section training__summary-section--pros">
+                      <div className="training__summary-section-title">✓ What you did well</div>
+                      <ul>{summary.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                    </div>
+                  )}
+                  {summary.improvements.length > 0 && (
+                    <div className="training__summary-section training__summary-section--cons">
+                      <div className="training__summary-section-title">✗ What to work on</div>
+                      <ul>{summary.improvements.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                    </div>
+                  )}
                 </div>
-              )}
-              {allCons.length > 0 && (
-                <div className="training__summary-section training__summary-section--cons">
-                  <div className="training__summary-section-title">✗ Areas to improve</div>
-                  <ul>{allCons.slice(0, 4).map((c, i) => <li key={i}>{c}</li>)}</ul>
+
+                <div className="training__summary-takeaway">
+                  <div className="training__summary-takeaway-label">KEY TAKEAWAY</div>
+                  <div className="training__summary-takeaway-text">{summary.keyTakeaway}</div>
                 </div>
-              )}
-            </div>
+              </>
+            )}
 
             <div className="training__summary-actions">
               <button className="training__btn training__btn--primary" onClick={reset}>Practice Again</button>
@@ -323,23 +342,10 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
           </div>
 
           <div className="training__input-bar">
-            {(isListening || interimText) && (
-              <div className="training__interim">{interimText || '…listening'}</div>
-            )}
-
-            <button
-              className={`training__mic-btn ${isListening ? 'training__mic-btn--active' : ''}`}
-              onClick={handleMicClick}
-              disabled={state.isLoading}
-              title={isListening ? 'Pause mic' : 'Resume mic'}
-            >
-              🎤
-            </button>
-
             <div className="training__text-row">
               <textarea
                 className="training__input"
-                placeholder="Or type your response..."
+                placeholder="Type your response..."
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -354,8 +360,6 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                 SEND
               </button>
             </div>
-
-            {voiceError && <div className="training__error">{voiceError}</div>}
           </div>
         </main>
       </div>
@@ -365,6 +369,7 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
   // ── Scenario Selection ──────────────────────────────────────────────────────
   return (
     <div className="training">
+      {modeTabs}
       <main className="training__main">
         <div className="training__selection">
           <div className="training__selection-header">
