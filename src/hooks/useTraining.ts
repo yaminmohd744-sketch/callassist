@@ -25,12 +25,16 @@ function genId(): string {
   return crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
 }
 
-export type TrainingPhase = 'selection' | 'active' | 'summary';
+export type TrainingPhase = 'selection' | 'context' | 'active' | 'summary';
+export type TrainingDifficulty = 'easy' | 'medium' | 'hard';
 
 export interface TrainingState {
   phase: TrainingPhase;
   scenario: TrainingScenario | null;
   scenarioDescription: string;
+  saleContext: string;
+  subScenarioContext: string;
+  difficulty: TrainingDifficulty;
   messages: TrainingMessage[];
   overallScore: number | null;
   isLoading: boolean;
@@ -42,6 +46,9 @@ const initialState: TrainingState = {
   phase: 'selection',
   scenario: null,
   scenarioDescription: '',
+  saleContext: '',
+  subScenarioContext: '',
+  difficulty: 'medium',
   messages: [],
   overallScore: null,
   isLoading: false,
@@ -54,8 +61,13 @@ export function useTraining() {
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  const startScenario = useCallback(async (scenario: TrainingScenario, language = 'en-US') => {
-    setState(s => ({ ...s, isLoading: true, error: null }));
+  const startScenario = useCallback((scenario: TrainingScenario, language = 'en-US') => {
+    setState(s => ({ ...s, phase: 'context', scenario, language, error: null }));
+  }, []);
+
+  const confirmContext = useCallback(async (saleContext: string, difficulty: TrainingDifficulty, subScenarioContext: string) => {
+    const { scenario, language } = stateRef.current;
+    setState(s => ({ ...s, isLoading: true, error: null, saleContext, difficulty, subScenarioContext }));
     try {
       const data = await callFunction('training-prospect', {
         scenario,
@@ -63,6 +75,9 @@ export function useTraining() {
         messages: [],
         userResponse: null,
         language,
+        saleContext,
+        difficulty,
+        subScenarioContext,
       }) as { scenarioDescription: string; openingLine: string };
 
       const openingMessage: TrainingMessage = {
@@ -75,19 +90,26 @@ export function useTraining() {
         phase: 'active',
         scenario,
         scenarioDescription: data.scenarioDescription,
+        saleContext,
+        subScenarioContext,
+        difficulty,
         messages: [openingMessage],
         overallScore: null,
         isLoading: false,
         error: null,
         language,
       });
-    } catch {
-      setState(s => ({ ...s, isLoading: false, error: 'Failed to start scenario. Check your connection.' }));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const display = msg.includes('quota') ? 'OpenAI quota exceeded — add credits at platform.openai.com'
+        : msg.includes('401') ? 'Auth error — check your API key'
+        : 'Failed to start scenario. Check your connection.';
+      setState(s => ({ ...s, isLoading: false, error: display }));
     }
   }, []);
 
   const sendResponse = useCallback(async (userText: string) => {
-    const { scenario, scenarioDescription, messages, language } = stateRef.current;
+    const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, language } = stateRef.current;
 
     const repMessage: TrainingMessage = { id: genId(), role: 'rep', text: userText };
     const messagesWithRep = [...messages, repMessage];
@@ -99,6 +121,9 @@ export function useTraining() {
         callFunction('training-feedback', {
           scenario,
           scenarioDescription,
+          saleContext,
+          subScenarioContext,
+          difficulty,
           messages,
           userResponse: userText,
           language,
@@ -106,6 +131,9 @@ export function useTraining() {
         callFunction('training-prospect', {
           scenario,
           scenarioDescription,
+          saleContext,
+          subScenarioContext,
+          difficulty,
           messages: messagesWithRep,
           userResponse: userText,
           language,
@@ -128,8 +156,11 @@ export function useTraining() {
         ],
         isLoading: false,
       }));
-    } catch {
-      setState(s => ({ ...s, isLoading: false, error: 'Failed to get response. Try again.' }));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const display = msg.includes('quota') ? 'OpenAI quota exceeded — add credits at platform.openai.com'
+        : 'Failed to get response. Try again.';
+      setState(s => ({ ...s, isLoading: false, error: display }));
     }
   }, []);
 
@@ -147,5 +178,5 @@ export function useTraining() {
 
   const reset = useCallback(() => setState(initialState), []);
 
-  return { state, startScenario, sendResponse, endSession, reset };
+  return { state, startScenario, confirmContext, sendResponse, endSession, reset };
 }

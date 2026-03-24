@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { scenario, scenarioDescription, messages, userResponse, language } = await req.json();
+    const { scenario, scenarioDescription, saleContext, difficulty, messages, userResponse, language } = await req.json();
 
     const langNote = language && language !== 'en-US'
       ? `\n\nIMPORTANT: All feedback, pros, cons, idealResponse, and idealReason MUST be written in the language for BCP 47 code "${language}".`
@@ -23,19 +23,29 @@ Deno.serve(async (req: Request) => {
       .map((m) => `${m.role === 'rep' ? 'REP' : 'PROSPECT'}: ${m.text}`)
       .join("\n");
 
+    const saleNote = saleContext
+      ? `\nWhat the rep is selling: ${saleContext}`
+      : '';
+
+    const difficultyNote = difficulty === 'easy'
+      ? '\n\nDifficulty: EASY — Be encouraging. Score generously (a decent response should get 6-7). Focus on what they did well and keep cons constructive.'
+      : difficulty === 'hard'
+      ? '\n\nDifficulty: HARD — Be strict. Hold them to a very high standard. A good-but-not-great response scores 5-6. Only give 8+ for genuinely excellent responses. Point out even minor missed opportunities.'
+      : '';
+
     const systemPrompt = `You are a world-class sales trainer with decades of experience coaching top closers.
 
 A sales rep is practicing a training simulation. Analyze their latest response and give them precise, honest, actionable feedback.
 
 Scenario: ${scenario}
-Prospect persona: ${scenarioDescription}
+Prospect persona: ${scenarioDescription}${saleNote}
 
 Conversation so far:
 ${conversationSoFar}
 
 REP JUST SAID: "${userResponse}"
 
-Evaluate this response as a sales trainer. Be honest — not harsh, not soft. Give real feedback that makes them better.
+Evaluate this response as a sales trainer. Be honest — not harsh, not soft. Give real feedback that makes them better. Reference the specific product/deal when relevant.
 
 Respond ONLY with valid JSON:
 {
@@ -50,7 +60,7 @@ Respond ONLY with valid JSON:
 - "pros": 1-2 specific things they did well (be concrete, not generic). Empty array if nothing good.
 - "cons": 1-2 specific things they did wrong or missed (be concrete). Empty array if response was excellent.
 - "idealResponse": The exact words a top closer would say in this situation (natural, first-person, under 50 words)
-- "idealReason": 1-2 sentences explaining WHY that response works — the psychology or sales principle behind it${langNote}`;
+- "idealReason": 1-2 sentences explaining WHY that response works — the psychology or sales principle behind it${difficultyNote}${langNote}`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

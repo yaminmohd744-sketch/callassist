@@ -7,6 +7,7 @@ import { PostCallScreen }  from './screens/PostCallScreen';
 import { TrainingScreen }  from './screens/TrainingScreen';
 import { AuthScreen }      from './screens/AuthScreen';
 import { ThemeToggle }     from './components/ThemeToggle';
+import { AppShell }        from './components/layout/AppShell';
 import { useAuth }         from './hooks/useAuth';
 import './screens/AuthScreen.css';
 import { supabase }        from './lib/supabase';
@@ -149,22 +150,33 @@ export function App() {
     );
   }
 
+  const isShell = screen === 'dashboard' || screen === 'training';
+
   return (
     <>
       <ThemeToggle theme={theme} onToggle={toggleTheme} />
-      {screen === 'dashboard' && (
-        <DashboardScreen
-          pastSessions={pastSessions}
+
+      {isShell && (
+        <AppShell
+          activeScreen={screen as 'dashboard' | 'training'}
+          onNavigate={s => setScreen(s)}
           onStartCall={() => setScreen('pre-call')}
-          onTraining={() => setScreen('training')}
-          onViewSession={handleViewSession}
-          onDeleteSession={handleDeleteSession}
           onSignOut={() => supabase.auth.signOut()}
-        />
+        >
+          {screen === 'dashboard' && (
+            <DashboardScreen
+              pastSessions={pastSessions}
+              onStartCall={() => setScreen('pre-call')}
+              onViewSession={handleViewSession}
+              onDeleteSession={handleDeleteSession}
+            />
+          )}
+          {screen === 'training' && (
+            <TrainingScreen onBack={() => setScreen('dashboard')} />
+          )}
+        </AppShell>
       )}
-      {screen === 'training' && (
-        <TrainingScreen onBack={() => setScreen('dashboard')} />
-      )}
+
       {screen === 'pre-call' && (
         <PreCallScreen
           onStartCall={handleStartCall}

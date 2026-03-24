@@ -74,13 +74,11 @@ function deriveContacts(sessions: CallSession[]): DerivedContact[] {
 interface DashboardScreenProps {
   pastSessions: CallSession[];
   onStartCall: () => void;
-  onTraining: () => void;
   onViewSession: (session: CallSession) => void;
   onDeleteSession: (endedAt: string) => void;
-  onSignOut: () => void;
 }
 
-export function DashboardScreen({ pastSessions, onStartCall, onTraining, onViewSession, onDeleteSession, onSignOut }: DashboardScreenProps) {
+export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDeleteSession }: DashboardScreenProps) {
   const [activeView, setActiveView] = useState<'dashboard' | 'contacts'>('dashboard');
   const [contactSearch, setContactSearch] = useState('');
   const [selectedContact, setSelectedContact] = useState<DerivedContact | null>(null);
@@ -112,34 +110,21 @@ export function DashboardScreen({ pastSessions, onStartCall, onTraining, onViewS
 
   return (
     <div className="dashboard">
-      {/* Sidebar */}
-      <aside className="dashboard__sidebar">
-        <div className="dashboard__logo">◎ CALL<span>ASSIST</span></div>
-
-        <nav className="dashboard__nav">
-          <div className={`dashboard__nav-item ${activeView === 'dashboard' ? 'dashboard__nav-item--active' : ''}`} onClick={() => { setActiveView('dashboard'); setSelectedContact(null); }}>
-            <span className="dashboard__nav-icon">⊞</span>
-            Dashboard
-          </div>
-          <div className={`dashboard__nav-item ${activeView === 'contacts' ? 'dashboard__nav-item--active' : ''}`} onClick={() => { setActiveView('contacts'); setSelectedContact(null); }}>
-            <span className="dashboard__nav-icon">◉</span>
-            Contacts
-          </div>
-          <div className="dashboard__nav-item" onClick={onStartCall}>
-            <span className="dashboard__nav-icon">▶</span>
-            New Call
-          </div>
-          <div className="dashboard__nav-item" onClick={onTraining}>
-            <span className="dashboard__nav-icon">◈</span>
-            Training
-          </div>
-        </nav>
-
-        <div className="dashboard__sidebar-footer">
-          <div className="dashboard__version">v1.0 MVP</div>
-          <button className="dashboard__signout" onClick={onSignOut}>Sign out</button>
-        </div>
-      </aside>
+      {/* ── Internal tab bar ── */}
+      <nav className="dashboard__tabnav">
+        <button
+          className={`dashboard__tab ${activeView === 'dashboard' ? 'dashboard__tab--active' : ''}`}
+          onClick={() => { setActiveView('dashboard'); setSelectedContact(null); }}
+        >
+          <span className="dashboard__tab-icon">⊞</span>Overview
+        </button>
+        <button
+          className={`dashboard__tab ${activeView === 'contacts' ? 'dashboard__tab--active' : ''}`}
+          onClick={() => { setActiveView('contacts'); setSelectedContact(null); }}
+        >
+          <span className="dashboard__tab-icon">◉</span>Contacts
+        </button>
+      </nav>
 
       {/* ── Dashboard view ── */}
       {activeView === 'dashboard' && (

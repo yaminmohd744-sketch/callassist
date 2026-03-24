@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTraining } from '../hooks/useTraining';
+import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { TrainingScenario } from '../types';
+import type { TrainingDifficulty } from '../hooks/useTraining';
 import './TrainingScreen.css';
 
 interface TrainingScreenProps {
@@ -20,14 +22,32 @@ const SCENARIOS: { id: TrainingScenario; label: string; description: string }[] 
 ];
 
 export function TrainingScreen({ onBack }: TrainingScreenProps) {
-  const { state, startScenario, sendResponse, endSession, reset } = useTraining();
+  const { state, startScenario, confirmContext, sendResponse, endSession, reset } = useTraining();
   const [input, setInput] = useState('');
+  const [contextInput, setContextInput] = useState('');
+  const [difficulty, setDifficulty] = useState<TrainingDifficulty>('medium');
   const [language, setLanguage] = useState('en-US');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { isListening, interimText, errorMessage: voiceError, startListening, stopListening } = useSpeechRecognition({
+    onFinalTranscript: (text) => {
+      if (!state.isLoading) {
+        void sendResponse(text);
+      }
+    },
+    language: state.language,
+  });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [state.messages]);
+
+  // Stop listening when session ends
+  useEffect(() => {
+    if (state.phase !== 'active') {
+      stopListening();
+    }
+  }, [state.phase, stopListening]);
 
   function handleSend() {
     const text = input.trim();
@@ -43,6 +63,14 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
     }
   }
 
+  function handleMicClick() {
+    if (isListening) {
+      stopListening();
+    } else {
+      void startListening();
+    }
+  }
+
   const scoredMessages = state.messages.filter(m => m.role === 'rep' && m.feedback);
 
   // ── Summary Screen ──────────────────────────────────────────────────────────
@@ -53,18 +81,6 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
 
     return (
       <div className="training">
-        <aside className="training__sidebar">
-          <div className="training__logo">◎ CALL<span>ASSIST</span></div>
-          <nav className="training__nav">
-            <div className="training__nav-item" onClick={onBack}>
-              <span className="training__nav-icon">⊞</span>Dashboard
-            </div>
-            <div className="training__nav-item training__nav-item--active">
-              <span className="training__nav-icon">◈</span>Training
-            </div>
-          </nav>
-        </aside>
-
         <main className="training__main">
           <div className="training__summary">
             <div className="training__summary-header">
@@ -109,29 +125,84 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
     );
   }
 
+  // ── Context Screen ──────────────────────────────────────────────────────────
+  if (state.phase === 'context') {
+    return (
+      <div className="training">
+        <main className="training__main">
+          <div className="training__context">
+            <div className="training__context-header">
+              <span className="training__context-scenario-label">SCENARIO</span>
+              <span className="training__context-scenario-name">
+                {SCENARIOS.find(s => s.id === state.scenario)?.label}
+              </span>
+            </div>
+
+            <h2 className="training__context-title">What are you selling?</h2>
+            <p className="training__context-sub">
+              Give the AI context so it can simulate a realistic prospect for your industry.
+            </p>
+
+            <div className="training__diff-row">
+              <div className="training__diff-label">DIFFICULTY</div>
+              <div className="training__diff-btns">
+                {(['easy', 'medium', 'hard'] as const).map(d => (
+                  <button
+                    key={d}
+                    className={`training__diff-btn training__diff-btn--${d} ${difficulty === d ? 'training__diff-btn--active' : ''}`}
+                    onClick={() => setDifficulty(d)}
+                  >
+                    {d.charAt(0).toUpperCase() + d.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <textarea
+              className="training__context-input"
+              placeholder="e.g. a $485k 3-bedroom house in Miami, FL"
+              value={contextInput}
+              onChange={e => setContextInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void confirmContext(contextInput.trim() || 'my product/service', difficulty); } }}
+              rows={3}
+              autoFocus
+            />
+
+            {state.error && <div className="training__error">{state.error}</div>}
+
+            <div className="training__context-actions">
+              <button
+                className="training__btn training__btn--primary"
+                onClick={() => void confirmContext(contextInput.trim() || 'my product/service', difficulty)}
+                disabled={state.isLoading}
+              >
+                {state.isLoading ? 'Setting up...' : 'Start Training →'}
+              </button>
+              <button className="training__btn training__btn--ghost" onClick={reset}>
+                Back
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // ── Active Session ──────────────────────────────────────────────────────────
   if (state.phase === 'active') {
     return (
       <div className="training">
-        <aside className="training__sidebar">
-          <div className="training__logo">◎ CALL<span>ASSIST</span></div>
-          <nav className="training__nav">
-            <div className="training__nav-item" onClick={onBack}>
-              <span className="training__nav-icon">⊞</span>Dashboard
-            </div>
-            <div className="training__nav-item training__nav-item--active">
-              <span className="training__nav-icon">◈</span>Training
-            </div>
-          </nav>
-          <div className="training__sidebar-info">
-            <div className="training__sidebar-label">SCENARIO</div>
-            <div className="training__sidebar-value">{SCENARIOS.find(s => s.id === state.scenario)?.label}</div>
-            <div className="training__sidebar-desc">{state.scenarioDescription}</div>
-          </div>
-          <button className="training__end-btn" onClick={endSession}>End Session</button>
-        </aside>
-
         <main className="training__main training__main--active">
+          <div className="training__session-header">
+            <div className="training__session-info">
+              <span className="training__session-label">SCENARIO</span>
+              <span className="training__session-name">{SCENARIOS.find(s => s.id === state.scenario)?.label}</span>
+              <span className={`training__diff-badge training__diff-badge--${state.difficulty}`}>
+                {state.difficulty.toUpperCase()}
+              </span>
+            </div>
+            <button className="training__end-btn" onClick={endSession}>End Session</button>
+          </div>
           <div className="training__messages">
             {state.messages.map(msg => (
               <div key={msg.id} className={`training__msg training__msg--${msg.role}`}>
@@ -180,22 +251,39 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
           </div>
 
           <div className="training__input-bar">
-            <textarea
-              className="training__input"
-              placeholder="Type your response..."
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              rows={2}
-              disabled={state.isLoading}
-            />
+            {(isListening || interimText) && (
+              <div className="training__interim">{interimText || '…listening'}</div>
+            )}
+
             <button
-              className="training__send-btn"
-              onClick={handleSend}
-              disabled={state.isLoading || !input.trim()}
+              className={`training__mic-btn ${isListening ? 'training__mic-btn--active' : ''}`}
+              onClick={handleMicClick}
+              disabled={state.isLoading}
+              title={isListening ? 'Stop recording' : 'Speak your response'}
             >
-              SEND
+              🎤
             </button>
+
+            <div className="training__text-row">
+              <textarea
+                className="training__input"
+                placeholder="Or type your response..."
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                rows={2}
+                disabled={state.isLoading}
+              />
+              <button
+                className="training__send-btn"
+                onClick={handleSend}
+                disabled={state.isLoading || !input.trim()}
+              >
+                SEND
+              </button>
+            </div>
+
+            {voiceError && <div className="training__error">{voiceError}</div>}
           </div>
         </main>
       </div>
@@ -205,18 +293,6 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
   // ── Scenario Selection ──────────────────────────────────────────────────────
   return (
     <div className="training">
-      <aside className="training__sidebar">
-        <div className="training__logo">◎ CALL<span>ASSIST</span></div>
-        <nav className="training__nav">
-          <div className="training__nav-item" onClick={onBack}>
-            <span className="training__nav-icon">⊞</span>Dashboard
-          </div>
-          <div className="training__nav-item training__nav-item--active">
-            <span className="training__nav-icon">◈</span>Training
-          </div>
-        </nav>
-      </aside>
-
       <main className="training__main">
         <div className="training__selection">
           <div className="training__selection-header">
@@ -247,7 +323,7 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
               <button
                 key={s.id}
                 className={`training__scenario-card ${s.id === 'random' ? 'training__scenario-card--random' : ''}`}
-                onClick={() => void startScenario(s.id, language)}
+                onClick={() => { startScenario(s.id, language); setContextInput(''); setDifficulty('medium'); }}
                 disabled={state.isLoading}
               >
                 <div className="training__scenario-label">{s.label}</div>
