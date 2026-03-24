@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { LandingScreen }   from './screens/LandingScreen';
-import { DashboardScreen } from './screens/DashboardScreen';
-import { PreCallScreen }   from './screens/PreCallScreen';
-import { LiveCallScreen }  from './screens/LiveCallScreen';
-import { PostCallScreen }  from './screens/PostCallScreen';
-import { TrainingScreen }  from './screens/TrainingScreen';
-import { AuthScreen }      from './screens/AuthScreen';
+import { LandingScreen }    from './screens/LandingScreen';
+import { DashboardScreen }  from './screens/DashboardScreen';
+import { PreCallScreen }    from './screens/PreCallScreen';
+import { LiveCallScreen }   from './screens/LiveCallScreen';
+import { PostCallScreen }   from './screens/PostCallScreen';
+import { TrainingScreen }   from './screens/TrainingScreen';
+import { AnalyticsScreen }  from './screens/AnalyticsScreen';
+import { UploadCallScreen } from './screens/UploadCallScreen';
+import { AuthScreen }       from './screens/AuthScreen';
 import { ThemeToggle }     from './components/ThemeToggle';
 import { AppShell }        from './components/layout/AppShell';
 import { useAuth }         from './hooks/useAuth';
@@ -17,7 +19,7 @@ import type { CallConfig, CallSession, CallStage, TranscriptEntry, AISuggestion 
 const _savedTheme = localStorage.getItem('theme');
 if (_savedTheme === 'light') document.documentElement.dataset.theme = 'light';
 
-type Screen = 'landing' | 'auth' | 'dashboard' | 'training' | 'pre-call' | 'live-call' | 'post-call';
+type Screen = 'landing' | 'auth' | 'dashboard' | 'training' | 'analytics' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
 
 // ─── DB row ↔ CallSession helpers ────────────────────────────────────────────
 
@@ -36,6 +38,7 @@ function rowToSession(row: DbRow): CallSession {
     aiSummary:             row.ai_summary          as string,
     followUpEmail:         row.follow_up_email     as string,
     leadScore:             row.lead_score          as number,
+    notes:                 (row.notes              as string[] | null) ?? [],
   };
 }
 
@@ -53,6 +56,7 @@ function sessionToRow(s: CallSession, userId: string) {
     ai_summary:       s.aiSummary,
     follow_up_email:  s.followUpEmail,
     lead_score:       s.leadScore,
+    notes:            s.notes,
   };
 }
 
@@ -150,7 +154,7 @@ export function App() {
     );
   }
 
-  const isShell = screen === 'dashboard' || screen === 'training';
+  const isShell = screen === 'dashboard' || screen === 'training' || screen === 'analytics';
 
   return (
     <>
@@ -158,21 +162,26 @@ export function App() {
 
       {isShell && (
         <AppShell
-          activeScreen={screen as 'dashboard' | 'training'}
+          activeScreen={screen as 'dashboard' | 'training' | 'analytics'}
           onNavigate={s => setScreen(s)}
           onStartCall={() => setScreen('pre-call')}
+          onUploadCall={() => setScreen('upload-call')}
           onSignOut={() => supabase.auth.signOut()}
         >
           {screen === 'dashboard' && (
             <DashboardScreen
               pastSessions={pastSessions}
               onStartCall={() => setScreen('pre-call')}
+              onUploadCall={() => setScreen('upload-call')}
               onViewSession={handleViewSession}
               onDeleteSession={handleDeleteSession}
             />
           )}
           {screen === 'training' && (
             <TrainingScreen onBack={() => setScreen('dashboard')} />
+          )}
+          {screen === 'analytics' && (
+            <AnalyticsScreen pastSessions={pastSessions} user={user} />
           )}
         </AppShell>
       )}
@@ -185,6 +194,12 @@ export function App() {
       )}
       {screen === 'live-call' && callConfig && (
         <LiveCallScreen config={callConfig} onEndCall={handleEndCall} />
+      )}
+      {screen === 'upload-call' && (
+        <UploadCallScreen
+          onEndCall={handleEndCall}
+          onBack={() => setScreen('dashboard')}
+        />
       )}
       {screen === 'post-call' && callSession && (
         <PostCallScreen

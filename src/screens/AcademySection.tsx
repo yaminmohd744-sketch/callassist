@@ -5,6 +5,8 @@ import { useTraining } from '../hooks/useTraining';
 import { CURRICULUM, ALL_LESSONS } from '../lib/curriculum';
 import type { CurriculumLesson, CurriculumModule } from '../lib/curriculum';
 import type { TrainingScenario } from '../types';
+import { getSavedContexts, saveContext } from '../lib/saleContexts';
+import { recordPracticeToday, getStreak } from '../lib/streak';
 import './AcademySection.css';
 
 // Sub-scenario prompts per scenario - indexed to match SUB_SCENARIOS in TrainingScreen
@@ -49,6 +51,7 @@ const SUB_PROMPTS: Record<TrainingScenario, string[]> = {
     'Generate a surprising but realistic sales situation with a moderately resistant prospect.',
     'Generate a surprising but highly challenging sales situation with a very resistant prospect.',
   ],
+  'custom': [],
 };
 
 interface AcademySectionProps {
@@ -69,6 +72,7 @@ export function AcademySection({ user }: AcademySectionProps) {
   const [saleContext, setSaleContext] = useState('');
   const [saved, setSaved] = useState(false);
   const [input, setInput] = useState('');
+  const [showTranscript, setShowTranscript] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -85,7 +89,9 @@ export function AcademySection({ user }: AcademySectionProps) {
       activeLesson
     ) {
       setSaved(true);
+      recordPracticeToday();
       void saveSession(activeLesson.id, trainingState.overallScore);
+      setShowTranscript(false);
       setPhase('results');
     }
   }, [phase, trainingState.phase, trainingState.overallScore, saved, activeLesson, saveSession]);
@@ -103,6 +109,7 @@ export function AcademySection({ user }: AcademySectionProps) {
   async function handleStartPractice() {
     if (!activeLesson) return;
     const subPrompt = SUB_PROMPTS[activeLesson.scenario][activeLesson.subScenarioIndex] ?? '';
+    saveContext(saleContext.trim());
     startScenario(activeLesson.scenario, 'en-US');
     await confirmContext(saleContext || 'my product/service', activeLesson.difficulty, subPrompt);
     setPhase('practice');
@@ -146,6 +153,7 @@ export function AcademySection({ user }: AcademySectionProps) {
     const { attempted, avgScore, totalSessions } = getOverallStats();
     const pct = Math.round((attempted / TOTAL_LESSONS) * 100);
 
+    const streak = getStreak();
     return (
       <div className="academy">
         <div className="academy__stats">
@@ -164,6 +172,12 @@ export function AcademySection({ user }: AcademySectionProps) {
                 {avgScore > 0 ? `${avgScore}/10` : '-'}
               </div>
               <div className="academy__stat-label">AVG SCORE</div>
+            </div>
+            <div className="academy__stat">
+              <div className="academy__stat-val" style={{ color: streak > 0 ? 'var(--color-accent-cyan)' : undefined }}>
+                {streak > 0 ? streak : '-'}
+              </div>
+              <div className="academy__stat-label">DAY STREAK</div>
             </div>
           </div>
           <div className="academy__progress-wrap">
@@ -209,6 +223,8 @@ export function AcademySection({ user }: AcademySectionProps) {
                           <span className="academy__lesson-status">
                             {stats?.mastered ? '✓' : attempted ? '◈' : '○'}
                           </span>
+
+                          {stats?.needsWork && <span className="academy__needs-work">NEEDS WORK</span>}
 
                           <div className="academy__lesson-info">
                             <div className="academy__lesson-title">{lesson.title}</div>
@@ -286,6 +302,14 @@ export function AcademySection({ user }: AcademySectionProps) {
                 rows={2}
                 autoFocus
               />
+              {getSavedContexts().length > 0 && (
+                <div className="training__presets">
+                  <span className="training__presets-label">RECENT</span>
+                  {getSavedContexts().map((c, i) => (
+                    <button key={i} className="training__preset-btn" onClick={() => setSaleContext(c)}>{c}</button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {trainingState.error && <div className="training__error">{trainingState.error}</div>}
@@ -323,7 +347,7 @@ export function AcademySection({ user }: AcademySectionProps) {
                 {trainingState.difficulty.toUpperCase()}
               </span>
             </div>
-            <button className="academy__end-btn" onClick={endSession}>End Session</button>
+            <button className="academy__end-btn" onClick={() => void endSession()}>End Session</button>
           </div>
 
           <div className="training__messages">
@@ -453,6 +477,51 @@ export function AcademySection({ user }: AcademySectionProps) {
                 <span className="academy__improvement-text">
                   <strong>First attempt logged.</strong> Practice again to track your improvement.
                 </span>
+              </div>
+            )}
+
+            <button
+              className="academy__transcript-toggle"
+              onClick={() => setShowTranscript(v => !v)}
+            >
+              {showTranscript ? 'Hide Conversation ▴' : 'Review Conversation ▾'}
+            </button>
+
+            {showTranscript && (
+              <div className="academy__transcript-review">
+                {trainingState.messages.map(msg => (
+                  <div key={msg.id} className={`training__msg training__msg--${msg.role}`}>
+                    <div className="training__msg-label">{msg.role === 'prospect' ? 'PROSPECT' : 'YOU'}</div>
+                    <div className="training__msg-bubble">{msg.text}</div>
+                    {msg.feedback && (
+                      <div className="training__feedback">
+                        <div className="training__feedback-score">
+                          <span className="training__feedback-score-val" style={{
+                            color: msg.feedback.score >= 7 ? 'var(--color-accent-green)' : msg.feedback.score >= 5 ? 'var(--color-accent-yellow)' : 'var(--color-accent-red)'
+                          }}>
+                            {msg.feedback.score}/10
+                          </span>
+                          <span className="training__feedback-score-label">Score</span>
+                        </div>
+                        {msg.feedback.pros.length > 0 && (
+                          <div className="training__feedback-section training__feedback-section--pro">
+                            {msg.feedback.pros.map((p, i) => <div key={i} className="training__feedback-item">✓ {p}</div>)}
+                          </div>
+                        )}
+                        {msg.feedback.cons.length > 0 && (
+                          <div className="training__feedback-section training__feedback-section--con">
+                            {msg.feedback.cons.map((c, i) => <div key={i} className="training__feedback-item">✗ {c}</div>)}
+                          </div>
+                        )}
+                        <div className="training__feedback-ideal">
+                          <div className="training__feedback-ideal-label">IDEAL RESPONSE</div>
+                          <div className="training__feedback-ideal-text">"{msg.feedback.idealResponse}"</div>
+                          <div className="training__feedback-ideal-reason">{msg.feedback.idealReason}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
 

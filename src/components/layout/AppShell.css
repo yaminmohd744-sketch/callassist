@@ -71,6 +71,12 @@
   text-align: center;
 }
 
+.app-shell__nav-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-2) var(--space-3);
+}
+
 .app-shell__footer {
   padding: var(--space-4) var(--space-5);
   border-top: 1px solid var(--color-border);

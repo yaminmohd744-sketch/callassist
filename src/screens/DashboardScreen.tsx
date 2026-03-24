@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../components/ui/Button';
 import type { CallSession } from '../types';
+import { getStreak } from '../lib/streak';
 import './DashboardScreen.css';
 
 function formatDuration(s: number) {
@@ -23,7 +24,7 @@ function formatDateFull(iso: string) {
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  if (parts.length >= 2 && parts[0] && parts[1]) return (parts[0][0] + parts[1][0]).toUpperCase();
   return name.slice(0, 2).toUpperCase();
 }
 
@@ -74,11 +75,12 @@ function deriveContacts(sessions: CallSession[]): DerivedContact[] {
 interface DashboardScreenProps {
   pastSessions: CallSession[];
   onStartCall: () => void;
+  onUploadCall: () => void;
   onViewSession: (session: CallSession) => void;
   onDeleteSession: (endedAt: string) => void;
 }
 
-export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDeleteSession }: DashboardScreenProps) {
+export function DashboardScreen({ pastSessions, onStartCall, onUploadCall, onViewSession, onDeleteSession }: DashboardScreenProps) {
   const [activeView, setActiveView] = useState<'dashboard' | 'contacts'>('dashboard');
   const [contactSearch, setContactSearch] = useState('');
   const [selectedContact, setSelectedContact] = useState<DerivedContact | null>(null);
@@ -134,9 +136,14 @@ export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDe
               <h1 className="dashboard__title">Dashboard</h1>
               <p className="dashboard__subtitle">Manage and start your cold calls</p>
             </div>
-            <Button variant="primary" size="md" onClick={onStartCall}>
-              ▶ START NEW CALL
-            </Button>
+            <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+              <Button variant="ghost" size="md" onClick={onUploadCall}>
+                ⬆ UPLOAD CALL
+              </Button>
+              <Button variant="primary" size="md" onClick={onStartCall}>
+                ▶ START NEW CALL
+              </Button>
+            </div>
           </div>
 
           {/* Stats row */}
@@ -162,6 +169,12 @@ export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDe
                 {totalCalls ? formatDuration(Math.round(pastSessions.reduce((sum, s) => sum + s.durationSeconds, 0) / totalCalls)) : '-'}
               </div>
               <div className="dashboard__stat-label">AVG DURATION</div>
+            </div>
+            <div className="dashboard__stat-card">
+              <div className={`dashboard__stat-val ${getStreak() > 0 ? 'dashboard__stat-val--high' : ''}`}>
+                {getStreak() > 0 ? `${getStreak()} day${getStreak() !== 1 ? 's' : ''}` : '-'}
+              </div>
+              <div className="dashboard__stat-label">PRACTICE STREAK</div>
             </div>
           </div>
 
@@ -350,6 +363,20 @@ export function DashboardScreen({ pastSessions, onStartCall, onViewSession, onDe
               </div>
               <div className="dashboard__crm-text-card">
                 <pre className="dashboard__crm-pre">{selectedContact.sessions[0].aiSummary}</pre>
+              </div>
+            </div>
+          )}
+
+          {/* Latest call notes */}
+          {selectedContact.sessions[0]?.notes?.length > 0 && (
+            <div className="dashboard__section">
+              <div className="dashboard__section-header">
+                <span className="dashboard__section-title">LATEST CALL NOTES</span>
+              </div>
+              <div className="dashboard__crm-text-card">
+                {selectedContact.sessions[0].notes.map((n, i) => (
+                  <div key={i} className="dashboard__crm-note">{n}</div>
+                ))}
               </div>
             </div>
           )}

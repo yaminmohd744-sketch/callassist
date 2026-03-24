@@ -1,16 +1,17 @@
 import './AppShell.css';
 
-type ShellScreen = 'dashboard' | 'training';
+type ShellScreen = 'dashboard' | 'training' | 'analytics';
 
 interface AppShellProps {
   activeScreen: ShellScreen;
   onNavigate: (screen: ShellScreen) => void;
   onStartCall: () => void;
+  onUploadCall: () => void;
   onSignOut: () => void;
   children: React.ReactNode;
 }
 
-export function AppShell({ activeScreen, onNavigate, onStartCall, onSignOut, children }: AppShellProps) {
+export function AppShell({ activeScreen, onNavigate, onStartCall, onUploadCall, onSignOut, children }: AppShellProps) {
   return (
     <div className="app-shell">
       <aside className="app-shell__sidebar">
@@ -29,8 +30,20 @@ export function AppShell({ activeScreen, onNavigate, onStartCall, onSignOut, chi
           >
             <span className="app-shell__nav-icon">◈</span>Training
           </div>
+          <div
+            className={`app-shell__nav-item ${activeScreen === 'analytics' ? 'app-shell__nav-item--active' : ''}`}
+            onClick={() => onNavigate('analytics')}
+          >
+            <span className="app-shell__nav-icon">▦</span>Analytics
+          </div>
+
+          <div className="app-shell__nav-divider" />
+
           <div className="app-shell__nav-item" onClick={onStartCall}>
             <span className="app-shell__nav-icon">▶</span>New Call
+          </div>
+          <div className="app-shell__nav-item" onClick={onUploadCall}>
+            <span className="app-shell__nav-icon">⬆</span>Upload Call
           </div>
         </nav>
 

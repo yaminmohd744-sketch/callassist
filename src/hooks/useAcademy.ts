@@ -16,6 +16,7 @@ export interface LessonStats {
   allScores: number[];
   improving: boolean;
   mastered: boolean;
+  needsWork: boolean;
 }
 
 export function useAcademy(user: User | null) {
@@ -24,15 +25,18 @@ export function useAcademy(user: User | null) {
 
   useEffect(() => {
     if (!user) { setRecords([]); setLoading(false); return; }
-    supabase
-      .from('academy_progress')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('completed_at', { ascending: false })
-      .then(({ data }) => {
+    void (async () => {
+      try {
+        const { data } = await supabase
+          .from('academy_progress')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('completed_at', { ascending: false });
         setRecords((data ?? []) as AcademyRecord[]);
+      } finally {
         setLoading(false);
-      });
+      }
+    })();
   }, [user]);
 
   const saveSession = useCallback(async (lessonId: string, score: number) => {
@@ -53,6 +57,8 @@ export function useAcademy(user: User | null) {
     const scores = forLesson.map(r => r.score);
     const last3 = scores.slice(0, 3);
     const avg3 = last3.reduce((s, x) => s + x, 0) / last3.length;
+    // scores is newest-first; needsWork = 3+ attempts and latest < 6, or declining over last 3
+    const declining = scores.length >= 3 && scores[0] < scores[1] && scores[1] < scores[2];
     return {
       attempts: scores.length,
       bestScore: Math.max(...scores),
@@ -60,6 +66,7 @@ export function useAcademy(user: User | null) {
       allScores: scores.slice(0, 5).reverse(),
       improving: scores.length >= 2 && scores[0] > scores[scores.length - 1],
       mastered: avg3 >= 7.5,
+      needsWork: scores.length >= 3 && (scores[0] < 6 || declining),
     };
   }
 

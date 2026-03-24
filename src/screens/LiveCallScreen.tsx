@@ -138,6 +138,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const transcriptRef = useRef<TranscriptEntry[]>([]);
   const [callStatus, setCallStatus] = useState<CallStatus>('standby');
   const [manualInput, setManualInput] = useState('');
+  const [notes, setNotes] = useState<string[]>([]);
+  const [noteInput, setNoteInput] = useState('');
+  const [mobilePanel, setMobilePanel] = useState<'transcript' | 'ai' | 'lead'>('transcript');
 
   const { elapsedSeconds, formattedTime, startTimer, stopTimer } = useCallTimer();
   const { suggestions, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion } = useAICoach();
@@ -196,6 +199,15 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     setManualInput('');
   }
 
+  function handleAddNote() {
+    const text = noteInput.trim();
+    if (!text) return;
+    const mins = Math.floor(elapsedSeconds / 60);
+    const secs = String(elapsedSeconds % 60).padStart(2, '0');
+    setNotes(prev => [...prev, `${mins}:${secs} — ${text}`]);
+    setNoteInput('');
+  }
+
   function handleQuickAction(action: QuickAction) {
     addQuickActionSuggestion(action, { prospectName: config.prospectName, callGoal: config.callGoal }, elapsedSeconds);
   }
@@ -223,6 +235,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       aiSummary,
       followUpEmail,
       leadScore,
+      notes,
     };
     onEndCall(session);
   }
@@ -240,7 +253,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         objectionsCount={objectionsCount}
         closeProbability={closeProbability}
       />
-      <div className="live-call__panels">
+      <div className="live-call__panels" data-mobile={mobilePanel}>
         <TranscriptPanel
           entries={transcript}
           isListening={isListening}
@@ -259,7 +272,22 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           closeProbability={closeProbability}
           objectionsCount={objectionsCount}
           onAction={handleQuickAction}
+          notes={notes}
+          noteInput={noteInput}
+          onNoteChange={setNoteInput}
+          onAddNote={handleAddNote}
         />
+      </div>
+      <div className="live-call__mobile-tabs">
+        {(['transcript', 'ai', 'lead'] as const).map(p => (
+          <button
+            key={p}
+            className={`live-call__mobile-tab ${mobilePanel === p ? 'live-call__mobile-tab--active' : ''}`}
+            onClick={() => setMobilePanel(p)}
+          >
+            {p === 'transcript' ? '⊟ TRANSCRIPT' : p === 'ai' ? '◈ AI COACH' : '◉ PROFILE'}
+          </button>
+        ))}
       </div>
     </div>
   );

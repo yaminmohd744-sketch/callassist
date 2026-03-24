@@ -3,6 +3,8 @@ import { useTraining } from '../hooks/useTraining';
 import { useAuth } from '../hooks/useAuth';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import { AcademySection } from './AcademySection';
+import { getSavedContexts, saveContext } from '../lib/saleContexts';
+import { recordPracticeToday } from '../lib/streak';
 import type { TrainingScenario } from '../types';
 import type { TrainingDifficulty } from '../hooks/useTraining';
 import './TrainingScreen.css';
@@ -20,6 +22,7 @@ const SCENARIOS: { id: TrainingScenario; label: string; description: string }[] 
   { id: 'discovery',        label: 'Discovery',             description: 'Uncover pain points and needs' },
   { id: 'closing',          label: 'Closing',               description: 'Push for commitment at the end' },
   { id: 'random',           label: '★ Random Scenario',     description: 'AI generates a surprise situation' },
+  { id: 'custom',           label: '✎ Custom Scenario',     description: 'Describe your own prospect persona' },
 ];
 
 interface SubScenario {
@@ -71,6 +74,7 @@ const SUB_SCENARIOS: Record<TrainingScenario, SubScenario[]> = {
     { id: 'r-medium', label: 'Random Medium', difficulty: 'medium', description: 'AI generates a surprise medium scenario',  prompt: 'Generate a surprising but realistic sales situation with a moderately resistant prospect.' },
     { id: 'r-hard',   label: 'Random Hard',   difficulty: 'hard',   description: 'AI generates a surprise hard scenario',    prompt: 'Generate a surprising but highly challenging sales situation with a very resistant prospect.' },
   ],
+  'custom': [],
 };
 
 export function TrainingScreen({ onBack }: TrainingScreenProps) {
@@ -80,12 +84,18 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
   const [input, setInput] = useState('');
   const [contextInput, setContextInput] = useState('');
   const [selectedSub, setSelectedSub] = useState<SubScenario | null>(null);
+  const [customDesc, setCustomDesc] = useState('');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<TrainingDifficulty>('medium');
   const [language, setLanguage] = useState('en-US');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [state.messages]);
+
+  useEffect(() => {
+    if (state.phase === 'summary') recordPracticeToday();
+  }, [state.phase]);
 
   function handleSend() {
     const text = input.trim();
@@ -205,11 +215,20 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
 
   // ── Context Screen ──────────────────────────────────────────────────────────
   if (state.phase === 'context') {
-    const subs = state.scenario ? SUB_SCENARIOS[state.scenario] : [];
+    const isCustom = state.scenario === 'custom';
+    const subs = state.scenario && !isCustom ? SUB_SCENARIOS[state.scenario] : [];
+
+    const savedContexts = getSavedContexts();
 
     function handleStart() {
-      const sub = selectedSub ?? subs[1]; // default to medium if none selected
-      void confirmContext(contextInput.trim() || 'my product/service', sub.difficulty, sub.prompt);
+      saveContext(contextInput.trim());
+      if (isCustom) {
+        const desc = customDesc.trim() || 'A prospect who needs persuasion to make a buying decision.';
+        void confirmContext(contextInput.trim() || 'my product/service', selectedDifficulty, desc);
+      } else {
+        const sub = selectedSub ?? subs[1]; // default to medium if none selected
+        void confirmContext(contextInput.trim() || 'my product/service', sub.difficulty, sub.prompt);
+      }
     }
 
     return (
@@ -223,26 +242,55 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
               </span>
             </div>
 
-            <div className="training__sub-scenarios">
-              <div className="training__diff-label">SELECT SUB-SCENARIO</div>
-              <div className="training__sub-grid">
-                {subs.map(sub => (
-                  <button
-                    key={sub.id}
-                    className={`training__sub-card training__sub-card--${sub.difficulty} ${selectedSub?.id === sub.id ? 'training__sub-card--selected' : ''}`}
-                    onClick={() => setSelectedSub(sub)}
-                  >
-                    <div className="training__sub-header">
-                      <span className="training__sub-label">{sub.label}</span>
-                      <span className={`training__diff-badge training__diff-badge--${sub.difficulty}`}>
-                        {sub.difficulty.toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="training__sub-desc">{sub.description}</div>
-                  </button>
-                ))}
+            {isCustom ? (
+              <div className="training__custom-block">
+                <h2 className="training__context-title">Describe your prospect</h2>
+                <p className="training__context-sub">
+                  Tell the AI who they are, their attitude, and their situation. The more specific, the more realistic the simulation.
+                </p>
+                <textarea
+                  className="training__context-input"
+                  placeholder="e.g. A CFO at a mid-sized logistics company. Skeptical of new software after a failed implementation last year. Budget-conscious but open if the ROI is clear."
+                  value={customDesc}
+                  onChange={e => setCustomDesc(e.target.value)}
+                  rows={4}
+                  autoFocus
+                />
+                <div className="training__custom-diff">
+                  <span className="training__diff-label">DIFFICULTY</span>
+                  {(['easy', 'medium', 'hard'] as TrainingDifficulty[]).map(d => (
+                    <button
+                      key={d}
+                      className={`training__custom-diff-btn training__custom-diff-btn--${d} ${selectedDifficulty === d ? 'training__custom-diff-btn--active' : ''}`}
+                      onClick={() => setSelectedDifficulty(d)}
+                    >
+                      {d.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="training__sub-scenarios">
+                <div className="training__diff-label">SELECT SUB-SCENARIO</div>
+                <div className="training__sub-grid">
+                  {subs.map(sub => (
+                    <button
+                      key={sub.id}
+                      className={`training__sub-card training__sub-card--${sub.difficulty} ${selectedSub?.id === sub.id ? 'training__sub-card--selected' : ''}`}
+                      onClick={() => setSelectedSub(sub)}
+                    >
+                      <div className="training__sub-header">
+                        <span className="training__sub-label">{sub.label}</span>
+                        <span className={`training__diff-badge training__diff-badge--${sub.difficulty}`}>
+                          {sub.difficulty.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="training__sub-desc">{sub.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <h2 className="training__context-title">What are you selling?</h2>
             <p className="training__context-sub">
@@ -256,8 +304,16 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
               onChange={e => setContextInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleStart(); } }}
               rows={3}
-              autoFocus
             />
+
+            {savedContexts.length > 0 && (
+              <div className="training__presets">
+                <span className="training__presets-label">RECENT</span>
+                {savedContexts.map((c, i) => (
+                  <button key={i} className="training__preset-btn" onClick={() => setContextInput(c)}>{c}</button>
+                ))}
+              </div>
+            )}
 
             {state.error && <div className="training__error">{state.error}</div>}
 
@@ -292,7 +348,7 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                 {state.difficulty.toUpperCase()}
               </span>
             </div>
-            <button className="training__end-btn" onClick={endSession}>End Session</button>
+            <button className="training__end-btn" onClick={() => void endSession()}>End Session</button>
           </div>
           <div className="training__messages">
             {state.messages.map(msg => (
@@ -400,7 +456,7 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
               <button
                 key={s.id}
                 className={`training__scenario-card ${s.id === 'random' ? 'training__scenario-card--random' : ''}`}
-                onClick={() => { startScenario(s.id, language); setContextInput(''); setSelectedSub(null); }}
+                onClick={() => { startScenario(s.id, language); setContextInput(''); setSelectedSub(null); setCustomDesc(''); setSelectedDifficulty('medium'); }}
                 disabled={state.isLoading}
               >
                 <div className="training__scenario-label">{s.label}</div>

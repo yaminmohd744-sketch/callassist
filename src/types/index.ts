@@ -60,7 +60,8 @@ export type TrainingScenario =
   | 'cold-opener'
   | 'discovery'
   | 'closing'
-  | 'random';
+  | 'random'
+  | 'custom';
 
 export interface TrainingFeedback {
   score: number;
@@ -106,4 +107,5 @@ export interface CallSession {
   aiSummary: string;
   followUpEmail: string;
   leadScore: number;
+  notes: string[];
 }

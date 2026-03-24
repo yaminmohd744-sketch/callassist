@@ -520,3 +520,54 @@
 .academy__end-btn:hover {
   background: rgba(255, 68, 68, 0.1);
 }
+
+/* ── Needs Work Badge ────────────────────────────────────────────────────────*/
+
+.academy__needs-work {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-yellow);
+  border: 1px solid var(--color-accent-yellow);
+  background: rgba(255, 196, 0, 0.08);
+  border-radius: var(--border-radius-pill);
+  padding: 1px 6px;
+  flex-shrink: 0;
+  margin-left: var(--space-1);
+}
+
+/* ── Transcript Review ───────────────────────────────────────────────────────*/
+
+.academy__transcript-toggle {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  text-align: center;
+  margin-bottom: var(--space-2);
+}
+
+.academy__transcript-toggle:hover {
+  color: var(--color-text-secondary);
+  border-color: var(--color-accent-cyan);
+}
+
+.academy__transcript-review {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 500px;
+  overflow-y: auto;
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+}

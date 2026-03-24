@@ -132,3 +132,74 @@
   border-color: var(--color-accent-cyan);
   color: var(--color-accent-cyan);
 }
+
+/* Call Notes */
+.lead-panel__section--notes {
+  flex: 1;
+}
+
+.lead-panel__notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.lead-panel__note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  background: var(--color-bg-elevated);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+.lead-panel__notes-input-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.lead-panel__note-input {
+  flex: 1;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  padding: var(--space-2) var(--space-3);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.lead-panel__note-input:focus {
+  border-color: var(--color-accent-cyan);
+}
+
+.lead-panel__note-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.lead-panel__note-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-md);
+  background: var(--color-accent-cyan);
+  color: var(--color-bg-base);
+  border: none;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.lead-panel__note-btn:hover {
+  opacity: 0.85;
+}

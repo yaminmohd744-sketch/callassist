@@ -8,6 +8,10 @@ interface LeadProfilePanelProps {
   closeProbability: number;
   objectionsCount: number;
   onAction: (action: QuickAction) => void;
+  notes: string[];
+  noteInput: string;
+  onNoteChange: (v: string) => void;
+  onAddNote: () => void;
 }
 
 const QUICK_ACTIONS: { id: QuickAction; label: string }[] = [
@@ -17,7 +21,7 @@ const QUICK_ACTIONS: { id: QuickAction; label: string }[] = [
   { id: 'score-lead',     label: 'Score this lead' },
 ];
 
-export function LeadProfilePanel({ config, closeProbability, objectionsCount, onAction }: LeadProfilePanelProps) {
+export function LeadProfilePanel({ config, closeProbability, objectionsCount, onAction, notes, noteInput, onNoteChange, onAddNote }: LeadProfilePanelProps) {
   return (
     <div className="lead-panel">
       <div className="lead-panel__section">
@@ -86,6 +90,27 @@ export function LeadProfilePanel({ config, closeProbability, objectionsCount, on
               {label}
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="lead-panel__divider" />
+
+      <div className="lead-panel__section lead-panel__section--notes">
+        <div className="lead-panel__section-title">CALL NOTES</div>
+        {notes.length > 0 && (
+          <div className="lead-panel__notes-list">
+            {notes.map((n, i) => <div key={i} className="lead-panel__note">{n}</div>)}
+          </div>
+        )}
+        <div className="lead-panel__notes-input-row">
+          <input
+            className="lead-panel__note-input"
+            placeholder="Add note..."
+            value={noteInput}
+            onChange={e => onNoteChange(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onAddNote(); } }}
+          />
+          <button className="lead-panel__note-btn" onClick={onAddNote}>+</button>
         </div>
       </div>
     </div>
