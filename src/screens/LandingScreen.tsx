@@ -5,6 +5,8 @@ interface LandingScreenProps {
   onGetStarted: () => void;
 }
 
+type SectionId = 'features' | 'training' | 'languages' | 'pricing';
+
 const DEMO_FRAMES = [
   { type: 'status',   text: '● ACTIVE  02:14  OBJECTIONS 2  CLOSE PROB 68%' },
   { type: 'prospect', text: 'PROSPECT: "We already have a tool for that..."' },
@@ -19,34 +21,40 @@ const DEMO_FRAMES = [
 
 const FEATURES = [
   {
-    icon: '⚡',
+    icon: '✦',
     title: 'Real-time coaching',
-    desc: 'AI whispers the perfect response the moment your prospect speaks. Objection handlers, closing prompts, and discovery questions - live.',
+    desc: 'AI whispers the perfect response the moment your prospect speaks. Objection handlers, closing prompts, and discovery questions — live.',
+    bullets: ['Objection detection & rebuttals', 'Buying signal alerts', 'Stage-aware prompts'],
   },
   {
     icon: '◈',
     title: 'Practice scenarios',
-    desc: 'Practice against an AI prospect that fights back. 8 scenarios with 3 sub-scenarios each - cold openers, objections, discovery, closing - before every call.',
+    desc: 'Practice against an AI prospect that fights back. 8 scenarios with 3 sub-scenarios each — cold openers, objections, discovery, closing.',
+    bullets: ['8 scenario types, 3 difficulties', 'Per-response scoring & feedback', 'Custom persona builder'],
   },
   {
-    icon: '🎓',
+    icon: '▣',
     title: 'AI Sales Academy',
-    desc: 'Structured sales curriculum from beginner to advanced. Track your score across 9 lessons, watch your improvement over time, and master every skill.',
+    desc: 'Structured curriculum from beginner to advanced. 9 lessons across 3 modules. Track your score every rep.',
+    bullets: ['3 modules, 9 lessons', 'Coaching tips before each lesson', 'Modules unlock as you progress'],
   },
   {
     icon: '🌍',
     title: '10 languages',
     desc: 'Sell in English, Spanish, French, Portuguese, German, Italian, Dutch, Mandarin, Japanese, or Arabic. AI coaches in your language.',
+    bullets: ['Real-time coaching localised', 'Training in your language', 'Post-call analysis localised'],
   },
   {
     icon: '↗',
     title: 'Built-in CRM',
-    desc: 'Every call is automatically saved to your built-in CRM. View all contacts, lead scores, AI summaries, and follow-up emails in one place.',
+    desc: 'Every call saved automatically. View all contacts, lead scores, AI summaries, and follow-up emails in one place — no third-party needed.',
+    bullets: ['Auto-saved after every call', 'Lead scores & close probability', 'Timestamped call notes'],
   },
   {
     icon: '◎',
     title: 'Post-call analysis',
-    desc: 'Full transcript, AI summary, lead score, and a ready-to-send personalised follow-up email - generated the moment you hang up.',
+    desc: 'Full transcript, AI summary, lead score, and a ready-to-send personalised follow-up email — generated the moment you hang up.',
+    bullets: ['Full transcript saved', 'AI-generated follow-up email', 'Improvement suggestions'],
   },
 ];
 
@@ -92,9 +100,138 @@ const COMPARE_ROWS = [
   { feature: 'Transparent pricing',            us: true,  them: true  },
 ];
 
+const FEATURE_TABS = [
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    icon: '⊞',
+    title: 'Your sales command center',
+    desc: 'Every call saved automatically. View all contacts, lead scores, and performance at a glance — no separate CRM needed.',
+    items: [
+      { icon: '◷', title: 'Full call history & CRM', desc: 'Every session saved with transcript, AI summary, and a ready-to-send follow-up email.' },
+      { icon: '◈', title: 'Lead scores & close probability', desc: 'Each contact scored automatically after every call.' },
+      { icon: '✎', title: 'Call notes', desc: 'Add timestamped notes during a live call — saved and shown per contact.' },
+      { icon: '✦', title: 'Practice streak', desc: 'See your daily training streak and stay consistent over time.' },
+    ],
+  },
+  {
+    id: 'coaching',
+    label: 'Live Coaching',
+    icon: '◎',
+    title: 'AI coaching on every call',
+    desc: 'The AI listens in real time and surfaces the perfect response the moment your prospect speaks — without missing a beat.',
+    items: [
+      { icon: '⚠', title: 'Objection detection', desc: 'Detects price, competitor, and stalling objections the instant they\'re spoken.' },
+      { icon: '↑', title: 'Buying signal alerts', desc: 'Flags interest and urgency phrases so you know exactly when to close.' },
+      { icon: '%', title: 'Live close probability', desc: 'Tracks your probability of closing as the call progresses.' },
+      { icon: '☰', title: 'Objection quick-reference', desc: 'Built-in cheat sheet of rebuttals for the 6 most common objections.' },
+    ],
+  },
+  {
+    id: 'training',
+    label: 'Training',
+    icon: '◈',
+    title: 'Practice until you never lose a deal',
+    desc: 'AI plays the prospect. You pitch. Get scored and coached on every response before it matters on a real call.',
+    items: [
+      { icon: '◉', title: '8 scenarios, 3 difficulty levels', desc: 'Cold openers, objections, discovery, closing — Easy, Medium, and Hard.' },
+      { icon: '✎', title: 'Custom scenario builder', desc: 'Describe any prospect in plain text and the AI becomes them.' },
+      { icon: '▣', title: 'AI Sales Academy', desc: '9 structured lessons from beginner to advanced with score tracking.' },
+      { icon: '✓', title: 'Per-response feedback', desc: 'Every reply you send gets an instant score, pros, cons, and the ideal response.' },
+    ],
+  },
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    icon: '▦',
+    title: 'Know exactly where you stand',
+    desc: 'Track performance across every live call and training session. Spot your weak spots and close the gap.',
+    items: [
+      { icon: '▦', title: '28-day activity grid', desc: 'Visual heatmap of every day you called or trained.' },
+      { icon: '↗', title: 'Close probability trends', desc: 'See your average close probability move over the last 10 calls.' },
+      { icon: '◎', title: 'Training score history', desc: 'Track your scores per lesson and watch yourself improve over time.' },
+      { icon: '◈', title: 'Team leaderboard', desc: 'Generate a team code and compete with your colleagues.' },
+    ],
+  },
+];
+
+const TRAINING_SCENARIOS = [
+  { icon: '◉', title: 'Cold Call Openers', desc: 'Break the ice and earn the right to talk' },
+  { icon: '◈', title: 'Price Objections', desc: 'Turn "too expensive" into "worth every penny"' },
+  { icon: '◷', title: 'Think It Over', desc: 'Convert stalls into commitment' },
+  { icon: '↗', title: 'Not Interested', desc: 'Flip early rejections into curiosity' },
+  { icon: '◎', title: 'Discovery', desc: 'Uncover the real pain behind polite answers' },
+  { icon: '✓', title: 'Closing', desc: 'Ask for the deal and hold the silence' },
+  { icon: '⚠', title: 'Competitor Objections', desc: 'Make the switch feel obvious, not risky' },
+  { icon: '✎', title: 'Custom Scenario', desc: 'Describe any prospect — AI becomes them' },
+];
+
+const ACADEMY_MODULES = [
+  {
+    level: 'BEGINNER',
+    title: 'Cold Call Foundations',
+    color: 'green',
+    lessons: ['The Perfect Opener', 'Handling "Not Interested"', 'The Skeptical Prospect'],
+  },
+  {
+    level: 'INTERMEDIATE',
+    title: 'Objection Handling',
+    color: 'yellow',
+    lessons: ['Price Objections', 'The "Think It Over" Trap', 'Breaking the Status Quo'],
+  },
+  {
+    level: 'ADVANCED',
+    title: 'Discovery & Closing',
+    color: 'red',
+    lessons: ['Discovery That Reveals Pain', 'The Trial Close', 'Closing the Hard Prospect'],
+  },
+];
+
+const PRICING_FAQ = [
+  {
+    q: 'Can I cancel anytime?',
+    a: 'Yes — no lock-ins, no questions asked. Cancel from your account settings in seconds.',
+  },
+  {
+    q: 'What counts as a live call?',
+    a: 'Any session where you use the real-time AI coaching. Training sessions and post-call analysis don\'t count toward your monthly limit.',
+  },
+  {
+    q: 'What\'s included in the Free plan?',
+    a: '5 live calls and 3 training sessions per month, English + Spanish coaching, and post-call summaries. No credit card required.',
+  },
+  {
+    q: 'Is there a free trial for Pro?',
+    a: '7-day free trial on Pro, then $29/month. Cancel anytime — full refund within the first 7 days, no questions asked.',
+  },
+];
+
+const NAV_SECTIONS: { id: SectionId; label: string }[] = [
+  { id: 'features',  label: 'Features'  },
+  { id: 'training',  label: 'Training'  },
+  { id: 'languages', label: 'Languages' },
+  { id: 'pricing',   label: 'Pricing'   },
+];
+
+const CARD_ANIMS = ['tl', 'tc', 'tr', 'bl', 'bc', 'br'] as const;
+
+const LANG_PHRASES = [
+  { flag: '🇺🇸', lang: 'English',    text: '"What specifically would you change?"' },
+  { flag: '🇪🇸', lang: 'Spanish',    text: '"¿Qué cambiaría específicamente?"' },
+  { flag: '🇫🇷', lang: 'French',     text: '"Que changeriez-vous?"' },
+  { flag: '🇩🇪', lang: 'German',     text: '"Was würden Sie ändern?"' },
+  { flag: '🇧🇷', lang: 'Portuguese', text: '"O que você mudaria?"' },
+  { flag: '🇨🇳', lang: 'Mandarin',   text: '"您具体会改变什么？"' },
+  { flag: '🇯🇵', lang: 'Japanese',   text: '"具体的に何を変えますか？"' },
+];
+
 export function LandingScreen({ onGetStarted }: LandingScreenProps) {
-  const [visibleFrames, setVisibleFrames] = useState(1);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [visibleFrames, setVisibleFrames]       = useState(1);
+  const [menuOpen, setMenuOpen]                 = useState(false);
+  const [activeFeatureTab, setActiveFeatureTab] = useState('dashboard');
+  const [activeSection, setActiveSection]       = useState<SectionId | null>(null);
+  const [openFaq, setOpenFaq]                   = useState<number | null>(null);
+  const [langIdx, setLangIdx]                   = useState(0);
 
   useEffect(() => {
     if (visibleFrames >= DEMO_FRAMES.length) return;
@@ -102,35 +239,479 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
     return () => clearTimeout(t);
   }, [visibleFrames]);
 
+  useEffect(() => {
+    if (activeSection !== 'features') return;
+    const t = setInterval(() => setLangIdx(i => (i + 1) % LANG_PHRASES.length), 2400);
+    return () => clearInterval(t);
+  }, [activeSection]);
+
+  useEffect(() => {
+    if (activeSection !== null) return;
+    const root = document.querySelector<HTMLElement>('.lp');
+    const els  = document.querySelectorAll<HTMLElement>('.reveal');
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target as HTMLElement;
+            el.style.transitionDelay = el.dataset.delay ? `${el.dataset.delay}s` : '0s';
+            el.classList.add('revealed');
+            observer.unobserve(el);
+          }
+        });
+      },
+      { threshold: 0, rootMargin: '0px 0px -60px 0px', root }
+    );
+    els.forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, [activeSection]);
+
   function scrollTo(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setMenuOpen(false);
   }
 
+  function goSection(id: SectionId) {
+    setActiveSection(id);
+    setMenuOpen(false);
+    setOpenFaq(null);
+    document.querySelector('.lp')?.scrollTo(0, 0);
+  }
+
+  // ─── Nav (shared) ──────────────────────────────────────────────────────────
+
+  const nav = (
+    <nav className="lp__nav">
+      <div className="lp__nav-inner">
+        <button className="lp__nav-logo" onClick={() => setActiveSection(null)}>
+          ◎ CALL<span>ASSIST</span>
+        </button>
+
+        {activeSection !== null ? (
+          <div className="lp__nav-links lp__nav-links--sections">
+            {NAV_SECTIONS.map(s => (
+              <button
+                key={s.id}
+                className={activeSection === s.id ? 'lp__nav-link--active' : ''}
+                onClick={() => goSection(s.id)}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className={`lp__nav-links ${menuOpen ? 'lp__nav-links--open' : ''}`}>
+            <button onClick={() => goSection('features')}>Features</button>
+            <button onClick={() => goSection('training')}>Training</button>
+            <button onClick={() => goSection('languages')}>Languages</button>
+            <button onClick={() => goSection('pricing')}>Pricing</button>
+          </div>
+        )}
+
+        <div className="lp__nav-actions">
+          <button className="lp__nav-signin" onClick={onGetStarted}>Sign In</button>
+          <button className="lp__nav-cta" onClick={onGetStarted}>Get Started Free</button>
+          <button className="lp__nav-burger" onClick={() => setMenuOpen(o => !o)} aria-label="menu">
+            <span /><span /><span />
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+
+  // ─── Features section view ─────────────────────────────────────────────────
+
+  if (activeSection === 'features') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--features">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">FEATURES</div>
+            <h2 className="lp__sv-h2">Everything you need<br />to win more deals</h2>
+            <p className="lp__sv-sub">Six tools that work together, live on every call.</p>
+          </div>
+
+          <div className="lp__sv-features-grid">
+
+            {/* 0 — Real-time coaching */}
+            <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[0]}`}>
+              <div className="lp__feature-icon">{FEATURES[0].icon}</div>
+              <div className="lp__feature-title">{FEATURES[0].title}</div>
+              <div className="lp__feature-desc">{FEATURES[0].desc}</div>
+              <div className="lp__sv-demo">
+                <div className="demo-coach-prospect">PROSPECT: "We already have a tool for that..."</div>
+                <div className="demo-coach-ai">
+                  <span className="demo-coach-badge">OBJECTION DETECTED</span>
+                  <span className="demo-coach-text">"What do you love most about it? And what's the one thing you'd change?"</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 1 — Practice scenarios */}
+            <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[1]}`}>
+              <div className="lp__feature-icon">{FEATURES[1].icon}</div>
+              <div className="lp__feature-title">{FEATURES[1].title}</div>
+              <div className="lp__feature-desc">{FEATURES[1].desc}</div>
+              <div className="lp__sv-demo">
+                <div className="demo-prac-prospect">PROSPECT: "It's too expensive."</div>
+                <div className="demo-prac-you">YOU: "Is it the price, or the ROI?"</div>
+                <div className="demo-prac-result">
+                  <span className="demo-prac-score">8/10</span>
+                  <span className="demo-prac-fb">✓ Good reframe</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 2 — AI Sales Academy */}
+            <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[2]}`}>
+              <div className="lp__feature-icon">{FEATURES[2].icon}</div>
+              <div className="lp__feature-title">{FEATURES[2].title}</div>
+              <div className="lp__feature-desc">{FEATURES[2].desc}</div>
+              <div className="lp__sv-demo">
+                <div className="demo-lesson demo-lesson--done">
+                  <span className="demo-lesson-icon">✓</span>
+                  <span className="demo-lesson-name">The Perfect Opener</span>
+                  <span className="demo-lesson-score">8.5</span>
+                </div>
+                <div className="demo-lesson demo-lesson--active">
+                  <span className="demo-lesson-icon">▶</span>
+                  <span className="demo-lesson-name">Handling Objections</span>
+                </div>
+                <div className="demo-bar-track"><div className="demo-bar-fill" /></div>
+                <div className="demo-lesson demo-lesson--locked">
+                  <span className="demo-lesson-icon">○</span>
+                  <span className="demo-lesson-name">The Skeptic</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 3 — 10 languages */}
+            <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[3]}`}>
+              <div className="lp__feature-icon">{FEATURES[3].icon}</div>
+              <div className="lp__feature-title">{FEATURES[3].title}</div>
+              <div className="lp__feature-desc">{FEATURES[3].desc}</div>
+              <div className="lp__sv-demo">
+                <div className="demo-lang-header">AI COACHING IN</div>
+                <div className="demo-lang-flag-row">
+                  {LANG_PHRASES[langIdx].flag} {LANG_PHRASES[langIdx].lang}
+                </div>
+                <div key={langIdx} className="demo-lang-phrase">
+                  {LANG_PHRASES[langIdx].text}
+                </div>
+              </div>
+            </div>
+
+            {/* 4 — Built-in CRM */}
+            <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[4]}`}>
+              <div className="lp__feature-icon">{FEATURES[4].icon}</div>
+              <div className="lp__feature-title">{FEATURES[4].title}</div>
+              <div className="lp__feature-desc">{FEATURES[4].desc}</div>
+              <div className="lp__sv-demo">
+                <div className="demo-crm-row">
+                  <span className="demo-crm-key">Name</span>
+                  <span className="demo-crm-val demo-crm-val--1">Sarah Mitchell</span>
+                </div>
+                <div className="demo-crm-row">
+                  <span className="demo-crm-key">Company</span>
+                  <span className="demo-crm-val demo-crm-val--2">Acme Corp</span>
+                </div>
+                <div className="demo-crm-row">
+                  <span className="demo-crm-key">Score</span>
+                  <span className="demo-crm-val demo-crm-val--3 demo-crm-score">78</span>
+                </div>
+                <div className="demo-crm-row">
+                  <span className="demo-crm-key">Status</span>
+                  <span className="demo-crm-val demo-crm-val--4 demo-crm-hot">● HOT LEAD</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 5 — Post-call analysis */}
+            <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[5]}`}>
+              <div className="lp__feature-icon">{FEATURES[5].icon}</div>
+              <div className="lp__feature-title">{FEATURES[5].title}</div>
+              <div className="lp__feature-desc">{FEATURES[5].desc}</div>
+              <div className="lp__sv-demo">
+                <div className="demo-prob">
+                  <div className="demo-prob-header">
+                    <span className="demo-prob-label">Close probability</span>
+                    <span className="demo-prob-pct">81%</span>
+                  </div>
+                  <div className="demo-prob-track"><div className="demo-prob-bar" /></div>
+                </div>
+                <div className="demo-check-item demo-check-1"><span className="demo-check-icon">✓</span> Transcript saved</div>
+                <div className="demo-check-item demo-check-2"><span className="demo-check-icon">✓</span> AI summary generated</div>
+                <div className="demo-check-item demo-check-3"><span className="demo-check-icon">✓</span> Follow-up email ready</div>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="lp__sv-diffs">
+            <div className="lp__sv-diff">◎ Works in any browser — no extension needed</div>
+            <div className="lp__sv-diff">◎ Phone calls, Zoom, Teams, and Meet</div>
+            <div className="lp__sv-diff">◎ 10 languages — competitors coach in English only</div>
+          </div>
+
+          <div className="lp__sv-cta">
+            <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
+              ▶ Start for Free
+            </button>
+            <p className="lp__sv-cta-note">No credit card · 7-day money-back</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Training section view ─────────────────────────────────────────────────
+
+  if (activeSection === 'training') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--training">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">TRAINING</div>
+            <h2 className="lp__sv-h2">Practice like it's real.<br />Win when it is.</h2>
+            <p className="lp__sv-sub">Two modes. One goal: never lose a deal you could have won.</p>
+          </div>
+
+          <div className="lp__sv-training-grid">
+            <div className="lp__sv-col">
+              <div className="lp__sv-col-title">◈ Practice Scenarios</div>
+              <p className="lp__sv-col-sub">Jump straight into a live AI roleplay. No setup, just practice.</p>
+              {TRAINING_SCENARIOS.map((s, i) => (
+                <div
+                  key={i}
+                  className="lp__sv-item"
+                  style={{ '--i': i } as React.CSSProperties}
+                >
+                  <span className="lp__sv-item-icon">{s.icon}</span>
+                  <div>
+                    <div className="lp__sv-item-title">{s.title}</div>
+                    <div className="lp__sv-item-desc">{s.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="lp__sv-col">
+              <div className="lp__sv-col-title">▣ AI Sales Academy</div>
+              <p className="lp__sv-col-sub">Structured curriculum. Track your score rep by rep.</p>
+              {ACADEMY_MODULES.map((m, mi) => (
+                <div
+                  key={mi}
+                  className={`lp__sv-module lp__sv-module--${m.color}`}
+                  style={{ '--i': mi + 2 } as React.CSSProperties}
+                >
+                  <div className="lp__sv-module-header">
+                    <span className={`lp__sv-module-badge lp__sv-module-badge--${m.color}`}>
+                      {m.level}
+                    </span>
+                    <span className="lp__sv-module-title">{m.title}</span>
+                  </div>
+                  <ul className="lp__sv-module-lessons">
+                    {m.lessons.map((l, li) => (
+                      <li
+                        key={li}
+                        style={{ '--i': mi * 3 + li + 4 } as React.CSSProperties}
+                      >
+                        {l}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lp__sv-mock-wrap">
+            <div className="lp__mock-training">
+              <div className="lp__mock-training-bar">
+                <span>◈</span> TRAINING MODE &nbsp;·&nbsp; Price Objection &nbsp;·&nbsp; 🇪🇸 Spanish
+              </div>
+              <div className="lp__mock-msg lp__mock-msg--prospect">
+                PROSPECT: "Honestamente, el precio está fuera de nuestro presupuesto ahora mismo."
+              </div>
+              <div className="lp__mock-msg lp__mock-msg--rep">
+                YOU: "Entiendo, ¿puedo preguntarte qué parte del presupuesto es el obstáculo?"
+              </div>
+              <div className="lp__mock-feedback">
+                <span className="lp__mock-score lp__mock-score--good">8/10</span>
+                <span>✓ Good — you turned it into a discovery question</span>
+              </div>
+              <div className="lp__mock-ideal">
+                <div className="lp__mock-ideal-label">IDEAL RESPONSE</div>
+                "¿Qué parte del costo es el obstáculo principal? ¿Es el total o el timing?"
+              </div>
+            </div>
+          </div>
+
+          <div className="lp__sv-cta">
+            <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
+              Start Training Free →
+            </button>
+            <p className="lp__sv-cta-note">No credit card · Free plan available</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Languages section view ────────────────────────────────────────────────
+
+  if (activeSection === 'languages') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--languages">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">MULTILINGUAL</div>
+            <h2 className="lp__sv-h2">Close deals in any language</h2>
+            <p className="lp__sv-sub">
+              While every competitor limits coaching to English, CallAssist coaches in 10 languages —
+              real-time objection handling, training, and post-call analysis, all localised.
+            </p>
+          </div>
+
+          <div className="lp__sv-lang-burst">
+            {LANGUAGES.map((l, i) => (
+              <div
+                key={i}
+                className="lp__lang-chip lp__sv-lang-chip"
+                style={{ '--i': i } as React.CSSProperties}
+              >
+                <img className="lp__lang-flag" src={`https://flagcdn.com/w20/${l.country}.png`} alt={l.label} />
+                <span>{l.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="lp__sv-lang-features">
+            <div className="lp__sv-lang-col">
+              <div className="lp__sv-lang-col-icon">✦</div>
+              <div className="lp__sv-lang-col-title">Real-time Coaching</div>
+              <p>Objection detection, buying signal alerts, and coaching prompts — all delivered in your language as you speak.</p>
+            </div>
+            <div className="lp__sv-lang-col">
+              <div className="lp__sv-lang-col-icon">◈</div>
+              <div className="lp__sv-lang-col-title">Training Mode</div>
+              <p>Practice against an AI prospect who responds in your chosen language. Every scenario, every difficulty level.</p>
+            </div>
+            <div className="lp__sv-lang-col">
+              <div className="lp__sv-lang-col-icon">◎</div>
+              <div className="lp__sv-lang-col-title">Post-call Analysis</div>
+              <p>Transcript, AI summary, lead score, and follow-up email — all generated in your language after every call.</p>
+            </div>
+          </div>
+
+          <div className="lp__sv-lang-vs">
+            <span className="lp__sv-lang-vs-us">CallAssist: 10 languages</span>
+            <span className="lp__sv-lang-vs-sep">vs</span>
+            <span className="lp__sv-lang-vs-them">Competitors: English only</span>
+          </div>
+
+          <div className="lp__sv-cta">
+            <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
+              ▶ Start for Free
+            </button>
+            <p className="lp__sv-cta-note">No credit card · 10 languages from day one</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Pricing section view ──────────────────────────────────────────────────
+
+  if (activeSection === 'pricing') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--pricing">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">PRICING</div>
+            <h2 className="lp__sv-h2">Simple pricing, no catch</h2>
+            <p className="lp__sv-sub">No sales call. No quote request. Sign up and start closing.</p>
+          </div>
+
+          <div className="lp__pricing-cards lp__sv-pricing-cards">
+            <div
+              className="lp__pricing-card lp__sv-pricing-card"
+              style={{ '--i': 0 } as React.CSSProperties}
+            >
+              <div className="lp__pricing-tier">FREE</div>
+              <div className="lp__pricing-price">$0<span>/month</span></div>
+              <div className="lp__pricing-desc">Try it out, no card needed</div>
+              <ul className="lp__pricing-features">
+                <li>✓ 5 live calls / month</li>
+                <li>✓ Real-time coaching</li>
+                <li>✓ Post-call summary</li>
+                <li>✓ 3 training sessions / month</li>
+                <li>✓ English + Spanish</li>
+              </ul>
+              <button className="lp__btn lp__btn--outline" onClick={onGetStarted}>
+                Get Started Free
+              </button>
+            </div>
+
+            <div
+              className="lp__pricing-card lp__pricing-card--pro lp__sv-pricing-card"
+              style={{ '--i': 1 } as React.CSSProperties}
+            >
+              <div className="lp__pricing-badge">MOST POPULAR</div>
+              <div className="lp__pricing-tier">PRO</div>
+              <div className="lp__pricing-price">$29<span>/month</span></div>
+              <div className="lp__pricing-desc">Everything, unlimited</div>
+              <ul className="lp__pricing-features">
+                <li>✓ Unlimited live calls</li>
+                <li>✓ Unlimited training sessions</li>
+                <li>✓ All 10 languages</li>
+                <li>✓ Built-in CRM &amp; contact history</li>
+                <li>✓ Full post-call analysis</li>
+                <li>✓ Priority support</li>
+              </ul>
+              <button className="lp__btn lp__btn--primary" onClick={onGetStarted}>
+                ▶ Start Pro Trial
+              </button>
+            </div>
+          </div>
+
+          <div className="lp__sv-faq">
+            <div className="lp__sv-faq-title">Common questions</div>
+            {PRICING_FAQ.map((item, i) => (
+              <div
+                key={i}
+                className={`lp__sv-faq-item ${openFaq === i ? 'lp__sv-faq-item--open' : ''}`}
+              >
+                <button
+                  className="lp__sv-faq-q"
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                >
+                  {item.q}
+                  <span className="lp__sv-faq-toggle">{openFaq === i ? '−' : '+'}</span>
+                </button>
+                {openFaq === i && <div className="lp__sv-faq-a">{item.a}</div>}
+              </div>
+            ))}
+          </div>
+
+          <div className="lp__guarantee lp__sv-guarantee">
+            ✓ 7-day money-back guarantee on Pro — no questions asked
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Landing page (home) ───────────────────────────────────────────────────
+
   return (
     <div className="lp">
 
-      {/* ── Nav ── */}
-      <nav className="lp__nav">
-        <div className="lp__nav-inner">
-          <div className="lp__nav-logo">◎ CALL<span>ASSIST</span></div>
-
-          <div className={`lp__nav-links ${menuOpen ? 'lp__nav-links--open' : ''}`}>
-            <button onClick={() => scrollTo('features')}>Features</button>
-            <button onClick={() => scrollTo('training')}>Training</button>
-            <button onClick={() => scrollTo('languages')}>Languages</button>
-            <button onClick={() => scrollTo('pricing')}>Pricing</button>
-          </div>
-
-          <div className="lp__nav-actions">
-            <button className="lp__nav-signin" onClick={onGetStarted}>Sign In</button>
-            <button className="lp__nav-cta" onClick={onGetStarted}>Get Started Free</button>
-            <button className="lp__nav-burger" onClick={() => setMenuOpen(o => !o)} aria-label="menu">
-              <span /><span /><span />
-            </button>
-          </div>
-        </div>
-      </nav>
+      {nav}
 
       {/* ── Hero ── */}
       <section className="lp__hero">
@@ -185,7 +766,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
       </section>
 
       {/* ── Trust bar ── */}
-      <div className="lp__trust">
+      <div className="lp__trust reveal">
         <div className="lp__trust-item">✓ Chrome · Firefox · Safari · Edge</div>
         <div className="lp__trust-sep" />
         <div className="lp__trust-item">✓ 7-day money-back guarantee</div>
@@ -197,11 +778,11 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
       {/* ── Features ── */}
       <section id="features" className="lp__section">
-        <div className="lp__section-label">FEATURES</div>
-        <h2 className="lp__section-h2">Everything you need to close more deals</h2>
+        <div className="lp__section-label reveal">FEATURES</div>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Everything you need to close more deals</h2>
         <div className="lp__features-grid">
           {FEATURES.map((f, i) => (
-            <div key={i} className="lp__feature-card">
+            <div key={i} className="lp__feature-card reveal" data-delay={String(i * 0.08)}>
               <div className="lp__feature-icon">{f.icon}</div>
               <div className="lp__feature-title">{f.title}</div>
               <div className="lp__feature-desc">{f.desc}</div>
@@ -212,11 +793,11 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
       {/* ── How it works ── */}
       <section id="how-it-works" className="lp__section lp__section--alt">
-        <div className="lp__section-label">HOW IT WORKS</div>
-        <h2 className="lp__section-h2">From setup to close in 3 steps</h2>
+        <div className="lp__section-label reveal">HOW IT WORKS</div>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">From setup to close in 3 steps</h2>
         <div className="lp__steps">
           {STEPS.map((s, i) => (
-            <div key={i} className="lp__step">
+            <div key={i} className="lp__step reveal" data-delay={String(i * 0.12)}>
               <div className="lp__step-num">{s.num}</div>
               <div className="lp__step-title">{s.title}</div>
               <div className="lp__step-desc">{s.desc}</div>
@@ -228,11 +809,11 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
       {/* ── Training mode highlight ── */}
       <section id="training" className="lp__section">
-        <div className="lp__section-label">TRAINING MODE</div>
-        <h2 className="lp__section-h2">Two ways to train. One goal: more closed deals.</h2>
+        <div className="lp__section-label reveal">TRAINING MODE</div>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Two ways to train. One goal: more closed deals.</h2>
         <div className="lp__training-modes">
 
-          <div className="lp__training-mode-card">
+          <div className="lp__training-mode-card reveal">
             <div className="lp__training-mode-icon">◈</div>
             <div className="lp__training-mode-title">Practice Scenarios</div>
             <p className="lp__training-mode-desc">
@@ -248,9 +829,9 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
             </ul>
           </div>
 
-          <div className="lp__training-mode-card lp__training-mode-card--academy">
+          <div className="lp__training-mode-card lp__training-mode-card--academy reveal" data-delay="0.12">
             <div className="lp__training-mode-badge">NEW</div>
-            <div className="lp__training-mode-icon">🎓</div>
+            <div className="lp__training-mode-icon">▣</div>
             <div className="lp__training-mode-title">AI Sales Academy</div>
             <p className="lp__training-mode-desc">
               A structured curriculum that teaches sales from scratch. Track your scores across 9 lessons, watch your improvement rep by rep, and unlock advanced modules as you master each skill.
@@ -267,7 +848,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
         </div>
 
-        <div className="lp__training-demo">
+        <div className="lp__training-demo reveal" data-delay="0.1">
           <div className="lp__mock-training">
             <div className="lp__mock-training-bar">
               <span>◈</span> TRAINING MODE &nbsp;·&nbsp; Price Objection &nbsp;·&nbsp; 🇪🇸 Spanish
@@ -298,13 +879,13 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
       {/* ── Languages ── */}
       <section id="languages" className="lp__section lp__section--alt">
-        <div className="lp__section-label">MULTILINGUAL</div>
-        <h2 className="lp__section-h2">Sell in 10 languages</h2>
-        <p className="lp__section-sub">
+        <div className="lp__section-label reveal">MULTILINGUAL</div>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Sell in 10 languages</h2>
+        <p className="lp__section-sub reveal" data-delay="0.18">
           Competitors coach only in English. CallAssist coaches in your language -
           real-time objection handling, training, and post-call analysis, all localised.
         </p>
-        <div className="lp__lang-grid">
+        <div className="lp__lang-grid reveal" data-delay="0.25">
           {LANGUAGES.map((l, i) => (
             <div key={i} className="lp__lang-chip">
               <img className="lp__lang-flag" src={`https://flagcdn.com/w20/${l.country}.png`} alt={l.label} />
@@ -316,9 +897,9 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
       {/* ── Comparison ── */}
       <section className="lp__section">
-        <div className="lp__section-label">COMPARISON</div>
-        <h2 className="lp__section-h2">Why CallAssist over the alternatives?</h2>
-        <div className="lp__compare-wrap">
+        <div className="lp__section-label reveal">COMPARISON</div>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Why CallAssist over the alternatives?</h2>
+        <div className="lp__compare-wrap reveal" data-delay="0.18">
           <table className="lp__compare">
             <thead>
               <tr>
@@ -347,14 +928,55 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         </div>
       </section>
 
+      {/* ── Feature tabs ── */}
+      <section className="lp__section lp__section--alt">
+        <div className="lp__section-label reveal">EVERYTHING IN ONE PLACE</div>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Built for every part of your sales process</h2>
+        <div className="lp__ftabs reveal" data-delay="0.18">
+          <div className="lp__ftabs-nav">
+            {FEATURE_TABS.map(tab => (
+              <button
+                key={tab.id}
+                className={`lp__ftab-btn ${activeFeatureTab === tab.id ? 'lp__ftab-btn--active' : ''}`}
+                onClick={() => setActiveFeatureTab(tab.id)}
+              >
+                <span className="lp__ftab-btn-icon">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {FEATURE_TABS.filter(t => t.id === activeFeatureTab).map(tab => (
+            <div key={tab.id} className="lp__ftab-content">
+              <div className="lp__ftab-left">
+                <div className="lp__ftab-label">{tab.icon} {tab.label}</div>
+                <h3 className="lp__ftab-title">{tab.title}</h3>
+                <p className="lp__ftab-desc">{tab.desc}</p>
+              </div>
+              <div className="lp__ftab-right">
+                {tab.items.map((item, i) => (
+                  <div key={i} className="lp__ftab-item">
+                    <div className="lp__ftab-item-icon">{item.icon}</div>
+                    <div className="lp__ftab-item-text">
+                      <div className="lp__ftab-item-title">{item.title}</div>
+                      <div className="lp__ftab-item-desc">{item.desc}</div>
+                    </div>
+                    <span className="lp__ftab-item-arrow">›</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── Pricing ── */}
       <section id="pricing" className="lp__section lp__section--alt">
-        <div className="lp__section-label">PRICING</div>
-        <h2 className="lp__section-h2">Simple, transparent pricing</h2>
-        <p className="lp__section-sub">No sales call. No quote request. Sign up and start closing.</p>
+        <div className="lp__section-label reveal">PRICING</div>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Simple, transparent pricing</h2>
+        <p className="lp__section-sub reveal" data-delay="0.18">No sales call. No quote request. Sign up and start closing.</p>
 
         <div className="lp__pricing-cards">
-          <div className="lp__pricing-card">
+          <div className="lp__pricing-card reveal">
             <div className="lp__pricing-tier">FREE</div>
             <div className="lp__pricing-price">$0<span>/month</span></div>
             <div className="lp__pricing-desc">Try it out, no card needed</div>
@@ -368,7 +990,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
             <button className="lp__btn lp__btn--outline" onClick={onGetStarted}>Get Started Free</button>
           </div>
 
-          <div className="lp__pricing-card lp__pricing-card--pro">
+          <div className="lp__pricing-card lp__pricing-card--pro reveal" data-delay="0.12">
             <div className="lp__pricing-badge">MOST POPULAR</div>
             <div className="lp__pricing-tier">PRO</div>
             <div className="lp__pricing-price">$29<span>/month</span></div>
@@ -377,7 +999,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
               <li>✓ Unlimited live calls</li>
               <li>✓ Unlimited training sessions</li>
               <li>✓ All 10 languages</li>
-              <li>✓ Built-in CRM & contact history</li>
+              <li>✓ Built-in CRM &amp; contact history</li>
               <li>✓ Full post-call analysis</li>
               <li>✓ Priority support</li>
             </ul>
@@ -385,13 +1007,13 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
         </div>
 
-        <div className="lp__guarantee">
+        <div className="lp__guarantee reveal" data-delay="0.2">
           ✓ 7-day money-back guarantee on Pro - no questions asked
         </div>
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="lp__cta-banner">
+      <section className="lp__cta-banner reveal">
         <h2 className="lp__cta-banner-h2">Ready to close more deals?</h2>
         <p className="lp__cta-banner-sub">
           Join sales reps using AI to win more calls - in any language, on any device.
@@ -403,11 +1025,11 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="lp__footer">
+      <footer className="lp__footer reveal">
         <div className="lp__footer-logo">◎ CALL<span>ASSIST</span></div>
         <div className="lp__footer-links">
-          <button onClick={() => scrollTo('features')}>Features</button>
-          <button onClick={() => scrollTo('pricing')}>Pricing</button>
+          <button onClick={() => goSection('features')}>Features</button>
+          <button onClick={() => goSection('pricing')}>Pricing</button>
           <button onClick={onGetStarted}>Sign In</button>
         </div>
         <div className="lp__footer-copy">© 2025 CallAssist. All rights reserved.</div>
