@@ -28,7 +28,7 @@ export function getStreak(): number {
   if (dates.size === 0) return 0;
   let streak = 0;
   const d = new Date();
-  // Don't penalize if today hasn't been practiced yet — carry forward from yesterday
+  // Don't penalize if today hasn't been practiced yet carry forward from yesterday
   if (!dates.has(toDateStr(d))) d.setDate(d.getDate() - 1);
   while (dates.has(toDateStr(d))) {
     streak++;

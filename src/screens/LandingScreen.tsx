@@ -23,13 +23,13 @@ const FEATURES = [
   {
     icon: '✦',
     title: 'Real-time coaching',
-    desc: 'AI whispers the perfect response the moment your prospect speaks. Objection handlers, closing prompts, and discovery questions — live.',
+    desc: 'AI whispers the perfect response the moment your prospect speaks. Objection handlers, closing prompts, and discovery questions live.',
     bullets: ['Objection detection & rebuttals', 'Buying signal alerts', 'Stage-aware prompts'],
   },
   {
     icon: '◈',
     title: 'Practice scenarios',
-    desc: 'Practice against an AI prospect that fights back. 8 scenarios with 3 sub-scenarios each — cold openers, objections, discovery, closing.',
+    desc: 'Practice against an AI prospect that fights back. 8 scenarios with 3 sub-scenarios each cold openers, objections, discovery, closing.',
     bullets: ['8 scenario types, 3 difficulties', 'Per-response scoring & feedback', 'Custom persona builder'],
   },
   {
@@ -39,7 +39,7 @@ const FEATURES = [
     bullets: ['3 modules, 9 lessons', 'Coaching tips before each lesson', 'Modules unlock as you progress'],
   },
   {
-    icon: '🌍',
+    icon: '⊕',
     title: '10 languages',
     desc: 'Sell in English, Spanish, French, Portuguese, German, Italian, Dutch, Mandarin, Japanese, or Arabic. AI coaches in your language.',
     bullets: ['Real-time coaching localised', 'Training in your language', 'Post-call analysis localised'],
@@ -47,13 +47,13 @@ const FEATURES = [
   {
     icon: '↗',
     title: 'Built-in CRM',
-    desc: 'Every call saved automatically. View all contacts, lead scores, AI summaries, and follow-up emails in one place — no third-party needed.',
+    desc: 'Every call saved automatically. View all contacts, lead scores, AI summaries, and follow-up emails in one place no third-party needed.',
     bullets: ['Auto-saved after every call', 'Lead scores & close probability', 'Timestamped call notes'],
   },
   {
     icon: '◎',
     title: 'Post-call analysis',
-    desc: 'Full transcript, AI summary, lead score, and a ready-to-send personalised follow-up email — generated the moment you hang up.',
+    desc: 'Full transcript, AI summary, lead score, and a ready-to-send personalised follow-up email generated the moment you hang up.',
     bullets: ['Full transcript saved', 'AI-generated follow-up email', 'Improvement suggestions'],
   },
 ];
@@ -106,11 +106,11 @@ const FEATURE_TABS = [
     label: 'Dashboard',
     icon: '⊞',
     title: 'Your sales command center',
-    desc: 'Every call saved automatically. View all contacts, lead scores, and performance at a glance — no separate CRM needed.',
+    desc: 'Every call saved automatically. View all contacts, lead scores, and performance at a glance no separate CRM needed.',
     items: [
       { icon: '◷', title: 'Full call history & CRM', desc: 'Every session saved with transcript, AI summary, and a ready-to-send follow-up email.' },
       { icon: '◈', title: 'Lead scores & close probability', desc: 'Each contact scored automatically after every call.' },
-      { icon: '✎', title: 'Call notes', desc: 'Add timestamped notes during a live call — saved and shown per contact.' },
+      { icon: '✎', title: 'Call notes', desc: 'Add timestamped notes during a live call saved and shown per contact.' },
       { icon: '✦', title: 'Practice streak', desc: 'See your daily training streak and stay consistent over time.' },
     ],
   },
@@ -119,7 +119,7 @@ const FEATURE_TABS = [
     label: 'Live Coaching',
     icon: '◎',
     title: 'AI coaching on every call',
-    desc: 'The AI listens in real time and surfaces the perfect response the moment your prospect speaks — without missing a beat.',
+    desc: 'The AI listens in real time and surfaces the perfect response the moment your prospect speaks without missing a beat.',
     items: [
       { icon: '⚠', title: 'Objection detection', desc: 'Detects price, competitor, and stalling objections the instant they\'re spoken.' },
       { icon: '↑', title: 'Buying signal alerts', desc: 'Flags interest and urgency phrases so you know exactly when to close.' },
@@ -134,7 +134,7 @@ const FEATURE_TABS = [
     title: 'Practice until you never lose a deal',
     desc: 'AI plays the prospect. You pitch. Get scored and coached on every response before it matters on a real call.',
     items: [
-      { icon: '◉', title: '8 scenarios, 3 difficulty levels', desc: 'Cold openers, objections, discovery, closing — Easy, Medium, and Hard.' },
+      { icon: '◉', title: '8 scenarios, 3 difficulty levels', desc: 'Cold openers, objections, discovery, closing Easy, Medium, and Hard.' },
       { icon: '✎', title: 'Custom scenario builder', desc: 'Describe any prospect in plain text and the AI becomes them.' },
       { icon: '▣', title: 'AI Sales Academy', desc: '9 structured lessons from beginner to advanced with score tracking.' },
       { icon: '✓', title: 'Per-response feedback', desc: 'Every reply you send gets an instant score, pros, cons, and the ideal response.' },
@@ -163,7 +163,7 @@ const TRAINING_SCENARIOS = [
   { icon: '◎', title: 'Discovery', desc: 'Uncover the real pain behind polite answers' },
   { icon: '✓', title: 'Closing', desc: 'Ask for the deal and hold the silence' },
   { icon: '⚠', title: 'Competitor Objections', desc: 'Make the switch feel obvious, not risky' },
-  { icon: '✎', title: 'Custom Scenario', desc: 'Describe any prospect — AI becomes them' },
+  { icon: '✎', title: 'Custom Scenario', desc: 'Describe any prospect AI becomes them' },
 ];
 
 const ACADEMY_MODULES = [
@@ -190,19 +190,19 @@ const ACADEMY_MODULES = [
 const PRICING_FAQ = [
   {
     q: 'Can my prospect hear or tell that I\'m using AI coaching during the call?',
-    a: 'No. Pitch Plus runs silently in a separate browser tab — your prospect only hears you speaking normally. The coaching suggestions appear as text on your screen, so there\'s nothing audible on their end. It works the same way a physical cheat sheet would, except it updates in real time based on what\'s actually being said.',
+    a: 'No. Pitch Plus runs silently in a separate browser tab your prospect only hears you speaking normally. The coaching suggestions appear as text on your screen, so there\'s nothing audible on their end. It works the same way a physical cheat sheet would, except it updates in real time based on what\'s actually being said.',
   },
   {
     q: 'How accurate is the speech recognition, and what happens if it mishears something?',
-    a: 'Pitch Plus uses your browser\'s native Web Speech API, which performs best in a quiet environment with a decent microphone. In good conditions accuracy is high enough to reliably catch objection keywords and buying signals. If a word is misheard, the coaching panel may occasionally miss a cue — but it won\'t interrupt the call or show anything incorrect to the prospect. The full transcript is editable after the call before it\'s saved.',
+    a: 'Pitch Plus uses your browser\'s native Web Speech API, which performs best in a quiet environment with a decent microphone. In good conditions accuracy is high enough to reliably catch objection keywords and buying signals. If a word is misheard, the coaching panel may occasionally miss a cue but it won\'t interrupt the call or show anything incorrect to the prospect. The full transcript is editable after the call before it\'s saved.',
   },
   {
     q: 'Does it work for any product or industry, or is it only built for certain types of sales?',
-    a: 'It works for any outbound or inbound sales scenario where you\'re speaking with a prospect one-on-one. Before each call you enter your own pitch, product description, and call goal — so the AI coaches you in the context of what you\'re actually selling, not a generic script. Reps selling SaaS, financial products, real estate, recruitment, and insurance have all used it effectively. The custom scenario builder in training lets you replicate the exact objections specific to your market.',
+    a: 'It works for any outbound or inbound sales scenario where you\'re speaking with a prospect one-on-one. Before each call you enter your own pitch, product description, and call goal so the AI coaches you in the context of what you\'re actually selling, not a generic script. Reps selling SaaS, financial products, real estate, recruitment, and insurance have all used it effectively. The custom scenario builder in training lets you replicate the exact objections specific to your market.',
   },
   {
     q: 'What happens to my transcripts and data if I downgrade or cancel?',
-    a: 'Your data stays accessible for 30 days after cancellation so you can export anything you need. Transcripts, call notes, lead scores, and AI summaries can all be downloaded before that window closes. After 30 days the account and its data are permanently deleted. We don\'t sell or share your data with third parties at any point — paid, free, or cancelled.',
+    a: 'Your data stays accessible for 30 days after cancellation so you can export anything you need. Transcripts, call notes, lead scores, and AI summaries can all be downloaded before that window closes. After 30 days the account and its data are permanently deleted. We don\'t sell or share your data with third parties at any point paid, free, or cancelled.',
   },
 ];
 
@@ -228,7 +228,8 @@ const LANG_PHRASES = [
 export function LandingScreen({ onGetStarted }: LandingScreenProps) {
   const [visibleFrames, setVisibleFrames]       = useState(1);
   const [menuOpen, setMenuOpen]                 = useState(false);
-  const [activeFeatureTab, setActiveFeatureTab] = useState('dashboard');
+  const [featureTabIdx, setFeatureTabIdx]       = useState(0);
+  const [featureAutoKey, setFeatureAutoKey]     = useState(0);
   const [activeSection, setActiveSection]       = useState<SectionId | null>(null);
   const [openFaq, setOpenFaq]                   = useState<number | null>(null);
   const [langIdx, setLangIdx]                   = useState(0);
@@ -266,6 +267,19 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
     return () => observer.disconnect();
   }, [activeSection]);
 
+  // Auto-advance feature tabs
+  useEffect(() => {
+    const t = setInterval(() => {
+      setFeatureTabIdx(i => (i + 1) % FEATURE_TABS.length);
+    }, 3800);
+    return () => clearInterval(t);
+  }, [featureAutoKey]);
+
+  function goFeatureTab(idx: number) {
+    setFeatureTabIdx(idx);
+    setFeatureAutoKey(k => k + 1);
+  }
+
   function scrollTo(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setMenuOpen(false);
@@ -284,7 +298,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
     <nav className="lp__nav">
       <div className="lp__nav-inner">
         <button className="lp__nav-logo" onClick={() => setActiveSection(null)}>
-          + PITCH<span> PLUS</span>
+          PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span>
         </button>
 
         {activeSection !== null ? (
@@ -334,7 +348,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
           <div className="lp__sv-features-grid">
 
-            {/* 0 — Real-time coaching */}
+            {/* 0 Real-time coaching */}
             <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[0]}`}>
               <div className="lp__feature-icon">{FEATURES[0].icon}</div>
               <div className="lp__feature-title">{FEATURES[0].title}</div>
@@ -348,7 +362,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
               </div>
             </div>
 
-            {/* 1 — Practice scenarios */}
+            {/* 1 Practice scenarios */}
             <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[1]}`}>
               <div className="lp__feature-icon">{FEATURES[1].icon}</div>
               <div className="lp__feature-title">{FEATURES[1].title}</div>
@@ -363,7 +377,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
               </div>
             </div>
 
-            {/* 2 — AI Sales Academy */}
+            {/* 2 AI Sales Academy */}
             <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[2]}`}>
               <div className="lp__feature-icon">{FEATURES[2].icon}</div>
               <div className="lp__feature-title">{FEATURES[2].title}</div>
@@ -386,7 +400,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
               </div>
             </div>
 
-            {/* 3 — 10 languages */}
+            {/* 3 10 languages */}
             <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[3]}`}>
               <div className="lp__feature-icon">{FEATURES[3].icon}</div>
               <div className="lp__feature-title">{FEATURES[3].title}</div>
@@ -402,7 +416,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
               </div>
             </div>
 
-            {/* 4 — Built-in CRM */}
+            {/* 4 Built-in CRM */}
             <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[4]}`}>
               <div className="lp__feature-icon">{FEATURES[4].icon}</div>
               <div className="lp__feature-title">{FEATURES[4].title}</div>
@@ -427,7 +441,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
               </div>
             </div>
 
-            {/* 5 — Post-call analysis */}
+            {/* 5 Post-call analysis */}
             <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[5]}`}>
               <div className="lp__feature-icon">{FEATURES[5].icon}</div>
               <div className="lp__feature-title">{FEATURES[5].title}</div>
@@ -449,9 +463,9 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
 
           <div className="lp__sv-diffs">
-            <div className="lp__sv-diff">◎ Works in any browser — no extension needed</div>
+            <div className="lp__sv-diff">◎ Works in any browser no extension needed</div>
             <div className="lp__sv-diff">◎ Phone calls, Zoom, Teams, and Meet</div>
-            <div className="lp__sv-diff">◎ 10 languages — competitors coach in English only</div>
+            <div className="lp__sv-diff">◎ 10 languages competitors coach in English only</div>
           </div>
 
           <div className="lp__sv-cta">
@@ -477,7 +491,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
             <div className="lp__sv-label">TRAINING</div>
             <h2 className="lp__sv-h2">Practice like it's real.<br />Win when it is.</h2>
             <p className="lp__sv-sub">
-              Most reps practice on real prospects — that's how deals get lost.
+              Most reps practice on real prospects that's how deals get lost.
               Pitch Plus gives you a sparring partner that fights back, so you're
               sharp before it ever matters on a real call.
             </p>
@@ -486,7 +500,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           <div className="lp__sv-howto">
             {[
               { num: '01', title: 'Pick a scenario', desc: 'Choose from 8 real-world situations at any difficulty, or describe your own prospect in plain text.' },
-              { num: '02', title: 'AI becomes the prospect', desc: 'It stalls, objects, and pushes back — exactly like the toughest calls you face every day.' },
+              { num: '02', title: 'AI becomes the prospect', desc: 'It stalls, objects, and pushes back exactly like the toughest calls you face every day.' },
               { num: '03', title: 'Get scored on every reply', desc: 'Each response rated 0–10 with pros, cons, and the ideal phrasing shown right away.' },
             ].map((step, i) => (
               <div key={i} className="lp__sv-tstep" style={{ '--i': i } as React.CSSProperties}>
@@ -518,7 +532,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
             <div className="lp__sv-col">
               <div className="lp__sv-col-title">▣ AI Sales Academy</div>
-              <p className="lp__sv-col-sub">A structured 9-lesson curriculum from beginner to advanced. Each lesson scored — watch your number climb session by session.</p>
+              <p className="lp__sv-col-sub">A structured 9-lesson curriculum from beginner to advanced. Each lesson scored watch your number climb session by session.</p>
               {ACADEMY_MODULES.map((m, mi) => (
                 <div
                   key={mi}
@@ -555,11 +569,11 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
                 PROSPECT: "Honestamente, el precio está fuera de nuestro presupuesto ahora mismo."
               </div>
               <div className="lp__sv-tframe lp__sv-tframe--you">
-                YOU: "Entiendo — ¿es el total o el timing lo que es un obstáculo?"
+                YOU: "Entiendo ¿es el total o el timing lo que es un obstáculo?"
               </div>
               <div className="lp__sv-tframe lp__sv-tframe--score">
                 <span className="lp__sv-tscore">9/10</span>
-                <span>✓ Perfect — you isolated the real objection</span>
+                <span>✓ Perfect you isolated the real objection</span>
               </div>
               <div className="lp__sv-tframe lp__sv-tframe--ideal">
                 <div className="lp__sv-tideal-label">IDEAL RESPONSE</div>
@@ -590,7 +604,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
             <div className="lp__sv-label">MULTILINGUAL</div>
             <h2 className="lp__sv-h2">Close deals in any language</h2>
             <p className="lp__sv-sub">
-              While every competitor limits coaching to English, Pitch Plus coaches in 10 languages —
+              While every competitor limits coaching to English, Pitch Plus coaches in 10 languages 
               real-time objection handling, training, and post-call analysis, all localised.
             </p>
           </div>
@@ -612,7 +626,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
             <div className="lp__sv-lang-col">
               <div className="lp__sv-lang-col-icon">✦</div>
               <div className="lp__sv-lang-col-title">Real-time Coaching</div>
-              <p>Objection detection, buying signal alerts, and coaching prompts — all delivered in your language as you speak.</p>
+              <p>Objection detection, buying signal alerts, and coaching prompts all delivered in your language as you speak.</p>
             </div>
             <div className="lp__sv-lang-col">
               <div className="lp__sv-lang-col-icon">◈</div>
@@ -622,7 +636,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
             <div className="lp__sv-lang-col">
               <div className="lp__sv-lang-col-icon">◎</div>
               <div className="lp__sv-lang-col-title">Post-call Analysis</div>
-              <p>Transcript, AI summary, lead score, and follow-up email — all generated in your language after every call.</p>
+              <p>Transcript, AI summary, lead score, and follow-up email all generated in your language after every call.</p>
             </div>
           </div>
 
@@ -718,7 +732,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
 
           <div className="lp__guarantee lp__sv-guarantee">
-            ✓ 7-day money-back guarantee on Pro — no questions asked
+            ✓ 7-day money-back guarantee on Pro no questions asked
           </div>
         </div>
       </div>
@@ -901,7 +915,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         <div className="lp__section-label reveal">MULTILINGUAL</div>
         <h2 className="lp__section-h2 reveal" data-delay="0.1">Sell in 10 languages</h2>
         <p className="lp__section-sub reveal" data-delay="0.18">
-          Competitors coach only in English. Pitch Plus coaches in your language —
+          Competitors coach only in English. Pitch Plus coaches in your language 
           real-time objection handling, training, and post-call analysis, all localised.
         </p>
         <div className="lp__lang-grid reveal" data-delay="0.25">
@@ -947,44 +961,57 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         </div>
       </section>
 
-      {/* ── Feature tabs ── */}
-      <section className="lp__section lp__section--alt">
-        <div className="lp__section-label reveal">EVERYTHING IN ONE PLACE</div>
-        <h2 className="lp__section-h2 reveal" data-delay="0.1">Built for every part of your sales process</h2>
-        <div className="lp__ftabs reveal" data-delay="0.18">
-          <div className="lp__ftabs-nav">
-            {FEATURE_TABS.map(tab => (
-              <button
-                key={tab.id}
-                className={`lp__ftab-btn ${activeFeatureTab === tab.id ? 'lp__ftab-btn--active' : ''}`}
-                onClick={() => setActiveFeatureTab(tab.id)}
-              >
-                <span className="lp__ftab-btn-icon">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
+      {/* ── Feature tabs (auto-advance carousel) ── */}
+      <section className="lp__ftab-section">
+        <div className="lp__ftab-sticky">
+
+          <div className="lp__ftab-header">
+            <div className="lp__section-label">EVERYTHING IN ONE PLACE</div>
+            <h2 className="lp__section-h2">Built for every part of your sales process</h2>
           </div>
-          {FEATURE_TABS.filter(t => t.id === activeFeatureTab).map(tab => (
-            <div key={tab.id} className="lp__ftab-content">
-              <div className="lp__ftab-left">
-                <div className="lp__ftab-label">{tab.icon} {tab.label}</div>
-                <h3 className="lp__ftab-title">{tab.title}</h3>
-                <p className="lp__ftab-desc">{tab.desc}</p>
-              </div>
-              <div className="lp__ftab-right">
-                {tab.items.map((item, i) => (
-                  <div key={i} className="lp__ftab-item">
-                    <div className="lp__ftab-item-icon">{item.icon}</div>
-                    <div className="lp__ftab-item-text">
-                      <div className="lp__ftab-item-title">{item.title}</div>
-                      <div className="lp__ftab-item-desc">{item.desc}</div>
-                    </div>
-                    <span className="lp__ftab-item-arrow">›</span>
-                  </div>
-                ))}
-              </div>
+
+          {/* Clickable step dots */}
+          <div className="lp__ftab-stepdots">
+            <div className="lp__ftab-stepdots-track">
+              <div
+                className="lp__ftab-stepdots-fill"
+                style={{ width: `${(featureTabIdx / (FEATURE_TABS.length - 1)) * 100}%` }}
+              />
             </div>
-          ))}
+            {FEATURE_TABS.map((tab, i) => (
+              <div
+                key={tab.id}
+                className={`lp__ftab-stepdot${i === featureTabIdx ? ' lp__ftab-stepdot--active' : ''}${i < featureTabIdx ? ' lp__ftab-stepdot--done' : ''}`}
+                onClick={() => goFeatureTab(i)}
+              >
+                <div className="lp__ftab-stepdot-node" />
+                <span className="lp__ftab-stepdot-label">{tab.icon} {tab.label}</span>
+              </div>
+            ))}
+
+          </div>
+
+          {/* Panel — key triggers re-mount animation on change */}
+          <div key={featureTabIdx} className="lp__ftab-content">
+            <div className="lp__ftab-left">
+              <div className="lp__ftab-label">{FEATURE_TABS[featureTabIdx].icon} {FEATURE_TABS[featureTabIdx].label}</div>
+              <h3 className="lp__ftab-title">{FEATURE_TABS[featureTabIdx].title}</h3>
+              <p className="lp__ftab-desc">{FEATURE_TABS[featureTabIdx].desc}</p>
+            </div>
+            <div className="lp__ftab-right">
+              {FEATURE_TABS[featureTabIdx].items.map((item, i) => (
+                <div key={i} className="lp__ftab-item" style={{ '--i': i } as React.CSSProperties}>
+                  <div className="lp__ftab-item-icon">{item.icon}</div>
+                  <div className="lp__ftab-item-text">
+                    <div className="lp__ftab-item-title">{item.title}</div>
+                    <div className="lp__ftab-item-desc">{item.desc}</div>
+                  </div>
+                  <span className="lp__ftab-item-arrow">›</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -1045,7 +1072,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
       {/* ── Footer ── */}
       <footer className="lp__footer reveal">
-        <div className="lp__footer-logo">+ PITCH<span> PLUS</span></div>
+        <div className="lp__footer-logo">PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span></div>
         <div className="lp__footer-links">
           <button onClick={() => goSection('features')}>Features</button>
           <button onClick={() => goSection('pricing')}>Pricing</button>

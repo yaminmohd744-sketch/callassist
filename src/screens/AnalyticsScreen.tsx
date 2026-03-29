@@ -165,7 +165,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
               <div className="analytics__charts">
                 <div className="analytics__chart-card analytics__chart-card--wide">
-                  <div className="analytics__chart-title">CLOSE PROBABILITY — LAST {recentCalls.length} CALLS</div>
+                  <div className="analytics__chart-title">CLOSE PROBABILITY LAST {recentCalls.length} CALLS</div>
                   <div className="analytics__bars">
                     {recentCalls.map((s, i) => (
                       <div key={i} className="analytics__bar-row">
@@ -201,7 +201,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
                 </div>
 
                 <div className="analytics__chart-card">
-                  <div className="analytics__chart-title">ACTIVITY — LAST 28 DAYS</div>
+                  <div className="analytics__chart-title">ACTIVITY LAST 28 DAYS</div>
                   <div className="analytics__activity-grid">
                     {activityDays.map((d, i) => (
                       <div
@@ -265,7 +265,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
               <div className="analytics__charts">
                 <div className="analytics__chart-card analytics__chart-card--wide">
-                  <div className="analytics__chart-title">SCORE — LAST 10 SESSIONS</div>
+                  <div className="analytics__chart-title">SCORE LAST 10 SESSIONS</div>
                   <div className="analytics__bars">
                     {trainingRecords.slice(0, 10).map((r, i) => (
                       <div key={i} className="analytics__bar-row">
@@ -312,7 +312,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
         <div className="analytics__content">
           <div className="analytics__team-grid">
             <div className="analytics__team-card">
-              <div className="analytics__chart-title">MANAGER — CREATE TEAM</div>
+              <div className="analytics__chart-title">MANAGER CREATE TEAM</div>
               <p className="analytics__team-desc">
                 Generate a team code and share it with your reps so they can join your team.
               </p>
@@ -347,7 +347,7 @@ create table team_members (
             </div>
 
             <div className="analytics__team-card">
-              <div className="analytics__chart-title">REP — JOIN A TEAM</div>
+              <div className="analytics__chart-title">REP JOIN A TEAM</div>
               <p className="analytics__team-desc">
                 Enter the code your manager shared to join their team.
               </p>

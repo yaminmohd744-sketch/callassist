@@ -21,15 +21,11 @@
 
 .app-shell__logo {
   font-size: var(--font-size-md);
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  font-weight: 900;
+  letter-spacing: 0.06em;
   color: var(--color-text-primary);
   padding: 0 var(--space-5);
   margin-bottom: var(--space-8);
-}
-
-.app-shell__logo span {
-  color: var(--color-accent-cyan);
 }
 
 .app-shell__nav {

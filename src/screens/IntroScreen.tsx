@@ -39,7 +39,7 @@ export function IntroScreen({ onDone }: IntroScreenProps) {
           </div>
         </div>
 
-        {/* Wordmark — always correct, staggers in letter by letter */}
+        {/* Wordmark always correct, staggers in letter by letter */}
         <div className={`intro__wordmark${wordsIn ? ' intro__wordmark--visible' : ''}`}>
           <span className="intro__word">
             {PITCH.map((ch, i) => (

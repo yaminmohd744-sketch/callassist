@@ -64,8 +64,7 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
           <button className="auth-back" onClick={onBack}>← Back</button>
         )}
         <div className="auth-logo">
-          <span className="auth-logo__dot" />
-          <span className="auth-logo__name">CALL<span className="auth-logo__accent">ASSIST</span></span>
+          PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span>
         </div>
 
         <h1 className="auth-title">

@@ -22,7 +22,7 @@ const OBJECTION_REFERENCE = [
   },
   {
     objection: '"Send me some information"',
-    rebuttal: '"Of course — what specifically would help you most? And what would need to be in that info to move things forward?"',
+    rebuttal: '"Of course what specifically would help you most? And what would need to be in that info to move things forward?"',
   },
   {
     objection: '"We\'re happy with our current solution"',

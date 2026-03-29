@@ -15,7 +15,7 @@ export function AppShell({ activeScreen, onNavigate, onStartCall, onUploadCall, 
   return (
     <div className="app-shell">
       <aside className="app-shell__sidebar">
-        <div className="app-shell__logo">+ PITCH<span> PLUS</span></div>
+        <div className="app-shell__logo">PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span></div>
 
         <nav className="app-shell__nav">
           <div

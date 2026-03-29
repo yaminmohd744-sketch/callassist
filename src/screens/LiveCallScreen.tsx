@@ -204,7 +204,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     if (!text) return;
     const mins = Math.floor(elapsedSeconds / 60);
     const secs = String(elapsedSeconds % 60).padStart(2, '0');
-    setNotes(prev => [...prev, `${mins}:${secs} — ${text}`]);
+    setNotes(prev => [...prev, `${mins}:${secs} ${text}`]);
     setNoteInput('');
   }
 

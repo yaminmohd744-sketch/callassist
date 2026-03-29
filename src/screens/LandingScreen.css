@@ -45,12 +45,13 @@
 
 .lp__nav-logo {
   font-size: var(--font-size-md);
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 900;
+  letter-spacing: 0.06em;
   color: var(--color-text-primary);
   white-space: nowrap;
 }
-.lp__nav-logo span { color: var(--color-accent-magenta); }
+.lp__logo-plus { color: var(--color-accent-purple); }
+.lp__logo-sym  { color: #fff; }
 
 .lp__nav-links {
   display: flex;
@@ -449,10 +450,11 @@
   background: rgba(129, 74, 200, 0.04);
 }
 
-.lp__feature-icon { font-size: 26px; margin-bottom: var(--space-4); }
+.lp__feature-icon { font-size: 26px; margin-bottom: var(--space-4); color: var(--color-accent-purple); }
 .lp__feature-title {
   font-size: var(--font-size-lg);
   font-weight: 700;
+  color: var(--color-text-primary);
   margin-bottom: var(--space-2);
   letter-spacing: -0.02em;
 }
@@ -760,57 +762,108 @@
   font-weight: 400;
 }
 
-/* ─── Feature tabs ────────────────────────────────────────── */
+/* ─── Feature tabs (auto-advance carousel) ───────────────── */
 
-.lp__ftabs {
-  margin-top: var(--space-10);
-  max-width: 980px;
-  margin-left: auto;
-  margin-right: auto;
+.lp__ftab-section {
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Centered pill nav */
-.lp__ftabs-nav {
+.lp__ftab-sticky {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-6);
-  overflow-x: auto;
-  scrollbar-width: none;
+  gap: var(--space-8);
+  padding: var(--space-16) var(--space-6);
 }
-.lp__ftabs-nav::-webkit-scrollbar { display: none; }
 
-.lp__ftab-btn {
+.lp__ftab-header {
+  text-align: center;
+}
+.lp__ftab-header .lp__section-label { margin-bottom: var(--space-3); }
+.lp__ftab-header .lp__section-h2   { margin-bottom: 0; }
+
+/* ── Step progress indicator ── */
+.lp__ftab-stepdots {
+  position: relative;
   display: flex;
+  align-items: flex-start;
+  gap: 80px;
+}
+
+.lp__ftab-stepdots-track {
+  position: absolute;
+  top: 9px;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.lp__ftab-stepdots-fill {
+  height: 100%;
+  background: var(--color-accent-gradient);
+  border-radius: 1px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.lp__ftab-stepdot {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: var(--space-2);
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-right: none;
-  font-family: var(--font-sans);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-text-secondary);
+  position: relative;
+  z-index: 1;
   cursor: pointer;
-  white-space: nowrap;
-  transition: color var(--transition-fast), background var(--transition-fast);
 }
-.lp__ftab-btn:first-child { border-radius: var(--border-radius-pill) 0 0 var(--border-radius-pill); }
-.lp__ftab-btn:last-child  { border-radius: 0 var(--border-radius-pill) var(--border-radius-pill) 0; border-right: 1px solid rgba(255, 255, 255, 0.08); }
-.lp__ftab-btn:hover { color: var(--color-text-primary); background: rgba(255, 255, 255, 0.07); }
-.lp__ftab-btn--active {
-  color: #fff;
-  background: var(--color-accent-gradient);
-  border-color: transparent;
-}
-.lp__ftab-btn-icon { font-size: 0.9em; }
 
-/* Card */
-@keyframes lp-tab-in {
-  from { opacity: 0; transform: translateY(10px); }
+.lp__ftab-stepdot-node {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: var(--color-bg-elevated);
+  transition: border-color 0.35s, background 0.35s, transform 0.35s, box-shadow 0.35s;
+}
+
+.lp__ftab-stepdot--done .lp__ftab-stepdot-node {
+  border-color: var(--color-accent-purple);
+  background: var(--color-accent-purple);
+}
+
+.lp__ftab-stepdot--active .lp__ftab-stepdot-node {
+  border-color: var(--color-accent-magenta);
+  background: var(--color-accent-magenta);
+  box-shadow: 0 0 14px rgba(223, 122, 254, 0.55);
+  transform: scale(1.3);
+}
+
+.lp__ftab-stepdot-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.25);
+  white-space: nowrap;
+  transition: color 0.35s;
+}
+.lp__ftab-stepdot--active .lp__ftab-stepdot-label { color: var(--color-text-primary); }
+.lp__ftab-stepdot--done   .lp__ftab-stepdot-label { color: var(--color-text-secondary); }
+
+/* ── Panel animations ── */
+@keyframes ftab-panel-in {
+  from { opacity: 0; transform: translateX(56px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes ftab-item-in {
+  from { opacity: 0; transform: translateX(28px); }
   to   { opacity: 1; transform: none; }
 }
 
+/* ── Panel card ── */
 .lp__ftab-content {
   display: flex;
   gap: 0;
@@ -819,12 +872,14 @@
   overflow: hidden;
   background: var(--color-bg-elevated);
   border-top: 2px solid var(--color-accent-purple);
-  animation: lp-tab-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
-  min-height: 380px;
+  animation: ftab-panel-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  min-height: 340px;
+  max-width: 980px;
+  width: 100%;
 }
 
 .lp__ftab-left {
-  flex: 0 0 320px;
+  flex: 0 0 300px;
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
@@ -850,6 +905,7 @@
 .lp__ftab-title {
   font-size: clamp(18px, 2vw, 24px);
   font-weight: 800;
+  color: var(--color-accent-purple);
   line-height: 1.25;
   letter-spacing: -0.02em;
   margin: 0;
@@ -860,7 +916,6 @@
   color: var(--color-text-secondary);
   line-height: 1.65;
   margin: 0;
-  flex: 1;
 }
 
 .lp__ftab-right {
@@ -881,6 +936,7 @@
   border-radius: 10px;
   transition: border-color var(--transition-fast), background var(--transition-fast);
   flex: 1;
+  animation: ftab-item-in 0.45s calc(var(--i, 0) * 0.07s + 0.12s) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .lp__ftab-item:hover {
   border-color: rgba(129, 74, 200, 0.35);
@@ -916,10 +972,14 @@
   flex-shrink: 0;
 }
 
+
+/* ── Mobile ── */
 @media (max-width: 768px) {
+  .lp__ftab-stepdots { gap: 28px; }
+  .lp__ftab-stepdot-label { font-size: 9px; }
   .lp__ftab-content { flex-direction: column; }
-  .lp__ftab-left { flex: none; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.07); }
-  .lp__ftab-btn { padding: 8px 14px; font-size: var(--font-size-xs); }
+  .lp__ftab-left { flex: none; padding: var(--space-6); }
+  .lp__ftab-right { padding: var(--space-4); }
 }
 
 /* ─── Pricing ─────────────────────────────────────────────── */
@@ -1076,8 +1136,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.lp__footer-logo { font-size: var(--font-size-md); font-weight: 700; letter-spacing: 0.06em; }
-.lp__footer-logo span { color: var(--color-accent-magenta); }
+.lp__footer-logo { font-size: var(--font-size-md); font-weight: 900; letter-spacing: 0.06em; }
 
 .lp__footer-links { display: flex; gap: var(--space-4); }
 .lp__footer-links button {
@@ -1455,7 +1514,7 @@
 }
 .lp__sv-module-lessons li::before {
   content: '◦';
-  color: var(--color-accent-purple);
+  color: var(--color-text-muted);
   font-size: 10px;
   flex-shrink: 0;
 }
@@ -1490,10 +1549,7 @@
   font-size: 38px;
   font-weight: 800;
   font-family: var(--font-mono);
-  background: var(--color-accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-text-primary);
   line-height: 1;
   margin-bottom: var(--space-3);
 }
@@ -1654,7 +1710,7 @@
 .lp__sv-lang-col-title {
   font-size: var(--font-size-md);
   font-weight: 700;
-  color: var(--color-text-primary);
+  color: var(--color-accent-purple);
 }
 .lp__sv-lang-col p {
   font-size: var(--font-size-sm);
