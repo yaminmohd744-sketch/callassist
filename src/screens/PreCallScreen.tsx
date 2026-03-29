@@ -40,7 +40,7 @@ export function PreCallScreen({ onStartCall, onBack }: PreCallScreenProps) {
       <div className="precall__card">
         <div className="precall__header">
           <button className="precall__back" onClick={onBack}>← BACK</button>
-          <div className="precall__logo">◎ CALL<span>ASSIST</span></div>
+          <div className="precall__logo">+ PITCH<span> PLUS</span></div>
         </div>
 
         <h2 className="precall__title">Pre-Call Setup</h2>

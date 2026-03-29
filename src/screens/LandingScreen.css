@@ -1467,6 +1467,152 @@
   animation: lp-sect-in 0.5s 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ─── Training — How It Works steps ──────────────────────────── */
+
+.lp__sv-howto {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 960px;
+}
+
+.lp__sv-tstep {
+  padding: var(--space-6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--border-radius-md);
+  animation: lp-seq 0.5s calc(var(--i, 0) * 0.18s) cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: border-color var(--transition-fast);
+}
+.lp__sv-tstep:hover { border-color: rgba(129, 74, 200, 0.3); }
+
+.lp__sv-tstep-num {
+  font-size: 38px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  background: var(--color-accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: var(--space-3);
+}
+
+.lp__sv-tstep-title {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.lp__sv-tstep-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+/* ─── Training — Animated terminal ───────────────────────────── */
+
+.lp__sv-terminal {
+  background: var(--color-bg-surface);
+  border: 1px solid rgba(129, 74, 200, 0.25);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+.lp__sv-terminal-bar {
+  background: rgba(129, 74, 200, 0.12);
+  border-bottom: 1px solid rgba(129, 74, 200, 0.2);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--font-size-xs);
+  color: var(--color-accent-magenta);
+  letter-spacing: 0.05em;
+  opacity: 0;
+  animation: lp-tbar 8s 0.8s infinite;
+}
+
+.lp__sv-tframe {
+  padding: var(--space-3) var(--space-5);
+  opacity: 0;
+}
+
+.lp__sv-tframe--prospect {
+  color: var(--color-text-secondary);
+  animation: lp-tprospect 8s 0.8s infinite;
+}
+
+.lp__sv-tframe--you {
+  color: var(--color-accent-magenta);
+  animation: lp-tyou 8s 0.8s infinite;
+}
+
+.lp__sv-tframe--score {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-accent-green);
+  padding: var(--space-3) var(--space-5);
+  animation: lp-tscore 8s 0.8s infinite;
+  opacity: 0;
+}
+
+.lp__sv-tscore {
+  font-size: var(--font-size-base);
+  font-weight: 800;
+  color: var(--color-accent-green);
+  flex-shrink: 0;
+}
+
+.lp__sv-tframe--ideal {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: var(--space-4) var(--space-5);
+  color: var(--color-text-muted);
+  animation: lp-tideal 8s 0.8s infinite;
+  opacity: 0;
+}
+
+.lp__sv-tideal-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-purple);
+  margin-bottom: var(--space-2);
+}
+
+/* Terminal animation keyframes (8s loop) */
+@keyframes lp-tbar {
+  0%          { opacity: 0; }
+  5%          { opacity: 1; }
+  88%         { opacity: 1; }
+  94%, 100%   { opacity: 0; }
+}
+@keyframes lp-tprospect {
+  0%, 7%      { opacity: 0; transform: translateX(-10px); }
+  13%         { opacity: 1; transform: none; }
+  88%         { opacity: 1; transform: none; }
+  94%, 100%   { opacity: 0; }
+}
+@keyframes lp-tyou {
+  0%, 20%     { opacity: 0; transform: translateX(10px); }
+  27%         { opacity: 1; transform: none; }
+  88%         { opacity: 1; transform: none; }
+  94%, 100%   { opacity: 0; }
+}
+@keyframes lp-tscore {
+  0%, 33%     { opacity: 0; transform: translateY(6px); }
+  40%         { opacity: 1; transform: none; }
+  88%         { opacity: 1; transform: none; }
+  94%, 100%   { opacity: 0; }
+}
+@keyframes lp-tideal {
+  0%, 47%     { opacity: 0; transform: translateY(6px); }
+  54%         { opacity: 1; transform: none; }
+  88%         { opacity: 1; transform: none; }
+  94%, 100%   { opacity: 0; }
+}
+
 /* ─── Languages section ─────────────────────────────────────── */
 
 .lp__sv-lang-burst {
@@ -1603,6 +1749,7 @@
 @media (max-width: 768px) {
   .lp__sv-features-grid { grid-template-columns: 1fr 1fr; }
   .lp__sv-training-grid { grid-template-columns: 1fr; }
+  .lp__sv-howto { grid-template-columns: 1fr; }
   .lp__sv-lang-features { grid-template-columns: 1fr; }
   .lp__sv-diffs { flex-direction: column; align-items: center; }
   .lp__nav-links--sections { gap: 0; }

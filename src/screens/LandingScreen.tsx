@@ -189,20 +189,20 @@ const ACADEMY_MODULES = [
 
 const PRICING_FAQ = [
   {
-    q: 'Can I cancel anytime?',
-    a: 'Yes — no lock-ins, no questions asked. Cancel from your account settings in seconds.',
+    q: 'Can my prospect hear or tell that I\'m using AI coaching during the call?',
+    a: 'No. Pitch Plus runs silently in a separate browser tab — your prospect only hears you speaking normally. The coaching suggestions appear as text on your screen, so there\'s nothing audible on their end. It works the same way a physical cheat sheet would, except it updates in real time based on what\'s actually being said.',
   },
   {
-    q: 'What counts as a live call?',
-    a: 'Any session where you use the real-time AI coaching. Training sessions and post-call analysis don\'t count toward your monthly limit.',
+    q: 'How accurate is the speech recognition, and what happens if it mishears something?',
+    a: 'Pitch Plus uses your browser\'s native Web Speech API, which performs best in a quiet environment with a decent microphone. In good conditions accuracy is high enough to reliably catch objection keywords and buying signals. If a word is misheard, the coaching panel may occasionally miss a cue — but it won\'t interrupt the call or show anything incorrect to the prospect. The full transcript is editable after the call before it\'s saved.',
   },
   {
-    q: 'What\'s included in the Free plan?',
-    a: '5 live calls and 3 training sessions per month, English + Spanish coaching, and post-call summaries. No credit card required.',
+    q: 'Does it work for any product or industry, or is it only built for certain types of sales?',
+    a: 'It works for any outbound or inbound sales scenario where you\'re speaking with a prospect one-on-one. Before each call you enter your own pitch, product description, and call goal — so the AI coaches you in the context of what you\'re actually selling, not a generic script. Reps selling SaaS, financial products, real estate, recruitment, and insurance have all used it effectively. The custom scenario builder in training lets you replicate the exact objections specific to your market.',
   },
   {
-    q: 'Is there a free trial for Pro?',
-    a: '7-day free trial on Pro, then $29/month. Cancel anytime — full refund within the first 7 days, no questions asked.',
+    q: 'What happens to my transcripts and data if I downgrade or cancel?',
+    a: 'Your data stays accessible for 30 days after cancellation so you can export anything you need. Transcripts, call notes, lead scores, and AI summaries can all be downloaded before that window closes. After 30 days the account and its data are permanently deleted. We don\'t sell or share your data with third parties at any point — paid, free, or cancelled.',
   },
 ];
 
@@ -284,7 +284,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
     <nav className="lp__nav">
       <div className="lp__nav-inner">
         <button className="lp__nav-logo" onClick={() => setActiveSection(null)}>
-          ◎ CALL<span>ASSIST</span>
+          + PITCH<span> PLUS</span>
         </button>
 
         {activeSection !== null ? (
@@ -472,16 +472,35 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
       <div className="lp">
         {nav}
         <div className="lp__sv lp__sv--training">
+
           <div className="lp__sv-hero">
             <div className="lp__sv-label">TRAINING</div>
             <h2 className="lp__sv-h2">Practice like it's real.<br />Win when it is.</h2>
-            <p className="lp__sv-sub">Two modes. One goal: never lose a deal you could have won.</p>
+            <p className="lp__sv-sub">
+              Most reps practice on real prospects — that's how deals get lost.
+              Pitch Plus gives you a sparring partner that fights back, so you're
+              sharp before it ever matters on a real call.
+            </p>
+          </div>
+
+          <div className="lp__sv-howto">
+            {[
+              { num: '01', title: 'Pick a scenario', desc: 'Choose from 8 real-world situations at any difficulty, or describe your own prospect in plain text.' },
+              { num: '02', title: 'AI becomes the prospect', desc: 'It stalls, objects, and pushes back — exactly like the toughest calls you face every day.' },
+              { num: '03', title: 'Get scored on every reply', desc: 'Each response rated 0–10 with pros, cons, and the ideal phrasing shown right away.' },
+            ].map((step, i) => (
+              <div key={i} className="lp__sv-tstep" style={{ '--i': i } as React.CSSProperties}>
+                <div className="lp__sv-tstep-num">{step.num}</div>
+                <div className="lp__sv-tstep-title">{step.title}</div>
+                <div className="lp__sv-tstep-desc">{step.desc}</div>
+              </div>
+            ))}
           </div>
 
           <div className="lp__sv-training-grid">
             <div className="lp__sv-col">
               <div className="lp__sv-col-title">◈ Practice Scenarios</div>
-              <p className="lp__sv-col-sub">Jump straight into a live AI roleplay. No setup, just practice.</p>
+              <p className="lp__sv-col-sub">Jump straight into a live AI roleplay. Pick a situation, choose Easy / Medium / Hard, and go. No setup required.</p>
               {TRAINING_SCENARIOS.map((s, i) => (
                 <div
                   key={i}
@@ -499,7 +518,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
             <div className="lp__sv-col">
               <div className="lp__sv-col-title">▣ AI Sales Academy</div>
-              <p className="lp__sv-col-sub">Structured curriculum. Track your score rep by rep.</p>
+              <p className="lp__sv-col-sub">A structured 9-lesson curriculum from beginner to advanced. Each lesson scored — watch your number climb session by session.</p>
               {ACADEMY_MODULES.map((m, mi) => (
                 <div
                   key={mi}
@@ -528,22 +547,22 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
 
           <div className="lp__sv-mock-wrap">
-            <div className="lp__mock-training">
-              <div className="lp__mock-training-bar">
-                <span>◈</span> TRAINING MODE &nbsp;·&nbsp; Price Objection &nbsp;·&nbsp; 🇪🇸 Spanish
+            <div className="lp__sv-terminal">
+              <div className="lp__sv-terminal-bar">
+                ◈ TRAINING  ·  Price Objection  ·  🇪🇸 Spanish  ·  MEDIUM
               </div>
-              <div className="lp__mock-msg lp__mock-msg--prospect">
+              <div className="lp__sv-tframe lp__sv-tframe--prospect">
                 PROSPECT: "Honestamente, el precio está fuera de nuestro presupuesto ahora mismo."
               </div>
-              <div className="lp__mock-msg lp__mock-msg--rep">
-                YOU: "Entiendo, ¿puedo preguntarte qué parte del presupuesto es el obstáculo?"
+              <div className="lp__sv-tframe lp__sv-tframe--you">
+                YOU: "Entiendo — ¿es el total o el timing lo que es un obstáculo?"
               </div>
-              <div className="lp__mock-feedback">
-                <span className="lp__mock-score lp__mock-score--good">8/10</span>
-                <span>✓ Good — you turned it into a discovery question</span>
+              <div className="lp__sv-tframe lp__sv-tframe--score">
+                <span className="lp__sv-tscore">9/10</span>
+                <span>✓ Perfect — you isolated the real objection</span>
               </div>
-              <div className="lp__mock-ideal">
-                <div className="lp__mock-ideal-label">IDEAL RESPONSE</div>
+              <div className="lp__sv-tframe lp__sv-tframe--ideal">
+                <div className="lp__sv-tideal-label">IDEAL RESPONSE</div>
                 "¿Qué parte del costo es el obstáculo principal? ¿Es el total o el timing?"
               </div>
             </div>
@@ -571,7 +590,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
             <div className="lp__sv-label">MULTILINGUAL</div>
             <h2 className="lp__sv-h2">Close deals in any language</h2>
             <p className="lp__sv-sub">
-              While every competitor limits coaching to English, CallAssist coaches in 10 languages —
+              While every competitor limits coaching to English, Pitch Plus coaches in 10 languages —
               real-time objection handling, training, and post-call analysis, all localised.
             </p>
           </div>
@@ -608,7 +627,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
 
           <div className="lp__sv-lang-vs">
-            <span className="lp__sv-lang-vs-us">CallAssist: 10 languages</span>
+            <span className="lp__sv-lang-vs-us">Pitch Plus: 10 languages</span>
             <span className="lp__sv-lang-vs-sep">vs</span>
             <span className="lp__sv-lang-vs-them">Competitors: English only</span>
           </div>
@@ -680,7 +699,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
 
           <div className="lp__sv-faq">
-            <div className="lp__sv-faq-title">Common questions</div>
+            <div className="lp__sv-faq-title">FAQ</div>
             {PRICING_FAQ.map((item, i) => (
               <div
                 key={i}
@@ -744,7 +763,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
               <span className="lp__dot lp__dot--red" />
               <span className="lp__dot lp__dot--yellow" />
               <span className="lp__dot lp__dot--green" />
-              <span className="lp__terminal-title">CALLASSIST - LIVE</span>
+              <span className="lp__terminal-title">PITCH PLUS - LIVE</span>
             </div>
             <div className="lp__terminal-body">
               {DEMO_FRAMES.slice(0, visibleFrames).map((frame, i) => (
@@ -882,7 +901,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         <div className="lp__section-label reveal">MULTILINGUAL</div>
         <h2 className="lp__section-h2 reveal" data-delay="0.1">Sell in 10 languages</h2>
         <p className="lp__section-sub reveal" data-delay="0.18">
-          Competitors coach only in English. CallAssist coaches in your language -
+          Competitors coach only in English. Pitch Plus coaches in your language —
           real-time objection handling, training, and post-call analysis, all localised.
         </p>
         <div className="lp__lang-grid reveal" data-delay="0.25">
@@ -898,13 +917,13 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
       {/* ── Comparison ── */}
       <section className="lp__section">
         <div className="lp__section-label reveal">COMPARISON</div>
-        <h2 className="lp__section-h2 reveal" data-delay="0.1">Why CallAssist over the alternatives?</h2>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Why Pitch Plus over the alternatives?</h2>
         <div className="lp__compare-wrap reveal" data-delay="0.18">
           <table className="lp__compare">
             <thead>
               <tr>
                 <th className="lp__compare-feature-col">Feature</th>
-                <th className="lp__compare-us-col">CallAssist</th>
+                <th className="lp__compare-us-col">Pitch Plus</th>
                 <th className="lp__compare-them-col">Other Tools</th>
               </tr>
             </thead>
@@ -1026,13 +1045,13 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
       {/* ── Footer ── */}
       <footer className="lp__footer reveal">
-        <div className="lp__footer-logo">◎ CALL<span>ASSIST</span></div>
+        <div className="lp__footer-logo">+ PITCH<span> PLUS</span></div>
         <div className="lp__footer-links">
           <button onClick={() => goSection('features')}>Features</button>
           <button onClick={() => goSection('pricing')}>Pricing</button>
           <button onClick={onGetStarted}>Sign In</button>
         </div>
-        <div className="lp__footer-copy">© 2025 CallAssist. All rights reserved.</div>
+        <div className="lp__footer-copy">© 2025 Pitch Plus. All rights reserved.</div>
       </footer>
 
     </div>

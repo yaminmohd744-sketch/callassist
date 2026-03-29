@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LandingScreen }    from './screens/LandingScreen';
+import { IntroScreen }      from './screens/IntroScreen';
 import { DashboardScreen }  from './screens/DashboardScreen';
 import { PreCallScreen }    from './screens/PreCallScreen';
 import { LiveCallScreen }   from './screens/LiveCallScreen';
@@ -77,6 +78,7 @@ export function App() {
   }
 
   const [screen, setScreen]             = useState<Screen>('landing');
+  const [showIntro, setShowIntro]       = useState(true);
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
@@ -149,6 +151,7 @@ export function App() {
     return (
       <>
         <LandingScreen onGetStarted={() => setScreen('auth')} />
+        {showIntro && <IntroScreen onDone={() => setShowIntro(false)} />}
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </>
     );
