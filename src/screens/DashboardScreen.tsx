@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 import { Button } from '../components/ui/Button';
 import type { CallSession } from '../types';
 import { getStreak } from '../lib/streak';
@@ -26,6 +27,11 @@ function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2 && parts[0] && parts[1]) return (parts[0][0] + parts[1][0]).toUpperCase();
   return name.slice(0, 2).toUpperCase();
+}
+
+function getGreeting(): string {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
 }
 
 interface DerivedContact {
@@ -78,9 +84,13 @@ interface DashboardScreenProps {
   onUploadCall: () => void;
   onViewSession: (session: CallSession) => void;
   onDeleteSession: (endedAt: string) => void;
+  onGoTraining: () => void;
+  onGoAnalytics: () => void;
 }
 
-export function DashboardScreen({ pastSessions, onStartCall, onUploadCall, onViewSession, onDeleteSession }: DashboardScreenProps) {
+export function DashboardScreen({
+  pastSessions, onStartCall, onUploadCall, onViewSession, onDeleteSession, onGoTraining, onGoAnalytics,
+}: DashboardScreenProps) {
   const [activeView, setActiveView] = useState<'dashboard' | 'contacts'>('dashboard');
   const [contactSearch, setContactSearch] = useState('');
   const [selectedContact, setSelectedContact] = useState<DerivedContact | null>(null);
@@ -91,6 +101,7 @@ export function DashboardScreen({ pastSessions, onStartCall, onUploadCall, onVie
     ? Math.round(pastSessions.reduce((sum, s) => sum + s.finalCloseProbability, 0) / totalCalls)
     : 0;
   const totalObjections = pastSessions.reduce((sum, s) => sum + s.objectionsCount, 0);
+  const streak = getStreak();
 
   const contacts = deriveContacts(pastSessions);
   const filteredContacts = contactSearch.trim()
@@ -131,23 +142,83 @@ export function DashboardScreen({ pastSessions, onStartCall, onUploadCall, onVie
       {/* ── Dashboard view ── */}
       {activeView === 'dashboard' && (
         <main className="dashboard__main">
-          <div className="dashboard__topbar">
+
+          {/* Greeting */}
+          <div className="dashboard__greeting db-anim" style={{ '--i': 0 } as CSSProperties}>
             <div>
-              <h1 className="dashboard__title">Dashboard</h1>
-              <p className="dashboard__subtitle">Manage and start your cold calls</p>
+              <h1 className="dashboard__greeting-text">{getGreeting()} — Ready to close?</h1>
+              <p className="dashboard__subtitle">
+                {streak > 0 ? `${streak}-day practice streak — keep the momentum!` : 'Your personal AI sales coach'}
+              </p>
             </div>
-            <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-              <Button variant="ghost" size="md" onClick={onUploadCall}>
-                ⬆ UPLOAD CALL
-              </Button>
-              <Button variant="primary" size="md" onClick={onStartCall}>
-                ▶ START NEW CALL
-              </Button>
+            <Button variant="ghost" size="md" onClick={onUploadCall}>⬆ UPLOAD CALL</Button>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="dashboard__quickactions db-anim" style={{ '--i': 1 } as CSSProperties}>
+            <div
+              className="dashboard__qa-card dashboard__qa-card--call"
+              onClick={onStartCall}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && onStartCall()}
+            >
+              <div className="dashboard__qa-icon">▶</div>
+              <div className="dashboard__qa-body">
+                <div className="dashboard__qa-label">START NEW CALL</div>
+                <div className="dashboard__qa-desc">Launch a live AI coaching session</div>
+              </div>
+              <div className="dashboard__qa-arrow">→</div>
+            </div>
+
+            <div
+              className="dashboard__qa-card dashboard__qa-card--practice"
+              onClick={onGoTraining}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && onGoTraining()}
+            >
+              <div className="dashboard__qa-icon">◎</div>
+              <div className="dashboard__qa-body">
+                <div className="dashboard__qa-label">PRACTICE SCENARIOS</div>
+                <div className="dashboard__qa-desc">Train with AI prospect simulations</div>
+              </div>
+              <div className="dashboard__qa-arrow">→</div>
+            </div>
+
+            <div
+              className="dashboard__qa-card dashboard__qa-card--academy"
+              onClick={onGoTraining}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && onGoTraining()}
+            >
+              <div className="dashboard__qa-icon">◈</div>
+              <div className="dashboard__qa-body">
+                <div className="dashboard__qa-label">AI ACADEMY</div>
+                <div className="dashboard__qa-desc">Structured lessons to master sales</div>
+              </div>
+              <div className="dashboard__qa-arrow">→</div>
+            </div>
+
+            <div
+              className="dashboard__qa-card dashboard__qa-card--analytics"
+              onClick={onGoAnalytics}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && onGoAnalytics()}
+            >
+              <div className="dashboard__qa-icon">▦</div>
+              <div className="dashboard__qa-body">
+                <div className="dashboard__qa-label">ANALYTICS</div>
+                <div className="dashboard__qa-desc">Review performance &amp; insights</div>
+              </div>
+              <div className="dashboard__qa-arrow">→</div>
             </div>
           </div>
 
           {/* Stats row */}
-          <div className="dashboard__stats">
+          <div className="dashboard__stats db-anim" style={{ '--i': 2 } as CSSProperties}>
             <div className="dashboard__stat-card">
               <div className="dashboard__stat-val">{totalCalls}</div>
               <div className="dashboard__stat-label">TOTAL CALLS</div>
@@ -171,15 +242,15 @@ export function DashboardScreen({ pastSessions, onStartCall, onUploadCall, onVie
               <div className="dashboard__stat-label">AVG DURATION</div>
             </div>
             <div className="dashboard__stat-card">
-              <div className={`dashboard__stat-val ${getStreak() > 0 ? 'dashboard__stat-val--high' : ''}`}>
-                {getStreak() > 0 ? `${getStreak()} day${getStreak() !== 1 ? 's' : ''}` : '-'}
+              <div className={`dashboard__stat-val ${streak > 0 ? 'dashboard__stat-val--high' : ''}`}>
+                {streak > 0 ? `${streak} day${streak !== 1 ? 's' : ''}` : '-'}
               </div>
               <div className="dashboard__stat-label">PRACTICE STREAK</div>
             </div>
           </div>
 
           {/* Recent calls */}
-          <div className="dashboard__section">
+          <div className="dashboard__section db-anim" style={{ '--i': 6 } as CSSProperties}>
             <div className="dashboard__section-header">
               <span className="dashboard__section-title">RECENT CALLS</span>
               <span className="dashboard__section-count">{totalCalls} total</span>
