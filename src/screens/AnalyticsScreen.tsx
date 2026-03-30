@@ -92,6 +92,18 @@ const LESSON_SHORT: Record<string, string> = {
   'l9-hard-close':     'Hard Cl.',
 };
 
+const LESSON_FULL: Record<string, string> = {
+  'l1-opener':         'The Perfect Opener',
+  'l2-not-interested': 'Handling Not Interested',
+  'l3-skeptic':        'The Skeptical Prospect',
+  'l4-price':          'Price Objections',
+  'l5-think-over':     'The Think It Over Trap',
+  'l6-status-quo':     'Breaking the Status Quo',
+  'l7-discovery':      'Discovery That Reveals Pain',
+  'l8-trial-close':    'The Trial Close',
+  'l9-hard-close':     'Closing the Hard Prospect',
+};
+
 interface ChartPoint { label: string; value: number; tier: Tier; }
 
 function fmtVal(v: number, unit: string) {
@@ -217,6 +229,8 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
 export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
   const [tab, setTab] = useState<AnalyticsTab>('performance');
   const [trainingRecords, setTrainingRecords] = useState<TrainingRecord[]>([]);
+  const [expandedChart, setExpandedChart] = useState<string | null>(null);
+  function toggleChart(id: string) { setExpandedChart(prev => prev === id ? null : id); }
   const [teamCode, setTeamCode] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [joinedTeam, setJoinedTeam] = useState('');
@@ -326,6 +340,60 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
   }
   function an(delay: number) { return { '--an-delay': `${delay}ms` } as React.CSSProperties; }
 
+  // ── Detail panel data ──────────────────────────────────────────────────────
+  const perfDetail = useMockPerf
+    ? MOCK_CALLS.map(c => ({
+        date: fmtDate(c.date), dur: fmtDur(c.dur),
+        prob: c.prob, probTier: scoreTier(c.prob),
+        score: c.score, scoreTier_: scoreTier(c.score, 70, 40),
+        stage: c.stage, objections: c.objections,
+      }))
+    : [...pastSessions]
+        .sort((a, b) => new Date(b.endedAt).getTime() - new Date(a.endedAt).getTime())
+        .map(s => ({
+          date: fmtDate(s.endedAt), dur: fmtDur(s.durationSeconds),
+          prob: s.finalCloseProbability, probTier: scoreTier(s.finalCloseProbability),
+          score: s.leadScore, scoreTier_: scoreTier(s.leadScore, 70, 40),
+          stage: s.callStage, objections: null as number | null,
+        }));
+
+  const stageDetail = (Object.entries(stageCount) as [string, number][])
+    .filter(([, c]) => c > 0)
+    .map(([stage, count]) => {
+      const probs = useMockPerf
+        ? MOCK_CALLS.filter(c => c.stage === stage).map(c => c.prob)
+        : pastSessions.filter(s => s.callStage === stage).map(s => s.finalCloseProbability);
+      const durs = useMockPerf
+        ? MOCK_CALLS.filter(c => c.stage === stage).map(c => c.dur)
+        : pastSessions.filter(s => s.callStage === stage).map(s => s.durationSeconds);
+      const ap = probs.length ? Math.round(avg(probs)) : 0;
+      return { stage, count, avgProb: ap, avgDur: Math.round(avg(durs)), probTier: scoreTier(ap) };
+    });
+
+  const trainDetail = tRecs.map(r => ({
+    date: fmtDate(r.completed_at),
+    lesson: LESSON_FULL[r.lesson_id] ?? r.lesson_id,
+    score: r.score,
+    tier: scoreTier(r.score * 10, 75, 50),
+  }));
+
+  const lessonDetail = LESSON_ORDER.filter(id => lessonBest.has(id)).map(id => {
+    const recs = tRecs.filter(r => r.lesson_id === id);
+    const scores = recs.map(r => r.score);
+    const best = Math.max(...scores);
+    const last = scores[0] ?? 0;
+    const trend = scores.length >= 2
+      ? (scores[0] > scores[scores.length - 1] ? 'up' : scores[0] < scores[scores.length - 1] ? 'down' : 'flat')
+      : 'flat';
+    return {
+      name: LESSON_FULL[id] ?? id,
+      attempts: scores.length, best, last,
+      bestTier: scoreTier(best * 10, 75, 50),
+      lastTier: scoreTier(last * 10, 75, 50),
+      trend,
+    };
+  });
+
   const isMock = useMockPerf || useMockTraining;
 
   return (
@@ -371,7 +439,12 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
           <div className="analytics__charts">
 
             <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
-              <div className="analytics__chart-title">CLOSE PROBABILITY — LAST {probBars.length} CALLS</div>
+              <div className="analytics__chart-title-row">
+                <span className="analytics__chart-title">CLOSE PROBABILITY — LAST {probBars.length} CALLS</span>
+                <button className={`analytics__chart-toggle ${expandedChart === 'prob' ? 'analytics__chart-toggle--active' : ''}`} onClick={() => toggleChart('prob')}>
+                  {expandedChart === 'prob' ? 'HIDE ▴' : 'DETAILS ▾'}
+                </button>
+              </div>
               <LineChart
                 chartId="prob"
                 points={probBars.map(b => ({ label: b.label, value: b.pct, tier: b.tier }))}
@@ -379,10 +452,36 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
                 unit="%"
                 style={an(320)}
               />
+              {expandedChart === 'prob' && (
+                <div className="analytics__detail-panel">
+                  <table className="analytics__detail-table">
+                    <thead><tr>
+                      <th>DATE</th><th>DURATION</th><th>CLOSE %</th><th>LEAD SCORE</th><th>STAGE</th>{useMockPerf && <th>OBJECTIONS</th>}
+                    </tr></thead>
+                    <tbody>
+                      {perfDetail.map((r, i) => (
+                        <tr key={i}>
+                          <td>{r.date}</td>
+                          <td>{r.dur}</td>
+                          <td className={`analytics__detail-val--${r.probTier}`}>{r.prob}%</td>
+                          <td className={`analytics__detail-val--${r.scoreTier_}`}>{r.score}</td>
+                          <td className="analytics__detail-stage">{r.stage.toUpperCase()}</td>
+                          {useMockPerf && <td className={r.objections && r.objections > 2 ? 'analytics__detail-val--low' : ''}>{r.objections}</td>}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
             <div className="analytics__chart-card" style={an(400)}>
-              <div className="analytics__chart-title">CALLS BY FINAL STAGE</div>
+              <div className="analytics__chart-title-row">
+                <span className="analytics__chart-title">CALLS BY FINAL STAGE</span>
+                <button className={`analytics__chart-toggle ${expandedChart === 'stage' ? 'analytics__chart-toggle--active' : ''}`} onClick={() => toggleChart('stage')}>
+                  {expandedChart === 'stage' ? 'HIDE ▴' : 'DETAILS ▾'}
+                </button>
+              </div>
               <div className="analytics__bars">
                 {(Object.entries(stageCount) as [string, number][]).map(([stage, count], i) => (
                   <div key={stage} className="analytics__bar-row">
@@ -397,6 +496,25 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
                   </div>
                 ))}
               </div>
+              {expandedChart === 'stage' && (
+                <div className="analytics__detail-panel">
+                  <table className="analytics__detail-table">
+                    <thead><tr>
+                      <th>STAGE</th><th>CALLS</th><th>AVG CLOSE %</th><th>AVG DURATION</th>
+                    </tr></thead>
+                    <tbody>
+                      {stageDetail.map((r, i) => (
+                        <tr key={i}>
+                          <td className="analytics__detail-stage">{r.stage.toUpperCase()}</td>
+                          <td>{r.count}</td>
+                          <td className={`analytics__detail-val--${r.probTier}`}>{r.avgProb}%</td>
+                          <td>{fmtDur(r.avgDur)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
             <div className="analytics__chart-card" style={an(450)}>
@@ -447,7 +565,12 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
           <div className="analytics__charts">
 
             <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
-              <div className="analytics__chart-title">SCORE — LAST {Math.min(tRecs.length, 10)} SESSIONS</div>
+              <div className="analytics__chart-title-row">
+                <span className="analytics__chart-title">SCORE — LAST {Math.min(tRecs.length, 10)} SESSIONS</span>
+                <button className={`analytics__chart-toggle ${expandedChart === 'score' ? 'analytics__chart-toggle--active' : ''}`} onClick={() => toggleChart('score')}>
+                  {expandedChart === 'score' ? 'HIDE ▴' : 'DETAILS ▾'}
+                </button>
+              </div>
               <LineChart
                 chartId="score"
                 points={tRecs.slice(0, 10).map(r => ({
@@ -458,11 +581,34 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
                 maxVal={10}
                 style={an(320)}
               />
+              {expandedChart === 'score' && (
+                <div className="analytics__detail-panel">
+                  <table className="analytics__detail-table">
+                    <thead><tr>
+                      <th>DATE</th><th>LESSON</th><th>SCORE</th>
+                    </tr></thead>
+                    <tbody>
+                      {trainDetail.map((r, i) => (
+                        <tr key={i}>
+                          <td>{r.date}</td>
+                          <td className="analytics__detail-lesson">{r.lesson}</td>
+                          <td className={`analytics__detail-val--${r.tier}`}>{r.score.toFixed(1)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
             {lessonBest.size > 0 && (
               <div className="analytics__chart-card analytics__chart-card--wide" style={an(420)}>
-                <div className="analytics__chart-title">BEST SCORE PER LESSON</div>
+                <div className="analytics__chart-title-row">
+                  <span className="analytics__chart-title">BEST SCORE PER LESSON</span>
+                  <button className={`analytics__chart-toggle ${expandedChart === 'lesson' ? 'analytics__chart-toggle--active' : ''}`} onClick={() => toggleChart('lesson')}>
+                    {expandedChart === 'lesson' ? 'HIDE ▴' : 'DETAILS ▾'}
+                  </button>
+                </div>
                 <LineChart
                   chartId="lesson"
                   points={LESSON_ORDER
@@ -475,6 +621,28 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
                   maxVal={10}
                   style={an(460)}
                 />
+                {expandedChart === 'lesson' && (
+                  <div className="analytics__detail-panel">
+                    <table className="analytics__detail-table">
+                      <thead><tr>
+                        <th>LESSON</th><th>ATTEMPTS</th><th>BEST</th><th>LAST</th><th>TREND</th>
+                      </tr></thead>
+                      <tbody>
+                        {lessonDetail.map((r, i) => (
+                          <tr key={i}>
+                            <td className="analytics__detail-lesson">{r.name}</td>
+                            <td>{r.attempts}</td>
+                            <td className={`analytics__detail-val--${r.bestTier}`}>{r.best.toFixed(1)}</td>
+                            <td className={`analytics__detail-val--${r.lastTier}`}>{r.last.toFixed(1)}</td>
+                            <td className={`analytics__detail-trend--${r.trend}`}>
+                              {r.trend === 'up' ? '↑ Improving' : r.trend === 'down' ? '↓ Declining' : '→ Steady'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
 

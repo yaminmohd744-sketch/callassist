@@ -309,9 +309,9 @@
   animation: an-cell-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) var(--an-delay, 0ms) both;
 }
 
-.analytics__activity-cell--both     { background: var(--color-accent-cyan); }
-.analytics__activity-cell--call     { background: var(--color-accent-green); opacity: 0.85; }
-.analytics__activity-cell--training { background: var(--color-accent-purple); opacity: 0.85; }
+.analytics__activity-cell--both     { background: #00cfff; } /* cyan  = call + training */
+.analytics__activity-cell--call     { background: #39d353; } /* green = call only      */
+.analytics__activity-cell--training { background: #df7afe; } /* pink  = training only  */
 
 .analytics__activity-legend {
   display: flex;
@@ -331,9 +331,97 @@
   flex-shrink: 0;
 }
 
-.analytics__activity-dot--both     { background: var(--color-accent-cyan); }
-.analytics__activity-dot--call     { background: var(--color-accent-green); }
-.analytics__activity-dot--training { background: var(--color-accent-purple); }
+.analytics__activity-dot--both     { background: #00cfff; }
+.analytics__activity-dot--call     { background: #39d353; }
+.analytics__activity-dot--training { background: #df7afe; }
+
+/* ── Chart toggle + detail panel ────────────────────────────────────────────*/
+
+.analytics__chart-toggle {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-pill);
+  padding: 3px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.analytics__chart-toggle:hover { color: #df7afe; border-color: #df7afe; }
+.analytics__chart-toggle--active { color: var(--color-accent-purple); border-color: var(--color-accent-purple); }
+
+@keyframes an-detail-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.analytics__detail-panel {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+  overflow-y: auto;
+  max-height: 360px;
+  animation: an-detail-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.analytics__detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.analytics__detail-table th {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  background: var(--color-bg-surface);
+}
+.analytics__detail-table th:not(:first-child) { text-align: right; }
+
+.analytics__detail-table td {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.analytics__detail-table td:not(:first-child) {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.analytics__detail-table tr:last-child td { border-bottom: none; }
+.analytics__detail-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.analytics__detail-val--high   { color: #39d353 !important; font-weight: 700; }
+.analytics__detail-val--medium { color: #f0e040 !important; font-weight: 700; }
+.analytics__detail-val--low    { color: #ff4444 !important; font-weight: 700; }
+
+.analytics__detail-trend--up   { color: #39d353; font-weight: 700; }
+.analytics__detail-trend--down { color: #ff4444; font-weight: 700; }
+.analytics__detail-trend--flat { color: var(--color-text-muted); }
+
+.analytics__detail-stage {
+  font-weight: 600;
+  color: var(--color-text-secondary) !important;
+  letter-spacing: 0.04em;
+}
+.analytics__detail-lesson {
+  text-align: left !important;
+  font-family: var(--font-sans) !important;
+  color: var(--color-text-secondary) !important;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* ── Team Leaderboard ────────────────────────────────────────────────────────*/
 
