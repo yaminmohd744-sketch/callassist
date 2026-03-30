@@ -84,12 +84,11 @@ interface DashboardScreenProps {
   onUploadCall: () => void;
   onViewSession: (session: CallSession) => void;
   onDeleteSession: (endedAt: string) => void;
-  onGoTraining: () => void;
-  onGoAnalytics: () => void;
+  userName: string;
 }
 
 export function DashboardScreen({
-  pastSessions, onStartCall, onUploadCall, onViewSession, onDeleteSession, onGoTraining, onGoAnalytics,
+  pastSessions, onStartCall, onUploadCall, onViewSession, onDeleteSession, userName,
 }: DashboardScreenProps) {
   const [activeView, setActiveView] = useState<'dashboard' | 'contacts'>('dashboard');
   const [contactSearch, setContactSearch] = useState('');
@@ -146,7 +145,7 @@ export function DashboardScreen({
           {/* Greeting */}
           <div className="dashboard__greeting db-anim" style={{ '--i': 0 } as CSSProperties}>
             <div>
-              <h1 className="dashboard__greeting-text">{getGreeting()} — Ready to close?</h1>
+              <h1 className="dashboard__greeting-text">{getGreeting()}, {userName || 'there'}</h1>
               <p className="dashboard__subtitle">
                 {streak > 0 ? `${streak}-day practice streak — keep the momentum!` : 'Your personal AI sales coach'}
               </p>
@@ -154,71 +153,8 @@ export function DashboardScreen({
             <Button variant="ghost" size="md" onClick={onUploadCall}>⬆ UPLOAD CALL</Button>
           </div>
 
-          {/* Quick Actions */}
-          <div className="dashboard__quickactions db-anim" style={{ '--i': 1 } as CSSProperties}>
-            <div
-              className="dashboard__qa-card dashboard__qa-card--call"
-              onClick={onStartCall}
-              role="button"
-              tabIndex={0}
-              onKeyDown={e => e.key === 'Enter' && onStartCall()}
-            >
-              <div className="dashboard__qa-icon">▶</div>
-              <div className="dashboard__qa-body">
-                <div className="dashboard__qa-label">START NEW CALL</div>
-                <div className="dashboard__qa-desc">Launch a live AI coaching session</div>
-              </div>
-              <div className="dashboard__qa-arrow">→</div>
-            </div>
-
-            <div
-              className="dashboard__qa-card dashboard__qa-card--practice"
-              onClick={onGoTraining}
-              role="button"
-              tabIndex={0}
-              onKeyDown={e => e.key === 'Enter' && onGoTraining()}
-            >
-              <div className="dashboard__qa-icon">◎</div>
-              <div className="dashboard__qa-body">
-                <div className="dashboard__qa-label">PRACTICE SCENARIOS</div>
-                <div className="dashboard__qa-desc">Train with AI prospect simulations</div>
-              </div>
-              <div className="dashboard__qa-arrow">→</div>
-            </div>
-
-            <div
-              className="dashboard__qa-card dashboard__qa-card--academy"
-              onClick={onGoTraining}
-              role="button"
-              tabIndex={0}
-              onKeyDown={e => e.key === 'Enter' && onGoTraining()}
-            >
-              <div className="dashboard__qa-icon">◈</div>
-              <div className="dashboard__qa-body">
-                <div className="dashboard__qa-label">AI ACADEMY</div>
-                <div className="dashboard__qa-desc">Structured lessons to master sales</div>
-              </div>
-              <div className="dashboard__qa-arrow">→</div>
-            </div>
-
-            <div
-              className="dashboard__qa-card dashboard__qa-card--analytics"
-              onClick={onGoAnalytics}
-              role="button"
-              tabIndex={0}
-              onKeyDown={e => e.key === 'Enter' && onGoAnalytics()}
-            >
-              <div className="dashboard__qa-icon">▦</div>
-              <div className="dashboard__qa-body">
-                <div className="dashboard__qa-label">ANALYTICS</div>
-                <div className="dashboard__qa-desc">Review performance &amp; insights</div>
-              </div>
-              <div className="dashboard__qa-arrow">→</div>
-            </div>
-          </div>
-
           {/* Stats row */}
-          <div className="dashboard__stats db-anim" style={{ '--i': 2 } as CSSProperties}>
+          <div className="dashboard__stats db-anim" style={{ '--i': 1 } as CSSProperties}>
             <div className="dashboard__stat-card">
               <div className="dashboard__stat-val">{totalCalls}</div>
               <div className="dashboard__stat-label">TOTAL CALLS</div>
@@ -250,7 +186,7 @@ export function DashboardScreen({
           </div>
 
           {/* Recent calls */}
-          <div className="dashboard__section db-anim" style={{ '--i': 6 } as CSSProperties}>
+          <div className="dashboard__section db-anim" style={{ '--i': 2 } as CSSProperties}>
             <div className="dashboard__section-header">
               <span className="dashboard__section-title">RECENT CALLS</span>
               <span className="dashboard__section-count">{totalCalls} total</span>

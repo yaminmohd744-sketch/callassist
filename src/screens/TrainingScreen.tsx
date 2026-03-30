@@ -77,10 +77,12 @@ const SUB_SCENARIOS: Record<TrainingScenario, SubScenario[]> = {
   'custom': [],
 };
 
+type SelectionMode = 'split' | 'practice' | 'academy';
+
 export function TrainingScreen({ onBack }: TrainingScreenProps) {
   const { user } = useAuth();
   const { state, startScenario, confirmContext, sendResponse, endSession, reset } = useTraining();
-  const [mode, setMode] = useState<'practice' | 'academy'>('practice');
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>('split');
   const [input, setInput] = useState('');
   const [contextInput, setContextInput] = useState('');
   const [selectedSub, setSelectedSub] = useState<SubScenario | null>(null);
@@ -96,6 +98,11 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
   useEffect(() => {
     if (state.phase === 'summary') recordPracticeToday();
   }, [state.phase]);
+
+  function handleSwitchToSplit() {
+    setSelectionMode('split');
+    reset();
+  }
 
   function handleSend() {
     const text = input.trim();
@@ -113,48 +120,13 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
 
   const scoredMessages = state.messages.filter(m => m.role === 'rep' && m.feedback);
 
-  // ── Academy Mode ────────────────────────────────────────────────────────────
-  if (mode === 'academy') {
-    return (
-      <div className="training">
-        <div className="training__mode-tabs">
-          <button
-            className="training__mode-tab"
-            onClick={() => { setMode('practice'); reset(); }}
-          >
-            ⊞ Practice Scenarios
-          </button>
-          <button className="training__mode-tab training__mode-tab--active">
-            ◈ Academy
-          </button>
-        </div>
-        <AcademySection user={user} />
-      </div>
-    );
-  }
-
-  // ── Mode Tabs (shown in selection phase) ────────────────────────────────────
-  const modeTabs = state.phase === 'selection' ? (
-    <div className="training__mode-tabs">
-      <button className="training__mode-tab training__mode-tab--active">
-        ⊞ Practice Scenarios
-      </button>
-      <button
-        className="training__mode-tab"
-        onClick={() => setMode('academy')}
-      >
-        ◈ Academy
-      </button>
-    </div>
-  ) : null;
-
-  // ── Summary Screen ──────────────────────────────────────────────────────────
-  if (state.phase === 'summary') {
-    const score = state.overallScore ?? 0;
-    const { summary } = state;
-
-    return (
-      <div className="training">
+  // ── Render practice phase content ────────────────────────────────────────────
+  function renderPracticeContent() {
+    // Summary
+    if (state.phase === 'summary') {
+      const score = state.overallScore ?? 0;
+      const { summary } = state;
+      return (
         <main className="training__main">
           <div className="training__summary">
             <div className="training__summary-header">
@@ -162,7 +134,7 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                 {summary ? summary.headline : 'Session Complete'}
               </h2>
               <p className="training__summary-sub">
-                {SCENARIOS.find(s => s.id === state.scenario)?.label ?? 'Training'} - {scoredMessages.length} exchange{scoredMessages.length !== 1 ? 's' : ''} scored
+                {SCENARIOS.find(s => s.id === state.scenario)?.label ?? 'Training'} — {scoredMessages.length} exchange{scoredMessages.length !== 1 ? 's' : ''} scored
               </p>
             </div>
 
@@ -180,7 +152,6 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
             {summary && (
               <>
                 <div className="training__summary-assessment">{summary.assessment}</div>
-
                 <div className="training__summary-sections">
                   {summary.strengths.length > 0 && (
                     <div className="training__summary-section training__summary-section--pros">
@@ -195,7 +166,6 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                     </div>
                   )}
                 </div>
-
                 <div className="training__summary-takeaway">
                   <div className="training__summary-takeaway-label">KEY TAKEAWAY</div>
                   <div className="training__summary-takeaway-text">{summary.keyTakeaway}</div>
@@ -209,30 +179,27 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
             </div>
           </div>
         </main>
-      </div>
-    );
-  }
-
-  // ── Context Screen ──────────────────────────────────────────────────────────
-  if (state.phase === 'context') {
-    const isCustom = state.scenario === 'custom';
-    const subs = state.scenario && !isCustom ? SUB_SCENARIOS[state.scenario] : [];
-
-    const savedContexts = getSavedContexts();
-
-    function handleStart() {
-      saveContext(contextInput.trim());
-      if (isCustom) {
-        const desc = customDesc.trim() || 'A prospect who needs persuasion to make a buying decision.';
-        void confirmContext(contextInput.trim() || 'my product/service', selectedDifficulty, desc);
-      } else {
-        const sub = selectedSub ?? subs[1]; // default to medium if none selected
-        void confirmContext(contextInput.trim() || 'my product/service', sub.difficulty, sub.prompt);
-      }
+      );
     }
 
-    return (
-      <div className="training">
+    // Context
+    if (state.phase === 'context') {
+      const isCustom = state.scenario === 'custom';
+      const subs = state.scenario && !isCustom ? SUB_SCENARIOS[state.scenario] : [];
+      const savedContexts = getSavedContexts();
+
+      function handleStart() {
+        saveContext(contextInput.trim());
+        if (isCustom) {
+          const desc = customDesc.trim() || 'A prospect who needs persuasion to make a buying decision.';
+          void confirmContext(contextInput.trim() || 'my product/service', selectedDifficulty, desc);
+        } else {
+          const sub = selectedSub ?? subs[1];
+          void confirmContext(contextInput.trim() || 'my product/service', sub.difficulty, sub.prompt);
+        }
+      }
+
+      return (
         <main className="training__main">
           <div className="training__context">
             <div className="training__context-header">
@@ -246,11 +213,11 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
               <div className="training__custom-block">
                 <h2 className="training__context-title">Describe your prospect</h2>
                 <p className="training__context-sub">
-                  Tell the AI who they are, their attitude, and their situation. The more specific, the more realistic the simulation.
+                  Tell the AI who they are, their attitude, and their situation.
                 </p>
                 <textarea
                   className="training__context-input"
-                  placeholder="e.g. A CFO at a mid-sized logistics company. Skeptical of new software after a failed implementation last year. Budget-conscious but open if the ROI is clear."
+                  placeholder="e.g. A CFO at a mid-sized logistics company. Skeptical of new software after a failed implementation last year."
                   value={customDesc}
                   onChange={e => setCustomDesc(e.target.value)}
                   rows={4}
@@ -296,7 +263,6 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
             <p className="training__context-sub">
               Give the AI context so it can simulate a realistic prospect for your industry.
             </p>
-
             <textarea
               className="training__context-input"
               placeholder="e.g. a $485k 3-bedroom house in Miami, FL"
@@ -305,7 +271,6 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleStart(); } }}
               rows={3}
             />
-
             {savedContexts.length > 0 && (
               <div className="training__presets">
                 <span className="training__presets-label">RECENT</span>
@@ -314,31 +279,21 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                 ))}
               </div>
             )}
-
             {state.error && <div className="training__error">{state.error}</div>}
-
             <div className="training__context-actions">
-              <button
-                className="training__btn training__btn--primary"
-                onClick={handleStart}
-                disabled={state.isLoading}
-              >
+              <button className="training__btn training__btn--primary" onClick={handleStart} disabled={state.isLoading}>
                 {state.isLoading ? 'Setting up...' : 'Start Training →'}
               </button>
-              <button className="training__btn training__btn--ghost" onClick={reset}>
-                Back
-              </button>
+              <button className="training__btn training__btn--ghost" onClick={reset}>Back</button>
             </div>
           </div>
         </main>
-      </div>
-    );
-  }
+      );
+    }
 
-  // ── Active Session ──────────────────────────────────────────────────────────
-  if (state.phase === 'active') {
-    return (
-      <div className="training">
+    // Active session
+    if (state.phase === 'active') {
+      return (
         <main className="training__main training__main--active">
           <div className="training__session-header">
             <div className="training__session-info">
@@ -355,7 +310,6 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
               <div key={msg.id} className={`training__msg training__msg--${msg.role}`}>
                 <div className="training__msg-label">{msg.role === 'prospect' ? 'PROSPECT' : 'YOU'}</div>
                 <div className="training__msg-bubble">{msg.text}</div>
-
                 {msg.feedback && (
                   <div className="training__feedback">
                     <div className="training__feedback-score">
@@ -396,7 +350,6 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
             {state.error && <div className="training__error">{state.error}</div>}
             <div ref={messagesEndRef} />
           </div>
-
           <div className="training__input-bar">
             <div className="training__text-row">
               <textarea
@@ -408,33 +361,24 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                 rows={2}
                 disabled={state.isLoading}
               />
-              <button
-                className="training__send-btn"
-                onClick={handleSend}
-                disabled={state.isLoading || !input.trim()}
-              >
+              <button className="training__send-btn" onClick={handleSend} disabled={state.isLoading || !input.trim()}>
                 SEND
               </button>
             </div>
           </div>
         </main>
-      </div>
-    );
-  }
+      );
+    }
 
-  // ── Scenario Selection ──────────────────────────────────────────────────────
-  return (
-    <div className="training">
-      {modeTabs}
+    // Scenario selection
+    return (
       <main className="training__main">
         <div className="training__selection">
           <div className="training__selection-header">
             <h1 className="training__selection-title">Training Mode</h1>
             <p className="training__selection-sub">Pick a scenario. The AI plays the prospect. You close the deal.</p>
           </div>
-
           {state.error && <div className="training__error">{state.error}</div>}
-
           <div className="training__scenarios">
             <div className="training__lang-row">
               <div className="training__lang-label">LANGUAGE</div>
@@ -451,7 +395,6 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                 ))}
               </div>
             </div>
-
             {SCENARIOS.map(s => (
               <button
                 key={s.id}
@@ -464,10 +407,98 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
               </button>
             ))}
           </div>
-
           {state.isLoading && <div className="training__loading">Setting up scenario...</div>}
         </div>
       </main>
+    );
+  }
+
+  // ── Main render ─────────────────────────────────────────────────────────────
+  return (
+    <div className="training">
+      <div className={`training__split training__split--${selectionMode}`}>
+
+        {/* ── Practice panel ── */}
+        <div className="training__split-panel training__split-panel--practice">
+          {selectionMode === 'split' ? (
+            <div
+              className="training__chooser training__chooser--practice"
+              onClick={() => setSelectionMode('practice')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && setSelectionMode('practice')}
+            >
+              <div className="training__chooser-inner">
+                <div className="training__chooser-icon">◎</div>
+                <div className="training__chooser-title">PRACTICE SCENARIOS</div>
+                <div className="training__chooser-desc">
+                  Train with AI-powered prospect simulations. Get instant coaching feedback on every reply.
+                </div>
+                <ul className="training__chooser-features">
+                  <li>9 unique sales scenarios</li>
+                  <li>Easy, medium, and brutal difficulty</li>
+                  <li>Live coaching feedback every message</li>
+                </ul>
+                <div className="training__chooser-cta">Start Practicing →</div>
+              </div>
+            </div>
+          ) : selectionMode === 'practice' ? (
+            <div className="training__full-mode">
+              <div className="training__switch-bar">
+                <button className="training__switch-btn" onClick={handleSwitchToSplit}>
+                  ← Back to selection
+                </button>
+                <span className="training__switch-sep">·</span>
+                <button className="training__switch-btn" onClick={() => { handleSwitchToSplit(); setTimeout(() => setSelectionMode('academy'), 10); }}>
+                  Switch to Academy ◈
+                </button>
+              </div>
+              {renderPracticeContent()}
+            </div>
+          ) : null}
+        </div>
+
+        {/* ── Academy panel ── */}
+        <div className="training__split-panel training__split-panel--academy">
+          {selectionMode === 'split' ? (
+            <div
+              className="training__chooser training__chooser--academy"
+              onClick={() => setSelectionMode('academy')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && setSelectionMode('academy')}
+            >
+              <div className="training__chooser-inner">
+                <div className="training__chooser-icon">◈</div>
+                <div className="training__chooser-title">AI ACADEMY</div>
+                <div className="training__chooser-desc">
+                  Structured lessons designed to build real sales skill — from cold openers to closing hard deals.
+                </div>
+                <ul className="training__chooser-features">
+                  <li>3 skill levels — Beginner to Advanced</li>
+                  <li>9 guided lessons with coaching tips</li>
+                  <li>Track your scores and improvement</li>
+                </ul>
+                <div className="training__chooser-cta">Start Learning →</div>
+              </div>
+            </div>
+          ) : selectionMode === 'academy' ? (
+            <div className="training__full-mode">
+              <div className="training__switch-bar">
+                <button className="training__switch-btn" onClick={handleSwitchToSplit}>
+                  ← Back to selection
+                </button>
+                <span className="training__switch-sep">·</span>
+                <button className="training__switch-btn" onClick={() => { handleSwitchToSplit(); setTimeout(() => setSelectionMode('practice'), 10); }}>
+                  Switch to Practice ◎
+                </button>
+              </div>
+              <AcademySection user={user} />
+            </div>
+          ) : null}
+        </div>
+
+      </div>
     </div>
   );
 }

@@ -178,8 +178,12 @@ export function App() {
               onUploadCall={() => setScreen('upload-call')}
               onViewSession={handleViewSession}
               onDeleteSession={handleDeleteSession}
-              onGoTraining={() => setScreen('training')}
-              onGoAnalytics={() => setScreen('analytics')}
+              userName={
+                user?.user_metadata?.full_name?.split(' ')[0] ||
+                user?.user_metadata?.name?.split(' ')[0] ||
+                user?.email?.split('@')[0] ||
+                ''
+              }
             />
           )}
           {screen === 'training' && (
