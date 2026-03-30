@@ -265,6 +265,15 @@ export function AcademySection({ user }: AcademySectionProps) {
             );
           })}
         </div>
+
+          {/* Coming soon */}
+          <div className="academy__coming-soon">
+            <div className="academy__coming-soon-icon">◌</div>
+            <div className="academy__coming-soon-title">MORE LESSONS COMING SOON</div>
+            <div className="academy__coming-soon-desc">
+              New modules covering negotiation tactics, enterprise selling, and managing complex multi-stakeholder deals are in development.
+            </div>
+          </div>
       </div>
     );
   }

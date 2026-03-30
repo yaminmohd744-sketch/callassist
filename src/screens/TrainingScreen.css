@@ -982,3 +982,221 @@
   border-color: var(--color-text-muted);
   color: var(--color-text-secondary);
 }
+
+/* ── Split-Screen Chooser ─────────────────────────────────────────────────────*/
+
+@keyframes mode-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.training__split {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.training__split-panel {
+  overflow: hidden;
+  min-width: 0;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.35s ease;
+}
+
+/* Split state: equal halves */
+.training__split--split .training__split-panel {
+  width: 50%;
+  flex-shrink: 0;
+}
+
+.training__split--split .training__split-panel--practice {
+  border-right: 1px solid var(--color-border);
+}
+
+/* Hover expand: hovered side grows */
+.training__split--split:has(.training__split-panel--practice:hover) .training__split-panel--practice { width: 57%; }
+.training__split--split:has(.training__split-panel--practice:hover) .training__split-panel--academy  { width: 43%; }
+.training__split--split:has(.training__split-panel--academy:hover)  .training__split-panel--academy  { width: 57%; }
+.training__split--split:has(.training__split-panel--academy:hover)  .training__split-panel--practice { width: 43%; }
+
+/* Expanded states: one panel fills everything */
+.training__split--practice .training__split-panel--practice { width: 100%; }
+.training__split--practice .training__split-panel--academy  { width: 0; opacity: 0; pointer-events: none; }
+.training__split--academy  .training__split-panel--academy  { width: 100%; }
+.training__split--academy  .training__split-panel--practice { width: 0; opacity: 0; pointer-events: none; }
+
+/* ── Chooser Card ─────────────────────────────────────────────────────────────*/
+
+.training__chooser {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--color-bg-base);
+  position: relative;
+  overflow: hidden;
+  outline: none;
+}
+
+/* Top accent bar */
+.training__chooser::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.training__chooser--practice::before { background: var(--color-accent-magenta); }
+.training__chooser--academy::before  { background: var(--color-accent-green); }
+
+.training__chooser:hover::before,
+.training__chooser:focus-visible::before { transform: scaleX(1); }
+
+/* Radial glow overlay */
+.training__chooser::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+}
+
+.training__chooser--practice::after {
+  background: radial-gradient(ellipse at 50% 65%, rgba(223, 122, 254, 0.07) 0%, transparent 70%);
+}
+
+.training__chooser--academy::after {
+  background: radial-gradient(ellipse at 50% 65%, rgba(57, 211, 83, 0.07) 0%, transparent 70%);
+}
+
+.training__chooser:hover::after { opacity: 1; }
+
+/* Inner content */
+.training__chooser-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  max-width: 340px;
+  padding: var(--space-12) var(--space-8);
+  position: relative;
+  z-index: 1;
+  animation: mode-fade-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.training__chooser-icon {
+  font-size: 44px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.training__chooser--practice:hover .training__chooser-icon {
+  color: var(--color-accent-magenta);
+  transform: scale(1.08);
+}
+
+.training__chooser--academy:hover .training__chooser-icon {
+  color: var(--color-accent-green);
+  transform: scale(1.08);
+}
+
+.training__chooser-title {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+
+.training__chooser-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.65;
+  max-width: 280px;
+}
+
+.training__chooser-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.training__chooser-features li {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.training__chooser-features li::before {
+  content: '—';
+  color: var(--color-border);
+  flex-shrink: 0;
+}
+
+.training__chooser-cta {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  transition: color 0.25s ease;
+  margin-top: var(--space-2);
+}
+
+.training__chooser--practice:hover .training__chooser-cta { color: var(--color-accent-magenta); }
+.training__chooser--academy:hover  .training__chooser-cta { color: var(--color-accent-green); }
+
+/* ── Full Mode (expanded) ─────────────────────────────────────────────────────*/
+
+.training__full-mode {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: mode-fade-in 0.35s ease 0.1s both;
+}
+
+.training__switch-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.training__switch-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 2px var(--space-2);
+  border-radius: var(--border-radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.training__switch-btn:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-elevated);
+}
+
+.training__switch-sep {
+  color: var(--color-border);
+  font-size: var(--font-size-sm);
+  user-select: none;
+}
