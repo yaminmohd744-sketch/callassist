@@ -218,6 +218,18 @@
   font-weight: 600;
 }
 
+/* ── Line Chart ──────────────────────────────────────────────────────────────*/
+
+.analytics__linechart-wrap {
+  width: 100%;
+  overflow: visible;
+}
+
+.analytics__linechart {
+  display: block;
+  overflow: visible;
+}
+
 /* ── Bar Charts ──────────────────────────────────────────────────────────────*/
 
 .analytics__bars {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { getActivityDates } from '../lib/streak';
 import type { CallSession } from '../types';
@@ -62,20 +62,155 @@ const MOCK_TEAM = [
   { name: 'Priya P.',   calls: 22, avgProb: 54, trainScore: 6.8, streak: 2,  isYou: false },
 ];
 
-const LESSON_NAMES: Record<string, string> = {
-  'l1-opener':         'Perfect Opener',
-  'l2-not-interested': 'Not Interested',
-  'l3-skeptic':        'Skeptical Prospect',
-  'l4-price':          'Price Objection',
-  'l5-think-over':     'Think It Over',
-  'l6-status-quo':     'Status Quo',
-  'l7-discovery':      'Discovery',
-  'l8-trial-close':    'Trial Close',
-  'l9-hard-close':     'Hard Close',
-};
 
 function avg(arr: number[]) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0; }
 function scoreTier(val: number, hi = 61, mid = 31): Tier { return val >= hi ? 'high' : val >= mid ? 'medium' : 'low'; }
+
+// ── Line chart ─────────────────────────────────────────────────────────────────
+
+const TIER_COLORS: Record<Tier, string> = {
+  high: '#39d353',
+  medium: '#f0e040',
+  low: '#ff4444',
+};
+
+const LESSON_ORDER = [
+  'l1-opener', 'l2-not-interested', 'l3-skeptic',
+  'l4-price',  'l5-think-over',     'l6-status-quo',
+  'l7-discovery', 'l8-trial-close', 'l9-hard-close',
+];
+
+const LESSON_SHORT: Record<string, string> = {
+  'l1-opener':         'Opener',
+  'l2-not-interested': 'Not Int.',
+  'l3-skeptic':        'Skeptic',
+  'l4-price':          'Price',
+  'l5-think-over':     'Think It',
+  'l6-status-quo':     'Status Q.',
+  'l7-discovery':      'Discovery',
+  'l8-trial-close':    'Trial Cl.',
+  'l9-hard-close':     'Hard Cl.',
+};
+
+interface ChartPoint { label: string; value: number; tier: Tier; }
+
+function fmtVal(v: number, unit: string) {
+  return `${v % 1 !== 0 ? v.toFixed(1) : v}${unit}`;
+}
+
+function LineChart({ chartId, points, maxVal, unit = '', style }: {
+  chartId: string;
+  points: ChartPoint[];
+  maxVal: number;
+  unit?: string;
+  style?: React.CSSProperties;
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [W, setW] = useState(800);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    setW(el.clientWidth || 800);
+    const obs = new ResizeObserver(e => setW(e[0].contentRect.width));
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const H = 180;
+  const P = { t: 24, r: 10, b: 28, l: 10 };
+  const pw = W - P.l - P.r;
+  const ph = H - P.t - P.b;
+  const canDraw = points.length >= 2 && pw > 0;
+
+  const pts = canDraw
+    ? points.map((p, i) => ({
+        x: P.l + (i / (points.length - 1)) * pw,
+        y: P.t + ph - (p.value / maxVal) * ph,
+        color: TIER_COLORS[p.tier],
+        label: p.label,
+        value: p.value,
+      }))
+    : [];
+
+  const areaD = pts.length >= 2
+    ? [`M ${pts[0].x} ${P.t + ph}`, ...pts.map(p => `L ${p.x} ${p.y}`), `L ${pts[pts.length - 1].x} ${P.t + ph}`, 'Z'].join(' ')
+    : '';
+
+  return (
+    <div ref={wrapRef} className="analytics__linechart-wrap" style={style}>
+      {canDraw && (
+        <svg width={W} height={H} className="analytics__linechart" overflow="visible">
+          <defs>
+            <linearGradient id={`${chartId}-area`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="rgba(129,74,200,0.15)" />
+              <stop offset="100%" stopColor="rgba(129,74,200,0)" />
+            </linearGradient>
+            {pts.slice(0, -1).map((p, i) => (
+              <linearGradient key={i} id={`${chartId}-s${i}`}
+                gradientUnits="userSpaceOnUse"
+                x1={p.x} y1={p.y} x2={pts[i + 1].x} y2={pts[i + 1].y}>
+                <stop offset="0%" stopColor={p.color} />
+                <stop offset="100%" stopColor={pts[i + 1].color} />
+              </linearGradient>
+            ))}
+          </defs>
+
+          {/* Grid lines */}
+          {[0.25, 0.5, 0.75].map(f => (
+            <line key={f}
+              x1={P.l} y1={P.t + ph * (1 - f)} x2={W - P.r} y2={P.t + ph * (1 - f)}
+              stroke="rgba(255,255,255,0.04)" strokeWidth={1} strokeDasharray="4 4"
+            />
+          ))}
+
+          {/* Area fill */}
+          <path d={areaD} fill={`url(#${chartId}-area)`} />
+
+          {/* Colored line segments */}
+          {pts.slice(0, -1).map((p, i) => (
+            <line key={i}
+              x1={p.x} y1={p.y} x2={pts[i + 1].x} y2={pts[i + 1].y}
+              stroke={`url(#${chartId}-s${i})`} strokeWidth={2.5} strokeLinecap="round"
+            />
+          ))}
+
+          {/* Dots + value labels */}
+          {pts.map((p, i) => (
+            <g key={i}>
+              <title>{p.label}: {fmtVal(p.value, unit)}</title>
+              <text
+                x={p.x} y={p.y - 9}
+                textAnchor={i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle'}
+                fill={p.color} fontSize={9} fontWeight="700"
+                fontFamily="'Fragment Mono','JetBrains Mono',monospace"
+              >
+                {fmtVal(p.value, unit)}
+              </text>
+              <circle cx={p.x} cy={p.y} r={4} fill={p.color} stroke="#0a0a0a" strokeWidth={1.5} />
+            </g>
+          ))}
+
+          {/* X-axis labels */}
+          {pts.map((p, i) => {
+            const every = points.length >= 10 ? 3 : points.length >= 6 ? 2 : 1;
+            if (i % every !== 0 && i !== pts.length - 1) return null;
+            return (
+              <text key={i}
+                x={p.x} y={H - 4}
+                textAnchor={i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle'}
+                fill="rgba(255,255,255,0.28)" fontSize={10}
+                fontFamily="Figtree, system-ui, sans-serif"
+              >
+                {p.label}
+              </text>
+            );
+          })}
+        </svg>
+      )}
+    </div>
+  );
+}
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -237,20 +372,13 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
             <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
               <div className="analytics__chart-title">CLOSE PROBABILITY — LAST {probBars.length} CALLS</div>
-              <div className="analytics__bars">
-                {probBars.map((b, i) => (
-                  <div key={i} className="analytics__bar-row">
-                    <div className="analytics__bar-label">{b.label}</div>
-                    <div className="analytics__bar-track">
-                      <div
-                        className={`analytics__bar analytics__bar--${b.tier}`}
-                        style={{ width: `${b.pct}%`, ...an(320 + i * 45) }}
-                      />
-                    </div>
-                    <div className="analytics__bar-val">{b.pct}%</div>
-                  </div>
-                ))}
-              </div>
+              <LineChart
+                chartId="prob"
+                points={probBars.map(b => ({ label: b.label, value: b.pct, tier: b.tier }))}
+                maxVal={100}
+                unit="%"
+                style={an(320)}
+              />
             </div>
 
             <div className="analytics__chart-card" style={an(400)}>
@@ -320,41 +448,33 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
             <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
               <div className="analytics__chart-title">SCORE — LAST {Math.min(tRecs.length, 10)} SESSIONS</div>
-              <div className="analytics__bars">
-                {tRecs.slice(0, 10).map((r, i) => (
-                  <div key={i} className="analytics__bar-row">
-                    <div className="analytics__bar-label">{fmtDate(r.completed_at)}</div>
-                    <div className="analytics__bar-track">
-                      <div
-                        className={`analytics__bar analytics__bar--${scoreTier(r.score * 10, 75, 50)}`}
-                        style={{ width: `${(r.score / 10) * 100}%`, ...an(320 + i * 50) }}
-                      />
-                    </div>
-                    <div className="analytics__bar-val">{r.score.toFixed(1)}</div>
-                  </div>
-                ))}
-              </div>
+              <LineChart
+                chartId="score"
+                points={tRecs.slice(0, 10).map(r => ({
+                  label: fmtDate(r.completed_at),
+                  value: r.score,
+                  tier: scoreTier(r.score * 10, 75, 50),
+                }))}
+                maxVal={10}
+                style={an(320)}
+              />
             </div>
 
             {lessonBest.size > 0 && (
               <div className="analytics__chart-card analytics__chart-card--wide" style={an(420)}>
                 <div className="analytics__chart-title">BEST SCORE PER LESSON</div>
-                <div className="analytics__bars">
-                  {[...lessonBest.entries()].map(([id, score], i) => (
-                    <div key={id} className="analytics__bar-row analytics__bar-row--lesson">
-                      <div className="analytics__bar-label analytics__bar-label--lesson">
-                        {LESSON_NAMES[id] ?? id}
-                      </div>
-                      <div className="analytics__bar-track">
-                        <div
-                          className={`analytics__bar analytics__bar--${scoreTier(score * 10, 75, 50)}`}
-                          style={{ width: `${(score / 10) * 100}%`, ...an(460 + i * 45) }}
-                        />
-                      </div>
-                      <div className="analytics__bar-val">{score.toFixed(1)}</div>
-                    </div>
-                  ))}
-                </div>
+                <LineChart
+                  chartId="lesson"
+                  points={LESSON_ORDER
+                    .filter(id => lessonBest.has(id))
+                    .map(id => ({
+                      label: LESSON_SHORT[id] ?? id,
+                      value: lessonBest.get(id)!,
+                      tier: scoreTier(lessonBest.get(id)! * 10, 75, 50),
+                    }))}
+                  maxVal={10}
+                  style={an(460)}
+                />
               </div>
             )}
 
