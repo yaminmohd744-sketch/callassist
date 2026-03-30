@@ -229,8 +229,7 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
 export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
   const [tab, setTab] = useState<AnalyticsTab>('performance');
   const [trainingRecords, setTrainingRecords] = useState<TrainingRecord[]>([]);
-  const [expandedChart, setExpandedChart] = useState<string | null>(null);
-  function toggleChart(id: string) { setExpandedChart(prev => prev === id ? null : id); }
+  const [detailView, setDetailView] = useState<string | null>(null);
   const [teamCode, setTeamCode] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [joinedTeam, setJoinedTeam] = useState('');
@@ -399,27 +398,279 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
   return (
     <div className="analytics">
       <div className="analytics__topbar">
-        <div>
-          <h1 className="analytics__title">Analytics</h1>
-          <p className="analytics__subtitle">Performance trends across calls and training</p>
-        </div>
+        {detailView ? (
+          <button className="analytics__back-btn" onClick={() => setDetailView(null)}>← Analytics</button>
+        ) : (
+          <div>
+            <h1 className="analytics__title">Analytics</h1>
+            <p className="analytics__subtitle">Performance trends across calls and training</p>
+          </div>
+        )}
         {isMock && <span className="analytics__demo-badge">DEMO DATA</span>}
       </div>
 
-      <div className="analytics__tabs">
-        {(['performance', 'training', 'team'] as AnalyticsTab[]).map(t => (
-          <button
-            key={t}
-            className={`analytics__tab ${tab === t ? 'analytics__tab--active' : ''}`}
-            onClick={() => setTab(t)}
-          >
-            {t.toUpperCase()}
-          </button>
-        ))}
-      </div>
+      {!detailView && (
+        <div className="analytics__tabs">
+          {(['performance', 'training', 'team'] as AnalyticsTab[]).map(t => (
+            <button key={t} className={`analytics__tab ${tab === t ? 'analytics__tab--active' : ''}`} onClick={() => setTab(t)}>
+              {t.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── Detail Views ───────────────────────────────────────────────────── */}
+
+      {detailView === 'prob' && (
+        <div className="analytics__detail-view">
+          <div className="analytics__detail-view-header">
+            <h2 className="analytics__detail-view-title">Close Probability</h2>
+            <p className="analytics__detail-view-sub">Win-rate trend across every recorded call</p>
+          </div>
+          <div className="analytics__stats">
+            {[
+              { val: `${totalCalls}`, label: 'TOTAL CALLS', cls: '' },
+              { val: `${avgProb}%`, label: 'AVG CLOSE %', cls: `analytics__stat-val--${scoreTier(avgProb)}` },
+              { val: `${Math.max(...perfDetail.map(r => r.prob))}%`, label: 'BEST CALL', cls: 'analytics__stat-val--high' },
+              { val: `${perfDetail.filter(r => r.prob >= 61).length}`, label: 'CALLS WON', cls: 'analytics__stat-val--high' },
+            ].map((item, i) => (
+              <div key={i} className="analytics__stat-card" style={an(i * 60)}>
+                <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
+                <div className="analytics__stat-label">{item.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
+            <div className="analytics__chart-title">CLOSE PROBABILITY OVER TIME</div>
+            <LineChart chartId="prob-d" points={perfDetail.map(r => ({ label: r.date, value: r.prob, tier: r.probTier }))} maxVal={100} unit="%" style={an(320)} />
+          </div>
+          <div className="analytics__chart-card analytics__chart-card--wide" style={an(420)}>
+            <div className="analytics__chart-title">FULL CALL LOG</div>
+            <div className="analytics__detail-scroll">
+              <table className="analytics__detail-table">
+                <thead><tr><th>DATE</th><th>DURATION</th><th>CLOSE %</th><th>LEAD SCORE</th><th>STAGE</th>{useMockPerf && <th>OBJECTIONS</th>}</tr></thead>
+                <tbody>
+                  {perfDetail.map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.date}</td><td>{r.dur}</td>
+                      <td className={`analytics__detail-val--${r.probTier}`}>{r.prob}%</td>
+                      <td className={`analytics__detail-val--${r.scoreTier_}`}>{r.score}</td>
+                      <td className="analytics__detail-stage">{r.stage.toUpperCase()}</td>
+                      {useMockPerf && <td className={r.objections && r.objections > 2 ? 'analytics__detail-val--low' : ''}>{r.objections}</td>}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {detailView === 'stage' && (
+        <div className="analytics__detail-view">
+          <div className="analytics__detail-view-header">
+            <h2 className="analytics__detail-view-title">Calls by Stage</h2>
+            <p className="analytics__detail-view-sub">Where your calls are ending — and how they perform at each stage</p>
+          </div>
+          <div className="analytics__stats">
+            {(() => {
+              const topS = stageDetail.reduce((a, b) => b.count > a.count ? b : a, stageDetail[0] ?? { stage: '—', count: 0, avgProb: 0, avgDur: 0, probTier: 'low' as Tier });
+              const bestS = stageDetail.reduce((a, b) => b.avgProb > a.avgProb ? b : a, stageDetail[0] ?? { stage: '—', count: 0, avgProb: 0, avgDur: 0, probTier: 'low' as Tier });
+              return [
+                { val: `${stageDetail.length}`, label: 'ACTIVE STAGES', cls: '' },
+                { val: topS.stage.toUpperCase(), label: 'MOST CALLS', cls: '' },
+                { val: `${bestS.avgProb}%`, label: 'BEST STAGE AVG', cls: `analytics__stat-val--${bestS.probTier}` },
+                { val: fmtDur(avgDurSec), label: 'AVG DURATION', cls: '' },
+              ].map((item, i) => (
+                <div key={i} className="analytics__stat-card" style={an(i * 60)}>
+                  <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
+                  <div className="analytics__stat-label">{item.label}</div>
+                </div>
+              ));
+            })()}
+          </div>
+          <div className="analytics__chart-card" style={an(280)}>
+            <div className="analytics__chart-title">CALL VOLUME BY STAGE</div>
+            <div className="analytics__bars">
+              {(Object.entries(stageCount) as [string, number][]).map(([stage, count], i) => (
+                <div key={stage} className="analytics__bar-row">
+                  <div className="analytics__bar-label">{stage.toUpperCase()}</div>
+                  <div className="analytics__bar-track"><div className={`analytics__bar analytics__bar--stage-${stage}`} style={{ width: `${(count / maxStage) * 100}%`, ...an(320 + i * 60) }} /></div>
+                  <div className="analytics__bar-val">{count}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="analytics__chart-card analytics__chart-card--wide" style={an(400)}>
+            <div className="analytics__chart-title">PER-STAGE BREAKDOWN</div>
+            <div className="analytics__detail-scroll">
+              <table className="analytics__detail-table">
+                <thead><tr><th>STAGE</th><th>CALLS</th><th>AVG CLOSE %</th><th>AVG DURATION</th></tr></thead>
+                <tbody>
+                  {stageDetail.map((r, i) => (
+                    <tr key={i}>
+                      <td className="analytics__detail-stage">{r.stage.toUpperCase()}</td>
+                      <td>{r.count}</td>
+                      <td className={`analytics__detail-val--${r.probTier}`}>{r.avgProb}%</td>
+                      <td>{fmtDur(r.avgDur)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {detailView === 'score' && (
+        <div className="analytics__detail-view">
+          <div className="analytics__detail-view-header">
+            <h2 className="analytics__detail-view-title">Training Score History</h2>
+            <p className="analytics__detail-view-sub">Your performance across every Academy session</p>
+          </div>
+          <div className="analytics__stats">
+            {[
+              { val: `${tRecs.length}`, label: 'TOTAL SESSIONS', cls: '' },
+              { val: `${avgTrain}/10`, label: 'AVG SCORE', cls: `analytics__stat-val--${scoreTier(avgTrain * 10, 75, 50)}` },
+              { val: `${bestTrain.toFixed(1)}`, label: 'BEST SCORE', cls: 'analytics__stat-val--high' },
+              { val: `${tRecs.filter(r => r.score >= 7.5).length}`, label: 'HIGH SCORES', cls: 'analytics__stat-val--high' },
+            ].map((item, i) => (
+              <div key={i} className="analytics__stat-card" style={an(i * 60)}>
+                <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
+                <div className="analytics__stat-label">{item.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
+            <div className="analytics__chart-title">SCORE OVER TIME — ALL SESSIONS</div>
+            <LineChart chartId="score-d" points={[...tRecs].reverse().map(r => ({ label: fmtDate(r.completed_at), value: r.score, tier: scoreTier(r.score * 10, 75, 50) }))} maxVal={10} style={an(320)} />
+          </div>
+          <div className="analytics__chart-card analytics__chart-card--wide" style={an(420)}>
+            <div className="analytics__chart-title">SESSION LOG</div>
+            <div className="analytics__detail-scroll">
+              <table className="analytics__detail-table">
+                <thead><tr><th>DATE</th><th>LESSON</th><th>SCORE</th></tr></thead>
+                <tbody>
+                  {trainDetail.map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.date}</td>
+                      <td className="analytics__detail-lesson">{r.lesson}</td>
+                      <td className={`analytics__detail-val--${r.tier}`}>{r.score.toFixed(1)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {detailView === 'lesson' && (
+        <div className="analytics__detail-view">
+          <div className="analytics__detail-view-header">
+            <h2 className="analytics__detail-view-title">Lesson Progress</h2>
+            <p className="analytics__detail-view-sub">Best scores and improvement trends across the curriculum</p>
+          </div>
+          <div className="analytics__stats">
+            {[
+              { val: `${uniqLess}`, label: 'LESSONS TRIED', cls: '' },
+              { val: `${lessonDetail.filter(r => r.best >= 7.5).length}`, label: 'MASTERED', cls: 'analytics__stat-val--high' },
+              { val: `${lessonDetail.length ? (lessonDetail.reduce((s, r) => s + r.best, 0) / lessonDetail.length).toFixed(1) : '0'}/10`, label: 'AVG BEST', cls: '' },
+              { val: `${tRecs.length}`, label: 'TOTAL ATTEMPTS', cls: '' },
+            ].map((item, i) => (
+              <div key={i} className="analytics__stat-card" style={an(i * 60)}>
+                <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
+                <div className="analytics__stat-label">{item.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
+            <div className="analytics__chart-title">BEST SCORE ACROSS CURRICULUM</div>
+            <LineChart chartId="lesson-d" points={LESSON_ORDER.filter(id => lessonBest.has(id)).map(id => ({ label: LESSON_SHORT[id] ?? id, value: lessonBest.get(id)!, tier: scoreTier(lessonBest.get(id)! * 10, 75, 50) }))} maxVal={10} style={an(320)} />
+          </div>
+          <div className="analytics__chart-card analytics__chart-card--wide" style={an(420)}>
+            <div className="analytics__chart-title">PER-LESSON BREAKDOWN</div>
+            <div className="analytics__detail-scroll">
+              <table className="analytics__detail-table">
+                <thead><tr><th>LESSON</th><th>ATTEMPTS</th><th>BEST</th><th>LAST</th><th>TREND</th></tr></thead>
+                <tbody>
+                  {lessonDetail.map((r, i) => (
+                    <tr key={i}>
+                      <td className="analytics__detail-lesson">{r.name}</td>
+                      <td>{r.attempts}</td>
+                      <td className={`analytics__detail-val--${r.bestTier}`}>{r.best.toFixed(1)}</td>
+                      <td className={`analytics__detail-val--${r.lastTier}`}>{r.last.toFixed(1)}</td>
+                      <td className={`analytics__detail-trend--${r.trend}`}>{r.trend === 'up' ? '↑ Improving' : r.trend === 'down' ? '↓ Declining' : '→ Steady'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {detailView === 'activity' && (
+        <div className="analytics__detail-view">
+          <div className="analytics__detail-view-header">
+            <h2 className="analytics__detail-view-title">Activity Log</h2>
+            <p className="analytics__detail-view-sub">Daily practice and call activity over the last 28 days</p>
+          </div>
+          <div className="analytics__stats">
+            {(() => {
+              const activeDays   = activityDays.filter(d => d.call || d.training).length;
+              const bothDays     = activityDays.filter(d => d.call && d.training).length;
+              const callDays     = activityDays.filter(d => d.call && !d.training).length;
+              const trainDays    = activityDays.filter(d => d.training && !d.call).length;
+              return [
+                { val: `${activeDays}`, label: 'ACTIVE DAYS', cls: '' },
+                { val: `${bothDays}`, label: 'CALL + TRAINING', cls: bothDays > 5 ? 'analytics__stat-val--high' : '' },
+                { val: `${callDays}`, label: 'CALL ONLY', cls: '' },
+                { val: `${trainDays}`, label: 'TRAINING ONLY', cls: '' },
+              ].map((item, i) => (
+                <div key={i} className="analytics__stat-card" style={an(i * 60)}>
+                  <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
+                  <div className="analytics__stat-label">{item.label}</div>
+                </div>
+              ));
+            })()}
+          </div>
+          <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
+            <div className="analytics__chart-title">28-DAY GRID</div>
+            <div className="analytics__activity-grid analytics__activity-grid--large">
+              {activityDays.map((d, i) => (
+                <div key={i} className={`analytics__activity-cell ${d.training && d.call ? 'analytics__activity-cell--both' : d.training ? 'analytics__activity-cell--training' : d.call ? 'analytics__activity-cell--call' : ''}`} style={an(300 + i * 12)} title={d.date} />
+              ))}
+            </div>
+            <div className="analytics__activity-legend" style={{ marginTop: '12px' }}>
+              <span className="analytics__activity-dot analytics__activity-dot--both" />Both
+              <span className="analytics__activity-dot analytics__activity-dot--call" />Call
+              <span className="analytics__activity-dot analytics__activity-dot--training" />Training
+            </div>
+          </div>
+          <div className="analytics__chart-card analytics__chart-card--wide" style={an(420)}>
+            <div className="analytics__chart-title">DAILY BREAKDOWN</div>
+            <div className="analytics__detail-scroll">
+              <table className="analytics__detail-table">
+                <thead><tr><th>DATE</th><th>CALL</th><th>TRAINING</th><th>STATUS</th></tr></thead>
+                <tbody>
+                  {[...activityDays].reverse().filter(d => d.call || d.training).map((d, i) => (
+                    <tr key={i}>
+                      <td>{new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' })}</td>
+                      <td>{d.call ? <span className="analytics__detail-val--high">✓</span> : <span className="analytics__detail-trend--flat">—</span>}</td>
+                      <td>{d.training ? <span style={{ color: '#df7afe', fontWeight: 700 }}>✓</span> : <span className="analytics__detail-trend--flat">—</span>}</td>
+                      <td>{d.call && d.training ? <span style={{ color: '#00cfff', fontWeight: 700 }}>BOTH</span> : d.call ? <span className="analytics__detail-val--high">CALL</span> : <span style={{ color: '#df7afe', fontWeight: 700 }}>TRAINING</span>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Performance ────────────────────────────────────────────────────── */}
-      {tab === 'performance' && (
+      {!detailView && tab === 'performance' && (
         <div className="analytics__content">
 
           <div className="analytics__stats">
@@ -438,87 +689,37 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
           <div className="analytics__charts">
 
-            <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
+            <div className="analytics__chart-card analytics__chart-card--wide analytics__chart-card--clickable" style={an(280)} onClick={() => setDetailView('prob')}>
               <div className="analytics__chart-title-row">
                 <span className="analytics__chart-title">CLOSE PROBABILITY — LAST {probBars.length} CALLS</span>
-                <button className={`analytics__chart-toggle ${expandedChart === 'prob' ? 'analytics__chart-toggle--active' : ''}`} onClick={() => toggleChart('prob')}>
-                  {expandedChart === 'prob' ? 'HIDE ▴' : 'DETAILS ▾'}
-                </button>
+                <span className="analytics__chart-hint">VIEW DETAILS →</span>
               </div>
-              <LineChart
-                chartId="prob"
-                points={probBars.map(b => ({ label: b.label, value: b.pct, tier: b.tier }))}
-                maxVal={100}
-                unit="%"
-                style={an(320)}
-              />
-              {expandedChart === 'prob' && (
-                <div className="analytics__detail-panel">
-                  <table className="analytics__detail-table">
-                    <thead><tr>
-                      <th>DATE</th><th>DURATION</th><th>CLOSE %</th><th>LEAD SCORE</th><th>STAGE</th>{useMockPerf && <th>OBJECTIONS</th>}
-                    </tr></thead>
-                    <tbody>
-                      {perfDetail.map((r, i) => (
-                        <tr key={i}>
-                          <td>{r.date}</td>
-                          <td>{r.dur}</td>
-                          <td className={`analytics__detail-val--${r.probTier}`}>{r.prob}%</td>
-                          <td className={`analytics__detail-val--${r.scoreTier_}`}>{r.score}</td>
-                          <td className="analytics__detail-stage">{r.stage.toUpperCase()}</td>
-                          {useMockPerf && <td className={r.objections && r.objections > 2 ? 'analytics__detail-val--low' : ''}>{r.objections}</td>}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <LineChart chartId="prob" points={probBars.map(b => ({ label: b.label, value: b.pct, tier: b.tier }))} maxVal={100} unit="%" style={an(320)} />
             </div>
 
-            <div className="analytics__chart-card" style={an(400)}>
+            <div className="analytics__chart-card analytics__chart-card--clickable" style={an(400)} onClick={() => setDetailView('stage')}>
               <div className="analytics__chart-title-row">
                 <span className="analytics__chart-title">CALLS BY FINAL STAGE</span>
-                <button className={`analytics__chart-toggle ${expandedChart === 'stage' ? 'analytics__chart-toggle--active' : ''}`} onClick={() => toggleChart('stage')}>
-                  {expandedChart === 'stage' ? 'HIDE ▴' : 'DETAILS ▾'}
-                </button>
+                <span className="analytics__chart-hint">VIEW DETAILS →</span>
               </div>
               <div className="analytics__bars">
                 {(Object.entries(stageCount) as [string, number][]).map(([stage, count], i) => (
                   <div key={stage} className="analytics__bar-row">
                     <div className="analytics__bar-label">{stage.toUpperCase()}</div>
                     <div className="analytics__bar-track">
-                      <div
-                        className={`analytics__bar analytics__bar--stage-${stage}`}
-                        style={{ width: `${(count / maxStage) * 100}%`, ...an(440 + i * 60) }}
-                      />
+                      <div className={`analytics__bar analytics__bar--stage-${stage}`} style={{ width: `${(count / maxStage) * 100}%`, ...an(440 + i * 60) }} />
                     </div>
                     <div className="analytics__bar-val">{count}</div>
                   </div>
                 ))}
               </div>
-              {expandedChart === 'stage' && (
-                <div className="analytics__detail-panel">
-                  <table className="analytics__detail-table">
-                    <thead><tr>
-                      <th>STAGE</th><th>CALLS</th><th>AVG CLOSE %</th><th>AVG DURATION</th>
-                    </tr></thead>
-                    <tbody>
-                      {stageDetail.map((r, i) => (
-                        <tr key={i}>
-                          <td className="analytics__detail-stage">{r.stage.toUpperCase()}</td>
-                          <td>{r.count}</td>
-                          <td className={`analytics__detail-val--${r.probTier}`}>{r.avgProb}%</td>
-                          <td>{fmtDur(r.avgDur)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
             </div>
 
-            <div className="analytics__chart-card" style={an(450)}>
-              <div className="analytics__chart-title">ACTIVITY — LAST 28 DAYS</div>
+            <div className="analytics__chart-card analytics__chart-card--clickable" style={an(450)} onClick={() => setDetailView('activity')}>
+              <div className="analytics__chart-title-row">
+                <span className="analytics__chart-title">ACTIVITY — LAST 28 DAYS</span>
+                <span className="analytics__chart-hint">VIEW DETAILS →</span>
+              </div>
               <div className="analytics__activity-grid">
                 {activityDays.map((d, i) => (
                   <div
@@ -545,7 +746,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
       )}
 
       {/* ── Training ───────────────────────────────────────────────────────── */}
-      {tab === 'training' && (
+      {!detailView && tab === 'training' && (
         <div className="analytics__content">
 
           <div className="analytics__stats">
@@ -564,85 +765,21 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
           <div className="analytics__charts">
 
-            <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
+            <div className="analytics__chart-card analytics__chart-card--wide analytics__chart-card--clickable" style={an(280)} onClick={() => setDetailView('score')}>
               <div className="analytics__chart-title-row">
                 <span className="analytics__chart-title">SCORE — LAST {Math.min(tRecs.length, 10)} SESSIONS</span>
-                <button className={`analytics__chart-toggle ${expandedChart === 'score' ? 'analytics__chart-toggle--active' : ''}`} onClick={() => toggleChart('score')}>
-                  {expandedChart === 'score' ? 'HIDE ▴' : 'DETAILS ▾'}
-                </button>
+                <span className="analytics__chart-hint">VIEW DETAILS →</span>
               </div>
-              <LineChart
-                chartId="score"
-                points={tRecs.slice(0, 10).map(r => ({
-                  label: fmtDate(r.completed_at),
-                  value: r.score,
-                  tier: scoreTier(r.score * 10, 75, 50),
-                }))}
-                maxVal={10}
-                style={an(320)}
-              />
-              {expandedChart === 'score' && (
-                <div className="analytics__detail-panel">
-                  <table className="analytics__detail-table">
-                    <thead><tr>
-                      <th>DATE</th><th>LESSON</th><th>SCORE</th>
-                    </tr></thead>
-                    <tbody>
-                      {trainDetail.map((r, i) => (
-                        <tr key={i}>
-                          <td>{r.date}</td>
-                          <td className="analytics__detail-lesson">{r.lesson}</td>
-                          <td className={`analytics__detail-val--${r.tier}`}>{r.score.toFixed(1)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <LineChart chartId="score" points={tRecs.slice(0, 10).map(r => ({ label: fmtDate(r.completed_at), value: r.score, tier: scoreTier(r.score * 10, 75, 50) }))} maxVal={10} style={an(320)} />
             </div>
 
             {lessonBest.size > 0 && (
-              <div className="analytics__chart-card analytics__chart-card--wide" style={an(420)}>
+              <div className="analytics__chart-card analytics__chart-card--wide analytics__chart-card--clickable" style={an(420)} onClick={() => setDetailView('lesson')}>
                 <div className="analytics__chart-title-row">
                   <span className="analytics__chart-title">BEST SCORE PER LESSON</span>
-                  <button className={`analytics__chart-toggle ${expandedChart === 'lesson' ? 'analytics__chart-toggle--active' : ''}`} onClick={() => toggleChart('lesson')}>
-                    {expandedChart === 'lesson' ? 'HIDE ▴' : 'DETAILS ▾'}
-                  </button>
+                  <span className="analytics__chart-hint">VIEW DETAILS →</span>
                 </div>
-                <LineChart
-                  chartId="lesson"
-                  points={LESSON_ORDER
-                    .filter(id => lessonBest.has(id))
-                    .map(id => ({
-                      label: LESSON_SHORT[id] ?? id,
-                      value: lessonBest.get(id)!,
-                      tier: scoreTier(lessonBest.get(id)! * 10, 75, 50),
-                    }))}
-                  maxVal={10}
-                  style={an(460)}
-                />
-                {expandedChart === 'lesson' && (
-                  <div className="analytics__detail-panel">
-                    <table className="analytics__detail-table">
-                      <thead><tr>
-                        <th>LESSON</th><th>ATTEMPTS</th><th>BEST</th><th>LAST</th><th>TREND</th>
-                      </tr></thead>
-                      <tbody>
-                        {lessonDetail.map((r, i) => (
-                          <tr key={i}>
-                            <td className="analytics__detail-lesson">{r.name}</td>
-                            <td>{r.attempts}</td>
-                            <td className={`analytics__detail-val--${r.bestTier}`}>{r.best.toFixed(1)}</td>
-                            <td className={`analytics__detail-val--${r.lastTier}`}>{r.last.toFixed(1)}</td>
-                            <td className={`analytics__detail-trend--${r.trend}`}>
-                              {r.trend === 'up' ? '↑ Improving' : r.trend === 'down' ? '↓ Declining' : '→ Steady'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                <LineChart chartId="lesson" points={LESSON_ORDER.filter(id => lessonBest.has(id)).map(id => ({ label: LESSON_SHORT[id] ?? id, value: lessonBest.get(id)!, tier: scoreTier(lessonBest.get(id)! * 10, 75, 50) }))} maxVal={10} style={an(460)} />
               </div>
             )}
 
@@ -651,7 +788,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
       )}
 
       {/* ── Team ───────────────────────────────────────────────────────────── */}
-      {tab === 'team' && (
+      {!detailView && tab === 'team' && (
         <div className="analytics__content">
 
           <div className="analytics__chart-card" style={an(0)}>

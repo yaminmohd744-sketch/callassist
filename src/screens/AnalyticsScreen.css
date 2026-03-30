@@ -335,36 +335,100 @@
 .analytics__activity-dot--call     { background: #39d353; }
 .analytics__activity-dot--training { background: #df7afe; }
 
-/* ── Chart toggle + detail panel ────────────────────────────────────────────*/
+/* ── Chart hint label ────────────────────────────────────────────────────────*/
 
-.analytics__chart-toggle {
+.analytics__chart-hint {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.1em;
   color: var(--color-text-muted);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+.analytics__chart-card--clickable:hover .analytics__chart-hint { opacity: 1; }
+
+/* ── Clickable card ──────────────────────────────────────────────────────────*/
+
+.analytics__chart-card--clickable {
+  cursor: pointer;
+  transition: border-color var(--transition-fast), transform 0.15s ease;
+}
+.analytics__chart-card--clickable:hover {
+  border-color: rgba(129, 74, 200, 0.5);
+  transform: translateY(-2px);
+}
+.analytics__chart-card--clickable:active { transform: translateY(0); }
+
+/* ── Back button ─────────────────────────────────────────────────────────────*/
+
+.analytics__back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-secondary);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-pill);
-  padding: 3px 10px;
+  padding: var(--space-2) var(--space-4);
   cursor: pointer;
-  flex-shrink: 0;
   transition: color var(--transition-fast), border-color var(--transition-fast);
 }
-.analytics__chart-toggle:hover { color: #df7afe; border-color: #df7afe; }
-.analytics__chart-toggle--active { color: var(--color-accent-purple); border-color: var(--color-accent-purple); }
+.analytics__back-btn:hover { color: var(--color-text-primary); border-color: rgba(129,74,200,0.5); }
+
+/* ── Full detail view ────────────────────────────────────────────────────────*/
+
+@keyframes an-detail-view-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.analytics__detail-view {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  animation: an-detail-view-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.analytics__detail-view-header { display: flex; flex-direction: column; gap: var(--space-1); }
+.analytics__detail-view-title {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+.analytics__detail-view-sub {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ── Detail scroll wrapper (table in detail view, no max-height cap) ─────────*/
+
+.analytics__detail-scroll {
+  overflow-y: auto;
+  max-height: 420px;
+}
+
+/* ── Larger activity grid in detail view ─────────────────────────────────────*/
+
+.analytics__activity-grid--large {
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.analytics__activity-grid--large .analytics__activity-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+}
 
 @keyframes an-detail-in {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-
-.analytics__detail-panel {
-  border-top: 1px solid var(--color-border);
-  padding-top: var(--space-4);
-  margin-top: var(--space-4);
-  overflow-y: auto;
-  max-height: 360px;
-  animation: an-detail-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .analytics__detail-table {
