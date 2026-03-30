@@ -11,12 +11,73 @@ interface AnalyticsScreenProps {
 }
 
 type AnalyticsTab = 'performance' | 'training' | 'team';
+type Tier = 'high' | 'medium' | 'low';
 
 interface TrainingRecord {
   lesson_id: string;
   score: number;
   completed_at: string;
 }
+
+// ── Mock datasets ─────────────────────────────────────────────────────────────
+
+const MOCK_CALLS = [
+  { date: '2026-03-01T09:22:00Z', prob: 35, score: 58, dur: 4 * 60 + 22, stage: 'discovery', objections: 2 },
+  { date: '2026-03-03T14:10:00Z', prob: 52, score: 64, dur: 7 * 60 + 15, stage: 'pitch',     objections: 1 },
+  { date: '2026-03-05T11:44:00Z', prob: 41, score: 55, dur: 5 * 60 + 44, stage: 'discovery', objections: 3 },
+  { date: '2026-03-07T15:33:00Z', prob: 67, score: 72, dur: 9 * 60 + 33, stage: 'close',     objections: 1 },
+  { date: '2026-03-10T10:12:00Z', prob: 29, score: 48, dur: 3 * 60 + 12, stage: 'opener',    objections: 4 },
+  { date: '2026-03-12T13:05:00Z', prob: 58, score: 69, dur: 8 * 60 + 5,  stage: 'pitch',     objections: 2 },
+  { date: '2026-03-14T16:22:00Z', prob: 74, score: 78, dur: 11 * 60 + 22, stage: 'close',    objections: 1 },
+  { date: '2026-03-17T09:48:00Z', prob: 63, score: 71, dur: 9 * 60 + 48, stage: 'pitch',     objections: 2 },
+  { date: '2026-03-19T14:17:00Z', prob: 81, score: 85, dur: 13 * 60 + 17, stage: 'close',    objections: 0 },
+  { date: '2026-03-22T11:56:00Z', prob: 55, score: 67, dur: 7 * 60 + 56, stage: 'discovery', objections: 2 },
+  { date: '2026-03-26T15:08:00Z', prob: 78, score: 82, dur: 12 * 60 + 8,  stage: 'close',    objections: 1 },
+  { date: '2026-03-29T10:33:00Z', prob: 86, score: 89, dur: 14 * 60 + 33, stage: 'close',    objections: 0 },
+];
+
+const MOCK_TRAINING: TrainingRecord[] = [
+  { lesson_id: 'l1-opener',         score: 5.5, completed_at: '2026-03-01T08:00:00Z' },
+  { lesson_id: 'l2-not-interested', score: 4.8, completed_at: '2026-03-01T08:30:00Z' },
+  { lesson_id: 'l1-opener',         score: 7.2, completed_at: '2026-03-03T09:00:00Z' },
+  { lesson_id: 'l3-skeptic',        score: 6.1, completed_at: '2026-03-05T07:45:00Z' },
+  { lesson_id: 'l2-not-interested', score: 6.9, completed_at: '2026-03-05T08:15:00Z' },
+  { lesson_id: 'l4-price',          score: 5.3, completed_at: '2026-03-07T08:00:00Z' },
+  { lesson_id: 'l1-opener',         score: 8.4, completed_at: '2026-03-10T07:30:00Z' },
+  { lesson_id: 'l3-skeptic',        score: 7.8, completed_at: '2026-03-10T08:00:00Z' },
+  { lesson_id: 'l5-think-over',     score: 6.7, completed_at: '2026-03-12T09:00:00Z' },
+  { lesson_id: 'l4-price',          score: 7.5, completed_at: '2026-03-14T08:30:00Z' },
+  { lesson_id: 'l6-status-quo',     score: 5.9, completed_at: '2026-03-17T07:45:00Z' },
+  { lesson_id: 'l5-think-over',     score: 8.1, completed_at: '2026-03-19T08:00:00Z' },
+  { lesson_id: 'l7-discovery',      score: 7.3, completed_at: '2026-03-22T09:15:00Z' },
+  { lesson_id: 'l6-status-quo',     score: 7.6, completed_at: '2026-03-26T08:00:00Z' },
+  { lesson_id: 'l8-trial-close',    score: 8.7, completed_at: '2026-03-29T09:00:00Z' },
+];
+
+const MOCK_TEAM = [
+  { name: 'Alex Chen',  calls: 47, avgProb: 72, trainScore: 8.4, streak: 12, isYou: false },
+  { name: 'Sarah Kim',  calls: 38, avgProb: 68, trainScore: 7.9, streak: 8,  isYou: false },
+  { name: 'You',        calls: 12, avgProb: 66, trainScore: 7.8, streak: 5,  isYou: true  },
+  { name: 'Marcus J.',  calls: 29, avgProb: 61, trainScore: 7.1, streak: 3,  isYou: false },
+  { name: 'Priya P.',   calls: 22, avgProb: 54, trainScore: 6.8, streak: 2,  isYou: false },
+];
+
+const LESSON_NAMES: Record<string, string> = {
+  'l1-opener':         'Perfect Opener',
+  'l2-not-interested': 'Not Interested',
+  'l3-skeptic':        'Skeptical Prospect',
+  'l4-price':          'Price Objection',
+  'l5-think-over':     'Think It Over',
+  'l6-status-quo':     'Status Quo',
+  'l7-discovery':      'Discovery',
+  'l8-trial-close':    'Trial Close',
+  'l9-hard-close':     'Hard Close',
+};
+
+function avg(arr: number[]) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0; }
+function scoreTier(val: number, hi = 61, mid = 31): Tier { return val >= hi ? 'high' : val >= mid ? 'medium' : 'low'; }
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
   const [tab, setTab] = useState<AnalyticsTab>('performance');
@@ -60,39 +121,46 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
     localStorage.setItem('callassist_joined_team', code);
     setJoinedTeam(code);
     setJoinCode('');
-    setTeamMsg(`Joined team ${code}. Full team stats require the Supabase teams table.`);
+    setTeamMsg(`Joined team ${code}.`);
   }
 
-  // ── Performance data ───────────────────────────────────────────────────────
-  const totalCalls = pastSessions.length;
-  const sortedCalls = [...pastSessions].sort(
-    (a, b) => new Date(a.endedAt).getTime() - new Date(b.endedAt).getTime()
-  );
-  const recentCalls = sortedCalls.slice(-10);
+  // ── Data sources (real or mock) ───────────────────────────────────────────
+  const useMockPerf     = pastSessions.length === 0;
+  const useMockTraining = trainingRecords.length === 0;
 
-  const avgProb = totalCalls
-    ? Math.round(pastSessions.reduce((s, c) => s + c.finalCloseProbability, 0) / totalCalls) : 0;
-  const avgScore = totalCalls
-    ? Math.round(pastSessions.reduce((s, c) => s + c.leadScore, 0) / totalCalls) : 0;
-  const avgDurSec = totalCalls
-    ? Math.round(pastSessions.reduce((s, c) => s + c.durationSeconds, 0) / totalCalls) : 0;
+  // ── Performance metrics ───────────────────────────────────────────────────
+  const totalCalls = useMockPerf ? MOCK_CALLS.length : pastSessions.length;
+  const avgProb    = useMockPerf
+    ? Math.round(avg(MOCK_CALLS.map(c => c.prob)))
+    : totalCalls ? Math.round(avg(pastSessions.map(s => s.finalCloseProbability))) : 0;
+  const avgScore   = useMockPerf
+    ? Math.round(avg(MOCK_CALLS.map(c => c.score)))
+    : totalCalls ? Math.round(avg(pastSessions.map(s => s.leadScore))) : 0;
+  const avgDurSec  = useMockPerf
+    ? Math.round(avg(MOCK_CALLS.map(c => c.dur)))
+    : totalCalls ? Math.round(avg(pastSessions.map(s => s.durationSeconds))) : 0;
 
+  // ── Bar data: close probability per call ──────────────────────────────────
+  const probBars = useMockPerf
+    ? MOCK_CALLS.map(c => ({ label: fmtDate(c.date), pct: c.prob, tier: scoreTier(c.prob) }))
+    : [...pastSessions]
+        .sort((a, b) => new Date(a.endedAt).getTime() - new Date(b.endedAt).getTime())
+        .slice(-12)
+        .map(s => ({ label: fmtDate(s.endedAt), pct: s.finalCloseProbability, tier: scoreTier(s.finalCloseProbability) }));
+
+  // ── Stage breakdown ───────────────────────────────────────────────────────
   const stageCount: Record<string, number> = { opener: 0, discovery: 0, pitch: 0, close: 0 };
-  for (const s of pastSessions) stageCount[s.callStage] = (stageCount[s.callStage] ?? 0) + 1;
+  if (useMockPerf) {
+    for (const c of MOCK_CALLS) stageCount[c.stage] = (stageCount[c.stage] ?? 0) + 1;
+  } else {
+    for (const s of pastSessions) stageCount[s.callStage] = (stageCount[s.callStage] ?? 0) + 1;
+  }
   const maxStage = Math.max(...Object.values(stageCount), 1);
 
-  // ── Training data ──────────────────────────────────────────────────────────
-  const avgTrain = trainingRecords.length
-    ? Math.round(trainingRecords.reduce((s, r) => s + r.score, 0) / trainingRecords.length * 10) / 10 : 0;
-  const bestTrain = trainingRecords.length ? Math.max(...trainingRecords.map(r => r.score)) : 0;
-  const uniqueLessons = new Set(trainingRecords.map(r => r.lesson_id)).size;
-  const lessonBest = new Map<string, number>();
-  for (const r of trainingRecords) {
-    if ((lessonBest.get(r.lesson_id) ?? 0) < r.score) lessonBest.set(r.lesson_id, r.score);
-  }
-
-  // ── Activity grid (last 28 days) ───────────────────────────────────────────
-  const activitySet = new Set(getActivityDates());
+  // ── Activity grid (last 28 days) ──────────────────────────────────────────
+  const realActivitySet  = new Set(getActivityDates());
+  const mockCallDates    = new Set(MOCK_CALLS.map(c => c.date.split('T')[0]));
+  const mockTrainDates   = new Set(MOCK_TRAINING.map(r => r.completed_at.split('T')[0]));
   const today = new Date();
   const activityDays = Array.from({ length: 28 }, (_, i) => {
     const d = new Date(today);
@@ -100,21 +168,39 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
     const ds = d.toISOString().split('T')[0];
     return {
       date: ds,
-      training: activitySet.has(ds),
-      call: pastSessions.some(s => s.endedAt.startsWith(ds)),
+      training: useMockPerf ? mockTrainDates.has(ds) : realActivitySet.has(ds),
+      call:     useMockPerf ? mockCallDates.has(ds)  : pastSessions.some(s => s.endedAt.startsWith(ds)),
     };
   });
 
+  // ── Training metrics ──────────────────────────────────────────────────────
+  const tRecs     = useMockTraining ? MOCK_TRAINING : trainingRecords;
+  const avgTrain  = tRecs.length ? Math.round(avg(tRecs.map(r => r.score)) * 10) / 10 : 0;
+  const bestTrain = tRecs.length ? Math.max(...tRecs.map(r => r.score)) : 0;
+  const uniqLess  = new Set(tRecs.map(r => r.lesson_id)).size;
+
+  const lessonBest = new Map<string, number>();
+  for (const r of tRecs) {
+    if ((lessonBest.get(r.lesson_id) ?? 0) < r.score) lessonBest.set(r.lesson_id, r.score);
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
   function fmtDur(s: number) { return `${Math.floor(s / 60)}m ${s % 60}s`; }
   function fmtDate(iso: string) {
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
+  function an(delay: number) { return { '--an-delay': `${delay}ms` } as React.CSSProperties; }
+
+  const isMock = useMockPerf || useMockTraining;
 
   return (
     <div className="analytics">
       <div className="analytics__topbar">
-        <h1 className="analytics__title">Analytics</h1>
-        <p className="analytics__subtitle">Performance trends across calls and training</p>
+        <div>
+          <h1 className="analytics__title">Analytics</h1>
+          <p className="analytics__subtitle">Performance trends across calls and training</p>
+        </div>
+        {isMock && <span className="analytics__demo-badge">DEMO DATA</span>}
       </div>
 
       <div className="analytics__tabs">
@@ -129,199 +215,207 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
         ))}
       </div>
 
-      {/* ── Performance ─────────────────────────────────────────────────────── */}
+      {/* ── Performance ────────────────────────────────────────────────────── */}
       {tab === 'performance' && (
         <div className="analytics__content">
-          {totalCalls === 0 ? (
-            <div className="analytics__empty">
-              <div className="analytics__empty-icon">◎</div>
-              <div className="analytics__empty-title">No call data yet</div>
-              <div className="analytics__empty-desc">
-                Complete your first call to see performance analytics here.
+
+          <div className="analytics__stats">
+            {[
+              { val: String(totalCalls),  label: 'TOTAL CALLS',    cls: '' },
+              { val: `${avgProb}%`,        label: 'AVG CLOSE PROB', cls: `analytics__stat-val--${scoreTier(avgProb)}` },
+              { val: String(avgScore),     label: 'AVG LEAD SCORE', cls: `analytics__stat-val--${scoreTier(avgScore, 70, 40)}` },
+              { val: fmtDur(avgDurSec),    label: 'AVG DURATION',   cls: '' },
+            ].map((item, i) => (
+              <div key={i} className="analytics__stat-card" style={an(i * 70)}>
+                <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
+                <div className="analytics__stat-label">{item.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="analytics__charts">
+
+            <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
+              <div className="analytics__chart-title">CLOSE PROBABILITY — LAST {probBars.length} CALLS</div>
+              <div className="analytics__bars">
+                {probBars.map((b, i) => (
+                  <div key={i} className="analytics__bar-row">
+                    <div className="analytics__bar-label">{b.label}</div>
+                    <div className="analytics__bar-track">
+                      <div
+                        className={`analytics__bar analytics__bar--${b.tier}`}
+                        style={{ width: `${b.pct}%`, ...an(320 + i * 45) }}
+                      />
+                    </div>
+                    <div className="analytics__bar-val">{b.pct}%</div>
+                  </div>
+                ))}
               </div>
             </div>
-          ) : (
-            <>
-              <div className="analytics__stats">
-                <div className="analytics__stat-card">
-                  <div className="analytics__stat-val">{totalCalls}</div>
-                  <div className="analytics__stat-label">TOTAL CALLS</div>
-                </div>
-                <div className="analytics__stat-card">
-                  <div className={`analytics__stat-val analytics__stat-val--${avgProb >= 61 ? 'high' : avgProb >= 31 ? 'medium' : 'low'}`}>
-                    {avgProb}%
-                  </div>
-                  <div className="analytics__stat-label">AVG CLOSE PROB</div>
-                </div>
-                <div className="analytics__stat-card">
-                  <div className="analytics__stat-val">{avgScore}</div>
-                  <div className="analytics__stat-label">AVG LEAD SCORE</div>
-                </div>
-                <div className="analytics__stat-card">
-                  <div className="analytics__stat-val">{fmtDur(avgDurSec)}</div>
-                  <div className="analytics__stat-label">AVG DURATION</div>
-                </div>
-              </div>
 
-              <div className="analytics__charts">
-                <div className="analytics__chart-card analytics__chart-card--wide">
-                  <div className="analytics__chart-title">CLOSE PROBABILITY LAST {recentCalls.length} CALLS</div>
-                  <div className="analytics__bars">
-                    {recentCalls.map((s, i) => (
-                      <div key={i} className="analytics__bar-row">
-                        <div className="analytics__bar-label">{fmtDate(s.endedAt)}</div>
-                        <div className="analytics__bar-track">
-                          <div
-                            className={`analytics__bar analytics__bar--${s.finalCloseProbability >= 61 ? 'high' : s.finalCloseProbability >= 31 ? 'medium' : 'low'}`}
-                            style={{ width: `${s.finalCloseProbability}%` }}
-                          />
-                        </div>
-                        <div className="analytics__bar-val">{s.finalCloseProbability}%</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="analytics__chart-card">
-                  <div className="analytics__chart-title">CALLS BY FINAL STAGE</div>
-                  <div className="analytics__bars">
-                    {(Object.entries(stageCount) as [string, number][]).map(([stage, count]) => (
-                      <div key={stage} className="analytics__bar-row">
-                        <div className="analytics__bar-label">{stage.toUpperCase()}</div>
-                        <div className="analytics__bar-track">
-                          <div
-                            className={`analytics__bar analytics__bar--stage-${stage}`}
-                            style={{ width: `${(count / maxStage) * 100}%` }}
-                          />
-                        </div>
-                        <div className="analytics__bar-val">{count}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="analytics__chart-card">
-                  <div className="analytics__chart-title">ACTIVITY LAST 28 DAYS</div>
-                  <div className="analytics__activity-grid">
-                    {activityDays.map((d, i) => (
+            <div className="analytics__chart-card" style={an(400)}>
+              <div className="analytics__chart-title">CALLS BY FINAL STAGE</div>
+              <div className="analytics__bars">
+                {(Object.entries(stageCount) as [string, number][]).map(([stage, count], i) => (
+                  <div key={stage} className="analytics__bar-row">
+                    <div className="analytics__bar-label">{stage.toUpperCase()}</div>
+                    <div className="analytics__bar-track">
                       <div
-                        key={i}
-                        className={`analytics__activity-cell ${
-                          d.training && d.call ? 'analytics__activity-cell--both' :
-                          d.training ? 'analytics__activity-cell--training' :
-                          d.call ? 'analytics__activity-cell--call' : ''
-                        }`}
-                        title={d.date}
+                        className={`analytics__bar analytics__bar--stage-${stage}`}
+                        style={{ width: `${(count / maxStage) * 100}%`, ...an(440 + i * 60) }}
                       />
-                    ))}
+                    </div>
+                    <div className="analytics__bar-val">{count}</div>
                   </div>
-                  <div className="analytics__activity-legend">
-                    <span className="analytics__activity-dot analytics__activity-dot--both" /> Both
-                    <span className="analytics__activity-dot analytics__activity-dot--call" /> Call
-                    <span className="analytics__activity-dot analytics__activity-dot--training" /> Training
-                  </div>
-                </div>
+                ))}
               </div>
-            </>
-          )}
+            </div>
+
+            <div className="analytics__chart-card" style={an(450)}>
+              <div className="analytics__chart-title">ACTIVITY — LAST 28 DAYS</div>
+              <div className="analytics__activity-grid">
+                {activityDays.map((d, i) => (
+                  <div
+                    key={i}
+                    className={`analytics__activity-cell ${
+                      d.training && d.call ? 'analytics__activity-cell--both'     :
+                      d.training           ? 'analytics__activity-cell--training' :
+                      d.call               ? 'analytics__activity-cell--call'     : ''
+                    }`}
+                    style={an(490 + i * 16)}
+                    title={d.date}
+                  />
+                ))}
+              </div>
+              <div className="analytics__activity-legend">
+                <span className="analytics__activity-dot analytics__activity-dot--both" />Both
+                <span className="analytics__activity-dot analytics__activity-dot--call" />Call
+                <span className="analytics__activity-dot analytics__activity-dot--training" />Training
+              </div>
+            </div>
+
+          </div>
         </div>
       )}
 
-      {/* ── Training ─────────────────────────────────────────────────────────── */}
+      {/* ── Training ───────────────────────────────────────────────────────── */}
       {tab === 'training' && (
         <div className="analytics__content">
-          {trainingRecords.length === 0 ? (
-            <div className="analytics__empty">
-              <div className="analytics__empty-icon">◈</div>
-              <div className="analytics__empty-title">No training data yet</div>
-              <div className="analytics__empty-desc">
-                Complete Academy sessions to track your training progress here.
+
+          <div className="analytics__stats">
+            {[
+              { val: String(tRecs.length), label: 'TOTAL SESSIONS', cls: '' },
+              { val: `${avgTrain}/10`,      label: 'AVG SCORE',      cls: `analytics__stat-val--${scoreTier(avgTrain * 10, 75, 50)}` },
+              { val: bestTrain.toFixed(1),  label: 'BEST SCORE',     cls: 'analytics__stat-val--high' },
+              { val: String(uniqLess),      label: 'LESSONS TRIED',  cls: '' },
+            ].map((item, i) => (
+              <div key={i} className="analytics__stat-card" style={an(i * 70)}>
+                <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
+                <div className="analytics__stat-label">{item.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="analytics__charts">
+
+            <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
+              <div className="analytics__chart-title">SCORE — LAST {Math.min(tRecs.length, 10)} SESSIONS</div>
+              <div className="analytics__bars">
+                {tRecs.slice(0, 10).map((r, i) => (
+                  <div key={i} className="analytics__bar-row">
+                    <div className="analytics__bar-label">{fmtDate(r.completed_at)}</div>
+                    <div className="analytics__bar-track">
+                      <div
+                        className={`analytics__bar analytics__bar--${scoreTier(r.score * 10, 75, 50)}`}
+                        style={{ width: `${(r.score / 10) * 100}%`, ...an(320 + i * 50) }}
+                      />
+                    </div>
+                    <div className="analytics__bar-val">{r.score.toFixed(1)}</div>
+                  </div>
+                ))}
               </div>
             </div>
-          ) : (
-            <>
-              <div className="analytics__stats">
-                <div className="analytics__stat-card">
-                  <div className="analytics__stat-val">{trainingRecords.length}</div>
-                  <div className="analytics__stat-label">TOTAL SESSIONS</div>
-                </div>
-                <div className="analytics__stat-card">
-                  <div className={`analytics__stat-val analytics__stat-val--${avgTrain >= 7.5 ? 'high' : avgTrain >= 5 ? 'medium' : 'low'}`}>
-                    {avgTrain}/10
-                  </div>
-                  <div className="analytics__stat-label">AVG SCORE</div>
-                </div>
-                <div className="analytics__stat-card">
-                  <div className="analytics__stat-val analytics__stat-val--high">
-                    {bestTrain.toFixed(1)}
-                  </div>
-                  <div className="analytics__stat-label">BEST SCORE</div>
-                </div>
-                <div className="analytics__stat-card">
-                  <div className="analytics__stat-val">{uniqueLessons}</div>
-                  <div className="analytics__stat-label">LESSONS TRIED</div>
-                </div>
-              </div>
 
-              <div className="analytics__charts">
-                <div className="analytics__chart-card analytics__chart-card--wide">
-                  <div className="analytics__chart-title">SCORE LAST 10 SESSIONS</div>
-                  <div className="analytics__bars">
-                    {trainingRecords.slice(0, 10).map((r, i) => (
-                      <div key={i} className="analytics__bar-row">
-                        <div className="analytics__bar-label">{fmtDate(r.completed_at)}</div>
-                        <div className="analytics__bar-track">
-                          <div
-                            className={`analytics__bar analytics__bar--${r.score >= 7.5 ? 'high' : r.score >= 5 ? 'medium' : 'low'}`}
-                            style={{ width: `${(r.score / 10) * 100}%` }}
-                          />
-                        </div>
-                        <div className="analytics__bar-val">{r.score.toFixed(1)}</div>
+            {lessonBest.size > 0 && (
+              <div className="analytics__chart-card analytics__chart-card--wide" style={an(420)}>
+                <div className="analytics__chart-title">BEST SCORE PER LESSON</div>
+                <div className="analytics__bars">
+                  {[...lessonBest.entries()].map(([id, score], i) => (
+                    <div key={id} className="analytics__bar-row analytics__bar-row--lesson">
+                      <div className="analytics__bar-label analytics__bar-label--lesson">
+                        {LESSON_NAMES[id] ?? id}
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {lessonBest.size > 0 && (
-                  <div className="analytics__chart-card analytics__chart-card--wide">
-                    <div className="analytics__chart-title">BEST SCORE PER LESSON</div>
-                    <div className="analytics__bars">
-                      {[...lessonBest.entries()].map(([id, score]) => (
-                        <div key={id} className="analytics__bar-row">
-                          <div className="analytics__bar-label analytics__bar-label--mono">{id}</div>
-                          <div className="analytics__bar-track">
-                            <div
-                              className={`analytics__bar analytics__bar--${score >= 7.5 ? 'high' : score >= 5 ? 'medium' : 'low'}`}
-                              style={{ width: `${(score / 10) * 100}%` }}
-                            />
-                          </div>
-                          <div className="analytics__bar-val">{score.toFixed(1)}</div>
-                        </div>
-                      ))}
+                      <div className="analytics__bar-track">
+                        <div
+                          className={`analytics__bar analytics__bar--${scoreTier(score * 10, 75, 50)}`}
+                          style={{ width: `${(score / 10) * 100}%`, ...an(460 + i * 45) }}
+                        />
+                      </div>
+                      <div className="analytics__bar-val">{score.toFixed(1)}</div>
                     </div>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
-            </>
-          )}
+            )}
+
+          </div>
         </div>
       )}
 
-      {/* ── Team ─────────────────────────────────────────────────────────────── */}
+      {/* ── Team ───────────────────────────────────────────────────────────── */}
       {tab === 'team' && (
         <div className="analytics__content">
+
+          <div className="analytics__chart-card" style={an(0)}>
+            <div className="analytics__chart-title-row">
+              <span className="analytics__chart-title">TEAM LEADERBOARD — THIS MONTH</span>
+              <span className="analytics__demo-inline">DEMO</span>
+            </div>
+            <div className="analytics__leaderboard">
+              <div className="analytics__lb-header">
+                <span className="analytics__lb-cell analytics__lb-cell--rank">#</span>
+                <span className="analytics__lb-cell analytics__lb-cell--name">REP</span>
+                <span className="analytics__lb-cell analytics__lb-cell--num">CALLS</span>
+                <span className="analytics__lb-cell analytics__lb-cell--num">CLOSE %</span>
+                <span className="analytics__lb-cell analytics__lb-cell--num">TRAINING</span>
+                <span className="analytics__lb-cell analytics__lb-cell--num">STREAK</span>
+              </div>
+              {MOCK_TEAM.map((rep, i) => (
+                <div
+                  key={i}
+                  className={`analytics__lb-row ${rep.isYou ? 'analytics__lb-row--you' : ''}`}
+                  style={an(60 + i * 75)}
+                >
+                  <span className="analytics__lb-cell analytics__lb-cell--rank analytics__lb-rank">{i + 1}</span>
+                  <span className="analytics__lb-cell analytics__lb-cell--name analytics__lb-name">
+                    {rep.name}
+                    {rep.isYou && <span className="analytics__lb-you-badge">YOU</span>}
+                  </span>
+                  <span className="analytics__lb-cell analytics__lb-cell--num">{rep.calls}</span>
+                  <span className={`analytics__lb-cell analytics__lb-cell--num analytics__lb-val--${scoreTier(rep.avgProb)}`}>
+                    {rep.avgProb}%
+                  </span>
+                  <span className={`analytics__lb-cell analytics__lb-cell--num analytics__lb-val--${scoreTier(rep.trainScore * 10, 75, 50)}`}>
+                    {rep.trainScore}/10
+                  </span>
+                  <span className="analytics__lb-cell analytics__lb-cell--num analytics__lb-streak">
+                    {rep.streak}d 🔥
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="analytics__team-grid">
-            <div className="analytics__team-card">
-              <div className="analytics__chart-title">MANAGER CREATE TEAM</div>
+            <div className="analytics__team-card" style={an(500)}>
+              <div className="analytics__chart-title">MANAGER — CREATE TEAM</div>
               <p className="analytics__team-desc">
-                Generate a team code and share it with your reps so they can join your team.
+                Generate a team code and share it with your reps to connect everyone's stats.
               </p>
               {teamCode ? (
                 <div className="analytics__team-code-block">
                   <div className="analytics__team-code">{teamCode}</div>
-                  <button className="analytics__team-btn" onClick={copyTeamCode}>
-                    ⎘ Copy
-                  </button>
+                  <button className="analytics__team-btn" onClick={copyTeamCode}>⎘ Copy</button>
                 </div>
               ) : (
                 <button className="analytics__team-btn analytics__team-btn--primary" onClick={generateTeamCode}>
@@ -329,27 +423,12 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
                 </button>
               )}
               {teamMsg && <div className="analytics__team-msg">{teamMsg}</div>}
-              <div className="analytics__team-note">
-                To view team members' call stats, run the following SQL in your Supabase dashboard:
-                <pre className="analytics__team-sql">{`create table teams (
-  id uuid primary key default gen_random_uuid(),
-  code text unique not null,
-  name text not null,
-  created_by uuid references auth.users
-);
-create table team_members (
-  team_id uuid references teams,
-  user_id uuid references auth.users,
-  role text default 'rep',
-  primary key (team_id, user_id)
-);`}</pre>
-              </div>
             </div>
 
-            <div className="analytics__team-card">
-              <div className="analytics__chart-title">REP JOIN A TEAM</div>
+            <div className="analytics__team-card" style={an(580)}>
+              <div className="analytics__chart-title">REP — JOIN A TEAM</div>
               <p className="analytics__team-desc">
-                Enter the code your manager shared to join their team.
+                Enter the code your manager shared to join their team and appear in the leaderboard.
               </p>
               {joinedTeam && (
                 <div className="analytics__team-joined">
@@ -374,6 +453,7 @@ create table team_members (
               </div>
             </div>
           </div>
+
         </div>
       )}
     </div>
