@@ -639,7 +639,9 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
             <div className="analytics__chart-title">28-DAY GRID</div>
             <div className="analytics__activity-grid analytics__activity-grid--large">
               {activityDays.map((d, i) => (
-                <div key={i} className={`analytics__activity-cell ${d.training && d.call ? 'analytics__activity-cell--both' : d.training ? 'analytics__activity-cell--training' : d.call ? 'analytics__activity-cell--call' : ''}`} style={an(300 + i * 12)} title={d.date} />
+                <div key={i} className={`analytics__activity-cell ${d.training && d.call ? 'analytics__activity-cell--both' : d.training ? 'analytics__activity-cell--training' : d.call ? 'analytics__activity-cell--call' : ''}`} style={an(300 + i * 12)} title={d.date}>
+                  <span className="analytics__activity-day">{new Date(d.date).getDate()}</span>
+                </div>
               ))}
             </div>
             <div className="analytics__activity-legend" style={{ marginTop: '12px' }}>
@@ -731,7 +733,9 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
                     }`}
                     style={an(490 + i * 16)}
                     title={d.date}
-                  />
+                  >
+                    <span className="analytics__activity-day">{new Date(d.date).getDate()}</span>
+                  </div>
                 ))}
               </div>
               <div className="analytics__activity-legend">

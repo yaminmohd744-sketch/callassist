@@ -307,11 +307,33 @@
   border-radius: 3px;
   background: var(--color-bg-elevated);
   animation: an-cell-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) var(--an-delay, 0ms) both;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.analytics__activity-cell--both     { background: #00cfff; } /* cyan  = call + training */
-.analytics__activity-cell--call     { background: #39d353; } /* green = call only      */
-.analytics__activity-cell--training { background: #df7afe; } /* pink  = training only  */
+.analytics__activity-cell--both     { background: #00cfff; }
+.analytics__activity-cell--call     { background: #39d353; }
+.analytics__activity-cell--training { background: #df7afe; }
+
+.analytics__activity-day {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1;
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.analytics__activity-cell--both .analytics__activity-day,
+.analytics__activity-cell--call .analytics__activity-day,
+.analytics__activity-cell--training .analytics__activity-day {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.analytics__activity-grid--large .analytics__activity-day {
+  font-size: 14px;
+}
 
 .analytics__activity-legend {
   display: flex;
