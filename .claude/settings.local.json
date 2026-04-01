@@ -10,7 +10,10 @@
       "Bash(npx supabase --version)",
       "Bash(npx supabase functions deploy analyze-transcript)",
       "Bash(npx supabase functions deploy analyze-transcript --no-verify-jwt)",
-      "Bash(npx supabase functions deploy generate-summary --no-verify-jwt)"
+      "Bash(npx supabase functions deploy generate-summary --no-verify-jwt)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ]
   }
 }
