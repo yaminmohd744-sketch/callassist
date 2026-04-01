@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // base './' ensures file:// paths work when Electron loads the built app
+  base: './',
   server: {
     proxy: {
       '/api/apollo': {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { OverlayScreen }    from './screens/OverlayScreen';
 import { LandingScreen }    from './screens/LandingScreen';
 import { IntroScreen }      from './screens/IntroScreen';
 import { DashboardScreen }  from './screens/DashboardScreen';
@@ -63,7 +64,12 @@ function sessionToRow(s: CallSession, userId: string) {
 
 // ─── App ─────────────────────────────────────────────────────────────────────
 
+// When loaded in the Electron overlay window, render only the compact overlay UI.
+const _isOverlayMode = new URLSearchParams(window.location.search).get('overlay') === 'true';
+
 export function App() {
+  if (_isOverlayMode) return <OverlayScreen />;
+
   const { user, loading: authLoading } = useAuth();
 
   const [theme, setTheme] = useState<'dark' | 'light'>(

@@ -59,3 +59,33 @@
     border-top-color: var(--color-accent-cyan);
   }
 }
+
+
+/* ── Electron overlay toggle button ────────────────────────────────────────── */
+.live-call__overlay-btn {
+  display: block;
+  margin: 0 auto var(--space-2);
+  padding: 5px 14px;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 4px;
+  color: rgba(0, 212, 255, 0.7);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.live-call__overlay-btn:hover {
+  background: rgba(0, 212, 255, 0.15);
+  color: #00d4ff;
+  border-color: rgba(0, 212, 255, 0.5);
+}
+
+.live-call__overlay-btn--active {
+  background: rgba(0, 212, 255, 0.18);
+  color: #00d4ff;
+  border-color: rgba(0, 212, 255, 0.6);
+}

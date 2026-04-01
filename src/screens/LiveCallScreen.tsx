@@ -141,6 +141,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [notes, setNotes] = useState<string[]>([]);
   const [noteInput, setNoteInput] = useState('');
   const [mobilePanel, setMobilePanel] = useState<'transcript' | 'ai' | 'lead'>('transcript');
+  const [overlayOpen, setOverlayOpen] = useState(false);
 
   const { elapsedSeconds, formattedTime, startTimer, stopTimer } = useCallTimer();
   const { suggestions, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion } = useAICoach();
@@ -179,6 +180,31 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Keep overlay in sync with latest AI data
+  useEffect(() => {
+    if (overlayOpen && window.electronAPI) {
+      window.electronAPI.sendSuggestionsToOverlay({
+        suggestions,
+        closeProbability,
+        callStage,
+        prospectName: config.prospectName,
+      });
+    }
+  }, [suggestions, closeProbability, callStage, overlayOpen, config.prospectName]);
+
+  // Sync overlay state if user closes it from the overlay itself
+  useEffect(() => {
+    if (!window.electronAPI) return;
+    const cleanup = window.electronAPI.onOverlayClosed(() => setOverlayOpen(false));
+    return cleanup;
+  }, []);
+
+  async function handleToggleOverlay() {
+    if (!window.electronAPI) return;
+    const isNowOpen = await window.electronAPI.toggleOverlay();
+    setOverlayOpen(isNowOpen);
+  }
+
   function handleManualSubmit() {
     const text = manualInput.trim();
     if (!text) return;
@@ -215,6 +241,10 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   async function handleEndCall() {
     stopListening();
     stopTimer();
+    if (overlayOpen && window.electronAPI) {
+      await window.electronAPI.toggleOverlay();
+      setOverlayOpen(false);
+    }
     const { aiSummary, followUpEmail, leadScore } = await generateSessionSummary(
       config,
       transcript,
@@ -253,6 +283,15 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         objectionsCount={objectionsCount}
         closeProbability={closeProbability}
       />
+      {window.electronAPI && (
+        <button
+          className={`live-call__overlay-btn ${overlayOpen ? 'live-call__overlay-btn--active' : ''}`}
+          onClick={handleToggleOverlay}
+          title={overlayOpen ? 'Close floating overlay' : 'Open floating overlay (hidden from screen share)'}
+        >
+          {overlayOpen ? '◈ OVERLAY ON' : '◈ OPEN OVERLAY'}
+        </button>
+      )}
       <div className="live-call__panels" data-mobile={mobilePanel}>
         <TranscriptPanel
           entries={transcript}
