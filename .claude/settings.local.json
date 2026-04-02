@@ -76,7 +76,8 @@
       "Bash(node -e \"const p=require\\('./package.json'\\); p.main='electron/test-globals.cjs'; require\\('fs'\\).writeFileSync\\('./package.json', JSON.stringify\\(p,null,2\\)\\)\")",
       "Bash(powershell -Command \"Get-NetTCPConnection -LocalPort 5173,5174 -ErrorAction SilentlyContinue | Select-Object LocalPort,OwningProcess\")",
       "Bash(powershell -Command \"Stop-Process -Id 5548,26244 -Force -ErrorAction SilentlyContinue; Write-Host done\")",
-      "Bash(ls src/*.css)"
+      "Bash(ls src/*.css)",
+      "Bash(cat src/types/*.ts)"
     ]
   }
 }

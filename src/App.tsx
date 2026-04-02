@@ -15,6 +15,7 @@ import { AppShell }        from './components/layout/AppShell';
 import { useAuth }         from './hooks/useAuth';
 import './screens/AuthScreen.css';
 import { supabase }        from './lib/supabase';
+import { MOCK_SESSIONS }   from './lib/mockSessions';
 import type { CallConfig, CallSession, CallStage, TranscriptEntry, AISuggestion } from './types';
 
 // Prevent flash of wrong theme on initial load
@@ -105,7 +106,8 @@ export function App() {
       .eq('user_id', user.id)
       .order('ended_at', { ascending: false })
       .then(({ data }) => {
-        if (data) setPastSessions(data.map(rowToSession));
+        const real = data ? data.map(rowToSession) : [];
+        setPastSessions(real.length > 0 ? real : MOCK_SESSIONS);
       });
   }, [user]);
 
