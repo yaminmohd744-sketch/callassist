@@ -78,7 +78,9 @@
       "Bash(powershell -Command \"Stop-Process -Id 5548,26244 -Force -ErrorAction SilentlyContinue; Write-Host done\")",
       "Bash(ls src/*.css)",
       "Bash(cat src/types/*.ts)",
-      "Bash(npx supabase:*)"
+      "Bash(npx supabase:*)",
+      "Bash(tasklist /FI \"PID eq 34596\")",
+      "Bash(powershell -Command \"Get-Process -Id 34596 | Select-Object Name, Id, Path\")"
     ]
   }
 }

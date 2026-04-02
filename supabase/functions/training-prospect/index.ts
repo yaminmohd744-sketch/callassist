@@ -51,8 +51,11 @@ The sales rep just said: "${userResponse}"
 
 Stay in character. Respond naturally as this prospect would. Keep your response short (1-3 sentences max).
 
+Also output a "tone" field — the single word that best describes your current emotional tone as this prospect.
+Choose from: Skeptical, Curious, Defensive, Warm, Disengaged, Frustrated, Excited, Hesitant, Neutral
+
 Respond ONLY with valid JSON:
-{ "prospectResponse": string }${difficultyNote}${langNote}`;
+{ "prospectResponse": string, "prospectTone": string }${difficultyNote}${langNote}`;
 
     const conversationHistory = (messages as Array<{ role: string; text: string }>).map((m) => ({
       role: m.role === 'rep' ? 'user' : 'assistant',

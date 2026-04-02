@@ -7,6 +7,7 @@ import { LeadProfilePanel } from '../components/panels/LeadProfilePanel';
 import { useCallTimer } from '../hooks/useCallTimer';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useAICoach } from '../hooks/useAICoach';
+import { useAudioTone } from '../hooks/useAudioTone';
 import { generateSessionSummary } from '../lib/ai';
 import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSignal } from '../types';
 import './LiveCallScreen.css';
@@ -145,6 +146,11 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
   const { elapsedSeconds, formattedTime, startTimer, stopTimer } = useCallTimer();
   const { suggestions, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion } = useAICoach();
+  const { isCapturing: isAudioCapturing, tone: prospectTone, coaching: toneCoaching, permissionError: tonePermissionError, startCapture, stopCapture } = useAudioTone({
+    prospectName: config.prospectName,
+    callGoal: config.callGoal,
+    yourPitch: config.yourPitch,
+  });
 
   // Automatically classify each mic utterance as rep or prospect based on content.
   // Only prospect entries trigger AI analysis.
@@ -241,6 +247,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   async function handleEndCall() {
     stopListening();
     stopTimer();
+    stopCapture();
     if (overlayOpen && window.electronAPI) {
       await window.electronAPI.toggleOverlay();
       setOverlayOpen(false);
@@ -283,15 +290,31 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         objectionsCount={objectionsCount}
         closeProbability={closeProbability}
       />
-      {window.electronAPI && (
+      <div className="live-call__toolbar">
+        {window.electronAPI && (
+          <button
+            className={`live-call__overlay-btn ${overlayOpen ? 'live-call__overlay-btn--active' : ''}`}
+            onClick={handleToggleOverlay}
+            title={overlayOpen ? 'Close floating overlay' : 'Open floating overlay (hidden from screen share)'}
+          >
+            {overlayOpen ? '◈ OVERLAY ON' : '◈ OPEN OVERLAY'}
+          </button>
+        )}
         <button
-          className={`live-call__overlay-btn ${overlayOpen ? 'live-call__overlay-btn--active' : ''}`}
-          onClick={handleToggleOverlay}
-          title={overlayOpen ? 'Close floating overlay' : 'Open floating overlay (hidden from screen share)'}
+          className={`live-call__tone-btn ${isAudioCapturing ? 'live-call__tone-btn--active' : ''}`}
+          onClick={isAudioCapturing ? stopCapture : () => void startCapture()}
+          title={isAudioCapturing ? 'Stop tone analysis' : 'Capture speaker audio for live tone analysis'}
         >
-          {overlayOpen ? '◈ OVERLAY ON' : '◈ OPEN OVERLAY'}
+          {isAudioCapturing ? (
+            <><span className="live-call__tone-dot" />TONE LIVE</>
+          ) : (
+            <>◉ TONE ANALYSIS</>
+          )}
         </button>
-      )}
+        {tonePermissionError && (
+          <span className="live-call__tone-error">{tonePermissionError}</span>
+        )}
+      </div>
       <div className="live-call__panels" data-mobile={mobilePanel}>
         <TranscriptPanel
           entries={transcript}
@@ -305,6 +328,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         <AIIntelligencePanel
           suggestions={suggestions}
           callStage={callStage}
+          prospectTone={prospectTone}
+          toneCoaching={toneCoaching}
         />
         <LeadProfilePanel
           config={config}

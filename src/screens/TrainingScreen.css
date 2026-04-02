@@ -1200,3 +1200,135 @@
   font-size: var(--font-size-sm);
   user-select: none;
 }
+
+/* ── Tone pill on prospect messages ─────────────────────────────────────────*/
+
+.training__msg-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 2px;
+}
+
+.training__tone-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border-radius: var(--border-radius-pill);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+  animation: tone-in 0.3s ease both;
+}
+
+@keyframes tone-in {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 0.85; transform: scale(1); }
+}
+
+.training__tone-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.training__tone-pill--skeptical  { color: #f0e040; }
+.training__tone-pill--curious    { color: #00cfff; }
+.training__tone-pill--defensive  { color: #ff6b6b; }
+.training__tone-pill--warm       { color: #39d353; }
+.training__tone-pill--disengaged { color: #888888; }
+.training__tone-pill--frustrated { color: #ff8c42; }
+.training__tone-pill--excited    { color: #df7afe; }
+.training__tone-pill--hesitant   { color: #c8a830; }
+.training__tone-pill--neutral    { color: rgba(255,255,255,0.45); }
+
+/* ── Tone coaching card in feedback ─────────────────────────────────────────*/
+
+.training__tone-coach {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--tone-border, rgba(0,207,255,0.3));
+  background: var(--tone-bg, rgba(0,207,255,0.05));
+  animation: tone-in 0.3s ease both;
+}
+
+.training__tone-coach--skeptical  { --tone-border: rgba(240,224,64,0.3);  --tone-bg: rgba(240,224,64,0.05);  }
+.training__tone-coach--curious    { --tone-border: rgba(0,207,255,0.3);   --tone-bg: rgba(0,207,255,0.05);   }
+.training__tone-coach--defensive  { --tone-border: rgba(255,107,107,0.3); --tone-bg: rgba(255,107,107,0.05); }
+.training__tone-coach--warm       { --tone-border: rgba(57,211,83,0.3);   --tone-bg: rgba(57,211,83,0.05);   }
+.training__tone-coach--disengaged { --tone-border: rgba(136,136,136,0.3); --tone-bg: rgba(136,136,136,0.05); }
+.training__tone-coach--frustrated { --tone-border: rgba(255,140,66,0.3);  --tone-bg: rgba(255,140,66,0.05);  }
+.training__tone-coach--excited    { --tone-border: rgba(223,122,254,0.3); --tone-bg: rgba(223,122,254,0.05); }
+.training__tone-coach--hesitant   { --tone-border: rgba(200,168,48,0.3);  --tone-bg: rgba(200,168,48,0.05);  }
+.training__tone-coach--neutral    { --tone-border: rgba(255,255,255,0.1); --tone-bg: rgba(255,255,255,0.03); }
+
+.training__tone-coach-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.training__tone-coach-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tone-color, #00cfff);
+  flex-shrink: 0;
+}
+
+.training__tone-coach--skeptical  .training__tone-coach-dot { background: #f0e040; }
+.training__tone-coach--curious    .training__tone-coach-dot { background: #00cfff; }
+.training__tone-coach--defensive  .training__tone-coach-dot { background: #ff6b6b; }
+.training__tone-coach--warm       .training__tone-coach-dot { background: #39d353; }
+.training__tone-coach--disengaged .training__tone-coach-dot { background: #888888; }
+.training__tone-coach--frustrated .training__tone-coach-dot { background: #ff8c42; }
+.training__tone-coach--excited    .training__tone-coach-dot { background: #df7afe; }
+.training__tone-coach--hesitant   .training__tone-coach-dot { background: #c8a830; }
+.training__tone-coach--neutral    .training__tone-coach-dot { background: rgba(255,255,255,0.4); }
+
+.training__tone-coach-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-text-muted);
+}
+
+.training__tone-coach-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+.training__tone-coach-say {
+  font-style: normal;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.training__tone-coach-tag {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  background: var(--color-bg-base);
+  border-radius: 3px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  border: 1px solid var(--color-border-subtle);
+}

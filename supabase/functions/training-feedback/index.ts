@@ -57,20 +57,30 @@ REP JUST SAID: "${userResponse}"
 
 Evaluate this response as a sales trainer. Be honest - not harsh, not soft. Give real feedback that makes them better. Reference the specific product/deal and scenario when relevant.${prevFeedbackNote}
 
+Also include a "toneCoach" field analyzing the prospect's emotional tone in their latest message and giving the rep one sharp coaching cue.
+
 Respond ONLY with valid JSON:
 {
   "score": number,
   "pros": string[],
   "cons": string[],
   "idealResponse": string,
-  "idealReason": string
+  "idealReason": string,
+  "toneCoach": {
+    "tone": string,
+    "move": string,
+    "say": string
+  }
 }
 
 - "score": 1-10 rating of their response
 - "pros": 1-2 specific things they did well (be concrete, not generic). Empty array if nothing good.
 - "cons": 1-2 specific things they did wrong or missed (be concrete). Empty array if response was excellent.
 - "idealResponse": The exact words a top closer would say in this situation (natural, first-person, under 50 words)
-- "idealReason": 1-2 sentences explaining WHY that response works - the psychology or sales principle behind it${difficultyNote}${langNote}`;
+- "idealReason": 1-2 sentences explaining WHY that response works - the psychology or sales principle behind it
+- "toneCoach.tone": The prospect's emotional tone in their last message (one of: Skeptical, Curious, Defensive, Warm, Disengaged, Frustrated, Excited, Hesitant, Neutral)
+- "toneCoach.move": What the rep should DO tactically right now — 1 sentence, specific and actionable. Sound like an elite closer whispering in the rep's ear.
+- "toneCoach.say": The exact words the rep should say next — natural, first-person, under 20 words${difficultyNote}${langNote}`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

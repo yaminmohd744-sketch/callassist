@@ -362,7 +362,15 @@ export function AcademySection({ user }: AcademySectionProps) {
           <div className="training__messages">
             {trainingState.messages.map(msg => (
               <div key={msg.id} className={`training__msg training__msg--${msg.role}`}>
-                <div className="training__msg-label">{msg.role === 'prospect' ? 'PROSPECT' : 'YOU'}</div>
+                <div className="training__msg-header">
+                  <div className="training__msg-label">{msg.role === 'prospect' ? 'PROSPECT' : 'YOU'}</div>
+                  {msg.role === 'prospect' && msg.prospectTone && (
+                    <div className={`training__tone-pill training__tone-pill--${msg.prospectTone.toLowerCase()}`}>
+                      <span className="training__tone-dot" />
+                      {msg.prospectTone.toUpperCase()}
+                    </div>
+                  )}
+                </div>
                 <div className="training__msg-bubble">{msg.text}</div>
                 {msg.feedback && (
                   <div className="training__feedback">
@@ -389,6 +397,22 @@ export function AcademySection({ user }: AcademySectionProps) {
                       <div className="training__feedback-ideal-text">"{msg.feedback.idealResponse}"</div>
                       <div className="training__feedback-ideal-reason">{msg.feedback.idealReason}</div>
                     </div>
+                    {msg.feedback.toneCoach && (
+                      <div className={`training__tone-coach training__tone-coach--${msg.feedback.toneCoach.tone.toLowerCase()}`}>
+                        <div className="training__tone-coach-header">
+                          <span className="training__tone-coach-dot" />
+                          <span className="training__tone-coach-label">TONE: {msg.feedback.toneCoach.tone.toUpperCase()}</span>
+                        </div>
+                        <div className="training__tone-coach-row">
+                          <span className="training__tone-coach-tag">MOVE</span>
+                          <span>{msg.feedback.toneCoach.move}</span>
+                        </div>
+                        <div className="training__tone-coach-row">
+                          <span className="training__tone-coach-tag">SAY</span>
+                          <em className="training__tone-coach-say">"{msg.feedback.toneCoach.say}"</em>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

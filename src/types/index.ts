@@ -63,18 +63,37 @@ export type TrainingScenario =
   | 'random'
   | 'custom';
 
+export type ProspectTone =
+  | 'Skeptical'
+  | 'Curious'
+  | 'Defensive'
+  | 'Warm'
+  | 'Disengaged'
+  | 'Frustrated'
+  | 'Excited'
+  | 'Hesitant'
+  | 'Neutral';
+
+export interface ToneCoaching {
+  tone: ProspectTone;
+  move: string;
+  say: string;
+}
+
 export interface TrainingFeedback {
   score: number;
   pros: string[];
   cons: string[];
   idealResponse: string;
   idealReason: string;
+  toneCoach?: ToneCoaching;
 }
 
 export interface TrainingMessage {
   id: string;
   role: 'prospect' | 'rep';
   text: string;
+  prospectTone?: ProspectTone;
   feedback?: TrainingFeedback;
 }
 

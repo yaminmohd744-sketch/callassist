@@ -1,0 +1,156 @@
+import { useState, useRef, useCallback } from 'react';
+import type { ProspectTone, ToneCoaching } from '../types';
+
+const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+// Chunk duration in ms — low latency as requested
+const CHUNK_MS = 4000;
+
+interface AudioToneConfig {
+  prospectName: string;
+  callGoal: string;
+  yourPitch: string;
+}
+
+export interface AudioToneState {
+  isCapturing: boolean;
+  tone: ProspectTone | null;
+  coaching: ToneCoaching | null;
+  permissionError: string | null;
+  startCapture: () => Promise<void>;
+  stopCapture: () => void;
+}
+
+export function useAudioTone(config: AudioToneConfig): AudioToneState {
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [tone, setTone] = useState<ProspectTone | null>(null);
+  const [coaching, setCoaching] = useState<ToneCoaching | null>(null);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
+
+  const streamRef = useRef<MediaStream | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const isProcessingRef = useRef(false);
+
+  const processChunk = useCallback(async (blob: Blob) => {
+    // Skip silent / tiny chunks
+    if (blob.size < 2000) return;
+    // Don't queue up requests — wait for previous one to finish
+    if (isProcessingRef.current) return;
+
+    isProcessingRef.current = true;
+    try {
+      // Convert blob to base64
+      const arrayBuffer = await blob.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
+
+      const res = await fetch(`${FUNCTIONS_BASE}/analyze-tone`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': ANON_KEY,
+          'Authorization': `Bearer ${ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          audio: base64,
+          mimeType: blob.type || 'audio/webm',
+          prospectName: config.prospectName,
+          callGoal: config.callGoal,
+          yourPitch: config.yourPitch,
+        }),
+      });
+
+      if (!res.ok) return;
+      const data = await res.json() as { tone?: ProspectTone; move?: string; say?: string };
+
+      if (data.tone) {
+        setTone(data.tone);
+        if (data.move && data.say) {
+          setCoaching({ tone: data.tone, move: data.move, say: data.say });
+        }
+      }
+    } catch {
+      // Silently degrade — never crash the call
+    } finally {
+      isProcessingRef.current = false;
+    }
+  }, [config.prospectName, config.callGoal, config.yourPitch]);
+
+  const stopCapture = useCallback(() => {
+    recorderRef.current?.stop();
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+    recorderRef.current = null;
+    setIsCapturing(false);
+  }, []);
+
+  const startCapture = useCallback(async () => {
+    setPermissionError(null);
+
+    try {
+      // Request display media — user must select screen and check "Share system audio"
+      // We include a minimal video constraint because some browsers reject audio-only getDisplayMedia
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+        video: { width: 1, height: 1 },
+      });
+
+      // Drop video tracks immediately — we only need audio
+      stream.getVideoTracks().forEach(t => t.stop());
+
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length === 0) {
+        stream.getTracks().forEach(t => t.stop());
+        setPermissionError('No system audio captured. When prompted, select your screen and check "Share system audio".');
+        return;
+      }
+
+      streamRef.current = stream;
+      const audioStream = new MediaStream(audioTracks);
+
+      // Pick best supported mime type
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : '';
+
+      const recorder = new MediaRecorder(audioStream, mimeType ? { mimeType } : undefined);
+      recorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          void processChunk(e.data);
+        }
+      };
+
+      // Deliver chunks every CHUNK_MS
+      recorder.start(CHUNK_MS);
+      setIsCapturing(true);
+
+      // If the user stops sharing from the browser UI, clean up
+      audioTracks[0].onended = () => stopCapture();
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setPermissionError('Permission denied. Allow screen sharing to enable live tone analysis.');
+        } else if (err.name === 'NotSupportedError') {
+          setPermissionError('System audio capture is not supported in this browser.');
+        } else {
+          setPermissionError('Could not start audio capture. Please try again.');
+        }
+      }
+    }
+  }, [processChunk, stopCapture]);
+
+  return { isCapturing, tone, coaching, permissionError, startCapture, stopCapture };
+}

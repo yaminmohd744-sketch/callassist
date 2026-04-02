@@ -53,6 +53,122 @@
   color: var(--color-text-secondary);
 }
 
+/* ── Header right cluster ────────────────────────────────────────────────── */
+
+.ai-panel__header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ── Tone pill ──────────────────────────────────────────────────────────── */
+
+.ai-panel__tone-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--border-radius-pill);
+  border: 1px solid var(--tone-color, rgba(255,255,255,0.2));
+  background: color-mix(in srgb, var(--tone-color, rgba(255,255,255,0.2)) 12%, transparent);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--tone-color, rgba(255,255,255,0.5));
+  animation: tone-in 0.3s ease both;
+}
+
+@keyframes tone-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.ai-panel__tone-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tone-color, rgba(255,255,255,0.5));
+  animation: tone-pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes tone-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ── Tone coaching card ──────────────────────────────────────────────────── */
+
+.ai-panel__tone-card {
+  border: 1px solid color-mix(in srgb, var(--tone-color, #00cfff) 40%, transparent);
+  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--tone-color, #00cfff) 6%, var(--color-bg-elevated));
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  animation: tone-card-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes tone-card-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ai-panel__tone-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-panel__tone-card-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tone-color, #00cfff);
+  animation: tone-pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.ai-panel__tone-card-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--tone-color, #00cfff);
+}
+
+.ai-panel__tone-card-move,
+.ai-panel__tone-card-say {
+  display: flex;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  align-items: flex-start;
+}
+
+.ai-panel__tone-card-say em {
+  font-style: normal;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.ai-panel__tone-card-tag {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--tone-color, #00cfff);
+  background: color-mix(in srgb, var(--tone-color, #00cfff) 15%, transparent);
+  border-radius: 3px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 /* Objection quick-reference */
 .ai-panel__objections {
   display: flex;

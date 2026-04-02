@@ -146,13 +146,14 @@ export function useTraining() {
           messages: messagesWithRep,
           userResponse: userText,
           language,
-        }) as Promise<{ prospectResponse: string }>,
+        }) as Promise<{ prospectResponse: string; prospectTone?: string }>,
       ]);
 
       const prospectMessage: TrainingMessage = {
         id: genId(),
         role: 'prospect',
         text: prospectData.prospectResponse,
+        prospectTone: prospectData.prospectTone as TrainingMessage['prospectTone'] ?? undefined,
       };
 
       setState(s => ({
