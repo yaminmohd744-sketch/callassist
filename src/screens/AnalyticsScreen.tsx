@@ -395,6 +395,108 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
   const isMock = useMockPerf || useMockTraining;
 
+  // ── Insight 1: Top objections ─────────────────────────────────────────────
+  interface ObjInsight { label: string; count: number; technique: string; successRate: number; }
+  const objInsights: ObjInsight[] = (() => {
+    const cats: Record<string, { count: number; techniques: string[]; won: number }> = {};
+    const classify = (text: string) => {
+      const t = text.toLowerCase();
+      if (t.match(/expens|cost|price|budget|afford|money/))          return 'Price / budget concern';
+      if (t.match(/time|now|busy|bandwidth|later|month|quarter|contract|soon/)) return 'Not the right time';
+      if (t.match(/vendor|already|another|current|using|signed|compet/))        return 'Already have a vendor';
+      if (t.match(/interest|relevant|need|work for us/))              return 'Not interested';
+      return null;
+    };
+    for (const session of pastSessions) {
+      for (const s of session.suggestions ?? []) {
+        if (s.type !== 'objection-handler') continue;
+        const cat = classify(s.triggeredBy ?? '');
+        if (!cat) continue;
+        if (!cats[cat]) cats[cat] = { count: 0, techniques: [], won: 0 };
+        cats[cat].count++;
+        if (s.headline) cats[cat].techniques.push(s.headline);
+        if (session.finalCloseProbability >= 50) cats[cat].won++;
+      }
+    }
+    return Object.entries(cats)
+      .map(([label, d]) => ({
+        label,
+        count: d.count,
+        technique: d.techniques[0] ?? '—',
+        successRate: Math.round((d.won / d.count) * 100),
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
+  })();
+
+  // ── Insight 2: Winning patterns ───────────────────────────────────────────
+  const winningPatterns = (() => {
+    if (pastSessions.length < 2) return [];
+    const sorted = [...pastSessions].sort((a, b) => b.finalCloseProbability - a.finalCloseProbability);
+    const half = Math.ceil(sorted.length / 2);
+    const top = sorted.slice(0, half);
+    const bot = sorted.slice(half);
+    const avgTopDur = Math.round(avg(top.map(s => s.durationSeconds)));
+    const avgBotDur = Math.round(avg(bot.map(s => s.durationSeconds)));
+    const avgTopObj = avg(top.map(s => s.objectionsCount));
+    const avgBotObj = avg(bot.map(s => s.objectionsCount));
+    const closeS = pastSessions.filter(s => s.callStage === 'close');
+    const otherS = pastSessions.filter(s => s.callStage !== 'close');
+    const avgCloseP = closeS.length ? Math.round(avg(closeS.map(s => s.finalCloseProbability))) : 0;
+    const avgOtherP = otherS.length ? Math.round(avg(otherS.map(s => s.finalCloseProbability))) : 0;
+    const out: { icon: string; stat: string; label: string }[] = [];
+    if (Math.abs(avgTopDur - avgBotDur) > 60)
+      out.push({ icon: '⏱', stat: fmtDur(avgTopDur), label: `avg duration on your top-performing calls vs ${fmtDur(avgBotDur)} on lower-performing ones` });
+    if (avgBotObj > avgTopObj + 0.3)
+      out.push({ icon: '◎', stat: `${avgTopObj.toFixed(1)} obj`, label: `avg objections on winning calls vs ${avgBotObj.toFixed(1)} on losing ones — handling early matters` });
+    if (closeS.length > 0 && avgCloseP > avgOtherP + 5)
+      out.push({ icon: '◈', stat: `${avgCloseP}%`, label: `avg close probability on calls that reached Close stage vs ${avgOtherP}% on earlier-stage calls` });
+    return out.slice(0, 3);
+  })();
+
+  // ── Insight 3: Stage distribution (%) ────────────────────────────────────
+  const totalCallsForStage = Object.values(stageCount).reduce((a, b) => a + b, 0) || 1;
+  const stagePcts = (['opener', 'discovery', 'pitch', 'close'] as const).map(stage => ({
+    stage,
+    count: stageCount[stage] ?? 0,
+    pct: Math.round(((stageCount[stage] ?? 0) / totalCallsForStage) * 100),
+  }));
+
+  // ── Insight 4: Best call time (by day of week) ────────────────────────────
+  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const callsByDay = (() => {
+    const src = useMockPerf
+      ? MOCK_CALLS.map(c => ({ date: c.date, prob: c.prob }))
+      : pastSessions.map(s => ({ date: s.endedAt, prob: s.finalCloseProbability }));
+    const map: Record<number, { total: number; count: number }> = {};
+    for (const { date, prob } of src) {
+      const d = new Date(date).getDay();
+      if (!map[d]) map[d] = { total: 0, count: 0 };
+      map[d].total += prob; map[d].count++;
+    }
+    return DAY_NAMES.map((name, i) =>
+      map[i] ? { name, avgProb: Math.round(map[i].total / map[i].count), count: map[i].count } : null
+    ).filter(Boolean) as { name: string; avgProb: number; count: number }[];
+  })();
+  const bestDay  = callsByDay.length ? callsByDay.reduce((a, b) => b.avgProb > a.avgProb ? b : a) : null;
+  const maxDayProb = callsByDay.length ? Math.max(...callsByDay.map(d => d.avgProb)) : 100;
+
+  // ── Insight 5: Objection-to-close rate ────────────────────────────────────
+  const objCloseGroups = (() => {
+    const src = useMockPerf
+      ? MOCK_CALLS.map(c => ({ objections: c.objections, prob: c.prob }))
+      : pastSessions.map(s => ({ objections: s.objectionsCount, prob: s.finalCloseProbability }));
+    return [
+      { label: '0 objections', fn: (o: number) => o === 0 },
+      { label: '1 objection',  fn: (o: number) => o === 1 },
+      { label: '2+ objections', fn: (o: number) => o >= 2 },
+    ].map(g => {
+      const m = src.filter(s => g.fn(s.objections));
+      const ap = m.length ? Math.round(avg(m.map(s => s.prob))) : null;
+      return { label: g.label, count: m.length, avgClose: ap, tier: ap ? scoreTier(ap) : 'low' as Tier };
+    }).filter(g => g.count > 0);
+  })();
+
   return (
     <div className="analytics">
       <div className="analytics__topbar">
@@ -746,6 +848,125 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
             </div>
 
           </div>
+
+          {/* ── Insights ────────────────────────────────────────────────────── */}
+
+          <div className="analytics__insights-header" style={an(550)}>
+            <span className="analytics__insights-label">◈ PERFORMANCE INSIGHTS</span>
+          </div>
+
+          {/* 1. Top Objections */}
+          <div className="analytics__insight-card" style={an(580)}>
+            <div className="analytics__chart-title">TOP OBJECTIONS &amp; TECHNIQUES</div>
+            <div className="analytics__obj-list">
+              {(objInsights.length > 0 ? objInsights : [
+                { label: 'Price / budget concern',   count: 4, technique: 'Anchor to ROI — tie cost to the value saved or problem avoided', successRate: 62 },
+                { label: 'Not the right time',        count: 3, technique: 'Future-pace the delay cost — show what waiting costs them',       successRate: 48 },
+                { label: 'Already have a vendor',     count: 2, technique: 'Contrast positioning — isolate the one thing you do better',      successRate: 35 },
+              ] as typeof objInsights).map((o, i) => (
+                <div key={i} className="analytics__obj-item">
+                  <div className="analytics__obj-top">
+                    <span className="analytics__obj-rank">#{i + 1}</span>
+                    <span className="analytics__obj-label">{o.label}</span>
+                    <span className="analytics__obj-count">{o.count}×</span>
+                  </div>
+                  <div className="analytics__obj-technique">{o.technique}</div>
+                  <div className="analytics__obj-rate">
+                    <div className="analytics__obj-bar-track">
+                      <div className="analytics__obj-bar" style={{ width: `${o.successRate}%` }} />
+                    </div>
+                    <span className="analytics__obj-rate-val">{o.successRate}% success when handled</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 2. Winning Patterns */}
+          <div className="analytics__insight-card" style={an(640)}>
+            <div className="analytics__chart-title">WINNING PATTERNS</div>
+            <div className="analytics__patterns-list">
+              {(winningPatterns.length > 0 ? winningPatterns : [
+                { icon: '⏱', stat: '11m 2s', label: 'avg duration on your top-performing calls vs 5m 8s on lower-performing ones' },
+                { icon: '◎', stat: '0.8 obj', label: 'avg objections on winning calls vs 2.3 on losing ones — handling objections early matters' },
+                { icon: '◈', stat: '76%', label: 'avg close probability on calls that reached Close stage vs 41% on earlier-stage calls' },
+              ]).map((p, i) => (
+                <div key={i} className="analytics__pattern-item">
+                  <span className="analytics__pattern-icon">{p.icon}</span>
+                  <div>
+                    <span className="analytics__pattern-stat">{p.stat}</span>{' '}
+                    <span className="analytics__pattern-label">{p.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. Stage distribution */}
+          <div className="analytics__insight-card" style={an(700)}>
+            <div className="analytics__chart-title">STAGE DISTRIBUTION</div>
+            <div className="analytics__stage-dist">
+              {stagePcts.map((s, i) => (
+                <div key={i} className="analytics__stage-dist-row">
+                  <span className="analytics__stage-dist-label">{s.stage.toUpperCase()}</span>
+                  <div className="analytics__stage-dist-track">
+                    <div className={`analytics__stage-dist-bar analytics__bar--stage-${s.stage}`} style={{ width: `${Math.max(s.pct, 2)}%`, ...an(720 + i * 50) }} />
+                  </div>
+                  <span className="analytics__stage-dist-pct">{s.pct}%</span>
+                  <span className="analytics__stage-dist-count">({s.count})</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 4. Best call time */}
+          <div className="analytics__insight-card" style={an(760)}>
+            <div className="analytics__chart-title">BEST DAY TO CALL</div>
+            {bestDay && (
+              <div className="analytics__bestday">
+                <span className="analytics__bestday-name">{bestDay.name}</span>
+                <span className="analytics__bestday-stat">{bestDay.avgProb}% avg close probability</span>
+              </div>
+            )}
+            <div className="analytics__day-bars">
+              {callsByDay.map((d, i) => (
+                <div key={i} className={`analytics__day-bar-col ${bestDay?.name === d.name ? 'analytics__day-bar-col--best' : ''}`}>
+                  <div className="analytics__day-bar-wrap">
+                    <div className="analytics__day-bar" style={{ height: `${(d.avgProb / maxDayProb) * 100}%`, ...an(800 + i * 30) }} />
+                  </div>
+                  <span className="analytics__day-bar-label">{d.name}</span>
+                  <span className="analytics__day-bar-val">{d.avgProb}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 5. Objection-to-close rate */}
+          <div className="analytics__insight-card" style={an(820)}>
+            <div className="analytics__chart-title">OBJECTION-TO-CLOSE RATE</div>
+            <p className="analytics__insight-desc">How your close probability shifts based on how many objections came up on a call.</p>
+            <div className="analytics__obj-close-list">
+              {(objCloseGroups.length > 0 ? objCloseGroups : [
+                { label: '0 objections',  count: 3, avgClose: 81, tier: 'high'   as const },
+                { label: '1 objection',   count: 5, avgClose: 57, tier: 'medium' as const },
+                { label: '2+ objections', count: 4, avgClose: 33, tier: 'low'    as const },
+              ]).map((g, i) => (
+                <div key={i} className="analytics__obj-close-item">
+                  <div className="analytics__obj-close-top">
+                    <span className="analytics__obj-close-label">{g.label}</span>
+                    <span className="analytics__obj-close-count">{g.count} calls</span>
+                  </div>
+                  <div className="analytics__obj-close-bar-row">
+                    <div className="analytics__obj-close-track">
+                      <div className={`analytics__obj-close-bar analytics__obj-close-bar--${g.tier}`} style={{ width: `${g.avgClose ?? 0}%`, ...an(840 + i * 40) }} />
+                    </div>
+                    <span className={`analytics__obj-close-val analytics__detail-val--${g.tier}`}>{g.avgClose !== null ? `${g.avgClose}%` : '—'}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       )}
 

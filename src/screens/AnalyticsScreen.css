@@ -35,11 +35,11 @@
 .analytics {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100%;
   background: var(--color-bg-base);
   font-family: var(--font-sans);
   color: var(--color-text-primary);
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* ── Topbar ──────────────────────────────────────────────────────────────────*/
@@ -132,7 +132,6 @@
 
 .analytics__content {
   flex: 1;
-  overflow-y: auto;
   padding: var(--space-6) var(--space-8);
   display: flex;
   flex-direction: column;
@@ -758,4 +757,356 @@
   .analytics__stats { grid-template-columns: repeat(2, 1fr); }
   .analytics__topbar { padding: var(--space-4); }
   .analytics__tabs   { padding: 0 var(--space-4) var(--space-3); }
+}
+
+/* ── Performance Insights ────────────────────────────────────────────────────*/
+
+.analytics__insights-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 var(--space-1);
+  border-top: 1px solid var(--color-border-subtle);
+  margin-top: var(--space-2);
+  animation: an-content-in var(--transition-normal) both;
+  animation-delay: var(--an-delay, 0ms);
+}
+
+.analytics__insights-label {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.12em;
+  color: var(--color-accent-magenta);
+  font-weight: 700;
+}
+
+.analytics__insight-card {
+  grid-column: 1 / -1;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-5) var(--space-6);
+  animation: an-content-in var(--transition-normal) both;
+  animation-delay: var(--an-delay, 0ms);
+}
+
+.analytics__insight-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: var(--space-2) 0 var(--space-4);
+  line-height: 1.5;
+}
+
+/* ── Top objections ──────────────────────────────────────────────────────────*/
+
+.analytics__obj-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.analytics__obj-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-elevated);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.analytics__obj-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.analytics__obj-rank {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-accent-purple);
+  min-width: 24px;
+}
+
+.analytics__obj-label {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.analytics__obj-count {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.analytics__obj-technique {
+  font-size: var(--font-size-xs);
+  color: var(--color-accent-cyan);
+  padding-left: 28px;
+  line-height: 1.4;
+}
+
+.analytics__obj-rate {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-left: 28px;
+}
+
+.analytics__obj-bar-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.analytics__obj-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent-purple), var(--color-accent-cyan));
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+.analytics__obj-rate-val {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Winning patterns ────────────────────────────────────────────────────────*/
+
+.analytics__patterns-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.analytics__pattern-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-elevated);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.analytics__pattern-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--color-accent-cyan);
+}
+
+.analytics__pattern-stat {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-accent-green);
+}
+
+.analytics__pattern-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+/* ── Stage distribution ──────────────────────────────────────────────────────*/
+
+.analytics__stage-dist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.analytics__stage-dist-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 44px 40px;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.analytics__stage-dist-label {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+}
+
+.analytics__stage-dist-track {
+  height: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.analytics__stage-dist-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.7s ease;
+}
+
+.analytics__stage-dist-pct {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-align: right;
+}
+
+.analytics__stage-dist-count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* ── Best day bar chart ──────────────────────────────────────────────────────*/
+
+.analytics__bestday {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: var(--space-3) 0 var(--space-5);
+}
+
+.analytics__bestday-name {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-accent-cyan);
+}
+
+.analytics__bestday-stat {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.analytics__day-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  height: 100px;
+}
+
+.analytics__day-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.analytics__day-bar-wrap {
+  width: 100%;
+  height: 72px;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+  overflow: hidden;
+}
+
+.analytics__day-bar {
+  width: 100%;
+  background: rgba(129,74,200,0.4);
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+  transition: height 0.6s ease;
+}
+
+.analytics__day-bar-col--best .analytics__day-bar {
+  background: var(--color-accent-cyan);
+}
+
+.analytics__day-bar-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.analytics__day-bar-col--best .analytics__day-bar-label {
+  color: var(--color-accent-cyan);
+  font-weight: 700;
+}
+
+.analytics__day-bar-val {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.analytics__day-bar-col--best .analytics__day-bar-val {
+  color: var(--color-accent-cyan);
+  font-weight: 700;
+}
+
+/* ── Objection-to-close ──────────────────────────────────────────────────────*/
+
+.analytics__obj-close-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.analytics__obj-close-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.analytics__obj-close-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.analytics__obj-close-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.analytics__obj-close-count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.analytics__obj-close-bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.analytics__obj-close-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.analytics__obj-close-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.7s ease;
+}
+
+.analytics__obj-close-bar--high   { background: var(--color-accent-green); }
+.analytics__obj-close-bar--medium { background: #f0e040; }
+.analytics__obj-close-bar--low    { background: #ff4444; }
+
+.analytics__obj-close-val {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  min-width: 40px;
+  text-align: right;
 }
