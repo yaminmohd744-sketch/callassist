@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../components/ui/Button';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
+import { enhancePitch } from '../lib/ai';
 import type { CallConfig } from '../types';
 import './PreCallScreen.css';
 
@@ -18,10 +19,26 @@ export function PreCallScreen({ onStartCall, onBack }: PreCallScreenProps) {
     language: 'en-US',
   });
   const [errors, setErrors] = useState<Partial<CallConfig>>({});
+  const [enhancing, setEnhancing] = useState(false);
+  const [enhanced, setEnhanced] = useState(false);
 
   function handleChange(field: keyof CallConfig, value: string) {
     setForm(f => ({ ...f, [field]: value }));
     if (errors[field]) setErrors(e => ({ ...e, [field]: '' }));
+    if (field === 'yourPitch') setEnhanced(false);
+  }
+
+  async function handleEnhancePitch() {
+    if (!form.yourPitch.trim() || enhancing) return;
+    setEnhancing(true);
+    setEnhanced(false);
+    try {
+      const result = await enhancePitch(form.yourPitch, form.company, form.callGoal);
+      setForm(f => ({ ...f, yourPitch: result }));
+      setEnhanced(true);
+    } finally {
+      setEnhancing(false);
+    }
   }
 
   function handleSubmit() {
@@ -85,10 +102,27 @@ export function PreCallScreen({ onStartCall, onBack }: PreCallScreenProps) {
           </div>
 
           <div className="precall__field">
-            <label className="precall__label">YOUR PITCH / PRODUCT</label>
+            <div className="precall__label-row">
+              <label className="precall__label">YOUR PITCH / PRODUCT</label>
+              <button
+                type="button"
+                className={`precall__enhance-btn ${enhanced ? 'precall__enhance-btn--done' : ''}`}
+                onClick={handleEnhancePitch}
+                disabled={!form.yourPitch.trim() || enhancing}
+                title="Let AI expand and structure your pitch for better coaching"
+              >
+                {enhancing ? (
+                  <span className="precall__enhance-spinner" />
+                ) : enhanced ? (
+                  '✓ Enhanced'
+                ) : (
+                  '◈ Generate'
+                )}
+              </button>
+            </div>
             <textarea
               className="precall__textarea"
-              placeholder="e.g. We're a sales automation platform that helps SDRs book 3x more meetings through AI-powered outreach..."
+              placeholder="Describe your product or service in a few words — hit Generate to let AI expand it into a full coaching context..."
               value={form.yourPitch}
               onChange={e => handleChange('yourPitch', e.target.value)}
               rows={4}

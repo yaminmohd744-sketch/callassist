@@ -143,6 +143,60 @@
   width: 100%;
 }
 
+/* ─── Pitch enhance button ─────────────────────────────────── */
+
+.precall__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.precall__enhance-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-pill);
+  padding: 3px 12px;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-magenta);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.precall__enhance-btn:hover:not(:disabled) {
+  border-color: var(--color-accent-purple);
+  background: rgba(129, 74, 200, 0.08);
+}
+
+.precall__enhance-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.precall__enhance-btn--done {
+  color: var(--color-accent-green);
+  border-color: rgba(57, 211, 83, 0.35);
+}
+
+.precall__enhance-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(129, 74, 200, 0.3);
+  border-top-color: var(--color-accent-magenta);
+  border-radius: 50%;
+  animation: precall-spin 0.7s linear infinite;
+}
+
+@keyframes precall-spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 600px) {
   .precall__row { grid-template-columns: 1fr; }
 }

@@ -101,6 +101,20 @@ export async function analyzeTranscript(
   }
 }
 
+export async function enhancePitch(
+  pitch: string,
+  company: string,
+  callGoal: string
+): Promise<string> {
+  try {
+    const data = await callFunction('enhance-pitch', { pitch, company, callGoal }) as Record<string, unknown>;
+    return (data.enhancedPitch as string) ?? pitch;
+  } catch (err) {
+    console.error('[CallAssist] Pitch enhancement failed:', err instanceof Error ? err.message : err);
+    return pitch;
+  }
+}
+
 export async function generateSessionSummary(
   config: CallConfig,
   transcript: TranscriptEntry[],
