@@ -80,7 +80,9 @@
       "Bash(cat src/types/*.ts)",
       "Bash(npx supabase:*)",
       "Bash(tasklist /FI \"PID eq 34596\")",
-      "Bash(powershell -Command \"Get-Process -Id 34596 | Select-Object Name, Id, Path\")"
+      "Bash(powershell -Command \"Get-Process -Id 34596 | Select-Object Name, Id, Path\")",
+      "Bash(npx kill-port:*)",
+      "Bash(ELECTRON_RUN_AS_NODE=\"\" npm run dev)"
     ]
   }
 }

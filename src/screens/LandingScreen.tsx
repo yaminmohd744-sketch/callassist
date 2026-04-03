@@ -5,7 +5,7 @@ interface LandingScreenProps {
   onGetStarted: () => void;
 }
 
-type SectionId = 'features' | 'training' | 'languages' | 'pricing';
+type SectionId = 'features' | 'training' | 'languages' | 'pricing' | 'download' | 'changelog' | 'help' | 'about' | 'blog' | 'careers' | 'contact' | 'privacy' | 'terms' | 'cookies';
 
 const DEMO_FRAMES = [
   { type: 'status',   text: '● ACTIVE  02:14  OBJECTIONS 2  CLOSE PROB 68%' },
@@ -206,10 +206,113 @@ const PRICING_FAQ = [
   },
 ];
 
+const CHANGELOG_ENTRIES = [
+  {
+    version: 'v2.4.0', date: 'March 2025', tag: 'NEW', tagColor: 'green',
+    changes: [
+      { type: 'new',         text: 'Team leaderboard — generate a team code and compete with colleagues' },
+      { type: 'new',         text: 'Arabic coaching support (10th language reached)' },
+      { type: 'new',         text: '28-day activity heatmap on the Analytics screen' },
+      { type: 'fix',         text: 'Fixed close probability stalling mid-call in Firefox' },
+    ],
+  },
+  {
+    version: 'v2.3.0', date: 'January 2025', tag: 'MAJOR', tagColor: 'purple',
+    changes: [
+      { type: 'new',         text: 'AI Sales Academy — 9 structured lessons across 3 modules' },
+      { type: 'new',         text: 'Module unlock progression: Beginner → Intermediate → Advanced' },
+      { type: 'new',         text: 'Per-lesson score tracking and improvement history' },
+      { type: 'improvement', text: 'Coaching prompts are now stage-aware (opener, discovery, close)' },
+    ],
+  },
+  {
+    version: 'v2.2.0', date: 'November 2024', tag: 'UPDATE', tagColor: 'yellow',
+    changes: [
+      { type: 'new',         text: 'Post-call AI summary with ready-to-send follow-up email' },
+      { type: 'new',         text: 'Lead score assigned to every contact after each call' },
+      { type: 'improvement', text: 'Transcripts are now editable before saving' },
+      { type: 'fix',         text: 'Fixed speech recognition dropping words on slower connections' },
+    ],
+  },
+  {
+    version: 'v2.1.0', date: 'September 2024', tag: 'UPDATE', tagColor: 'yellow',
+    changes: [
+      { type: 'new',         text: 'Mandarin, Japanese, Dutch, and Italian coaching added' },
+      { type: 'new',         text: 'Custom scenario builder — describe any prospect in plain text' },
+      { type: 'improvement', text: 'Training mode scoring algorithm fully rewritten for accuracy' },
+    ],
+  },
+  {
+    version: 'v2.0.0', date: 'July 2024', tag: 'MAJOR', tagColor: 'purple',
+    changes: [
+      { type: 'new', text: 'Built-in CRM — every call saved with transcript and lead score' },
+      { type: 'new', text: 'Dashboard with contact list, lead scores, and timestamped notes' },
+      { type: 'new', text: 'Analytics screen with close probability trends and training history' },
+      { type: 'new', text: 'French, Portuguese, German, and Spanish coaching support' },
+    ],
+  },
+];
+
+const HELP_TOPICS = [
+  {
+    icon: '▶', title: 'Getting started',
+    articles: ['How to set up your first live call', 'Configuring your microphone for best accuracy', 'Choosing your coaching language', 'Understanding the live coaching panel'],
+  },
+  {
+    icon: '◎', title: 'Live calls',
+    articles: ['How objection detection works', 'What buying signals look like', 'Using the quick-reference objection sheet', 'Reading your close probability in real time'],
+  },
+  {
+    icon: '◈', title: 'Training mode',
+    articles: ['Choosing the right scenario and difficulty', 'How the AI prospect generates responses', 'Understanding your per-response score', 'Tracking your AI Sales Academy progress'],
+  },
+  {
+    icon: '◷', title: 'CRM & call history',
+    articles: ['Where to find your saved calls', 'Reading your post-call AI summary', 'Sending the auto-generated follow-up email', 'Exporting your call transcripts'],
+  },
+  {
+    icon: '▣', title: 'Billing & account',
+    articles: ['Upgrading from Free to Pro', 'How the 7-day money-back guarantee works', 'Cancelling your subscription', 'What happens to my data after cancellation'],
+  },
+];
+
+const BLOG_POSTS = [
+  {
+    tag: 'TECHNIQUE', tagColor: 'purple',
+    title: 'The 3-second rule that turns "think it over" into a closed deal',
+    excerpt: 'Most reps go silent after a stall — and lose. Here\'s the counter-intuitive pause technique that flips hesitation into commitment.',
+    date: 'Mar 18, 2025', readTime: '5 min',
+  },
+  {
+    tag: 'TRAINING', tagColor: 'green',
+    title: 'Why practicing on real prospects is killing your close rate',
+    excerpt: 'Every time you rehearse on a live call, you\'re paying tuition to someone who isn\'t buying. AI roleplay changes the math.',
+    date: 'Feb 28, 2025', readTime: '4 min',
+  },
+  {
+    tag: 'MULTILINGUAL', tagColor: 'blue',
+    title: 'How to close in a language that isn\'t your first',
+    excerpt: 'Non-native speakers have a hidden advantage in sales. Real-time AI coaching amplifies it. Here\'s how to use it.',
+    date: 'Feb 10, 2025', readTime: '6 min',
+  },
+  {
+    tag: 'DATA', tagColor: 'yellow',
+    title: 'We analysed 10,000 sales calls. Here\'s what separates the top 5%.',
+    excerpt: 'Objection timing, question frequency, and silence patterns — the data reveals what elite reps do differently.',
+    date: 'Jan 22, 2025', readTime: '8 min',
+  },
+];
+
+const JOB_LISTINGS = [
+  { title: 'Senior Full-Stack Engineer',      team: 'Engineering',       location: 'Remote (EU / US)',   type: 'Full-time' },
+  { title: 'AI/ML Engineer — Speech & NLP',   team: 'Engineering',       location: 'Remote (Worldwide)', type: 'Full-time' },
+  { title: 'Head of Sales',                   team: 'Go-to-Market',      location: 'Remote (US)',        type: 'Full-time' },
+  { title: 'Customer Success Manager',        team: 'Customer Success',  location: 'Remote (EU / US)',   type: 'Full-time' },
+];
+
 const NAV_SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'features',  label: 'Features'  },
   { id: 'training',  label: 'Training'  },
-  { id: 'languages', label: 'Languages' },
   { id: 'pricing',   label: 'Pricing'   },
 ];
 
@@ -317,7 +420,6 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           <div className={`lp__nav-links ${menuOpen ? 'lp__nav-links--open' : ''}`}>
             <button onClick={() => goSection('features')}>Features</button>
             <button onClick={() => goSection('training')}>Training</button>
-            <button onClick={() => goSection('languages')}>Languages</button>
             <button onClick={() => goSection('pricing')}>Pricing</button>
           </div>
         )}
@@ -739,6 +841,464 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
     );
   }
 
+  // ─── Download section view ────────────────────────────────────────────────
+
+  if (activeSection === 'download') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--download">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">DOWNLOAD</div>
+            <h2 className="lp__sv-h2">No download. No install.<br />Just open and sell.</h2>
+            <p className="lp__sv-sub">
+              Pitch Plus runs entirely in your browser. No Chrome extension, no desktop app,
+              no setup wizard. Open a tab, enter your prospect's details, and you're live in under 30 seconds.
+            </p>
+          </div>
+
+          <div className="lp__info-grid">
+            {[
+              { icon: '◎', title: 'Any browser', desc: 'Works on Chrome, Firefox, Safari, and Edge. Nothing to install — just sign in and go.' },
+              { icon: '◈', title: 'Any device', desc: 'Laptop, desktop, or tablet. If your browser supports Web Speech API, Pitch Plus works.' },
+              { icon: '✦', title: 'Any call type', desc: 'Phone calls, Zoom, Teams, Google Meet — anything you can speak into your microphone.' },
+              { icon: '▣', title: 'Any OS', desc: 'Windows, macOS, Linux, ChromeOS. No platform restrictions, ever.' },
+            ].map((item, i) => (
+              <div key={i} className="lp__info-card">
+                <div className="lp__info-card-icon">{item.icon}</div>
+                <div className="lp__info-card-title">{item.title}</div>
+                <p className="lp__info-card-desc">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="lp__sv-howto">
+            {[
+              { num: '01', title: 'Sign up free', desc: 'Create your account in 30 seconds. No credit card required for the free plan.' },
+              { num: '02', title: 'Open a new tab', desc: 'Navigate to Pitch Plus in any supported browser. Bookmark it for one-click access.' },
+              { num: '03', title: 'Allow microphone', desc: 'Grant microphone permission once. Pitch Plus never records without your explicit start.' },
+              { num: '04', title: 'Start your call', desc: 'Enter your prospect\'s details, hit Start, and get live coaching the moment they speak.' },
+            ].map((step, i) => (
+              <div key={i} className="lp__sv-tstep" style={{ '--i': i } as React.CSSProperties}>
+                <div className="lp__sv-tstep-num">{step.num}</div>
+                <div className="lp__sv-tstep-title">{step.title}</div>
+                <div className="lp__sv-tstep-desc">{step.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="lp__sv-cta">
+            <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
+              ▶ Get Started Free
+            </button>
+            <p className="lp__sv-cta-note">No credit card · No downloads · Live in 30 seconds</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Changelog section view ────────────────────────────────────────────────
+
+  if (activeSection === 'changelog') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--changelog">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">CHANGELOG</div>
+            <h2 className="lp__sv-h2">What's new in Pitch Plus</h2>
+            <p className="lp__sv-sub">New features, improvements, and fixes — published as they ship.</p>
+          </div>
+
+          <div className="lp__changelog-list">
+            {CHANGELOG_ENTRIES.map((entry, i) => (
+              <div key={i} className="lp__cl-entry">
+                <div className="lp__cl-meta">
+                  <span className="lp__cl-version">{entry.version}</span>
+                  <span className="lp__cl-date">{entry.date}</span>
+                  <span className={`lp__cl-tag lp__cl-tag--${entry.tagColor}`}>{entry.tag}</span>
+                </div>
+                <ul className="lp__cl-changes">
+                  {entry.changes.map((c, j) => (
+                    <li key={j} className={`lp__cl-change lp__cl-change--${c.type}`}>
+                      <span className="lp__cl-change-dot" />
+                      {c.text}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Help Center section view ──────────────────────────────────────────────
+
+  if (activeSection === 'help') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--help">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">HELP CENTER</div>
+            <h2 className="lp__sv-h2">How can we help?</h2>
+            <p className="lp__sv-sub">
+              Everything you need to get the most out of Pitch Plus — from your first call to advanced coaching techniques.
+            </p>
+          </div>
+
+          <div className="lp__help-grid">
+            {HELP_TOPICS.map((topic, i) => (
+              <div key={i} className="lp__help-card">
+                <div className="lp__help-card-icon">{topic.icon}</div>
+                <div className="lp__help-card-title">{topic.title}</div>
+                <ul className="lp__help-articles">
+                  {topic.articles.map((a, j) => (
+                    <li key={j} className="lp__help-article">
+                      <span className="lp__help-article-arrow">›</span>
+                      {a}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="lp__help-contact">
+            <div className="lp__help-contact-text">Can't find what you need?</div>
+            <button className="lp__btn lp__btn--outline" onClick={() => goSection('contact')}>
+              Contact Support →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── About section view ────────────────────────────────────────────────────
+
+  if (activeSection === 'about') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--about">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">ABOUT</div>
+            <h2 className="lp__sv-h2">Built by salespeople,<br />for salespeople.</h2>
+            <p className="lp__sv-sub">
+              Pitch Plus was born from a simple frustration: the best sales coaches in the world
+              can't be on every call. AI can.
+            </p>
+          </div>
+
+          <div className="lp__about-story">
+            <p>
+              We spent years in outbound sales — cold calls, objection after objection, deals lost in the last
+              30 seconds because we said the wrong thing. Every post-mortem pointed to the same problem: by the
+              time a manager gave feedback, the moment was long gone.
+            </p>
+            <p>
+              So we built the tool we always wished existed. An AI that listens in real time, detects objections
+              the instant they're spoken, and whispers the right response before the silence gets awkward.
+              No lag. No judgment. Just the right words, right now.
+            </p>
+            <p>
+              Today, Pitch Plus coaches reps in 10 languages across 40+ countries. We're a small team of
+              engineers, salespeople, and linguists who believe that the best salespeople aren't born —
+              they're built, rep by rep.
+            </p>
+          </div>
+
+          <div className="lp__info-grid">
+            {[
+              { icon: '✦', title: 'Real-time, always', desc: 'Feedback 3 hours after a call is a post-mortem. We built coaching that lands in the moment it matters.' },
+              { icon: '◈', title: 'No English bias', desc: 'Sales happens in every language. We coached in 10 from the start — competitors still haven\'t caught up.' },
+              { icon: '◎', title: 'Reps first', desc: 'Every feature ships when it helps the person on the call, not when it helps the dashboard look impressive.' },
+              { icon: '▣', title: 'Simple pricing', desc: 'No enterprise quotes, no seat negotiations, no hidden fees. A price you can read on one screen.' },
+            ].map((item, i) => (
+              <div key={i} className="lp__info-card">
+                <div className="lp__info-card-icon">{item.icon}</div>
+                <div className="lp__info-card-title">{item.title}</div>
+                <p className="lp__info-card-desc">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="lp__sv-cta">
+            <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
+              ▶ Try it yourself
+            </button>
+            <p className="lp__sv-cta-note">Free plan available · No credit card required</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Blog section view ─────────────────────────────────────────────────────
+
+  if (activeSection === 'blog') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--blog">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">BLOG</div>
+            <h2 className="lp__sv-h2">The Pitch Plus Sales Blog</h2>
+            <p className="lp__sv-sub">Techniques, data, and ideas for reps who want to close more.</p>
+          </div>
+
+          <div className="lp__blog-grid">
+            {BLOG_POSTS.map((post, i) => (
+              <div key={i} className="lp__blog-card">
+                <div className="lp__blog-card-top">
+                  <span className={`lp__blog-tag lp__blog-tag--${post.tagColor}`}>{post.tag}</span>
+                  <span className="lp__blog-meta">{post.date} · {post.readTime} read</span>
+                </div>
+                <div className="lp__blog-title">{post.title}</div>
+                <p className="lp__blog-excerpt">{post.excerpt}</p>
+                <button className="lp__blog-read">Read article →</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Careers section view ──────────────────────────────────────────────────
+
+  if (activeSection === 'careers') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--careers">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">CAREERS</div>
+            <h2 className="lp__sv-h2">Build the future of sales</h2>
+            <p className="lp__sv-sub">
+              We're a small, remote team working on a problem that matters to millions of people.
+              No politics, no nonsense — just good work and ambitious goals.
+            </p>
+          </div>
+
+          <div className="lp__info-grid lp__info-grid--3">
+            {[
+              { icon: '◎', title: 'Fully remote', desc: 'Work from anywhere. We operate async-first and hire the best people regardless of timezone.' },
+              { icon: '✦', title: 'Ownership from day one', desc: 'Everyone ships. There are no layers between your work and the product customers use.' },
+              { icon: '◈', title: 'Competitive comp', desc: 'Market-rate salary, equity, and a home-office stipend. We don\'t underpay to test commitment.' },
+            ].map((item, i) => (
+              <div key={i} className="lp__info-card">
+                <div className="lp__info-card-icon">{item.icon}</div>
+                <div className="lp__info-card-title">{item.title}</div>
+                <p className="lp__info-card-desc">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="lp__careers-section-title">Open roles</div>
+          <div className="lp__jobs-list">
+            {JOB_LISTINGS.map((job, i) => (
+              <div key={i} className="lp__job-row">
+                <div className="lp__job-info">
+                  <div className="lp__job-title">{job.title}</div>
+                  <div className="lp__job-meta">{job.team} · {job.location} · {job.type}</div>
+                </div>
+                <button className="lp__btn lp__btn--outline lp__btn--sm">Apply →</button>
+              </div>
+            ))}
+          </div>
+
+          <div className="lp__help-contact">
+            <div className="lp__help-contact-text">Don't see the right role? Send us a speculative application.</div>
+            <button className="lp__btn lp__btn--outline" onClick={() => goSection('contact')}>
+              Get in touch →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Contact section view ──────────────────────────────────────────────────
+
+  if (activeSection === 'contact') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--contact">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">CONTACT</div>
+            <h2 className="lp__sv-h2">Get in touch</h2>
+            <p className="lp__sv-sub">We're a small team — we read every message ourselves and respond within one business day.</p>
+          </div>
+
+          <div className="lp__contact-grid">
+            <div className="lp__contact-card">
+              <div className="lp__contact-card-icon">◎</div>
+              <div className="lp__contact-card-title">Support</div>
+              <p className="lp__contact-card-desc">Questions about your account, billing, or how something works? We've got you.</p>
+              <a className="lp__contact-link" href="mailto:support@pitchplus.ai">support@pitchplus.ai</a>
+            </div>
+            <div className="lp__contact-card">
+              <div className="lp__contact-card-icon">◈</div>
+              <div className="lp__contact-card-title">Sales & partnerships</div>
+              <p className="lp__contact-card-desc">Interested in team plans, reseller partnerships, or API access? Let's talk.</p>
+              <a className="lp__contact-link" href="mailto:sales@pitchplus.ai">sales@pitchplus.ai</a>
+            </div>
+            <div className="lp__contact-card">
+              <div className="lp__contact-card-icon">✦</div>
+              <div className="lp__contact-card-title">Press & media</div>
+              <p className="lp__contact-card-desc">Writing about AI in sales, multilingual tools, or the future of sales coaching?</p>
+              <a className="lp__contact-link" href="mailto:press@pitchplus.ai">press@pitchplus.ai</a>
+            </div>
+          </div>
+
+          <div className="lp__contact-note">
+            <span className="lp__contact-note-icon">◷</span>
+            Typical response time: <strong>under 4 hours</strong> during business hours (Mon–Fri, 9am–6pm GMT).
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Privacy Policy section view ───────────────────────────────────────────
+
+  if (activeSection === 'privacy') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--legal">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">LEGAL</div>
+            <h2 className="lp__sv-h2">Privacy Policy</h2>
+            <p className="lp__sv-sub">Last updated: 1 March 2025</p>
+          </div>
+          <div className="lp__legal-body">
+            <div className="lp__legal-section">
+              <h3>1. What we collect</h3>
+              <p>We collect information you provide directly: your name, email address, and payment information when you sign up. During live calls and training sessions, we process microphone audio locally in your browser using the Web Speech API — raw audio is never transmitted to our servers. We receive transcribed text only. We also collect standard usage data: pages visited, features used, session duration, and error logs.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>2. How we use it</h3>
+              <p>We use your data to operate and improve Pitch Plus, to process payments, to send transactional emails (receipts, password resets), and to provide customer support. We do not sell your data to third parties. We do not use your call transcripts to train AI models without your explicit consent.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>3. Data storage and retention</h3>
+              <p>Your data is stored on servers located in the EU (Frankfurt) and US (Virginia) using industry-standard encryption at rest (AES-256) and in transit (TLS 1.3). Call transcripts, lead scores, and CRM data are retained for as long as your account is active. After cancellation, data is accessible for 30 days and then permanently deleted.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>4. Third-party services</h3>
+              <p>We use Stripe for payment processing, Supabase for database and authentication, and standard cloud infrastructure providers. Each processes data only as required to deliver their service and under strict data-processing agreements.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>5. Your rights</h3>
+              <p>You have the right to access, correct, or delete your personal data at any time. EU/UK residents have additional rights under GDPR/UK GDPR including data portability and the right to object to processing. To exercise any right, email <a href="mailto:privacy@pitchplus.ai">privacy@pitchplus.ai</a> and we will respond within 30 days.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>6. Cookies</h3>
+              <p>We use strictly necessary cookies for authentication and session management, and optional analytics cookies to understand how the product is used. See our Cookie Policy for full details.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>7. Contact</h3>
+              <p>Questions about this policy? Email <a href="mailto:privacy@pitchplus.ai">privacy@pitchplus.ai</a>. Our registered address is available on request.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Terms of Service section view ─────────────────────────────────────────
+
+  if (activeSection === 'terms') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--legal">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">LEGAL</div>
+            <h2 className="lp__sv-h2">Terms of Service</h2>
+            <p className="lp__sv-sub">Last updated: 1 March 2025</p>
+          </div>
+          <div className="lp__legal-body">
+            <div className="lp__legal-section">
+              <h3>1. Acceptance</h3>
+              <p>By creating a Pitch Plus account or using the service, you agree to these Terms. If you are using Pitch Plus on behalf of a company, you represent that you have authority to bind that company.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>2. Subscription and billing</h3>
+              <p>Paid plans are billed monthly in advance. Prices are listed in USD. You can cancel at any time from your account settings — your plan remains active until the end of the billing period. The Pro plan includes a 7-day money-back guarantee from the date of first purchase. Refund requests must be submitted within 7 days to support@pitchplus.ai.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>3. Acceptable use</h3>
+              <p>You may use Pitch Plus for lawful sales and business communication purposes. You may not use the service to deceive prospects in ways that violate applicable consumer protection or telemarketing laws, to record or store conversations without consent where required by law, or to reverse-engineer, resell, or redistribute the service.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>4. Intellectual property</h3>
+              <p>Pitch Plus and all associated software, design, and content are owned by us. Your call transcripts and CRM data are yours — we claim no ownership over content you generate. You grant us a limited licence to store and process your data solely to provide the service.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>5. Limitation of liability</h3>
+              <p>Pitch Plus is provided "as is." We are not liable for missed coaching cues, speech recognition errors, or outcomes on individual sales calls. Our total liability to you for any claim is capped at the amount you paid us in the 12 months prior to the claim.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>6. Termination</h3>
+              <p>We may suspend or terminate your account for material breach of these Terms, including non-payment or misuse. We will provide notice before termination except where immediate action is required to protect other users or the service.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>7. Governing law</h3>
+              <p>These Terms are governed by the laws of England and Wales. Disputes will be resolved in the courts of London, UK, unless applicable law requires otherwise.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Cookie Policy section view ────────────────────────────────────────────
+
+  if (activeSection === 'cookies') {
+    return (
+      <div className="lp">
+        {nav}
+        <div className="lp__sv lp__sv--legal">
+          <div className="lp__sv-hero">
+            <div className="lp__sv-label">LEGAL</div>
+            <h2 className="lp__sv-h2">Cookie Policy</h2>
+            <p className="lp__sv-sub">Last updated: 1 March 2025</p>
+          </div>
+          <div className="lp__legal-body">
+            <div className="lp__legal-section">
+              <h3>1. What are cookies?</h3>
+              <p>Cookies are small text files stored in your browser when you visit a website. They allow the site to remember information about your visit and are used widely to make websites work more efficiently.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>2. Strictly necessary cookies</h3>
+              <p>These cookies are essential for Pitch Plus to function and cannot be disabled. They include your authentication session token (so you stay logged in), CSRF protection tokens (to prevent cross-site request forgery), and user preference cookies (language and theme settings). These cookies do not track you across other websites.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>3. Analytics cookies</h3>
+              <p>With your consent, we use analytics cookies to understand how users interact with Pitch Plus — which features are used most, where users encounter friction, and how the product can be improved. This data is aggregated and anonymised. We do not use third-party advertising networks or behavioural tracking cookies.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>4. Managing cookies</h3>
+              <p>You can control and delete cookies through your browser settings. Disabling strictly necessary cookies will prevent you from logging in. Disabling analytics cookies has no effect on your experience. Instructions for managing cookies in <a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer">Chrome</a>, <a href="https://support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-desktop" target="_blank" rel="noopener noreferrer">Firefox</a>, and <a href="https://support.apple.com/en-gb/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer">Safari</a> are available on each browser's support site.</p>
+            </div>
+            <div className="lp__legal-section">
+              <h3>5. Contact</h3>
+              <p>Questions about our cookie usage? Email <a href="mailto:privacy@pitchplus.ai">privacy@pitchplus.ai</a>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ─── Landing page (home) ───────────────────────────────────────────────────
 
   return (
@@ -1072,13 +1632,60 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
       {/* ── Footer ── */}
       <footer className="lp__footer reveal">
-        <div className="lp__footer-logo">PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span></div>
-        <div className="lp__footer-links">
-          <button onClick={() => goSection('features')}>Features</button>
-          <button onClick={() => goSection('pricing')}>Pricing</button>
-          <button onClick={onGetStarted}>Sign In</button>
+        <div className="lp__footer-top">
+
+          {/* Brand */}
+          <div className="lp__footer-brand">
+            <div className="lp__footer-logo">PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span></div>
+            <p className="lp__footer-tagline">AI-powered sales coaching that listens, analyzes, and coaches you in real time — so every call is your best call.</p>
+          </div>
+
+          {/* Product */}
+          <div className="lp__footer-col">
+            <div className="lp__footer-col-title">Product</div>
+            <button className="lp__footer-link" onClick={() => goSection('features')}>Features</button>
+            <button className="lp__footer-link" onClick={() => goSection('pricing')}>Pricing</button>
+            <button className="lp__footer-link" onClick={() => goSection('download')}>Download</button>
+            <button className="lp__footer-link" onClick={() => goSection('changelog')}>Changelog</button>
+          </div>
+
+          {/* Resources */}
+          <div className="lp__footer-col">
+            <div className="lp__footer-col-title">Resources</div>
+            <button className="lp__footer-link" onClick={() => goSection('languages')}>Languages</button>
+            <button className="lp__footer-link" onClick={() => goSection('help')}>Help Center</button>
+          </div>
+
+          {/* Company */}
+          <div className="lp__footer-col">
+            <div className="lp__footer-col-title">Company</div>
+            <button className="lp__footer-link" onClick={() => goSection('about')}>About</button>
+            <button className="lp__footer-link" onClick={() => goSection('blog')}>Blog</button>
+            <button className="lp__footer-link" onClick={() => goSection('careers')}>Careers</button>
+            <button className="lp__footer-link" onClick={() => goSection('contact')}>Contact</button>
+          </div>
+
+          {/* Legal */}
+          <div className="lp__footer-col">
+            <div className="lp__footer-col-title">Legal</div>
+            <button className="lp__footer-link" onClick={() => goSection('privacy')}>Privacy Policy</button>
+            <button className="lp__footer-link" onClick={() => goSection('terms')}>Terms of Service</button>
+            <button className="lp__footer-link" onClick={() => goSection('cookies')}>Cookie Policy</button>
+          </div>
+
         </div>
-        <div className="lp__footer-copy">© 2025 Pitch Plus. All rights reserved.</div>
+
+        <div className="lp__footer-bottom">
+          <div className="lp__footer-copy">© 2025 Pitch Plus. All rights reserved.</div>
+          <div className="lp__footer-socials">
+            <a className="lp__footer-social" href="#" aria-label="Twitter / X">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a className="lp__footer-social" href="#" aria-label="LinkedIn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </a>
+          </div>
+        </div>
       </footer>
 
     </div>
