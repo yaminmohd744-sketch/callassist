@@ -82,7 +82,16 @@
       "Bash(tasklist /FI \"PID eq 34596\")",
       "Bash(powershell -Command \"Get-Process -Id 34596 | Select-Object Name, Id, Path\")",
       "Bash(npx kill-port:*)",
-      "Bash(ELECTRON_RUN_AS_NODE=\"\" npm run dev)"
+      "Bash(ELECTRON_RUN_AS_NODE=\"\" npm run dev)",
+      "WebSearch",
+      "Bash(grep -E \"^/c/Users/yamin/callassist/callassist/[^/]+$\")",
+      "WebFetch(domain:www.closercoach.ai)",
+      "WebFetch(domain:apps.apple.com)",
+      "WebFetch(domain:play.google.com)",
+      "WebFetch(domain:hypepotamus.com)",
+      "WebFetch(domain:spark.mwm.ai)",
+      "WebFetch(domain:mwm.ai)",
+      "WebFetch(domain:www.appbrain.com)"
     ]
   }
 }
