@@ -53,6 +53,22 @@ interface PostCallScreenProps {
   onNewCall: () => void;
 }
 
+function renderSummary(text: string) {
+  const lines = text.split('\n');
+  return lines.map((line, i) => {
+    const trimmed = line.trim();
+    // Detect ALL-CAPS subheadings like "WHAT WENT WELL:" or "NEXT STEPS:"
+    const isHeading = /^[A-Z][A-Z\s]+:$/.test(trimmed);
+    if (isHeading) {
+      return <div key={i} className="postcall__summary-heading">{trimmed}</div>;
+    }
+    if (trimmed === '') {
+      return <div key={i} className="postcall__summary-spacer" />;
+    }
+    return <div key={i} className="postcall__summary-line">{line}</div>;
+  });
+}
+
 export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenProps) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'transcript' | 'email'>('summary');
@@ -139,7 +155,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
       <div className="postcall__content">
         {activeTab === 'summary' && (
           <div className="postcall__summary">
-            <pre className="postcall__pre">{session.aiSummary}</pre>
+            {renderSummary(session.aiSummary)}
           </div>
         )}
 

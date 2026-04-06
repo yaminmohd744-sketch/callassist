@@ -183,6 +183,12 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     setCallStatus('active');
     startTimer();
     startListening();
+    // Auto-launch protected overlay so the AI copilot is always hidden from screen share
+    if (window.electronAPI) {
+      window.electronAPI.toggleOverlay().then((isOpen: boolean) => {
+        setOverlayOpen(isOpen);
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -291,24 +297,15 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         closeProbability={closeProbability}
       />
       <div className="live-call__toolbar">
-        {window.electronAPI && (
-          <button
-            className={`live-call__overlay-btn ${overlayOpen ? 'live-call__overlay-btn--active' : ''}`}
-            onClick={handleToggleOverlay}
-            title={overlayOpen ? 'Close floating overlay' : 'Open floating overlay (hidden from screen share)'}
-          >
-            {overlayOpen ? '◈ OVERLAY ON' : '◈ OPEN OVERLAY'}
-          </button>
-        )}
         <button
           className={`live-call__tone-btn ${isAudioCapturing ? 'live-call__tone-btn--active' : ''}`}
           onClick={isAudioCapturing ? stopCapture : () => void startCapture()}
-          title={isAudioCapturing ? 'Stop tone analysis' : 'Capture speaker audio for live tone analysis'}
+          title={isAudioCapturing ? 'Stop co-pilot audio' : 'Start co-pilot — captures audio for real-time coaching (hidden from screen share)'}
         >
           {isAudioCapturing ? (
-            <><span className="live-call__tone-dot" />TONE LIVE</>
+            <><span className="live-call__tone-dot" />CO-PILOT LIVE</>
           ) : (
-            <>◉ TONE ANALYSIS</>
+            <>◉ CO-PILOT</>
           )}
         </button>
         {tonePermissionError && (

@@ -43,7 +43,7 @@ export function OverlayScreen() {
       {/* Drag handle / header */}
       <div className="overlay__header">
         <div className="overlay__drag-zone">
-          <span className="overlay__title">◈ AI COACH</span>
+          <span className="overlay__title">◈ CO-PILOT</span>
           {name && <span className="overlay__prospect">{name}</span>}
         </div>
         <div className="overlay__controls">
