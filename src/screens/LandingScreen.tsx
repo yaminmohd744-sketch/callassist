@@ -1131,7 +1131,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
   if (activeSection === 'careers') {
     const PERKS = [
       { icon: '◎', title: 'Fully remote', desc: 'Work from anywhere. Async-first culture — no mandatory stand-ups, no HQ politics.' },
-      { icon: '✦', title: 'Ship from day one', desc: 'No layers between you and the product. Week one you're in the codebase or talking to customers.' },
+      { icon: '✦', title: 'Ship from day one', desc: "No layers between you and the product. Week one you're in the codebase or talking to customers." },
       { icon: '◈', title: 'Competitive pay & equity', desc: 'Market-rate salary, meaningful equity, and a $1,500 home-office stipend. We don\'t underpay to test commitment.' },
       { icon: '▣', title: 'Learning budget', desc: '$1,200/year for courses, books, conferences, or tools that make you better at your job.' },
       { icon: '◷', title: 'Unlimited leave', desc: 'Take the time you need. We measure output, not hours. Minimum 25 days encouraged.' },
