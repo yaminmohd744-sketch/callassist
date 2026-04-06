@@ -57,17 +57,11 @@
 }
 
 .app-shell__logo-word {
-  background: linear-gradient(135deg, #ffffff 0%, #df7afe 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #df7afe;
 }
 
 .app-shell__logo-plus {
-  background: linear-gradient(135deg, #814ac8, #df7afe);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #814ac8;
 }
 
 /* ─── Nav tabs ── */

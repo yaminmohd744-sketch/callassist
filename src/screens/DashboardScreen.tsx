@@ -145,7 +145,7 @@ export function DashboardScreen({
           {/* Greeting */}
           <div className="dashboard__greeting db-anim" style={{ '--i': 0 } as CSSProperties}>
             <div>
-              <h1 className="dashboard__greeting-text">{getGreeting()}, {userName || 'there'}</h1>
+              <h1 className="dashboard__greeting-text">{getGreeting()}, <span className="dashboard__greeting-name">{userName || 'there'}</span></h1>
               <p className="dashboard__subtitle">
                 {streak > 0 ? `${streak}-day practice streak — keep the momentum!` : 'Your personal AI sales coach'}
               </p>

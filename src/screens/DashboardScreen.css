@@ -117,11 +117,12 @@
   font-size: var(--font-size-2xl);
   font-weight: 800;
   letter-spacing: -0.025em;
-  background: linear-gradient(135deg, #ffffff 30%, rgba(223, 122, 254, 0.85) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-text-primary);
   margin-bottom: var(--space-1);
+}
+
+.dashboard__greeting-name {
+  color: var(--color-accent-magenta);
 }
 
 .dashboard__topbar {

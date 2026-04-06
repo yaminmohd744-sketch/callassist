@@ -93,14 +93,10 @@ export function App() {
     ? 'dashboard'
     : screen;
 
-  // Show login transition animation once per browser session on first login
+  // Show login transition animation on every page load when user is authenticated
   useEffect(() => {
     if (!authLoading && user && !transitionShown.current) {
-      const alreadyShown = sessionStorage.getItem('pp-welcome');
-      if (!alreadyShown) {
-        setShowTransition(true);
-        sessionStorage.setItem('pp-welcome', '1');
-      }
+      setShowTransition(true);
       transitionShown.current = true;
     }
   }, [user, authLoading]);
