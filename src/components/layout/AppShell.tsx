@@ -2,6 +2,12 @@ import './AppShell.css';
 
 type ShellScreen = 'dashboard' | 'training' | 'analytics';
 
+const NAV_ITEMS: { id: ShellScreen; label: string }[] = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'training',  label: 'Training'  },
+  { id: 'analytics', label: 'Analytics' },
+];
+
 interface AppShellProps {
   activeScreen: ShellScreen;
   onNavigate: (screen: ShellScreen) => void;
@@ -14,48 +20,44 @@ interface AppShellProps {
 export function AppShell({ activeScreen, onNavigate, onStartCall, onUploadCall, onSignOut, children }: AppShellProps) {
   return (
     <div className="app-shell">
-      <aside className="app-shell__sidebar">
-        <div className="app-shell__logo">PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span></div>
 
-        <nav className="app-shell__nav">
-          <div
-            className={`app-shell__nav-item ${activeScreen === 'dashboard' ? 'app-shell__nav-item--active' : ''}`}
-            onClick={() => onNavigate('dashboard')}
-          >
-            <span className="app-shell__nav-icon">⊞</span>Dashboard
-          </div>
-          <div
-            className={`app-shell__nav-item ${activeScreen === 'training' ? 'app-shell__nav-item--active' : ''}`}
-            onClick={() => onNavigate('training')}
-          >
-            <span className="app-shell__nav-icon">◈</span>Training
-          </div>
-          <div
-            className={`app-shell__nav-item ${activeScreen === 'analytics' ? 'app-shell__nav-item--active' : ''}`}
-            onClick={() => onNavigate('analytics')}
-          >
-            <span className="app-shell__nav-icon">▦</span>Analytics
-          </div>
+      {/* ── Top nav ── */}
+      <header className="app-shell__topnav">
+        <div className="app-shell__logo">
+          PITCH<span className="app-shell__logo-word">PLUS</span><span className="app-shell__logo-plus">+</span>
+        </div>
 
-          <div className="app-shell__nav-divider" />
-
-          <div className="app-shell__nav-item" onClick={onStartCall}>
-            <span className="app-shell__nav-icon">▶</span>New Call
-          </div>
-          <div className="app-shell__nav-item" onClick={onUploadCall}>
-            <span className="app-shell__nav-icon">⬆</span>Upload Call
-          </div>
+        <nav className="app-shell__tabs" role="navigation">
+          {NAV_ITEMS.map(({ id, label }) => (
+            <button
+              key={id}
+              className={`app-shell__tab${activeScreen === id ? ' app-shell__tab--active' : ''}`}
+              onClick={() => onNavigate(id)}
+            >
+              {label}
+              {activeScreen === id && <span className="app-shell__tab-bar" />}
+            </button>
+          ))}
         </nav>
 
-        <div className="app-shell__footer">
-          <div className="app-shell__version">v1.0 MVP</div>
-          <button className="app-shell__signout" onClick={onSignOut}>Sign out</button>
+        <div className="app-shell__actions">
+          <button className="app-shell__btn-ghost" onClick={onUploadCall}>
+            ↑ Upload
+          </button>
+          <button className="app-shell__btn-primary" onClick={onStartCall}>
+            ▶ New Call
+          </button>
+          <button className="app-shell__btn-signout" onClick={onSignOut}>
+            Sign out
+          </button>
         </div>
-      </aside>
+      </header>
 
+      {/* ── Page content ── */}
       <div className="app-shell__content">
         {children}
       </div>
+
     </div>
   );
 }

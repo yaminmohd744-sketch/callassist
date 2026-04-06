@@ -1,5 +1,8 @@
+/* ─── Shell wrapper ──────────────────────────────────────────────────────── */
+
 .app-shell {
   display: flex;
+  flex-direction: column;
   height: 100vh;
   overflow: hidden;
   background: var(--color-bg-base);
@@ -7,102 +10,197 @@
   font-family: var(--font-sans);
 }
 
-/* ── Sidebar ──────────────────────────────────────────────────────────────── */
+/* ─── Top navigation ─────────────────────────────────────────────────────── */
 
-.app-shell__sidebar {
-  width: 200px;
-  flex-shrink: 0;
-  background: var(--color-bg-surface);
-  border-right: 1px solid var(--color-border);
+.app-shell__topnav {
   display: flex;
-  flex-direction: column;
-  padding: var(--space-5) 0;
+  align-items: center;
+  height: 58px;
+  padding: 0 28px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+
+  /* Glassmorphism */
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
+
+/* Gradient bottom line */
+.app-shell__topnav::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(129, 74, 200, 0.5) 30%,
+    rgba(223, 122, 254, 0.5) 60%,
+    transparent 100%
+  );
+}
+
+/* ─── Logo ── */
 
 .app-shell__logo {
-  font-size: var(--font-size-md);
+  font-size: 17px;
   font-weight: 900;
   letter-spacing: 0.06em;
-  color: var(--color-text-primary);
-  padding: 0 var(--space-5);
-  margin-bottom: var(--space-8);
+  color: #fff;
+  flex-shrink: 0;
+  margin-right: 36px;
+  user-select: none;
 }
 
-.app-shell__nav {
+.app-shell__logo-word {
+  background: linear-gradient(135deg, #ffffff 0%, #df7afe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.app-shell__logo-plus {
+  background: linear-gradient(135deg, #814ac8, #df7afe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Nav tabs ── */
+
+.app-shell__tabs {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 2px;
-  padding: 0 var(--space-3);
   flex: 1;
 }
 
-.app-shell__nav-item {
+.app-shell__tab {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--border-radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  cursor: pointer;
-  user-select: none;
-  transition: background var(--transition-fast), color var(--transition-fast);
-  letter-spacing: 0.04em;
-}
-
-.app-shell__nav-item:hover {
-  background: var(--color-bg-elevated);
-  color: var(--color-text-secondary);
-}
-
-.app-shell__nav-item--active {
-  background: var(--color-bg-elevated);
-  color: var(--color-accent-cyan);
-  border: 1px solid var(--color-border);
-}
-
-.app-shell__nav-icon {
-  font-size: 14px;
-  width: 16px;
-  text-align: center;
-}
-
-.app-shell__nav-divider {
-  height: 1px;
-  background: var(--color-border);
-  margin: var(--space-2) var(--space-3);
-}
-
-.app-shell__footer {
-  padding: var(--space-4) var(--space-5);
-  border-top: 1px solid var(--color-border);
-}
-
-.app-shell__version {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  letter-spacing: 0.08em;
-}
-
-.app-shell__signout {
-  margin-top: var(--space-3);
+  padding: 8px 18px;
   background: none;
   border: none;
-  padding: 0;
   font-family: var(--font-sans);
-  font-size: var(--font-size-xs);
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.38);
   cursor: pointer;
-  transition: color var(--transition-fast);
-  display: block;
+  border-radius: 10px;
+  letter-spacing: 0.03em;
+  transition: color 150ms ease, background 150ms ease;
+  user-select: none;
 }
 
-.app-shell__signout:hover {
-  color: var(--color-accent-red);
+.app-shell__tab:hover {
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-/* ── Content area ─────────────────────────────────────────────────────────── */
+.app-shell__tab--active {
+  color: #ffffff;
+  background: rgba(129, 74, 200, 0.12);
+}
+
+/* Animated underline on active tab */
+.app-shell__tab-bar {
+  position: absolute;
+  bottom: -1px; /* sit on top of the topnav border line */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 2px;
+  background: linear-gradient(90deg, #814ac8, #df7afe);
+  border-radius: 2px 2px 0 0;
+  animation: tab-bar-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes tab-bar-in {
+  from { width: 0px; opacity: 0; }
+  to   { width: 28px; opacity: 1; }
+}
+
+/* ─── Action buttons ── */
+
+.app-shell__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.app-shell__btn-ghost {
+  padding: 7px 14px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.app-shell__btn-ghost:hover {
+  color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.app-shell__btn-primary {
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #814ac8 0%, #df7afe 100%);
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+  box-shadow: 0 2px 16px rgba(129, 74, 200, 0.35);
+}
+
+.app-shell__btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 28px rgba(129, 74, 200, 0.55);
+  opacity: 0.95;
+}
+
+.app-shell__btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 12px rgba(129, 74, 200, 0.3);
+}
+
+.app-shell__btn-signout {
+  padding: 7px 12px;
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  border-radius: 10px;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.app-shell__btn-signout:hover {
+  color: rgba(255, 80, 80, 0.85);
+  background: rgba(255, 68, 68, 0.06);
+}
+
+/* ─── Content area ───────────────────────────────────────────────────────── */
 
 .app-shell__content {
   flex: 1;
@@ -110,4 +208,38 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+
+/* ─── Light theme overrides ──────────────────────────────────────────────── */
+
+[data-theme="light"] .app-shell__topnav {
+  background: rgba(242, 240, 248, 0.85);
+}
+
+[data-theme="light"] .app-shell__tab {
+  color: rgba(26, 23, 38, 0.38);
+}
+[data-theme="light"] .app-shell__tab:hover {
+  color: rgba(26, 23, 38, 0.7);
+  background: rgba(129, 74, 200, 0.05);
+}
+[data-theme="light"] .app-shell__tab--active {
+  color: rgba(26, 23, 38, 0.9);
+}
+
+[data-theme="light"] .app-shell__btn-ghost {
+  color: rgba(26, 23, 38, 0.45);
+  border-color: rgba(26, 23, 38, 0.12);
+}
+[data-theme="light"] .app-shell__btn-ghost:hover {
+  color: rgba(26, 23, 38, 0.8);
+  border-color: rgba(26, 23, 38, 0.22);
+  background: rgba(26, 23, 38, 0.04);
+}
+
+[data-theme="light"] .app-shell__btn-signout {
+  color: rgba(26, 23, 38, 0.3);
+}
+[data-theme="light"] .app-shell__btn-signout:hover {
+  color: rgba(200, 30, 30, 0.8);
 }

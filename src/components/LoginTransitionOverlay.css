@@ -1,0 +1,210 @@
+/* ─── Login Transition Overlay ─────────────────────────────────────────────── */
+
+.lto {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+/* ─── Phase states ── */
+
+.lto--enter {
+  animation: lto-fade-in 0.5s ease forwards;
+}
+
+.lto--hold {
+  opacity: 1;
+}
+
+.lto--exit {
+  animation: lto-slide-up 0.7s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+@keyframes lto-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes lto-slide-up {
+  0%   { transform: translateY(0);      opacity: 1; }
+  100% { transform: translateY(-100vh); opacity: 0; }
+}
+
+/* ─── Background ── */
+
+.lto__bg {
+  position: absolute;
+  inset: 0;
+  background: #000;
+}
+
+.lto__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(129, 74, 200, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(129, 74, 200, 0.07) 1px, transparent 1px);
+  background-size: 64px 64px;
+  animation: lto-grid-breathe 4s ease-in-out infinite;
+}
+
+@keyframes lto-grid-breathe {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1;   }
+}
+
+/* ─── Orbs ── */
+
+.lto__orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lto__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+}
+
+.lto__orb-a {
+  width: 600px;
+  height: 600px;
+  background: rgba(129, 74, 200, 0.22);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: lto-orb-pulse 6s ease-in-out infinite;
+}
+
+.lto__orb-b {
+  width: 320px;
+  height: 320px;
+  background: rgba(223, 122, 254, 0.18);
+  top: 35%;
+  left: 58%;
+  transform: translate(-50%, -50%);
+  animation: lto-orb-pulse 7s ease-in-out infinite reverse;
+  animation-delay: -2s;
+}
+
+.lto__orb-c {
+  width: 200px;
+  height: 200px;
+  background: rgba(129, 74, 200, 0.12);
+  top: 65%;
+  left: 38%;
+  transform: translate(-50%, -50%);
+  animation: lto-orb-pulse 5s ease-in-out infinite;
+  animation-delay: -1s;
+}
+
+@keyframes lto-orb-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1);    }
+  50%       { transform: translate(-50%, -53%) scale(1.08); }
+}
+
+/* ─── Content ── */
+
+.lto__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+/* Logo */
+.lto__logo {
+  font-size: 60px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #fff;
+  animation: lto-logo-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+@keyframes lto-logo-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(24px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+.lto__logo-word {
+  background: linear-gradient(135deg, #fff 0%, #df7afe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.lto__logo-plus {
+  background: linear-gradient(135deg, #814ac8, #df7afe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Welcome text */
+.lto__welcome {
+  font-size: 22px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: -0.01em;
+  animation: lto-item-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
+}
+
+.lto__welcome strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Tagline */
+.lto__tagline {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.22);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0;
+  animation: lto-item-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.75s both;
+}
+
+@keyframes lto-item-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* Progress bar */
+.lto__progress {
+  width: 160px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+  overflow: hidden;
+  animation: lto-item-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both;
+}
+
+.lto__progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #814ac8, #df7afe);
+  border-radius: 2px;
+  animation: lto-bar-fill 1.4s cubic-bezier(0.4, 0, 0.2, 1) 1s both;
+  width: 0%;
+}
+
+@keyframes lto-bar-fill {
+  from { width: 0%;    }
+  to   { width: 100%;  }
+}

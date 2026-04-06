@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LandingScreen }    from './screens/LandingScreen';
 import { IntroScreen }      from './screens/IntroScreen';
 import { DashboardScreen }  from './screens/DashboardScreen';
@@ -9,12 +9,13 @@ import { TrainingScreen }   from './screens/TrainingScreen';
 import { AnalyticsScreen }  from './screens/AnalyticsScreen';
 import { UploadCallScreen } from './screens/UploadCallScreen';
 import { AuthScreen }       from './screens/AuthScreen';
-import { ThemeToggle }     from './components/ThemeToggle';
-import { AppShell }        from './components/layout/AppShell';
-import { useAuth }         from './hooks/useAuth';
+import { ThemeToggle }      from './components/ThemeToggle';
+import { AppShell }         from './components/layout/AppShell';
+import { LoginTransitionOverlay } from './components/LoginTransitionOverlay';
+import { useAuth }          from './hooks/useAuth';
 import './screens/AuthScreen.css';
-import { supabase }        from './lib/supabase';
-import { MOCK_SESSIONS }   from './lib/mockSessions';
+import { supabase }         from './lib/supabase';
+import { MOCK_SESSIONS }    from './lib/mockSessions';
 import type { CallConfig, CallSession, CallStage, TranscriptEntry, AISuggestion } from './types';
 
 // Prevent flash of wrong theme on initial load
@@ -84,11 +85,25 @@ export function App() {
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
+  const [showTransition, setShowTransition] = useState(false);
+  const transitionShown = useRef(false);
 
   // Derive the effective screen: authenticated users on landing/auth go to dashboard
   const currentScreen: Screen = (user && (screen === 'landing' || screen === 'auth'))
     ? 'dashboard'
     : screen;
+
+  // Show login transition animation once per browser session on first login
+  useEffect(() => {
+    if (!authLoading && user && !transitionShown.current) {
+      const alreadyShown = sessionStorage.getItem('pp-welcome');
+      if (!alreadyShown) {
+        setShowTransition(true);
+        sessionStorage.setItem('pp-welcome', '1');
+      }
+      transitionShown.current = true;
+    }
+  }, [user, authLoading]);
 
   // Load sessions from Supabase whenever the authenticated user changes
   useEffect(() => {
@@ -161,8 +176,20 @@ export function App() {
 
   const isShell = currentScreen === 'dashboard' || currentScreen === 'training' || currentScreen === 'analytics';
 
+  const loginUserName =
+    user?.user_metadata?.full_name?.split(' ')[0] ||
+    user?.user_metadata?.name?.split(' ')[0] ||
+    user?.email?.split('@')[0] ||
+    '';
+
   return (
     <>
+      {showTransition && (
+        <LoginTransitionOverlay
+          userName={loginUserName}
+          onDone={() => setShowTransition(false)}
+        />
+      )}
       <ThemeToggle theme={theme} onToggle={toggleTheme} />
 
       {isShell && (
