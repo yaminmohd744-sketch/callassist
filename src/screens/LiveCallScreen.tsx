@@ -7,7 +7,6 @@ import { LeadProfilePanel } from '../components/panels/LeadProfilePanel';
 import { useCallTimer } from '../hooks/useCallTimer';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useAICoach } from '../hooks/useAICoach';
-import { useAudioTone } from '../hooks/useAudioTone';
 import { generateSessionSummary } from '../lib/ai';
 import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSignal } from '../types';
 import './LiveCallScreen.css';
@@ -142,15 +141,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [notes, setNotes] = useState<string[]>([]);
   const [noteInput, setNoteInput] = useState('');
   const [mobilePanel, setMobilePanel] = useState<'transcript' | 'ai' | 'lead'>('transcript');
-  const [overlayOpen, setOverlayOpen] = useState(false);
 
   const { elapsedSeconds, formattedTime, startTimer, stopTimer } = useCallTimer();
   const { suggestions, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion } = useAICoach();
-  const { isCapturing: isAudioCapturing, tone: prospectTone, coaching: toneCoaching, permissionError: tonePermissionError, startCapture, stopCapture } = useAudioTone({
-    prospectName: config.prospectName,
-    callGoal: config.callGoal,
-    yourPitch: config.yourPitch,
-  });
 
   // Automatically classify each mic utterance as rep or prospect based on content.
   // Only prospect entries trigger AI analysis.
@@ -183,39 +176,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     setCallStatus('active');
     startTimer();
     startListening();
-    // Auto-launch protected overlay so the AI copilot is always hidden from screen share
-    if (window.electronAPI) {
-      window.electronAPI.toggleOverlay().then((isOpen: boolean) => {
-        setOverlayOpen(isOpen);
-      });
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Keep overlay in sync with latest AI data
-  useEffect(() => {
-    if (overlayOpen && window.electronAPI) {
-      window.electronAPI.sendSuggestionsToOverlay({
-        suggestions,
-        closeProbability,
-        callStage,
-        prospectName: config.prospectName,
-      });
-    }
-  }, [suggestions, closeProbability, callStage, overlayOpen, config.prospectName]);
-
-  // Sync overlay state if user closes it from the overlay itself
-  useEffect(() => {
-    if (!window.electronAPI) return;
-    const cleanup = window.electronAPI.onOverlayClosed(() => setOverlayOpen(false));
-    return cleanup;
-  }, []);
-
-  async function handleToggleOverlay() {
-    if (!window.electronAPI) return;
-    const isNowOpen = await window.electronAPI.toggleOverlay();
-    setOverlayOpen(isNowOpen);
-  }
 
   function handleManualSubmit() {
     const text = manualInput.trim();
@@ -253,11 +215,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   async function handleEndCall() {
     stopListening();
     stopTimer();
-    stopCapture();
-    if (overlayOpen && window.electronAPI) {
-      await window.electronAPI.toggleOverlay();
-      setOverlayOpen(false);
-    }
     const { aiSummary, followUpEmail, leadScore } = await generateSessionSummary(
       config,
       transcript,
@@ -296,22 +253,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         objectionsCount={objectionsCount}
         closeProbability={closeProbability}
       />
-      <div className="live-call__toolbar">
-        <button
-          className={`live-call__tone-btn ${isAudioCapturing ? 'live-call__tone-btn--active' : ''}`}
-          onClick={isAudioCapturing ? stopCapture : () => void startCapture()}
-          title={isAudioCapturing ? 'Stop co-pilot audio' : 'Start co-pilot — captures audio for real-time coaching (hidden from screen share)'}
-        >
-          {isAudioCapturing ? (
-            <><span className="live-call__tone-dot" />CO-PILOT LIVE</>
-          ) : (
-            <>◉ CO-PILOT</>
-          )}
-        </button>
-        {tonePermissionError && (
-          <span className="live-call__tone-error">{tonePermissionError}</span>
-        )}
-      </div>
       <div className="live-call__panels" data-mobile={mobilePanel}>
         <TranscriptPanel
           entries={transcript}
@@ -325,8 +266,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         <AIIntelligencePanel
           suggestions={suggestions}
           callStage={callStage}
-          prospectTone={prospectTone}
-          toneCoaching={toneCoaching}
         />
         <LeadProfilePanel
           config={config}

@@ -10,7 +10,7 @@ interface AnalyticsScreenProps {
   user: User | null;
 }
 
-type AnalyticsTab = 'performance' | 'training' | 'team';
+type AnalyticsTab = 'performance' | 'intel' | 'training' | 'team';
 type Tier = 'high' | 'medium' | 'low';
 
 interface TrainingRecord {
@@ -123,6 +123,7 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setW(el.clientWidth || 800);
     const obs = new ResizeObserver(e => setW(e[0].contentRect.width));
     obs.observe(el);
@@ -236,6 +237,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
   const [teamMsg, setTeamMsg] = useState('');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTeamCode(localStorage.getItem('callassist_team_code') ?? '');
     setJoinedTeam(localStorage.getItem('callassist_joined_team') ?? '');
     if (!user) return;
@@ -513,9 +515,9 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
       {!detailView && (
         <div className="analytics__tabs">
-          {(['performance', 'training', 'team'] as AnalyticsTab[]).map(t => (
+          {(['performance', 'intel', 'training', 'team'] as AnalyticsTab[]).map(t => (
             <button key={t} className={`analytics__tab ${tab === t ? 'analytics__tab--active' : ''}`} onClick={() => setTab(t)}>
-              {t.toUpperCase()}
+              {t === 'intel' ? 'CALL INTEL' : t.toUpperCase()}
             </button>
           ))}
         </div>
@@ -849,14 +851,15 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
           </div>
 
-          {/* ── Insights ────────────────────────────────────────────────────── */}
+        </div>
+      )}
 
-          <div className="analytics__insights-header" style={an(550)}>
-            <span className="analytics__insights-label">◈ PERFORMANCE INSIGHTS</span>
-          </div>
+      {/* ── Call Intel ─────────────────────────────────────────────────────── */}
+      {!detailView && tab === 'intel' && (
+        <div className="analytics__content">
 
           {/* 1. Top Objections */}
-          <div className="analytics__insight-card" style={an(580)}>
+          <div className="analytics__insight-card" style={an(80)}>
             <div className="analytics__chart-title">TOP OBJECTIONS &amp; TECHNIQUES</div>
             <div className="analytics__obj-list">
               {(objInsights.length > 0 ? objInsights : [
@@ -883,7 +886,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
           </div>
 
           {/* 2. Winning Patterns */}
-          <div className="analytics__insight-card" style={an(640)}>
+          <div className="analytics__insight-card" style={an(160)}>
             <div className="analytics__chart-title">WINNING PATTERNS</div>
             <div className="analytics__patterns-list">
               {(winningPatterns.length > 0 ? winningPatterns : [
@@ -903,14 +906,14 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
           </div>
 
           {/* 3. Stage distribution */}
-          <div className="analytics__insight-card" style={an(700)}>
+          <div className="analytics__insight-card" style={an(240)}>
             <div className="analytics__chart-title">STAGE DISTRIBUTION</div>
             <div className="analytics__stage-dist">
               {stagePcts.map((s, i) => (
                 <div key={i} className="analytics__stage-dist-row">
                   <span className="analytics__stage-dist-label">{s.stage.toUpperCase()}</span>
                   <div className="analytics__stage-dist-track">
-                    <div className={`analytics__stage-dist-bar analytics__bar--stage-${s.stage}`} style={{ width: `${Math.max(s.pct, 2)}%`, ...an(720 + i * 50) }} />
+                    <div className={`analytics__stage-dist-bar analytics__bar--stage-${s.stage}`} style={{ width: `${Math.max(s.pct, 2)}%`, ...an(260 + i * 50) }} />
                   </div>
                   <span className="analytics__stage-dist-pct">{s.pct}%</span>
                   <span className="analytics__stage-dist-count">({s.count})</span>
@@ -920,7 +923,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
           </div>
 
           {/* 4. Best call time */}
-          <div className="analytics__insight-card" style={an(760)}>
+          <div className="analytics__insight-card" style={an(320)}>
             <div className="analytics__chart-title">BEST DAY TO CALL</div>
             {bestDay && (
               <div className="analytics__bestday">
@@ -932,7 +935,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
               {callsByDay.map((d, i) => (
                 <div key={i} className={`analytics__day-bar-col ${bestDay?.name === d.name ? 'analytics__day-bar-col--best' : ''}`}>
                   <div className="analytics__day-bar-wrap">
-                    <div className="analytics__day-bar" style={{ height: `${(d.avgProb / maxDayProb) * 100}%`, ...an(800 + i * 30) }} />
+                    <div className="analytics__day-bar" style={{ height: `${(d.avgProb / maxDayProb) * 100}%`, ...an(360 + i * 30) }} />
                   </div>
                   <span className="analytics__day-bar-label">{d.name}</span>
                   <span className="analytics__day-bar-val">{d.avgProb}%</span>
@@ -942,7 +945,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
           </div>
 
           {/* 5. Objection-to-close rate */}
-          <div className="analytics__insight-card" style={an(820)}>
+          <div className="analytics__insight-card" style={an(400)}>
             <div className="analytics__chart-title">OBJECTION-TO-CLOSE RATE</div>
             <p className="analytics__insight-desc">How your close probability shifts based on how many objections came up on a call.</p>
             <div className="analytics__obj-close-list">
@@ -958,7 +961,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
                   </div>
                   <div className="analytics__obj-close-bar-row">
                     <div className="analytics__obj-close-track">
-                      <div className={`analytics__obj-close-bar analytics__obj-close-bar--${g.tier}`} style={{ width: `${g.avgClose ?? 0}%`, ...an(840 + i * 40) }} />
+                      <div className={`analytics__obj-close-bar analytics__obj-close-bar--${g.tier}`} style={{ width: `${g.avgClose ?? 0}%`, ...an(420 + i * 40) }} />
                     </div>
                     <span className={`analytics__obj-close-val analytics__detail-val--${g.tier}`}>{g.avgClose !== null ? `${g.avgClose}%` : '—'}</span>
                   </div>

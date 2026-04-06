@@ -572,6 +572,245 @@
   background: var(--color-bg-surface);
 }
 
+/* ── Locked Lesson Row ───────────────────────────────────────────────────────*/
+
+.academy__lesson-row--locked {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
+.academy__lesson-row--locked:hover {
+  border-color: var(--color-border) !important;
+  background: var(--color-bg-surface) !important;
+}
+
+.academy__lesson-locked-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-pill);
+  padding: 1px 6px;
+  flex-shrink: 0;
+}
+
+.academy__lesson-pass-req {
+  font-size: var(--font-size-xs);
+  color: var(--color-accent-yellow);
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.academy__lesson-passed-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-green);
+  border: 1px solid var(--color-accent-green);
+  background: rgba(57, 211, 83, 0.08);
+  border-radius: var(--border-radius-pill);
+  padding: 1px 6px;
+  flex-shrink: 0;
+}
+
+/* ── Learning Objectives ─────────────────────────────────────────────────────*/
+
+.academy__objectives {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent-purple);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-5);
+}
+
+.academy__objectives--results {
+  border-left-color: var(--color-accent-cyan);
+}
+
+.academy__objectives-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-purple);
+  margin-bottom: var(--space-3);
+}
+
+.academy__objectives--results .academy__objectives-label {
+  color: var(--color-accent-cyan);
+}
+
+.academy__objectives-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.academy__objective-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.academy__objective-num {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* ── Completion Criteria Card ────────────────────────────────────────────────*/
+
+.academy__criteria-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent-yellow);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.academy__criteria-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-yellow);
+}
+
+.academy__criteria-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.academy__criteria-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.academy__criteria-icon {
+  flex-shrink: 0;
+  color: var(--color-accent-yellow);
+  font-size: var(--font-size-sm);
+  margin-top: 1px;
+}
+
+.academy__criteria-row strong {
+  color: var(--color-text-primary);
+}
+
+.academy__criteria-history {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ── Pass / Fail Banner ──────────────────────────────────────────────────────*/
+
+.academy__pass-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid;
+}
+
+.academy__pass-banner--pass {
+  background: rgba(57, 211, 83, 0.08);
+  border-color: var(--color-accent-green);
+}
+
+.academy__pass-banner--fail {
+  background: rgba(255, 68, 68, 0.07);
+  border-color: var(--color-accent-red);
+}
+
+.academy__pass-icon {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.academy__pass-banner--pass .academy__pass-icon { color: var(--color-accent-green); }
+.academy__pass-banner--fail .academy__pass-icon { color: var(--color-accent-red); }
+
+.academy__pass-title {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.academy__pass-sub {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.academy__pass-sub strong {
+  color: var(--color-text-primary);
+}
+
+/* ── Exchange Counter & End Warning ──────────────────────────────────────────*/
+
+.academy__session-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.academy__exchange-counter {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.academy__end-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed !important;
+  border-color: var(--color-text-muted) !important;
+  color: var(--color-text-muted) !important;
+}
+
+.academy__end-warning {
+  margin: 0 var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255, 196, 0, 0.08);
+  border: 1px solid var(--color-accent-yellow);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-accent-yellow);
+  flex-shrink: 0;
+}
+
+.academy__end-warning strong {
+  color: var(--color-text-primary);
+}
+
 /* ── Coming Soon ─────────────────────────────────────────────────────────────*/
 
 .academy__coming-soon {

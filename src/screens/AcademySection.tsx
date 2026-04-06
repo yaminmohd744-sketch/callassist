@@ -9,7 +9,7 @@ import { getSavedContexts, saveContext } from '../lib/saleContexts';
 import { recordPracticeToday, getStreak } from '../lib/streak';
 import './AcademySection.css';
 
-// Sub-scenario prompts per scenario - indexed to match SUB_SCENARIOS in TrainingScreen
+// Sub-scenario prompts per scenario
 const SUB_PROMPTS: Record<TrainingScenario, string[]> = {
   'cold-opener': [
     'The prospect is reasonably open. They\'re busy but willing to hear the rep out for a minute if it sounds relevant.',
@@ -63,7 +63,7 @@ type AcademyPhase = 'overview' | 'intro' | 'practice' | 'results';
 const TOTAL_LESSONS = ALL_LESSONS.length;
 
 export function AcademySection({ user }: AcademySectionProps) {
-  const { loading, saveSession, getLessonStats, getOverallStats } = useAcademy(user);
+  const { loading, saveSession, getLessonStats, isLessonUnlocked, getOverallStats } = useAcademy(user);
   const { state: trainingState, startScenario, confirmContext, sendResponse, endSession, reset } = useTraining();
 
   const [phase, setPhase] = useState<AcademyPhase>('overview');
@@ -73,6 +73,7 @@ export function AcademySection({ user }: AcademySectionProps) {
   const [saved, setSaved] = useState(false);
   const [input, setInput] = useState('');
   const [showTranscript, setShowTranscript] = useState(false);
+  const [showEndWarning, setShowEndWarning] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -102,6 +103,7 @@ export function AcademySection({ user }: AcademySectionProps) {
     setSaleContext('');
     setSaved(false);
     setInput('');
+    setShowEndWarning(false);
     reset();
     setPhase('intro');
   }
@@ -131,18 +133,35 @@ export function AcademySection({ user }: AcademySectionProps) {
     setPhase('overview');
   }
 
-  // ── Determine module unlock status ─────────────────────────────────────────
+  function repExchangeCount(): number {
+    return trainingState.messages.filter(m => m.role === 'rep').length;
+  }
+
+  function handleEndSession() {
+    if (!activeLesson) return;
+    const exchanges = repExchangeCount();
+    if (exchanges < activeLesson.minExchanges) {
+      setShowEndWarning(true);
+      return;
+    }
+    setShowEndWarning(false);
+    void endSession();
+  }
+
+  // Module unlock: previous module must have ≥5 lessons passed
   function isModuleUnlocked(modIndex: number): boolean {
     if (modIndex === 0) return true;
     const prevModule = CURRICULUM[modIndex - 1];
-    const attempted = prevModule.lessons.filter(l => getLessonStats(l.id) !== null).length;
-    return attempted >= 2; // soft lock: 2/3 lessons attempted
+    const passedCount = prevModule.lessons.filter(l => {
+      const stats = getLessonStats(l.id, l.passScore);
+      return stats?.passed === true;
+    }).length;
+    return passedCount >= 5;
   }
 
-  // ── Score color helper ─────────────────────────────────────────────────────
   function scoreColor(score: number) {
-    return score >= 7.5 ? 'var(--color-accent-green)'
-      : score >= 5 ? 'var(--color-accent-yellow)'
+    return score >= 8 ? 'var(--color-accent-green)'
+      : score >= 6.5 ? 'var(--color-accent-yellow)'
       : 'var(--color-accent-red)';
   }
 
@@ -152,8 +171,8 @@ export function AcademySection({ user }: AcademySectionProps) {
   if (phase === 'overview') {
     const { attempted, avgScore, totalSessions } = getOverallStats();
     const pct = Math.round((attempted / TOTAL_LESSONS) * 100);
-
     const streak = getStreak();
+
     return (
       <div className="academy">
         <div className="academy__stats">
@@ -190,55 +209,66 @@ export function AcademySection({ user }: AcademySectionProps) {
 
         <div className="academy__modules">
           {CURRICULUM.map((mod, modIndex) => {
-            const unlocked = isModuleUnlocked(modIndex);
-            const modAttempted = mod.lessons.filter(l => getLessonStats(l.id) !== null).length;
+            const modUnlocked = isModuleUnlocked(modIndex);
+            const passedInMod = mod.lessons.filter(l => getLessonStats(l.id, l.passScore)?.passed === true).length;
+            const prevPassed = modIndex > 0
+              ? CURRICULUM[modIndex - 1].lessons.filter(l => getLessonStats(l.id, l.passScore)?.passed === true).length
+              : 0;
+            const prevPassedNeeded = Math.max(0, 5 - prevPassed);
 
             return (
-              <div key={mod.id} className={`academy__module ${!unlocked ? 'academy__module--locked' : ''}`}>
+              <div key={mod.id} className={`academy__module ${!modUnlocked ? 'academy__module--locked' : ''}`}>
                 <div className="academy__module-header">
                   <span className={`academy__module-level academy__module-level--${mod.color}`}>
                     {mod.level.toUpperCase()}
                   </span>
                   <span className="academy__module-title">{mod.title}</span>
-                  <span className="academy__module-completion">{modAttempted}/{mod.lessons.length} practiced</span>
+                  <span className="academy__module-completion">{passedInMod}/{mod.lessons.length} passed</span>
                 </div>
 
-                {!unlocked ? (
+                {!modUnlocked ? (
                   <div className="academy__locked-msg">
-                    Complete {2 - (CURRICULUM[modIndex - 1]?.lessons.filter(l => getLessonStats(l.id) !== null).length ?? 0)} more lessons in "{CURRICULUM[modIndex - 1]?.title}" to unlock
+                    Pass {prevPassedNeeded} more lesson{prevPassedNeeded !== 1 ? 's' : ''} in "{CURRICULUM[modIndex - 1]?.title}" to unlock
                   </div>
                 ) : (
                   <div className="academy__lessons">
-                    {mod.lessons.map(lesson => {
-                      const stats = getLessonStats(lesson.id);
+                    {mod.lessons.map((lesson, lessonIndex) => {
+                      const lessonUnlocked = isLessonUnlocked(mod.lessons, lessonIndex);
+                      const stats = getLessonStats(lesson.id, lesson.passScore);
                       const attempted = stats !== null;
+                      const passed = stats?.passed === true;
 
                       return (
                         <button
                           key={lesson.id}
-                          className={`academy__lesson-row ${stats?.mastered ? 'academy__lesson-row--mastered' : ''}`}
-                          onClick={() => handleSelectLesson(lesson, mod)}
-                          disabled={loading}
+                          className={`academy__lesson-row ${passed ? 'academy__lesson-row--mastered' : ''} ${!lessonUnlocked ? 'academy__lesson-row--locked' : ''}`}
+                          onClick={() => lessonUnlocked && handleSelectLesson(lesson, mod)}
+                          disabled={loading || !lessonUnlocked}
+                          title={!lessonUnlocked ? `Score ≥ ${mod.lessons[lessonIndex - 1]?.passScore} on the previous lesson to unlock` : undefined}
                         >
                           <span className="academy__lesson-status">
-                            {stats?.mastered ? '✓' : attempted ? '◈' : '○'}
+                            {!lessonUnlocked ? '🔒' : passed ? '✓' : attempted ? '◈' : '○'}
                           </span>
 
-                          {stats?.needsWork && <span className="academy__needs-work">NEEDS WORK</span>}
+                          {stats?.needsWork && lessonUnlocked && <span className="academy__needs-work">NEEDS WORK</span>}
+                          {!lessonUnlocked && <span className="academy__lesson-locked-label">LOCKED</span>}
 
                           <div className="academy__lesson-info">
                             <div className="academy__lesson-title">{lesson.title}</div>
                             <div className="academy__lesson-concept">{lesson.concept}</div>
+                            {lessonUnlocked && !passed && (
+                              <div className="academy__lesson-pass-req">
+                                Pass: {lesson.passScore}/10 · Min {lesson.minExchanges} exchanges
+                              </div>
+                            )}
                           </div>
 
-                          {stats ? (
+                          {stats && lessonUnlocked ? (
                             <div className="academy__lesson-meta">
-                              <span
-                                className="academy__lesson-score"
-                                style={{ color: scoreColor(stats.bestScore) }}
-                              >
+                              <span className="academy__lesson-score" style={{ color: scoreColor(stats.bestScore) }}>
                                 {stats.bestScore.toFixed(1)}
                               </span>
+                              {passed && <span className="academy__lesson-passed-badge">PASSED</span>}
                               <span className="academy__lesson-trend">
                                 {stats.improving ? '↑' : stats.attempts >= 2 ? '→' : ''}
                               </span>
@@ -253,9 +283,9 @@ export function AcademySection({ user }: AcademySectionProps) {
                               </div>
                               <span className="academy__lesson-reps">{stats.attempts} rep{stats.attempts !== 1 ? 's' : ''}</span>
                             </div>
-                          ) : (
+                          ) : lessonUnlocked ? (
                             <span className="academy__lesson-start">START →</span>
-                          )}
+                          ) : null}
                         </button>
                       );
                     })}
@@ -266,14 +296,13 @@ export function AcademySection({ user }: AcademySectionProps) {
           })}
         </div>
 
-          {/* Coming soon */}
-          <div className="academy__coming-soon">
-            <div className="academy__coming-soon-icon">◌</div>
-            <div className="academy__coming-soon-title">MORE LESSONS COMING SOON</div>
-            <div className="academy__coming-soon-desc">
-              New modules covering negotiation tactics, enterprise selling, and managing complex multi-stakeholder deals are in development.
-            </div>
+        <div className="academy__coming-soon">
+          <div className="academy__coming-soon-icon">◌</div>
+          <div className="academy__coming-soon-title">MORE LESSONS COMING SOON</div>
+          <div className="academy__coming-soon-desc">
+            New modules covering negotiation tactics, enterprise selling, and managing complex multi-stakeholder deals are in development.
           </div>
+        </div>
       </div>
     );
   }
@@ -282,6 +311,10 @@ export function AcademySection({ user }: AcademySectionProps) {
   // INTRO
   // ─────────────────────────────────────────────────────────────────────────
   if (phase === 'intro' && activeLesson && activeModule) {
+    const lessonIndex = activeModule.lessons.findIndex(l => l.id === activeLesson.id);
+    const lessonNumber = lessonIndex + 1;
+    const stats = getLessonStats(activeLesson.id, activeLesson.passScore);
+
     return (
       <div className="academy">
         <main className="training__main">
@@ -289,17 +322,70 @@ export function AcademySection({ user }: AcademySectionProps) {
             <div className="academy__intro-breadcrumb">
               <span>{activeModule.title}</span>
               <span className="academy__intro-breadcrumb-sep">›</span>
-              <span className="academy__intro-breadcrumb-lesson">{activeLesson.title}</span>
+              <span className="academy__intro-breadcrumb-lesson">
+                Lesson {lessonNumber} of {activeModule.lessons.length}: {activeLesson.title}
+              </span>
             </div>
 
             <h2 className="academy__intro-title">{activeLesson.title}</h2>
             <p className="academy__intro-concept">{activeLesson.concept}</p>
 
+            {/* Learning Objectives */}
+            <div className="academy__objectives">
+              <div className="academy__objectives-label">WHAT YOU WILL PRACTICE</div>
+              <ul className="academy__objectives-list">
+                {activeLesson.objectives.map((obj, i) => (
+                  <li key={i} className="academy__objective-item">
+                    <span className="academy__objective-num">{i + 1}</span>
+                    <span>{obj}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Coaching Tip */}
             <div className="academy__tip-card">
               <div className="academy__tip-label">COACHING TIP</div>
               <div className="academy__tip-text">{activeLesson.tip}</div>
             </div>
 
+            {/* Completion Criteria */}
+            <div className="academy__criteria-card">
+              <div className="academy__criteria-label">COMPLETION CRITERIA</div>
+              <div className="academy__criteria-body">
+                <div className="academy__criteria-row">
+                  <span className="academy__criteria-icon">◎</span>
+                  <span>
+                    Score <strong>{activeLesson.passScore}/10 or higher</strong> to pass and unlock the next lesson
+                  </span>
+                </div>
+                <div className="academy__criteria-row">
+                  <span className="academy__criteria-icon">◎</span>
+                  <span>
+                    Complete at least <strong>{activeLesson.minExchanges} full exchanges</strong> before ending the session
+                  </span>
+                </div>
+                <div className="academy__criteria-row">
+                  <span className="academy__criteria-icon">◎</span>
+                  <span>
+                    Difficulty: <strong>{activeLesson.difficulty.toUpperCase()}</strong>
+                    {activeLesson.difficulty === 'hard' ? ' — the prospect will push back hard. Stay composed.' : ''}
+                  </span>
+                </div>
+              </div>
+              {stats && (
+                <div className="academy__criteria-history">
+                  Your best score: <span style={{ color: stats.passed ? 'var(--color-accent-green)' : 'var(--color-accent-yellow)' }}>
+                    {stats.bestScore.toFixed(1)}/10
+                  </span>
+                  {stats.passed
+                    ? ' — Lesson passed. Practice again to sharpen your skill.'
+                    : ` — Need ${activeLesson.passScore} to pass. ${stats.attempts} attempt${stats.attempts !== 1 ? 's' : ''} so far.`}
+                </div>
+              )}
+            </div>
+
+            {/* Context Input */}
             <div className="academy__intro-context">
               <div className="academy__intro-context-label">WHAT ARE YOU SELLING?</div>
               <textarea
@@ -345,6 +431,10 @@ export function AcademySection({ user }: AcademySectionProps) {
   // PRACTICE (active training session)
   // ─────────────────────────────────────────────────────────────────────────
   if (phase === 'practice' && trainingState.phase === 'active') {
+    const exchanges = repExchangeCount();
+    const minEx = activeLesson?.minExchanges ?? 4;
+    const canEnd = exchanges >= minEx;
+
     return (
       <div className="academy">
         <main className="training__main training__main--active">
@@ -356,8 +446,26 @@ export function AcademySection({ user }: AcademySectionProps) {
                 {trainingState.difficulty.toUpperCase()}
               </span>
             </div>
-            <button className="academy__end-btn" onClick={() => void endSession()}>End Session</button>
+            <div className="academy__session-right">
+              <span className="academy__exchange-counter">
+                {exchanges}/{minEx} exchanges
+              </span>
+              <button
+                className={`academy__end-btn ${!canEnd ? 'academy__end-btn--disabled' : ''}`}
+                onClick={handleEndSession}
+                title={!canEnd ? `Complete at least ${minEx} exchanges before ending` : undefined}
+              >
+                End Session
+              </button>
+            </div>
           </div>
+
+          {showEndWarning && (
+            <div className="academy__end-warning">
+              You need at least <strong>{minEx} exchanges</strong> to complete this lesson.
+              You've done <strong>{exchanges}</strong> so far — keep going!
+            </div>
+          )}
 
           <div className="training__messages">
             {trainingState.messages.map(msg => (
@@ -459,12 +567,11 @@ export function AcademySection({ user }: AcademySectionProps) {
   // ─────────────────────────────────────────────────────────────────────────
   if (phase === 'results' && activeLesson) {
     const score = trainingState.overallScore ?? 0;
-    const prevStats = getLessonStats(activeLesson.id);
-    // prevStats now includes the just-saved record, so "previous" is the second entry
+    const didPass = score >= activeLesson.passScore;
+    const prevStats = getLessonStats(activeLesson.id, activeLesson.passScore);
     const prevBest = prevStats && prevStats.attempts > 1 ? prevStats.allScores[prevStats.allScores.length - 2] : null;
     const delta = prevBest !== null ? score - prevBest : null;
 
-    // Find next lesson
     const flatLessons = ALL_LESSONS;
     const currentIdx = flatLessons.findIndex(l => l.id === activeLesson.id);
     const nextLesson = currentIdx < flatLessons.length - 1 ? flatLessons[currentIdx + 1] : null;
@@ -488,6 +595,33 @@ export function AcademySection({ user }: AcademySectionProps) {
               </div>
             </div>
 
+            {/* Pass / Fail Banner */}
+            <div className={`academy__pass-banner ${didPass ? 'academy__pass-banner--pass' : 'academy__pass-banner--fail'}`}>
+              {didPass ? (
+                <>
+                  <span className="academy__pass-icon">✓</span>
+                  <div>
+                    <div className="academy__pass-title">Lesson Passed!</div>
+                    <div className="academy__pass-sub">
+                      You scored {score.toFixed(1)}/10 — above the {activeLesson.passScore} threshold.
+                      {nextLesson ? ' Next lesson is now unlocked.' : ' You\'ve completed this module!'}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="academy__pass-icon">✗</span>
+                  <div>
+                    <div className="academy__pass-title">Not Passed Yet</div>
+                    <div className="academy__pass-sub">
+                      You scored {score.toFixed(1)}/10. You need <strong>{activeLesson.passScore}/10</strong> to unlock the next lesson.
+                      Review the feedback below and try again.
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             {delta !== null && (
               <div className="academy__improvement">
                 <span className="academy__improvement-icon">
@@ -497,8 +631,8 @@ export function AcademySection({ user }: AcademySectionProps) {
                   {delta > 0
                     ? <><strong>+{delta.toFixed(1)} improvement</strong> from your previous session on this lesson</>
                     : delta < 0
-                    ? <>Score dropped by {Math.abs(delta).toFixed(1)} - review the ideal responses above and try again</>
-                    : <>Same score as last time - study the ideal responses to push higher</>
+                    ? <>Score dropped by {Math.abs(delta).toFixed(1)} — review the ideal responses above and try again</>
+                    : <>Same score as last time — study the ideal responses to push higher</>
                   }
                 </span>
               </div>
@@ -512,6 +646,19 @@ export function AcademySection({ user }: AcademySectionProps) {
                 </span>
               </div>
             )}
+
+            {/* Objective Recap */}
+            <div className="academy__objectives academy__objectives--results">
+              <div className="academy__objectives-label">LESSON OBJECTIVES — REFLECT ON YOUR PRACTICE</div>
+              <ul className="academy__objectives-list">
+                {activeLesson.objectives.map((obj, i) => (
+                  <li key={i} className="academy__objective-item">
+                    <span className="academy__objective-num">{i + 1}</span>
+                    <span>{obj}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             <button
               className="academy__transcript-toggle"
@@ -565,7 +712,7 @@ export function AcademySection({ user }: AcademySectionProps) {
               >
                 Try Again
               </button>
-              {nextLesson && nextModule ? (
+              {didPass && nextLesson && nextModule ? (
                 <button
                   className="academy__btn academy__btn--ghost"
                   onClick={() => handleSelectLesson(nextLesson, nextModule)}
@@ -584,7 +731,6 @@ export function AcademySection({ user }: AcademySectionProps) {
     );
   }
 
-  // Loading / transitioning state
   return (
     <div className="academy">
       <main className="training__main">

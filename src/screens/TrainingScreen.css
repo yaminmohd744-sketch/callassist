@@ -107,13 +107,16 @@
 /* ── Scenario Selection ──────────────────────────────────────────────────────*/
 
 .training__selection {
-  padding: var(--space-10) var(--space-12);
-  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-8) var(--space-6);
   width: 100%;
 }
 
 .training__selection-header {
-  margin-bottom: var(--space-8);
+  text-align: center;
+  margin-bottom: var(--space-6);
 }
 
 .training__selection-title {
@@ -130,56 +133,88 @@
   margin: 0;
 }
 
+@keyframes scenario-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
 .training__scenarios {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.training__scenario-row {
+  display: flex;
+  justify-content: center;
   gap: var(--space-4);
 }
 
 .training__scenario-card {
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-lg);
-  padding: var(--space-5) var(--space-5);
-  text-align: left;
+  border-radius: 16px;
+  animation: scenario-float 4s ease-in-out infinite;
+  width: 190px;
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
   cursor: pointer;
   font-family: var(--font-sans);
-  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--space-2);
 }
 
 .training__scenario-card:hover:not(:disabled) {
-  border-color: var(--color-accent-cyan);
+  border-color: var(--color-accent-purple);
   background: var(--color-bg-elevated);
-  box-shadow: var(--glow-cyan);
+  box-shadow: 0 0 24px rgba(129, 74, 200, 0.3), 0 8px 32px rgba(0,0,0,0.4);
+  transform: translateY(-4px) scale(1.03);
+  animation-play-state: paused;
 }
 
 .training__scenario-card:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .training__scenario-card--random {
-  border-color: var(--color-accent-purple);
-  background: rgba(129, 74, 200, 0.05);
-  grid-column: 1 / -1;
+  border-color: rgba(129, 74, 200, 0.5);
+  background: rgba(129, 74, 200, 0.06);
 }
 
-.training__scenario-card--random:hover:not(:disabled) {
-  background: rgba(129, 74, 200, 0.12);
+.training__scenario-card--custom {
+  border-color: rgba(223, 122, 254, 0.3);
+  background: rgba(223, 122, 254, 0.04);
+}
+
+.training__scenario-icon {
+  font-size: 24px;
+  line-height: 1;
+  color: var(--color-accent-purple);
+  margin-bottom: var(--space-1);
+  opacity: 0.85;
+}
+
+.training__scenario-card--random .training__scenario-icon,
+.training__scenario-card--custom .training__scenario-icon {
+  color: var(--color-accent-magenta);
 }
 
 .training__scenario-label {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--color-text-primary);
   letter-spacing: 0.02em;
 }
 
-.training__scenario-card--random .training__scenario-label {
-  color: var(--color-accent-cyan);
+.training__scenario-card--random .training__scenario-label,
+.training__scenario-card--custom .training__scenario-label {
+  color: var(--color-accent-magenta);
 }
 
 .training__scenario-desc {
@@ -460,31 +495,38 @@
 .training__sub-scenarios {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--space-2);
 }
 
 .training__sub-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: center;
   gap: var(--space-3);
 }
 
 .training__sub-card {
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-lg);
-  padding: var(--space-3) var(--space-4);
+  animation: scenario-float 4s ease-in-out infinite;
+  border-radius: 16px;
+  padding: var(--space-6) var(--space-6);
+  width: 220px;
+  min-height: 130px;
   text-align: left;
   cursor: pointer;
   font-family: var(--font-sans);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  gap: var(--space-3);
+  transition: border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
 .training__sub-card:hover {
   border-color: var(--color-text-muted);
+  animation-play-state: paused;
+  transform: translateY(-4px);
+  transition: transform 0.2s;
 }
 
 .training__sub-card--selected.training__sub-card--easy   { border-color: var(--color-accent-green);  background: rgba(57, 211, 83, 0.06); }
@@ -499,13 +541,13 @@
 }
 
 .training__sub-label {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   font-weight: 700;
   color: var(--color-text-primary);
 }
 
 .training__sub-desc {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   font-style: italic;
 }
@@ -570,8 +612,14 @@
 /* ── Context Screen ──────────────────────────────────────────────────────────*/
 
 .training__context {
-  padding: var(--space-10) var(--space-12);
-  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-8) var(--space-6);
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
@@ -580,6 +628,7 @@
 .training__context-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-3);
 }
 
@@ -591,7 +640,9 @@
 
 .training__context-scenario-name {
   font-size: var(--font-size-sm);
-  color: var(--color-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-purple);
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -609,6 +660,7 @@
 }
 
 .training__context-input {
+  width: 100%;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-md);
@@ -627,6 +679,7 @@
 
 .training__context-actions {
   display: flex;
+  justify-content: center;
   gap: var(--space-4);
 }
 
@@ -817,11 +870,11 @@
 /* ── Language Picker ─────────────────────────────────────────────────────────*/
 
 .training__lang-row {
-  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-6);
 }
 
 .training__lang-label {
@@ -833,6 +886,7 @@
 .training__lang-select {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--space-2);
 }
 

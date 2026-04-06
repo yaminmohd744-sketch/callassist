@@ -13,17 +13,24 @@ interface TrainingScreenProps {
   onBack: () => void;
 }
 
-const SCENARIOS: { id: TrainingScenario; label: string; description: string }[] = [
-  { id: 'price-objection',  label: 'Price Objection',      description: 'Prospect says it\'s too expensive' },
-  { id: 'not-interested',   label: 'Not Interested',        description: 'Prospect wants to end the call' },
-  { id: 'think-it-over',    label: 'Think It Over',         description: 'Prospect is stalling for time' },
-  { id: 'send-me-info',     label: 'Send Me Info',          description: 'Prospect deflects with email request' },
-  { id: 'cold-opener',      label: 'Cold Opener',           description: 'Start a cold call from scratch' },
-  { id: 'discovery',        label: 'Discovery',             description: 'Uncover pain points and needs' },
-  { id: 'closing',          label: 'Closing',               description: 'Push for commitment at the end' },
-  { id: 'random',           label: '★ Random Scenario',     description: 'AI generates a surprise situation' },
-  { id: 'custom',           label: '✎ Custom Scenario',     description: 'Describe your own prospect persona' },
+const SCENARIO_ROWS: { id: TrainingScenario; label: string; description: string; icon: string }[][] = [
+  [
+    { id: 'price-objection', label: 'Price Objection', description: 'Prospect says it\'s too expensive',    icon: '◈' },
+    { id: 'not-interested',  label: 'Not Interested',  description: 'Prospect wants to end the call',      icon: '⊘' },
+    { id: 'think-it-over',  label: 'Think It Over',   description: 'Prospect is stalling for time',       icon: '◎' },
+    { id: 'send-me-info',   label: 'Send Me Info',    description: 'Prospect deflects with email request', icon: '◻' },
+  ],
+  [
+    { id: 'cold-opener', label: 'Cold Opener', description: 'Start a cold call from scratch',     icon: '◇' },
+    { id: 'discovery',   label: 'Discovery',   description: 'Uncover pain points and needs',      icon: '◑' },
+    { id: 'closing',     label: 'Closing',     description: 'Push for commitment at the end',     icon: '◆' },
+  ],
+  [
+    { id: 'random', label: 'Random Scenario', description: 'AI generates a surprise situation',  icon: '★' },
+    { id: 'custom', label: 'Custom Scenario', description: 'Describe your own prospect persona', icon: '✎' },
+  ],
 ];
+const SCENARIOS = SCENARIO_ROWS.flat();
 
 interface SubScenario {
   id: string;
@@ -240,10 +247,11 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
               <div className="training__sub-scenarios">
                 <div className="training__diff-label">SELECT SUB-SCENARIO</div>
                 <div className="training__sub-grid">
-                  {subs.map(sub => (
+                  {subs.map((sub, i) => (
                     <button
                       key={sub.id}
                       className={`training__sub-card training__sub-card--${sub.difficulty} ${selectedSub?.id === sub.id ? 'training__sub-card--selected' : ''}`}
+                      style={{ animationDelay: `${i * 0.22}s` }}
                       onClick={() => setSelectedSub(sub)}
                     >
                       <div className="training__sub-header">
@@ -379,32 +387,41 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
             <p className="training__selection-sub">Pick a scenario. The AI plays the prospect. You close the deal.</p>
           </div>
           {state.error && <div className="training__error">{state.error}</div>}
-          <div className="training__scenarios">
-            <div className="training__lang-row">
-              <div className="training__lang-label">LANGUAGE</div>
-              <div className="training__lang-select">
-                {SUPPORTED_LANGUAGES.map(l => (
-                  <button
-                    key={l.code}
-                    className={`training__lang-btn ${language === l.code ? 'training__lang-btn--active' : ''}`}
-                    onClick={() => setLanguage(l.code)}
-                  >
-                    <img className="training__lang-flag" src={`https://flagcdn.com/w20/${l.code.split('-')[1].toLowerCase()}.png`} alt={l.label} />
-                    {l.label}
-                  </button>
-                ))}
-              </div>
+          <div className="training__lang-row">
+            <div className="training__lang-label">LANGUAGE</div>
+            <div className="training__lang-select">
+              {SUPPORTED_LANGUAGES.map(l => (
+                <button
+                  key={l.code}
+                  className={`training__lang-btn ${language === l.code ? 'training__lang-btn--active' : ''}`}
+                  onClick={() => setLanguage(l.code)}
+                >
+                  <img className="training__lang-flag" src={`https://flagcdn.com/w20/${l.code.split('-')[1].toLowerCase()}.png`} alt={l.label} />
+                  {l.label}
+                </button>
+              ))}
             </div>
-            {SCENARIOS.map(s => (
-              <button
-                key={s.id}
-                className={`training__scenario-card ${s.id === 'random' ? 'training__scenario-card--random' : ''}`}
-                onClick={() => { startScenario(s.id, language); setContextInput(''); setSelectedSub(null); setCustomDesc(''); setSelectedDifficulty('medium'); }}
-                disabled={state.isLoading}
-              >
-                <div className="training__scenario-label">{s.label}</div>
-                <div className="training__scenario-desc">{s.description}</div>
-              </button>
+          </div>
+          <div className="training__scenarios">
+            {SCENARIO_ROWS.map((row, rowIdx) => (
+              <div key={rowIdx} className="training__scenario-row">
+                {row.map((s, i) => {
+                  const globalIdx = SCENARIO_ROWS.slice(0, rowIdx).reduce((acc, r) => acc + r.length, 0) + i;
+                  return (
+                    <button
+                      key={s.id}
+                      className={`training__scenario-card training__scenario-card--${s.id}`}
+                      style={{ animationDelay: `${globalIdx * 0.18}s` }}
+                      onClick={() => { startScenario(s.id, language); setContextInput(''); setSelectedSub(null); setCustomDesc(''); setSelectedDifficulty('medium'); }}
+                      disabled={state.isLoading}
+                    >
+                      <div className="training__scenario-icon">{s.icon}</div>
+                      <div className="training__scenario-label">{s.label}</div>
+                      <div className="training__scenario-desc">{s.description}</div>
+                    </button>
+                  );
+                })}
+              </div>
             ))}
           </div>
           {state.isLoading && <div className="training__loading">Setting up scenario...</div>}
@@ -476,7 +493,7 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                 </div>
                 <ul className="training__chooser-features">
                   <li>3 skill levels — Beginner to Advanced</li>
-                  <li>9 guided lessons with coaching tips</li>
+                  <li>27 guided lessons with coaching tips</li>
                   <li>Track your scores and improvement</li>
                 </ul>
                 <div className="training__chooser-cta">Start Learning →</div>

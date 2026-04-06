@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { getDeepgramCode } from '../lib/languages';
 
 const DEEPGRAM_API_KEY = (import.meta as unknown as { env: Record<string, string> }).env.VITE_DEEPGRAM_API_KEY;
@@ -43,7 +43,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   const wsrRef          = useRef<WSR | null>(null); // Web Speech Recognition fallback
   const activeRef       = useRef(false);
   const onFinalRef      = useRef(onFinalTranscript);
-  onFinalRef.current = onFinalTranscript;
+  useLayoutEffect(() => { onFinalRef.current = onFinalTranscript; });
 
   // Utterance buffer - accumulates is_final chunks and flushes them as one entry
   // after 1200ms of silence, so fragmented mid-sentence commits get merged.
@@ -110,7 +110,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
     } catch {
       setErrorMessage('Could not start browser speech recognition.');
     }
-  }, []);
+  }, [language]);
 
   // ── Stop ──────────────────────────────────────────────────────────────────
 
@@ -246,7 +246,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         setErrorMessage('Could not start microphone: ' + msg);
       }
     }
-  }, [stopListening, startWebSpeechFallback]);
+  }, [startWebSpeechFallback, flushBuffer, language]);
 
   useEffect(() => {
     return () => { stopListening(); };

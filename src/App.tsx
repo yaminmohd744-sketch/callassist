@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { OverlayScreen }    from './screens/OverlayScreen';
 import { LandingScreen }    from './screens/LandingScreen';
 import { IntroScreen }      from './screens/IntroScreen';
 import { DashboardScreen }  from './screens/DashboardScreen';
@@ -65,11 +64,7 @@ function sessionToRow(s: CallSession, userId: string) {
 
 // ─── App ─────────────────────────────────────────────────────────────────────
 
-// When loaded in the Electron overlay window, render only the compact overlay UI.
-const _isOverlayMode = new URLSearchParams(window.location.search).get('overlay') === 'true';
-
 export function App() {
-  if (_isOverlayMode) return <OverlayScreen />;
 
   const { user, loading: authLoading } = useAuth();
 
@@ -90,15 +85,14 @@ export function App() {
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
 
-  // Auto-redirect authenticated users away from landing/auth to dashboard
-  useEffect(() => {
-    if (user && (screen === 'landing' || screen === 'auth')) {
-      setScreen('dashboard');
-    }
-  }, [user, screen]);
+  // Derive the effective screen: authenticated users on landing/auth go to dashboard
+  const currentScreen: Screen = (user && (screen === 'landing' || screen === 'auth'))
+    ? 'dashboard'
+    : screen;
 
   // Load sessions from Supabase whenever the authenticated user changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!user) { setPastSessions([]); return; }
     supabase
       .from('call_sessions')
@@ -165,7 +159,7 @@ export function App() {
     );
   }
 
-  const isShell = screen === 'dashboard' || screen === 'training' || screen === 'analytics';
+  const isShell = currentScreen === 'dashboard' || currentScreen === 'training' || currentScreen === 'analytics';
 
   return (
     <>
@@ -173,13 +167,13 @@ export function App() {
 
       {isShell && (
         <AppShell
-          activeScreen={screen as 'dashboard' | 'training' | 'analytics'}
+          activeScreen={currentScreen as 'dashboard' | 'training' | 'analytics'}
           onNavigate={s => setScreen(s)}
           onStartCall={() => setScreen('pre-call')}
           onUploadCall={() => setScreen('upload-call')}
           onSignOut={() => supabase.auth.signOut()}
         >
-          {screen === 'dashboard' && (
+          {currentScreen === 'dashboard' && (
             <DashboardScreen
               pastSessions={pastSessions}
               onStartCall={() => setScreen('pre-call')}
@@ -194,31 +188,31 @@ export function App() {
               }
             />
           )}
-          {screen === 'training' && (
+          {currentScreen === 'training' && (
             <TrainingScreen onBack={() => setScreen('dashboard')} />
           )}
-          {screen === 'analytics' && (
+          {currentScreen === 'analytics' && (
             <AnalyticsScreen pastSessions={pastSessions} user={user} />
           )}
         </AppShell>
       )}
 
-      {screen === 'pre-call' && (
+      {currentScreen === 'pre-call' && (
         <PreCallScreen
           onStartCall={handleStartCall}
           onBack={() => setScreen('dashboard')}
         />
       )}
-      {screen === 'live-call' && callConfig && (
+      {currentScreen === 'live-call' && callConfig && (
         <LiveCallScreen config={callConfig} onEndCall={handleEndCall} />
       )}
-      {screen === 'upload-call' && (
+      {currentScreen === 'upload-call' && (
         <UploadCallScreen
           onEndCall={handleEndCall}
           onBack={() => setScreen('dashboard')}
         />
       )}
-      {screen === 'post-call' && callSession && (
+      {currentScreen === 'post-call' && callSession && (
         <PostCallScreen
           session={callSession}
           onBack={() => setScreen('dashboard')}

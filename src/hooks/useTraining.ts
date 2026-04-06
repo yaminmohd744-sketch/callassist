@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useLayoutEffect } from 'react';
 import type { TrainingScenario, TrainingMessage, TrainingFeedback, SessionSummary } from '../types';
 
 const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
@@ -61,7 +61,7 @@ const initialState: TrainingState = {
 export function useTraining() {
   const [state, setState] = useState<TrainingState>(initialState);
   const stateRef = useRef(state);
-  stateRef.current = state;
+  useLayoutEffect(() => { stateRef.current = state; });
 
   const startScenario = useCallback((scenario: TrainingScenario, language = 'en-US') => {
     setState(s => ({ ...s, phase: 'context', scenario, language, error: null }));
