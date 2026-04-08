@@ -7,6 +7,7 @@ import type { CurriculumLesson, CurriculumModule } from '../lib/curriculum';
 import type { TrainingScenario } from '../types';
 import { getSavedContexts, saveContext } from '../lib/saleContexts';
 import { recordPracticeToday, getStreak } from '../lib/streak';
+import { LessonWalkthroughScreen } from './LessonWalkthroughScreen';
 import './AcademySection.css';
 
 // Sub-scenario prompts per scenario
@@ -58,7 +59,7 @@ interface AcademySectionProps {
   user: User | null;
 }
 
-type AcademyPhase = 'overview' | 'intro' | 'practice' | 'results';
+type AcademyPhase = 'overview' | 'walkthrough' | 'intro' | 'practice' | 'results';
 
 const TOTAL_LESSONS = ALL_LESSONS.length;
 
@@ -105,15 +106,16 @@ export function AcademySection({ user }: AcademySectionProps) {
     setInput('');
     setShowEndWarning(false);
     reset();
-    setPhase('intro');
+    setPhase('walkthrough');
   }
 
-  async function handleStartPractice() {
+  async function handleStartPractice(contextOverride?: string) {
     if (!activeLesson) return;
+    const ctx = contextOverride !== undefined ? contextOverride : saleContext;
     const subPrompt = SUB_PROMPTS[activeLesson.scenario][activeLesson.subScenarioIndex] ?? '';
-    saveContext(saleContext.trim());
+    saveContext(ctx.trim());
     startScenario(activeLesson.scenario, 'en-US');
-    await confirmContext(saleContext || 'my product/service', activeLesson.difficulty, subPrompt);
+    await confirmContext(ctx || 'my product/service', activeLesson.difficulty, subPrompt);
     setPhase('practice');
   }
 
@@ -313,7 +315,29 @@ export function AcademySection({ user }: AcademySectionProps) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // INTRO (lesson teaching page)
+  // WALKTHROUGH (animated lesson walkthrough overlay)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (phase === 'walkthrough' && activeLesson && activeModule) {
+    const lessonIndex = activeModule.lessons.findIndex(l => l.id === activeLesson.id);
+    const lessonNumber = lessonIndex + 1;
+    const stats = getLessonStats(activeLesson.id, activeLesson.passScore);
+
+    return (
+      <LessonWalkthroughScreen
+        lesson={activeLesson}
+        module={activeModule}
+        lessonNumber={lessonNumber}
+        stats={stats}
+        onStart={(ctx) => { setSaleContext(ctx); void handleStartPractice(ctx); }}
+        onBack={handleBack}
+        isLoading={trainingState.isLoading}
+        error={trainingState.error}
+      />
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // INTRO (lesson teaching page — shown on "Try Again" to skip walkthrough)
   // ─────────────────────────────────────────────────────────────────────────
   if (phase === 'intro' && activeLesson && activeModule) {
     const lessonIndex = activeModule.lessons.findIndex(l => l.id === activeLesson.id);

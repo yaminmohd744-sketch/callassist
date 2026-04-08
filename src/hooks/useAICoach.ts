@@ -35,17 +35,19 @@ export function useAICoach() {
   ) => {
     const current = stateRef.current;
 
-    // Called by mockAI on every streaming chunk and on final completion.
+    // Called on every streaming chunk and on final completion.
     const onStream = (partial: AISuggestion) => {
       setSuggestions(prev => {
         const exists = prev.some(s => s.id === partial.id);
         if (exists) {
-          // Remove empty finished placeholders (stream ended with no content).
+          // Streaming ended with no content (shouldShow: false) — remove placeholder.
           if (!partial.streaming && !partial.body) {
             return prev.filter(s => s.id !== partial.id);
           }
           return prev.map(s => s.id === partial.id ? partial : s);
         }
+        // Only add to list if it has visible content (avoid showing empty card briefly)
+        if (!partial.body && partial.streaming) return prev;
         return [partial, ...prev];
       });
     };

@@ -2,71 +2,56 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-      },
-    });
+    return new Response(null, { headers: CORS_HEADERS });
   }
 
   try {
     const { entry, transcript, stage, elapsedSeconds, probability, objectionsCount, config, lastLabel, language } =
       await req.json();
 
-    const langNote = language && language !== 'en-US'
-      ? `\n\nIMPORTANT: The sales call is being conducted in language "${language}" (BCP 47). The "body" field (the script the rep says) MUST be in that language. "headline" stays in English.`
-      : '';
+    const langNote = language && language !== "en-US"
+      ? `\nThe call is in "${language}" — write the body in that language. Headline stays in English.`
+      : "";
 
+    // Only last 4 exchanges for speed — enough context without bloat
     const recentEntries = (transcript as Array<{ speaker: string; text: string }>)
-      .slice(-6)
+      .slice(-4)
       .map((e) => `${e.speaker === "rep" ? "REP" : "PROSPECT"}: ${e.text}`)
       .join("\n");
 
-    const systemPrompt = `You are one of the best closers in the world, whispering in real time to a sales rep on a live call. You have closed every type of deal — high ticket, low ticket, B2B, B2C, services, products, anything. You read people instantly and you always know the exact right thing to say to move the sale forward.
+    const systemPrompt = `You are a real-time sales coach helping a rep have a better conversation. Your job is to help them move forward naturally — not push harder, not follow a rigid script, but read where the prospect is and suggest the best next move to keep things progressing.
 
-You are NOT a script reader. You are NOT a template filler. You think on your feet, you adapt to whatever the prospect says, and you always keep control of the conversation without the prospect ever feeling pressured.
+Be direct, human, and conversational. If the prospect raised a concern, help the rep acknowledge it and find common ground. If there's an opening, help the rep explore it. If the rep needs to slow down and listen more, say that. Good sales is about genuine conversation, not clever closes.
 
-Your job: listen to what the prospect just said and give the rep the single best line they can say RIGHT NOW to keep the conversation moving toward a close. One line. Decisive. Natural. Confident.
-
-Rules:
-- Never sound salesy, robotic, or corporate
-- Never repeat or quote the pitch back word for word — use it as background intelligence only
-- Always sound like a real human who genuinely believes in what they're selling
-- Use the prospect's name or company naturally when it adds impact
-- If there's an objection, neutralize it without being defensive — then redirect
-- If there's a buying signal, capitalize on it immediately and push for the next step
-- If the prospect is being vague or stalling, call it out gently and get them to commit
-- Every response should move closer to the goal — never just maintain the status quo
-- Under 60 words
-
-Respond ONLY with valid JSON, no markdown:
-{ "shouldShow": boolean, "type": "objection-handler"|"closing-prompt"|"tip", "headline": string, "body": string, "probabilityDelta": number, "objectionsCountDelta": number }
-
-- "body": the exact words the rep says. Under 60 words. First-person, natural speech.
-- "headline": 2-4 word label describing the move (e.g. "Flip the Frame", "Lock the Close", "Kill the Stall")
-- "probabilityDelta": integer -15 to +15
-- "objectionsCountDelta": 0 or 1
-- If the prospect said something with no meaningful sales implication, return shouldShow: false${langNote}`;
-
-    const userMessage = `Background context (understand the situation — do NOT quote these directly):
-- Prospect: ${config.prospectName} at ${config.company}
-- What we're selling: ${config.yourPitch}
-- Call goal: ${config.callGoal}
-- Stage: ${stage} (${elapsedSeconds}s elapsed)
-- Close probability: ${probability}%
+Context:
+- Selling: ${config?.yourPitch || "their product"}
+- Goal: ${config?.callGoal || "move the conversation forward"}
+- Stage: ${stage} | ${Math.floor(elapsedSeconds / 60)}min elapsed | Close probability: ${probability}%
 - Objections so far: ${objectionsCount}
-- Last suggestion label: ${lastLabel ?? "none"} — do not repeat this type
+- Last suggestion: ${lastLabel ?? "none"} — suggest something different${langNote}
 
 Recent conversation:
 ${recentEntries}
 
-PROSPECT JUST SAID: "${entry.text}"
-Signal: ${entry.signal}
+Prospect just said: "${entry.text}"
 
-Write a natural script the rep can say right now to move this forward.`;
+Decide: does this moment need a coaching suggestion? Only show one if it genuinely helps the rep respond better right now. Skip filler moments.
+
+Respond ONLY with valid JSON (no markdown):
+{"shouldShow": boolean, "type": "objection-handler"|"closing-prompt"|"tip", "headline": string, "body": string, "probabilityDelta": number, "objectionsCountDelta": number}
+
+- "shouldShow": false if the prospect said something routine with no meaningful coaching opportunity
+- "body": what the rep should say or do — under 50 words, natural and conversational, first person. Not a script — a suggestion.
+- "headline": 2-4 words capturing the move (e.g. "Dig Deeper", "Validate First", "Find Common Ground")
+- "probabilityDelta": integer -10 to +10
+- "objectionsCountDelta": 0 or 1`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -78,34 +63,36 @@ Write a natural script the rep can say right now to move this forward.`;
         model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
+          { role: "user", content: "Give your coaching suggestion." },
         ],
-        response_format: { type: "json_object" },
-        max_tokens: 300,
-        temperature: 0.7,
+        stream: true,
+        max_tokens: 180,
+        temperature: 0.65,
       }),
     });
 
-    const data = await response.json();
-    if (data.error) {
-      throw new Error(`OpenAI error: ${data.error.message ?? JSON.stringify(data.error)}`);
+    if (!response.ok || !response.body) {
+      throw new Error(`OpenAI returned ${response.status}`);
     }
-    const result = JSON.parse(data.choices[0].message.content);
 
-    return new Response(JSON.stringify(result), {
+    // Stream the SSE through to the client with our CORS headers.
+    // The client reads the raw OpenAI SSE format and assembles the JSON.
+    const { readable, writable } = new TransformStream();
+    response.body.pipeTo(writable);
+
+    return new Response(readable, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
         "Access-Control-Allow-Origin": "*",
       },
     });
+
   } catch (err) {
     console.error("analyze-transcript error:", err);
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
 });

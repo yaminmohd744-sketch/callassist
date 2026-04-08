@@ -53,19 +53,102 @@ export async function analyzeTranscript(
   onStream?: StreamCallback
 ): Promise<AIAnalysisResult> {
   try {
-    const data = await callFunction('analyze-transcript', {
-      entry: newEntry,
-      transcript: fullTranscript,
-      stage: currentStage,
-      elapsedSeconds,
-      probability: currentProbability,
-      objectionsCount: currentObjectionsCount,
-      config,
-      lastLabel: memory?.lastLabel ?? null,
-      language: config?.language ?? 'en-US',
-    }) as Record<string, unknown>;
+    const res = await fetch(`${FUNCTIONS_BASE}/analyze-transcript`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': `Bearer ${ANON_KEY}`,
+      },
+      body: JSON.stringify({
+        entry: newEntry,
+        transcript: fullTranscript,
+        stage: currentStage,
+        elapsedSeconds,
+        probability: currentProbability,
+        objectionsCount: currentObjectionsCount,
+        config,
+        lastLabel: memory?.lastLabel ?? null,
+        language: config?.language ?? 'en-US',
+      }),
+    });
+
+    if (!res.ok || !res.body) throw new Error(`analyze-transcript returned ${res.status}`);
+
+    const suggestionId = genId();
+    let accumulated = '';
+    let streamingShown = false;
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      // Parse OpenAI SSE lines: "data: {...}" or "data: [DONE]"
+      for (const line of chunk.split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data: ')) continue;
+        const payload = trimmed.slice(6);
+        if (payload === '[DONE]') break;
+        try {
+          const parsed = JSON.parse(payload) as { choices?: Array<{ delta?: { content?: string } }> };
+          const token = parsed.choices?.[0]?.delta?.content;
+          if (!token) continue;
+          accumulated += token;
+
+          // Start streaming as soon as we have enough to extract a body preview
+          if (onStream && accumulated.includes('"body"')) {
+            const bodyMatch = accumulated.match(/"body"\s*:\s*"((?:[^"\\]|\\.)*)(?:"|$)/);
+            if (bodyMatch) {
+              const partialBody = bodyMatch[1]
+                .replace(/\\n/g, '\n')
+                .replace(/\\"/g, '"')
+                .replace(/\\\\/g, '\\');
+
+              if (!streamingShown && partialBody.length > 12) {
+                streamingShown = true;
+              }
+              if (streamingShown) {
+                // Attempt to extract other fields already present in accumulated
+                const typeMatch = accumulated.match(/"type"\s*:\s*"([^"]+)"/);
+                const headlineMatch = accumulated.match(/"headline"\s*:\s*"([^"]+)"/);
+                onStream({
+                  id: suggestionId,
+                  type: (typeMatch?.[1] ?? 'tip') as AISuggestion['type'],
+                  headline: headlineMatch?.[1] ?? '...',
+                  body: partialBody,
+                  triggeredBy: newEntry.text,
+                  timestampSeconds: elapsedSeconds,
+                  streaming: true,
+                });
+              }
+            }
+          }
+        } catch { /* incomplete JSON chunk — continue */ }
+      }
+    }
+
+    // Parse the complete accumulated JSON
+    const jsonMatch = accumulated.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON in response');
+    const data = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
 
     if (!data.shouldShow) {
+      // Remove any streaming placeholder we showed
+      if (streamingShown && onStream) {
+        onStream({
+          id: suggestionId,
+          type: 'tip',
+          headline: '',
+          body: '',
+          triggeredBy: newEntry.text,
+          timestampSeconds: elapsedSeconds,
+          streaming: false,
+        });
+      }
       return {
         suggestions: [],
         updatedProbability: currentProbability,
@@ -75,7 +158,7 @@ export async function analyzeTranscript(
     }
 
     const suggestion: AISuggestion = {
-      id: genId(),
+      id: suggestionId,
       type: data.type as AISuggestion['type'],
       headline: data.headline as string,
       body: data.body as string,

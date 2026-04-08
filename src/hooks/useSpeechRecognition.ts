@@ -46,17 +46,30 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   useLayoutEffect(() => { onFinalRef.current = onFinalTranscript; });
 
   // Utterance buffer - accumulates is_final chunks and flushes them as one entry
-  // after 1200ms of silence, so fragmented mid-sentence commits get merged.
+  // after a short silence, so fragmented mid-sentence commits get merged.
   const bufferRef     = useRef<string[]>([]);
   const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const flushBuffer = useCallback(() => {
+  const commitBuffer = useCallback(() => {
+    if (flushTimerRef.current) { clearTimeout(flushTimerRef.current); flushTimerRef.current = null; }
+    const combined = bufferRef.current.join(' ').trim();
+    bufferRef.current = [];
+    if (combined) onFinalRef.current(combined);
+  }, []);
+
+  const flushBuffer = useCallback((immediate = false) => {
     if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
-    flushTimerRef.current = setTimeout(() => {
+    if (immediate) {
       const combined = bufferRef.current.join(' ').trim();
       bufferRef.current = [];
       if (combined) onFinalRef.current(combined);
-    }, 1200);
+    } else {
+      flushTimerRef.current = setTimeout(() => {
+        const combined = bufferRef.current.join(' ').trim();
+        bufferRef.current = [];
+        if (combined) onFinalRef.current(combined);
+      }, 350);
+    }
   }, []);
 
   // ── Web Speech API fallback ────────────────────────────────────────────────
@@ -117,7 +130,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   const stopListening = useCallback(() => {
     activeRef.current = false;
 
-    if (flushTimerRef.current) { clearTimeout(flushTimerRef.current); flushTimerRef.current = null; }
+    commitBuffer();
     bufferRef.current = [];
 
     if (wsrRef.current) {
@@ -169,7 +182,8 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         `&language=${getDeepgramCode(language)}`,
         '&interim_results=true',
         '&smart_format=true',
-        '&endpointing=600',
+        '&endpointing=250',
+        '&utterance_end_ms=1000',
         '&keywords=demo:3',
         '&keywords=trial:2',
         '&keywords=pricing:2',
@@ -211,7 +225,8 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
           if (!text) return;
           bufferRef.current.push(text);
           setInterimText('');
-          flushBuffer();
+          // speech_final = Deepgram is confident the utterance is complete → flush immediately
+          flushBuffer(data.speech_final);
         } else {
           setInterimText(transcript);
         }
