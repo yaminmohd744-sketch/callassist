@@ -92,7 +92,11 @@
       "WebFetch(domain:spark.mwm.ai)",
       "WebFetch(domain:mwm.ai)",
       "WebFetch(domain:www.appbrain.com)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node fix-quotes.js)",
+      "Bash(mv \"c:\\\\Users\\\\yamin\\\\callassist\\\\callassist\\\\fix-quotes.js\" \"c:\\\\Users\\\\yamin\\\\callassist\\\\callassist\\\\fix-quotes.cjs\")",
+      "Bash(node fix-quotes.cjs)"
     ]
   }
 }

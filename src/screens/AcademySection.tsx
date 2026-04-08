@@ -207,6 +207,11 @@ export function AcademySection({ user }: AcademySectionProps) {
           </div>
         </div>
 
+        <div className="academy__disclaimer">
+          <span className="academy__disclaimer-icon">◎</span>
+          <span>The Academy teaches fundamentals, not shortcuts. It won't make you a world-class closer overnight -- but it will give you the building blocks that every great salesperson is built on. Learn the concepts, then test them in practice.</span>
+        </div>
+
         <div className="academy__modules">
           {CURRICULUM.map((mod, modIndex) => {
             const modUnlocked = isModuleUnlocked(modIndex);
@@ -308,7 +313,7 @@ export function AcademySection({ user }: AcademySectionProps) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // INTRO
+  // INTRO (lesson teaching page)
   // ─────────────────────────────────────────────────────────────────────────
   if (phase === 'intro' && activeLesson && activeModule) {
     const lessonIndex = activeModule.lessons.findIndex(l => l.id === activeLesson.id);
@@ -318,21 +323,57 @@ export function AcademySection({ user }: AcademySectionProps) {
     return (
       <div className="academy">
         <main className="training__main">
-          <div className="academy__intro">
+          <div className="academy__lesson-page">
+
+            {/* Breadcrumb */}
             <div className="academy__intro-breadcrumb">
+              <button className="academy__breadcrumb-back" onClick={handleBack}>← Academy</button>
+              <span className="academy__intro-breadcrumb-sep">›</span>
               <span>{activeModule.title}</span>
               <span className="academy__intro-breadcrumb-sep">›</span>
               <span className="academy__intro-breadcrumb-lesson">
-                Lesson {lessonNumber} of {activeModule.lessons.length}: {activeLesson.title}
+                Lesson {lessonNumber} of {activeModule.lessons.length}
               </span>
             </div>
 
-            <h2 className="academy__intro-title">{activeLesson.title}</h2>
-            <p className="academy__intro-concept">{activeLesson.concept}</p>
+            {/* Lesson header */}
+            <div className="academy__lesson-header">
+              <span className={`academy__lesson-level-badge academy__lesson-level-badge--${activeModule.color}`}>
+                {activeModule.level.toUpperCase()}
+              </span>
+              <h2 className="academy__lesson-title">{activeLesson.title}</h2>
+              <p className="academy__lesson-concept">{activeLesson.concept}</p>
+            </div>
 
-            {/* Learning Objectives */}
-            <div className="academy__objectives">
-              <div className="academy__objectives-label">WHAT YOU WILL PRACTICE</div>
+            {/* Core explanation */}
+            <div className="academy__lesson-block">
+              <div className="academy__lesson-block-label">THE CONCEPT</div>
+              <p className="academy__lesson-body">{activeLesson.lessonBody}</p>
+            </div>
+
+            {/* Do Say / Don't Say */}
+            <div className="academy__say-grid">
+              <div className="academy__say-col academy__say-col--do">
+                <div className="academy__say-label academy__say-label--do">✓ SAY THIS</div>
+                <ul className="academy__say-list">
+                  {activeLesson.doSay.map((s, i) => (
+                    <li key={i} className="academy__say-item academy__say-item--do">{s}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="academy__say-col academy__say-col--dont">
+                <div className="academy__say-label academy__say-label--dont">✗ NOT THIS</div>
+                <ul className="academy__say-list">
+                  {activeLesson.dontSay.map((s, i) => (
+                    <li key={i} className="academy__say-item academy__say-item--dont">{s}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Objectives */}
+            <div className="academy__lesson-block">
+              <div className="academy__lesson-block-label">OBJECTIVES TO HIT IN THE TEST</div>
               <ul className="academy__objectives-list">
                 {activeLesson.objectives.map((obj, i) => (
                   <li key={i} className="academy__objective-item">
@@ -343,84 +384,70 @@ export function AcademySection({ user }: AcademySectionProps) {
               </ul>
             </div>
 
-            {/* Coaching Tip */}
+            {/* Coaching tip */}
             <div className="academy__tip-card">
-              <div className="academy__tip-label">COACHING TIP</div>
+              <div className="academy__tip-label">◈ COACH'S NOTE</div>
               <div className="academy__tip-text">{activeLesson.tip}</div>
             </div>
 
-            {/* Completion Criteria */}
-            <div className="academy__criteria-card">
-              <div className="academy__criteria-label">COMPLETION CRITERIA</div>
-              <div className="academy__criteria-body">
-                <div className="academy__criteria-row">
-                  <span className="academy__criteria-icon">◎</span>
-                  <span>
-                    Score <strong>{activeLesson.passScore}/10 or higher</strong> to pass and unlock the next lesson
-                  </span>
-                </div>
-                <div className="academy__criteria-row">
-                  <span className="academy__criteria-icon">◎</span>
-                  <span>
-                    Complete at least <strong>{activeLesson.minExchanges} full exchanges</strong> before ending the session
-                  </span>
-                </div>
-                <div className="academy__criteria-row">
-                  <span className="academy__criteria-icon">◎</span>
-                  <span>
-                    Difficulty: <strong>{activeLesson.difficulty.toUpperCase()}</strong>
-                    {activeLesson.difficulty === 'hard' ? ' — the prospect will push back hard. Stay composed.' : ''}
-                  </span>
+            {/* Test section */}
+            <div className="academy__test-card">
+              <div className="academy__test-header">
+                <div className="academy__test-title">Now put it into practice</div>
+                <div className="academy__test-sub">
+                  The AI will play a real prospect. Apply what you just learned. You need at least <strong>{activeLesson.minExchanges} exchanges</strong> before ending — then you'll get a full coaching report.
                 </div>
               </div>
-              {stats && (
-                <div className="academy__criteria-history">
-                  Your best score: <span style={{ color: stats.passed ? 'var(--color-accent-green)' : 'var(--color-accent-yellow)' }}>
-                    {stats.bestScore.toFixed(1)}/10
+
+              <div className="academy__test-meta">
+                <span className={`training__diff-badge training__diff-badge--${activeLesson.difficulty}`}>
+                  {activeLesson.difficulty.toUpperCase()}
+                </span>
+                <span className="academy__test-pass-req">Pass score: {activeLesson.passScore}/10</span>
+                {stats && (
+                  <span className="academy__test-attempts">
+                    {stats.attempts} attempt{stats.attempts !== 1 ? 's' : ''} · Best: {stats.bestScore.toFixed(1)}/10
                   </span>
-                  {stats.passed
-                    ? ' — Lesson passed. Practice again to sharpen your skill.'
-                    : ` — Need ${activeLesson.passScore} to pass. ${stats.attempts} attempt${stats.attempts !== 1 ? 's' : ''} so far.`}
-                </div>
-              )}
+                )}
+              </div>
+
+              <div className="academy__intro-context">
+                <div className="academy__intro-context-label">WHAT ARE YOU SELLING?</div>
+                <textarea
+                  className="academy__intro-context-input"
+                  placeholder="e.g. a $485k 3-bedroom house in Miami, FL"
+                  value={saleContext}
+                  onChange={e => setSaleContext(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleStartPractice(); } }}
+                  rows={2}
+                  autoFocus
+                />
+                {getSavedContexts().length > 0 && (
+                  <div className="training__presets">
+                    <span className="training__presets-label">RECENT</span>
+                    {getSavedContexts().map((c, i) => (
+                      <button key={i} className="training__preset-btn" onClick={() => setSaleContext(c)}>{c}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {trainingState.error && <div className="training__error">{trainingState.error}</div>}
+
+              <div className="academy__intro-actions">
+                <button
+                  className="academy__btn academy__btn--primary"
+                  onClick={() => void handleStartPractice()}
+                  disabled={trainingState.isLoading}
+                >
+                  {trainingState.isLoading ? 'Setting up...' : 'Start Test →'}
+                </button>
+                <button className="academy__btn academy__btn--ghost" onClick={handleBack}>
+                  Back to Academy
+                </button>
+              </div>
             </div>
 
-            {/* Context Input */}
-            <div className="academy__intro-context">
-              <div className="academy__intro-context-label">WHAT ARE YOU SELLING?</div>
-              <textarea
-                className="academy__intro-context-input"
-                placeholder="e.g. a $485k 3-bedroom house in Miami, FL"
-                value={saleContext}
-                onChange={e => setSaleContext(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleStartPractice(); } }}
-                rows={2}
-                autoFocus
-              />
-              {getSavedContexts().length > 0 && (
-                <div className="training__presets">
-                  <span className="training__presets-label">RECENT</span>
-                  {getSavedContexts().map((c, i) => (
-                    <button key={i} className="training__preset-btn" onClick={() => setSaleContext(c)}>{c}</button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {trainingState.error && <div className="training__error">{trainingState.error}</div>}
-
-            <div className="academy__intro-actions">
-              <button
-                className="academy__btn academy__btn--primary"
-                onClick={() => void handleStartPractice()}
-                disabled={trainingState.isLoading}
-              >
-                {trainingState.isLoading ? 'Setting up...' : 'Start Practice →'}
-              </button>
-              <button className="academy__btn academy__btn--ghost" onClick={handleBack}>
-                Back
-              </button>
-            </div>
           </div>
         </main>
       </div>
@@ -470,59 +497,8 @@ export function AcademySection({ user }: AcademySectionProps) {
           <div className="training__messages">
             {trainingState.messages.map(msg => (
               <div key={msg.id} className={`training__msg training__msg--${msg.role}`}>
-                <div className="training__msg-header">
-                  <div className="training__msg-label">{msg.role === 'prospect' ? 'PROSPECT' : 'YOU'}</div>
-                  {msg.role === 'prospect' && msg.prospectTone && (
-                    <div className={`training__tone-pill training__tone-pill--${msg.prospectTone.toLowerCase()}`}>
-                      <span className="training__tone-dot" />
-                      {msg.prospectTone.toUpperCase()}
-                    </div>
-                  )}
-                </div>
+                <div className="training__msg-label">{msg.role === 'prospect' ? 'PROSPECT' : 'YOU'}</div>
                 <div className="training__msg-bubble">{msg.text}</div>
-                {msg.feedback && (
-                  <div className="training__feedback">
-                    <div className="training__feedback-score">
-                      <span className="training__feedback-score-val" style={{
-                        color: msg.feedback.score >= 7 ? 'var(--color-accent-green)' : msg.feedback.score >= 5 ? 'var(--color-accent-yellow)' : 'var(--color-accent-red)'
-                      }}>
-                        {msg.feedback.score}/10
-                      </span>
-                      <span className="training__feedback-score-label">Score</span>
-                    </div>
-                    {msg.feedback.pros.length > 0 && (
-                      <div className="training__feedback-section training__feedback-section--pro">
-                        {msg.feedback.pros.map((p, i) => <div key={i} className="training__feedback-item">✓ {p}</div>)}
-                      </div>
-                    )}
-                    {msg.feedback.cons.length > 0 && (
-                      <div className="training__feedback-section training__feedback-section--con">
-                        {msg.feedback.cons.map((c, i) => <div key={i} className="training__feedback-item">✗ {c}</div>)}
-                      </div>
-                    )}
-                    <div className="training__feedback-ideal">
-                      <div className="training__feedback-ideal-label">IDEAL RESPONSE</div>
-                      <div className="training__feedback-ideal-text">"{msg.feedback.idealResponse}"</div>
-                      <div className="training__feedback-ideal-reason">{msg.feedback.idealReason}</div>
-                    </div>
-                    {msg.feedback.toneCoach && (
-                      <div className={`training__tone-coach training__tone-coach--${msg.feedback.toneCoach.tone.toLowerCase()}`}>
-                        <div className="training__tone-coach-header">
-                          <span className="training__tone-coach-dot" />
-                          <span className="training__tone-coach-label">TONE: {msg.feedback.toneCoach.tone.toUpperCase()}</span>
-                        </div>
-                        <div className="training__tone-coach-row">
-                          <span className="training__tone-coach-tag">MOVE</span>
-                          <span>{msg.feedback.toneCoach.move}</span>
-                        </div>
-                        <div className="training__tone-coach-row">
-                          <span className="training__tone-coach-tag">SAY</span>
-                          <em className="training__tone-coach-say">"{msg.feedback.toneCoach.say}"</em>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             ))}
             {trainingState.isLoading && (
@@ -673,33 +649,6 @@ export function AcademySection({ user }: AcademySectionProps) {
                   <div key={msg.id} className={`training__msg training__msg--${msg.role}`}>
                     <div className="training__msg-label">{msg.role === 'prospect' ? 'PROSPECT' : 'YOU'}</div>
                     <div className="training__msg-bubble">{msg.text}</div>
-                    {msg.feedback && (
-                      <div className="training__feedback">
-                        <div className="training__feedback-score">
-                          <span className="training__feedback-score-val" style={{
-                            color: msg.feedback.score >= 7 ? 'var(--color-accent-green)' : msg.feedback.score >= 5 ? 'var(--color-accent-yellow)' : 'var(--color-accent-red)'
-                          }}>
-                            {msg.feedback.score}/10
-                          </span>
-                          <span className="training__feedback-score-label">Score</span>
-                        </div>
-                        {msg.feedback.pros.length > 0 && (
-                          <div className="training__feedback-section training__feedback-section--pro">
-                            {msg.feedback.pros.map((p, i) => <div key={i} className="training__feedback-item">✓ {p}</div>)}
-                          </div>
-                        )}
-                        {msg.feedback.cons.length > 0 && (
-                          <div className="training__feedback-section training__feedback-section--con">
-                            {msg.feedback.cons.map((c, i) => <div key={i} className="training__feedback-item">✗ {c}</div>)}
-                          </div>
-                        )}
-                        <div className="training__feedback-ideal">
-                          <div className="training__feedback-ideal-label">IDEAL RESPONSE</div>
-                          <div className="training__feedback-ideal-text">"{msg.feedback.idealResponse}"</div>
-                          <div className="training__feedback-ideal-reason">{msg.feedback.idealReason}</div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>

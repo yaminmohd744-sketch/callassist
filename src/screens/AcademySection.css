@@ -10,6 +10,34 @@
   color: var(--color-text-primary);
 }
 
+/* ── Disclaimer ──────────────────────────────────────────────────────────────*/
+
+.academy__disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 24px;
+  background: rgba(129, 74, 200, 0.06);
+  border-bottom: 1px solid rgba(129, 74, 200, 0.15);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.55;
+  flex-shrink: 0;
+}
+
+.academy__disclaimer-icon {
+  color: #814ac8;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+[data-theme="light"] .academy__disclaimer {
+  background: rgba(129, 74, 200, 0.04);
+  border-color: rgba(129, 74, 200, 0.12);
+  color: rgba(26, 23, 38, 0.45);
+}
+
 /* ── Stats Bar ───────────────────────────────────────────────────────────────*/
 
 .academy__stats {
@@ -253,7 +281,216 @@
   text-align: center;
 }
 
-/* ── Lesson Intro ────────────────────────────────────────────────────────────*/
+/* ── Lesson Teaching Page ─────────────────────────────────────────────────────*/
+
+.academy__lesson-page {
+  padding: 32px 40px 48px;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.academy__breadcrumb-back {
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  padding: 0;
+  transition: color 150ms ease;
+}
+.academy__breadcrumb-back:hover { color: rgba(255, 255, 255, 0.8); }
+[data-theme="light"] .academy__breadcrumb-back { color: rgba(26, 23, 38, 0.4); }
+[data-theme="light"] .academy__breadcrumb-back:hover { color: rgba(26, 23, 38, 0.8); }
+
+.academy__lesson-level-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+.academy__lesson-level-badge--green { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+.academy__lesson-level-badge--yellow { background: rgba(234, 179, 8, 0.12); color: #eab308; }
+.academy__lesson-level-badge--red { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+
+.academy__lesson-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.academy__lesson-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.academy__lesson-concept {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  line-height: 1.5;
+}
+[data-theme="light"] .academy__lesson-concept { color: rgba(26, 23, 38, 0.5); }
+
+.academy__lesson-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.academy__lesson-block-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+}
+[data-theme="light"] .academy__lesson-block-label { color: rgba(26, 23, 38, 0.3); }
+
+.academy__lesson-body {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+}
+[data-theme="light"] .academy__lesson-body { color: rgba(26, 23, 38, 0.75); }
+
+/* Do / Don't grid */
+.academy__say-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 680px) {
+  .academy__say-grid { grid-template-columns: 1fr; }
+}
+
+.academy__say-col {
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.academy__say-col--do {
+  background: rgba(34, 197, 94, 0.05);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+}
+.academy__say-col--dont {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+}
+
+.academy__say-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.academy__say-label--do { color: #22c55e; }
+.academy__say-label--dont { color: #ef4444; }
+
+.academy__say-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.academy__say-item {
+  font-size: 13px;
+  line-height: 1.55;
+  padding-left: 14px;
+  position: relative;
+}
+
+.academy__say-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.academy__say-item--do {
+  color: rgba(255, 255, 255, 0.7);
+}
+.academy__say-item--do::before { background: rgba(34, 197, 94, 0.6); }
+
+.academy__say-item--dont {
+  color: rgba(255, 255, 255, 0.6);
+}
+.academy__say-item--dont::before { background: rgba(239, 68, 68, 0.5); }
+
+[data-theme="light"] .academy__say-item--do { color: rgba(26, 23, 38, 0.7); }
+[data-theme="light"] .academy__say-item--dont { color: rgba(26, 23, 38, 0.6); }
+
+/* Test card */
+.academy__test-card {
+  background: rgba(129, 74, 200, 0.07);
+  border: 1px solid rgba(129, 74, 200, 0.2);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.academy__test-header { display: flex; flex-direction: column; gap: 6px; }
+
+.academy__test-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.academy__test-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.55;
+}
+.academy__test-sub strong { color: rgba(255, 255, 255, 0.8); }
+[data-theme="light"] .academy__test-sub { color: rgba(26, 23, 38, 0.5); }
+[data-theme="light"] .academy__test-sub strong { color: rgba(26, 23, 38, 0.8); }
+
+.academy__test-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.academy__test-pass-req {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.04em;
+}
+[data-theme="light"] .academy__test-pass-req { color: rgba(26, 23, 38, 0.4); }
+
+.academy__test-attempts {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+}
+[data-theme="light"] .academy__test-attempts { color: rgba(26, 23, 38, 0.3); }
+
+/* ── Lesson Intro (legacy) ────────────────────────────────────────────────────*/
 
 .academy__intro {
   padding: var(--space-10) var(--space-12);
