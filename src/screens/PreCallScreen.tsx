@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../components/ui/Button';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
+import type { LanguageCode } from '../lib/languages';
 import { enhancePitch } from '../lib/ai';
 import type { CallConfig } from '../types';
 import './PreCallScreen.css';
@@ -8,15 +9,16 @@ import './PreCallScreen.css';
 interface PreCallScreenProps {
   onStartCall: (config: CallConfig) => void;
   onBack: () => void;
+  defaultLanguage?: LanguageCode;
 }
 
-export function PreCallScreen({ onStartCall, onBack }: PreCallScreenProps) {
+export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }: PreCallScreenProps) {
   const [form, setForm] = useState<CallConfig>({
     prospectName: '',
     company: '',
     yourPitch: '',
     callGoal: '',
-    language: 'en-US',
+    language: defaultLanguage,
   });
   const [errors, setErrors] = useState<Partial<CallConfig>>({});
   const [enhancing, setEnhancing] = useState(false);

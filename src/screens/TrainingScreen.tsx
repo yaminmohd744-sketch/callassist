@@ -125,13 +125,12 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
     }
   }
 
-  const scoredMessages = state.messages.filter(m => m.role === 'rep' && m.feedback);
+  const repMessages = state.messages.filter(m => m.role === 'rep');
 
   // ── Render practice phase content ────────────────────────────────────────────
   function renderPracticeContent() {
     // Summary
     if (state.phase === 'summary') {
-      const score = state.overallScore ?? 0;
       const { summary } = state;
       return (
         <main className="training__main">
@@ -141,15 +140,8 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                 {summary ? summary.headline : 'Session Complete'}
               </h2>
               <p className="training__summary-sub">
-                {SCENARIOS.find(s => s.id === state.scenario)?.label ?? 'Training'} — {scoredMessages.length} exchange{scoredMessages.length !== 1 ? 's' : ''} scored
+                {SCENARIOS.find(s => s.id === state.scenario)?.label ?? 'Training'} — {repMessages.length} exchange{repMessages.length !== 1 ? 's' : ''}
               </p>
-            </div>
-
-            <div className="training__score-block">
-              <div className="training__score-value">{score.toFixed(1)}<span>/10</span></div>
-              <div className="training__score-bar">
-                <div className="training__score-fill" style={{ width: `${score * 10}%`, backgroundColor: score >= 7 ? 'var(--color-accent-green)' : score >= 5 ? 'var(--color-accent-yellow)' : 'var(--color-accent-red)' }} />
-              </div>
             </div>
 
             {state.isLoading && (
@@ -311,40 +303,13 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                 {state.difficulty.toUpperCase()}
               </span>
             </div>
-            <button className="training__end-btn" onClick={() => void endSession()}>End Session</button>
+            <button className="training__end-btn" onClick={() => void endSession('manual')}>End Session</button>
           </div>
           <div className="training__messages">
             {state.messages.map(msg => (
               <div key={msg.id} className={`training__msg training__msg--${msg.role}`}>
                 <div className="training__msg-label">{msg.role === 'prospect' ? 'PROSPECT' : 'YOU'}</div>
                 <div className="training__msg-bubble">{msg.text}</div>
-                {msg.feedback && (
-                  <div className="training__feedback">
-                    <div className="training__feedback-score">
-                      <span className="training__feedback-score-val" style={{
-                        color: msg.feedback.score >= 7 ? 'var(--color-accent-green)' : msg.feedback.score >= 5 ? 'var(--color-accent-yellow)' : 'var(--color-accent-red)'
-                      }}>
-                        {msg.feedback.score}/10
-                      </span>
-                      <span className="training__feedback-score-label">Score</span>
-                    </div>
-                    {msg.feedback.pros.length > 0 && (
-                      <div className="training__feedback-section training__feedback-section--pro">
-                        {msg.feedback.pros.map((p, i) => <div key={i} className="training__feedback-item">✓ {p}</div>)}
-                      </div>
-                    )}
-                    {msg.feedback.cons.length > 0 && (
-                      <div className="training__feedback-section training__feedback-section--con">
-                        {msg.feedback.cons.map((c, i) => <div key={i} className="training__feedback-item">✗ {c}</div>)}
-                      </div>
-                    )}
-                    <div className="training__feedback-ideal">
-                      <div className="training__feedback-ideal-label">IDEAL RESPONSE</div>
-                      <div className="training__feedback-ideal-text">"{msg.feedback.idealResponse}"</div>
-                      <div className="training__feedback-ideal-reason">{msg.feedback.idealReason}</div>
-                    </div>
-                  </div>
-                )}
               </div>
             ))}
             {state.isLoading && (
@@ -359,6 +324,21 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
             <div ref={messagesEndRef} />
           </div>
           <div className="training__input-bar">
+            <div className="training__exit-triggers">
+              <span className="training__exit-label">END WITH</span>
+              <button className="training__exit-btn training__exit-btn--won" onClick={() => void endSession('deal-closed')} disabled={state.isLoading}>
+                Deal Closed ✓
+              </button>
+              <button className="training__exit-btn training__exit-btn--booked" onClick={() => void endSession('call-booked')} disabled={state.isLoading}>
+                Call Booked ◈
+              </button>
+              <button className="training__exit-btn training__exit-btn--next" onClick={() => void endSession('next-step')} disabled={state.isLoading}>
+                Next Step →
+              </button>
+              <button className="training__exit-btn training__exit-btn--lost" onClick={() => void endSession('lead-lost')} disabled={state.isLoading}>
+                Lead Lost ✗
+              </button>
+            </div>
             <div className="training__text-row">
               <textarea
                 className="training__input"
@@ -454,7 +434,7 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                 <ul className="training__chooser-features">
                   <li>9 unique sales scenarios</li>
                   <li>Easy, medium, and brutal difficulty</li>
-                  <li>Live coaching feedback every message</li>
+                  <li>Full coaching report at the end of every session</li>
                 </ul>
                 <div className="training__chooser-cta">Start Practicing →</div>
               </div>

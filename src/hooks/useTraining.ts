@@ -174,7 +174,7 @@ export function useTraining() {
     }
   }, []);
 
-  const endSession = useCallback(async () => {
+  const endSession = useCallback(async (exitTrigger?: string) => {
     const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, language } = stateRef.current;
     const scoredMessages = messages.filter(m => m.role === 'rep' && m.feedback);
     const overallScore = scoredMessages.length > 0
@@ -194,6 +194,7 @@ export function useTraining() {
         difficulty,
         messages: messages.map(m => ({ role: m.role, text: m.text, feedback: m.feedback })),
         overallScore,
+        exitTrigger: exitTrigger ?? 'manual',
         language,
       }) as SessionSummary;
       setState(s => ({ ...s, summary, isLoading: false }));

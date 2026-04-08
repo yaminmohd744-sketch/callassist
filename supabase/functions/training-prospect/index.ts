@@ -47,6 +47,10 @@ Respond ONLY with valid JSON:
 Your persona: ${scenarioDescription}
 Scenario type: ${scenario}${saleNote}${subNote}
 
+Read the full conversation so far. If the rep has been handling your objections well and building rapport, let the call progress naturally — soften, ask a genuine follow-up question, or signal buying intent. Don't loop the same objection forever if the rep has already addressed it well. A real call has momentum.
+
+If the rep is struggling — not addressing your concern, being generic, or losing control — stay resistant and give them a harder version of the same block.
+
 The sales rep just said: "${userResponse}"
 
 Stay in character. Respond naturally as this prospect would. Keep your response short (1-3 sentences max).

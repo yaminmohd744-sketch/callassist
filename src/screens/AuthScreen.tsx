@@ -6,9 +6,10 @@ type Mode = 'sign-in' | 'sign-up';
 
 interface AuthScreenProps {
   onBack?: () => void;
+  onSignedUp?: () => void;
 }
 
-export function AuthScreen({ onBack }: AuthScreenProps) {
+export function AuthScreen({ onBack, onSignedUp }: AuthScreenProps) {
   const [mode, setMode]           = useState<Mode>('sign-in');
   const [email, setEmail]         = useState('');
   const [password, setPassword]   = useState('');
@@ -32,7 +33,9 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
     if (mode === 'sign-up') {
       const { error: err } = await supabase.auth.signUp({ email, password });
       if (err) { setError(err.message); }
-      else { setMessage('Check your email to confirm your account.'); }
+      else {
+        setMessage('Check your email to confirm your account.');
+      }
     } else {
       const { error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) setError(err.message);

@@ -762,6 +762,90 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
   // ─── Pricing section view ──────────────────────────────────────────────────
 
   if (activeSection === 'pricing') {
+    const PLANS = [
+      {
+        tier: 'FREE',
+        price: '$0',
+        period: '/month',
+        desc: 'Try it out, no card needed',
+        cta: 'Get Started Free',
+        ctaStyle: 'outline' as const,
+        badge: null,
+        highlight: false,
+        features: [
+          '5 live calls / month',
+          '3 training sessions / month',
+          'Real-time coaching',
+          'Basic post-call summary',
+          'English & Spanish only',
+          'Community support',
+        ],
+        missing: ['CRM & contacts', 'AI Sales Academy', 'Call upload & analysis', 'Analytics'],
+      },
+      {
+        tier: 'STARTER',
+        price: '$19',
+        period: '/month',
+        desc: 'For solo reps getting serious',
+        cta: 'Start Starter',
+        ctaStyle: 'outline' as const,
+        badge: null,
+        highlight: false,
+        features: [
+          '25 live calls / month',
+          'Unlimited training sessions',
+          'Real-time coaching (5 languages)',
+          'Full post-call analysis + follow-up email',
+          'CRM (up to 50 contacts)',
+          'AI Sales Academy — Beginner module',
+          'Email support',
+        ],
+        missing: ['All 10 languages', 'Unlimited contacts', 'Advanced analytics', 'Team features'],
+      },
+      {
+        tier: 'PRO',
+        price: '$49',
+        period: '/month',
+        desc: 'For serious individual reps',
+        cta: '▶ Start Pro — 7-day trial',
+        ctaStyle: 'primary' as const,
+        badge: 'MOST POPULAR',
+        highlight: true,
+        features: [
+          'Unlimited live calls',
+          'Unlimited training sessions',
+          'All 10 languages',
+          'Full CRM (unlimited contacts)',
+          'Full AI Sales Academy (all 3 modules)',
+          'Advanced analytics & trends',
+          'Call upload & analysis',
+          'Priority support',
+        ],
+        missing: ['Team leaderboard', 'Manager dashboard', 'Shared call library'],
+      },
+      {
+        tier: 'TEAM',
+        price: '$99',
+        period: '/month',
+        desc: '5 seats · $15/seat after that',
+        cta: 'Start Team Trial',
+        ctaStyle: 'outline' as const,
+        badge: null,
+        highlight: false,
+        features: [
+          'Everything in Pro',
+          '5 seats included',
+          '$15 / extra seat / month',
+          'Team leaderboard & competition',
+          'Manager analytics dashboard',
+          'Shared call library',
+          'Onboarding call with the team',
+          'Dedicated account support',
+        ],
+        missing: [],
+      },
+    ];
+
     return (
       <div className="lp">
         {nav}
@@ -769,53 +853,53 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           <div className="lp__sv-hero">
             <div className="lp__sv-label">PRICING</div>
             <h2 className="lp__sv-h2">Simple pricing, no catch</h2>
-            <p className="lp__sv-sub">No sales call. No quote request. Sign up and start closing.</p>
+            <p className="lp__sv-sub">No sales call. No quote request. Pick a plan and start closing in 60 seconds.</p>
           </div>
 
-          <div className="lp__pricing-cards lp__sv-pricing-cards">
-            <div
-              className="lp__pricing-card lp__sv-pricing-card"
-              style={{ '--i': 0 } as React.CSSProperties}
-            >
-              <div className="lp__pricing-tier">FREE</div>
-              <div className="lp__pricing-price">$0<span>/month</span></div>
-              <div className="lp__pricing-desc">Try it out, no card needed</div>
-              <ul className="lp__pricing-features">
-                <li>✓ 5 live calls / month</li>
-                <li>✓ Real-time coaching</li>
-                <li>✓ Post-call summary</li>
-                <li>✓ 3 training sessions / month</li>
-                <li>✓ English + Spanish</li>
-              </ul>
-              <button className="lp__btn lp__btn--outline" onClick={onGetStarted}>
-                Get Started Free
-              </button>
-            </div>
+          <div className="lp__pricing-grid">
+            {PLANS.map((plan, i) => (
+              <div
+                key={i}
+                className={`lp__pricing-card${plan.highlight ? ' lp__pricing-card--pro' : ''}`}
+                style={{ '--i': i } as React.CSSProperties}
+              >
+                {plan.badge && <div className="lp__pricing-badge">{plan.badge}</div>}
+                <div className="lp__pricing-tier">{plan.tier}</div>
+                <div className="lp__pricing-price">
+                  {plan.price}<span>{plan.period}</span>
+                </div>
+                <div className="lp__pricing-desc">{plan.desc}</div>
+                <div className="lp__pricing-divider" />
+                <ul className="lp__pricing-features">
+                  {plan.features.map((f, j) => (
+                    <li key={j} className="lp__pricing-feature lp__pricing-feature--yes">
+                      <span className="lp__pricing-check">✓</span>{f}
+                    </li>
+                  ))}
+                  {plan.missing.map((f, j) => (
+                    <li key={j} className="lp__pricing-feature lp__pricing-feature--no">
+                      <span className="lp__pricing-check">—</span>{f}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  className={`lp__btn lp__btn--${plan.ctaStyle} lp__pricing-cta`}
+                  onClick={onGetStarted}
+                >
+                  {plan.cta}
+                </button>
+              </div>
+            ))}
+          </div>
 
-            <div
-              className="lp__pricing-card lp__pricing-card--pro lp__sv-pricing-card"
-              style={{ '--i': 1 } as React.CSSProperties}
-            >
-              <div className="lp__pricing-badge">MOST POPULAR</div>
-              <div className="lp__pricing-tier">PRO</div>
-              <div className="lp__pricing-price">$29<span>/month</span></div>
-              <div className="lp__pricing-desc">Everything, unlimited</div>
-              <ul className="lp__pricing-features">
-                <li>✓ Unlimited live calls</li>
-                <li>✓ Unlimited training sessions</li>
-                <li>✓ All 10 languages</li>
-                <li>✓ Built-in CRM &amp; contact history</li>
-                <li>✓ Full post-call analysis</li>
-                <li>✓ Priority support</li>
-              </ul>
-              <button className="lp__btn lp__btn--primary" onClick={onGetStarted}>
-                ▶ Start Pro Trial
-              </button>
-            </div>
+          <div className="lp__pricing-guarantee-row">
+            <span className="lp__pricing-guarantee-badge">✓ 7-day money-back guarantee on Starter, Pro & Team</span>
+            <span className="lp__pricing-guarantee-sep">·</span>
+            <span className="lp__pricing-guarantee-note">Cancel anytime · No questions asked</span>
           </div>
 
           <div className="lp__sv-faq">
-            <div className="lp__sv-faq-title">FAQ</div>
+            <div className="lp__sv-faq-title">Frequently asked questions</div>
             {PRICING_FAQ.map((item, i) => (
               <div
                 key={i}
@@ -831,10 +915,6 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
                 {openFaq === i && <div className="lp__sv-faq-a">{item.a}</div>}
               </div>
             ))}
-          </div>
-
-          <div className="lp__guarantee lp__sv-guarantee">
-            ✓ 7-day money-back guarantee on Pro no questions asked
           </div>
         </div>
       </div>
@@ -2062,40 +2142,69 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         <h2 className="lp__section-h2 reveal" data-delay="0.1">Simple, transparent pricing</h2>
         <p className="lp__section-sub reveal" data-delay="0.18">No sales call. No quote request. Sign up and start closing.</p>
 
-        <div className="lp__pricing-cards">
-          <div className="lp__pricing-card reveal">
+        <div className="lp__pricing-grid reveal" data-delay="0.12">
+
+          {/* FREE */}
+          <div className="lp__pricing-card">
             <div className="lp__pricing-tier">FREE</div>
             <div className="lp__pricing-price">$0<span>/month</span></div>
             <div className="lp__pricing-desc">Try it out, no card needed</div>
+            <div className="lp__pricing-divider" />
             <ul className="lp__pricing-features">
-              <li>✓ 5 live calls / month</li>
-              <li>✓ Real-time coaching</li>
-              <li>✓ Post-call summary</li>
-              <li>✓ 3 training sessions / month</li>
-              <li>✓ English + Spanish</li>
+              {['5 live calls / month','3 training sessions / month','Real-time coaching','Basic post-call summary','English & Spanish only'].map((f,i) => (
+                <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
+              ))}
             </ul>
-            <button className="lp__btn lp__btn--outline" onClick={onGetStarted}>Get Started Free</button>
+            <button className="lp__btn lp__btn--outline lp__pricing-cta" onClick={onGetStarted}>Get Started Free</button>
           </div>
 
-          <div className="lp__pricing-card lp__pricing-card--pro reveal" data-delay="0.12">
+          {/* STARTER */}
+          <div className="lp__pricing-card">
+            <div className="lp__pricing-tier">STARTER</div>
+            <div className="lp__pricing-price">$19<span>/month</span></div>
+            <div className="lp__pricing-desc">For solo reps getting serious</div>
+            <div className="lp__pricing-divider" />
+            <ul className="lp__pricing-features">
+              {['25 live calls / month','Unlimited training sessions','5 languages','Full post-call analysis','CRM up to 50 contacts','AI Academy — Beginner'].map((f,i) => (
+                <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
+              ))}
+            </ul>
+            <button className="lp__btn lp__btn--outline lp__pricing-cta" onClick={onGetStarted}>Start Starter</button>
+          </div>
+
+          {/* PRO */}
+          <div className="lp__pricing-card lp__pricing-card--pro">
             <div className="lp__pricing-badge">MOST POPULAR</div>
             <div className="lp__pricing-tier">PRO</div>
-            <div className="lp__pricing-price">$29<span>/month</span></div>
-            <div className="lp__pricing-desc">Everything, unlimited</div>
+            <div className="lp__pricing-price">$49<span>/month</span></div>
+            <div className="lp__pricing-desc">For serious individual reps</div>
+            <div className="lp__pricing-divider" />
             <ul className="lp__pricing-features">
-              <li>✓ Unlimited live calls</li>
-              <li>✓ Unlimited training sessions</li>
-              <li>✓ All 10 languages</li>
-              <li>✓ Built-in CRM &amp; contact history</li>
-              <li>✓ Full post-call analysis</li>
-              <li>✓ Priority support</li>
+              {['Unlimited live calls','Unlimited training','All 10 languages','Unlimited CRM contacts','Full AI Sales Academy','Advanced analytics','Priority support'].map((f,i) => (
+                <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
+              ))}
             </ul>
-            <button className="lp__btn lp__btn--primary" onClick={onGetStarted}>▶ Start Pro Trial</button>
+            <button className="lp__btn lp__btn--primary lp__pricing-cta" onClick={onGetStarted}>▶ Start Pro — 7-day trial</button>
           </div>
+
+          {/* TEAM */}
+          <div className="lp__pricing-card">
+            <div className="lp__pricing-tier">TEAM</div>
+            <div className="lp__pricing-price">$99<span>/month</span></div>
+            <div className="lp__pricing-desc">5 seats · $15/seat after</div>
+            <div className="lp__pricing-divider" />
+            <ul className="lp__pricing-features">
+              {['Everything in Pro','5 seats included','Team leaderboard','Manager dashboard','Shared call library','Onboarding call'].map((f,i) => (
+                <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
+              ))}
+            </ul>
+            <button className="lp__btn lp__btn--outline lp__pricing-cta" onClick={onGetStarted}>Start Team Trial</button>
+          </div>
+
         </div>
 
         <div className="lp__guarantee reveal" data-delay="0.2">
-          ✓ 7-day money-back guarantee on Pro - no questions asked
+          ✓ 7-day money-back guarantee on Starter, Pro & Team · Cancel anytime
         </div>
       </section>
 

@@ -9,10 +9,13 @@ import { TrainingScreen }   from './screens/TrainingScreen';
 import { AnalyticsScreen }  from './screens/AnalyticsScreen';
 import { UploadCallScreen } from './screens/UploadCallScreen';
 import { AuthScreen }       from './screens/AuthScreen';
+import { OnboardingScreen } from './screens/OnboardingScreen';
 import { ThemeToggle }      from './components/ThemeToggle';
 import { AppShell }         from './components/layout/AppShell';
 import { LoginTransitionOverlay } from './components/LoginTransitionOverlay';
 import { useAuth }          from './hooks/useAuth';
+import { useAppLanguage }   from './hooks/useAppLanguage';
+import type { LanguageCode } from './lib/languages';
 import './screens/AuthScreen.css';
 import { supabase }         from './lib/supabase';
 import { MOCK_SESSIONS }    from './lib/mockSessions';
@@ -68,6 +71,7 @@ function sessionToRow(s: CallSession, userId: string) {
 export function App() {
 
   const { user, loading: authLoading } = useAuth();
+  const { appLanguage, setAppLanguage, currentLang } = useAppLanguage();
 
   const [theme, setTheme] = useState<'dark' | 'light'>(
     () => (localStorage.getItem('theme') ?? 'dark') as 'dark' | 'light'
@@ -86,6 +90,7 @@ export function App() {
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
   const [showTransition, setShowTransition] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const transitionShown = useRef(false);
 
   // Derive the effective screen: authenticated users on landing/auth go to dashboard
@@ -93,10 +98,15 @@ export function App() {
     ? 'dashboard'
     : screen;
 
-  // Show login transition animation on every page load when user is authenticated
+  // Show onboarding for first-time users (no saved onboarding data)
   useEffect(() => {
     if (!authLoading && user && !transitionShown.current) {
-      setShowTransition(true);
+      const hasOnboarded = !!localStorage.getItem('pp-onboarding');
+      if (!hasOnboarded) {
+        setShowOnboarding(true);
+      } else {
+        setShowTransition(true);
+      }
       transitionShown.current = true;
     }
   }, [user, authLoading]);
@@ -172,7 +182,13 @@ export function App() {
 
   const isShell = currentScreen === 'dashboard' || currentScreen === 'training' || currentScreen === 'analytics';
 
+  const onboardingData = (() => {
+    try { return JSON.parse(localStorage.getItem('pp-onboarding') || '{}'); }
+    catch { return {}; }
+  })();
+
   const loginUserName =
+    onboardingData.name ||
     user?.user_metadata?.full_name?.split(' ')[0] ||
     user?.user_metadata?.name?.split(' ')[0] ||
     user?.email?.split('@')[0] ||
@@ -180,7 +196,15 @@ export function App() {
 
   return (
     <>
-      {showTransition && (
+      {showOnboarding && (
+        <OnboardingScreen onDone={data => {
+          localStorage.setItem('pp-onboarding', JSON.stringify(data));
+          setAppLanguage(data.language as LanguageCode);
+          setShowOnboarding(false);
+          setShowTransition(true);
+        }} />
+      )}
+      {showTransition && !showOnboarding && (
         <LoginTransitionOverlay
           userName={loginUserName}
           onDone={() => setShowTransition(false)}
@@ -195,6 +219,10 @@ export function App() {
           onStartCall={() => setScreen('pre-call')}
           onUploadCall={() => setScreen('upload-call')}
           onSignOut={() => supabase.auth.signOut()}
+          appLanguage={appLanguage}
+          onChangeLanguage={setAppLanguage}
+          currentLangFlag={currentLang.flag}
+          currentLangLabel={currentLang.label}
         >
           {currentScreen === 'dashboard' && (
             <DashboardScreen
@@ -224,6 +252,7 @@ export function App() {
         <PreCallScreen
           onStartCall={handleStartCall}
           onBack={() => setScreen('dashboard')}
+          defaultLanguage={appLanguage}
         />
       )}
       {currentScreen === 'live-call' && callConfig && (
