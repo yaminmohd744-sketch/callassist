@@ -149,7 +149,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
     setIsListening(false);
     setInterimText('');
-  }, []);
+  }, [commitBuffer]);
 
   // ── Start (Deepgram primary, Web Speech fallback) ─────────────────────────
 

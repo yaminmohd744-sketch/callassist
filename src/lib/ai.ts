@@ -99,7 +99,9 @@ export async function analyzeTranscript(
           if (!token) continue;
           accumulated += token;
 
-          // Start streaming as soon as we have enough to extract a body preview
+          // Start streaming as soon as we have enough body text to show.
+          // We intentionally do NOT extract type/headline from partial JSON —
+          // those fields are only set once the stream is complete (see below).
           if (onStream && accumulated.includes('"body"')) {
             const bodyMatch = accumulated.match(/"body"\s*:\s*"((?:[^"\\]|\\.)*)(?:"|$)/);
             if (bodyMatch) {
@@ -112,13 +114,10 @@ export async function analyzeTranscript(
                 streamingShown = true;
               }
               if (streamingShown) {
-                // Attempt to extract other fields already present in accumulated
-                const typeMatch = accumulated.match(/"type"\s*:\s*"([^"]+)"/);
-                const headlineMatch = accumulated.match(/"headline"\s*:\s*"([^"]+)"/);
                 onStream({
                   id: suggestionId,
-                  type: (typeMatch?.[1] ?? 'tip') as AISuggestion['type'],
-                  headline: headlineMatch?.[1] ?? '...',
+                  type: 'tip',   // placeholder — replaced by final parse below
+                  headline: '...', // placeholder — replaced by final parse below
                   body: partialBody,
                   triggeredBy: newEntry.text,
                   timestampSeconds: elapsedSeconds,
@@ -131,10 +130,18 @@ export async function analyzeTranscript(
       }
     }
 
-    // Parse the complete accumulated JSON
-    const jsonMatch = accumulated.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('No JSON in response');
-    const data = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+    // Parse the complete accumulated JSON.
+    // Try direct parse first (the stream content should be a single JSON object).
+    // Fall back to a minimal bracket-scan only if the response has surrounding whitespace or noise.
+    let data: Record<string, unknown>;
+    try {
+      data = JSON.parse(accumulated.trim()) as Record<string, unknown>;
+    } catch {
+      const start = accumulated.indexOf('{');
+      const end = accumulated.lastIndexOf('}');
+      if (start === -1 || end === -1 || end <= start) throw new Error('No JSON in response');
+      data = JSON.parse(accumulated.slice(start, end + 1)) as Record<string, unknown>;
+    }
 
     if (!data.shouldShow) {
       // Remove any streaming placeholder we showed

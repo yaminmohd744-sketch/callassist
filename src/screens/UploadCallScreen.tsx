@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { generateSessionSummary } from '../lib/ai';
+import { OBJECTION_KEYWORDS, BUYING_KEYWORDS } from '../lib/keywords';
 import type { CallConfig, CallSession, TranscriptEntry, TranscriptSignal } from '../types';
 import './UploadCallScreen.css';
 
@@ -14,13 +15,8 @@ function genId() {
 
 function classifySignal(text: string): TranscriptSignal {
   const lower = text.toLowerCase();
-  if (['too expensive', 'not interested', 'not the right time', 'send me info',
-       'need to think', 'too busy', 'call me back', 'no budget'].some(k => lower.includes(k))) {
-    return 'objection';
-  }
-  if (['interested', 'tell me more', 'how much', 'sounds good', 'when can'].some(k => lower.includes(k))) {
-    return 'buying-signal';
-  }
+  if (OBJECTION_KEYWORDS.some(k => lower.includes(k))) return 'objection';
+  if (BUYING_KEYWORDS.some(k => lower.includes(k))) return 'buying-signal';
   return 'neutral';
 }
 
@@ -132,8 +128,8 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
       };
 
       onEndCall(session);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
+    } catch {
+      setError('Analysis failed. Please try again.');
       setIsProcessing(false);
     }
   }

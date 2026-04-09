@@ -1,9 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { useTraining } from '../hooks/useTraining';
 import { useAuth } from '../hooks/useAuth';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
-import { AcademySection } from './AcademySection';
 import { getSavedContexts, saveContext } from '../lib/saleContexts';
+
+// Lazy-load AcademySection (and its large curriculum.ts dependency) — only
+// downloaded when the user opens the Academy panel for the first time.
+const AcademySection = lazy(() => import('./AcademySection').then(m => ({ default: m.AcademySection })));
 import { recordPracticeToday } from '../lib/streak';
 import { saveTrainingSession, getTrainingHistory, getMonthlySessionCount } from '../lib/trainingHistory';
 import type { TrainingHistoryEntry } from '../lib/trainingHistory';
@@ -118,8 +121,9 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [state.messages]);
 
-  // Sync app-level language if changed while in selection phase
+  // Sync app-level language if changed while in selection phase.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (state.phase === 'selection') setLanguage(appLanguage);
   }, [appLanguage, state.phase]);
 
@@ -139,6 +143,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
         date: new Date().toISOString(),
       };
       saveTrainingSession(entry);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHistory(getTrainingHistory());
       setMonthlyCount(getMonthlySessionCount());
     }
@@ -560,7 +565,9 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
                   Switch to Practice ◎
                 </button>
               </div>
-              <AcademySection user={user} appLanguage={language} userTier={userTier} />
+              <Suspense fallback={<div className="training__loading">Loading Academy...</div>}>
+                <AcademySection user={user} appLanguage={language} userTier={userTier} />
+              </Suspense>
             </div>
           ) : null}
         </div>

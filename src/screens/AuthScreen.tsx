@@ -9,7 +9,7 @@ interface AuthScreenProps {
   onSignedUp?: () => void;
 }
 
-export function AuthScreen({ onBack, onSignedUp }: AuthScreenProps) {
+export function AuthScreen({ onBack }: AuthScreenProps) {
   const [mode, setMode]           = useState<Mode>('sign-in');
   const [email, setEmail]         = useState('');
   const [password, setPassword]   = useState('');

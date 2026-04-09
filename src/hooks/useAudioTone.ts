@@ -39,6 +39,11 @@ export function useAudioTone(config: AudioToneConfig): AudioToneState {
     if (isProcessingRef.current) return;
 
     isProcessingRef.current = true;
+
+    // Abort and reset if the edge function hangs beyond 12 s
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12_000);
+
     try {
       // Convert blob to base64
       const arrayBuffer = await blob.arrayBuffer();
@@ -63,6 +68,7 @@ export function useAudioTone(config: AudioToneConfig): AudioToneState {
           callGoal: config.callGoal,
           yourPitch: config.yourPitch,
         }),
+        signal: controller.signal,
       });
 
       if (!res.ok) return;
@@ -75,8 +81,9 @@ export function useAudioTone(config: AudioToneConfig): AudioToneState {
         }
       }
     } catch {
-      // Silently degrade — never crash the call
+      // Silently degrade — never crash the call (includes AbortError on timeout)
     } finally {
+      clearTimeout(timeoutId);
       isProcessingRef.current = false;
     }
   }, [config.prospectName, config.callGoal, config.yourPitch]);

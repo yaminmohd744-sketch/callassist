@@ -94,6 +94,7 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
       !saved &&
       activeLesson
     ) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSaved(true);
       recordPracticeToday();
       void saveSession(activeLesson.id, trainingState.overallScore);

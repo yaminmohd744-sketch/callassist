@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { memo, useRef, useEffect } from 'react';
 import type { TranscriptEntry } from '../../types';
 import './TranscriptPanel.css';
 
@@ -17,7 +17,7 @@ interface TranscriptPanelProps {
   onFlipSpeaker?: (id: string) => void;
 }
 
-export function TranscriptPanel({
+export const TranscriptPanel = memo(function TranscriptPanel({
   entries,
   isListening,
   interimText,
@@ -119,4 +119,4 @@ export function TranscriptPanel({
       </div>
     </div>
   );
-}
+});

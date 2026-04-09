@@ -1,18 +1,8 @@
 import { useState } from 'react';
 import { Button } from '../components/ui/Button';
 import type { CallSession } from '../types';
+import { formatDuration, formatDateLong } from '../lib/formatters';
 import './PostCallScreen.css';
-
-function formatDuration(seconds: number) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}m ${s}s`;
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
 
 function downloadFile(filename: string, content: string) {
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -31,7 +21,7 @@ function buildTranscriptText(session: CallSession): string {
     `Prospect : ${session.config.prospectName || '-'}`,
     `Company  : ${session.config.company || '-'}`,
     `Goal     : ${session.config.callGoal}`,
-    `Date     : ${formatDate(session.endedAt)}`,
+    `Date     : ${formatDateLong(session.endedAt)}`,
     `Duration : ${formatDuration(session.durationSeconds)}`,
     `Close %  : ${session.finalCloseProbability}%`,
     `═══════════════════════════════════════`,
@@ -102,7 +92,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
             {session.config.prospectName && <span>{session.config.prospectName}</span>}
             {session.config.company && <><span className="postcall__sep">@</span><span>{session.config.company}</span></>}
             <span className="postcall__sep">·</span>
-            <span>{formatDate(session.endedAt)}</span>
+            <span>{formatDateLong(session.endedAt)}</span>
           </div>
         </div>
         <div className="postcall__header-actions">

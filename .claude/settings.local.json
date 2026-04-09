@@ -97,7 +97,10 @@
       "Bash(node fix-quotes.js)",
       "Bash(mv \"c:\\\\Users\\\\yamin\\\\callassist\\\\callassist\\\\fix-quotes.js\" \"c:\\\\Users\\\\yamin\\\\callassist\\\\callassist\\\\fix-quotes.cjs\")",
       "Bash(node fix-quotes.cjs)",
-      "Bash(grep -n \"^  {$\" /c/Users/yamin/callassist/callassist/src/lib/curriculum.ts)"
+      "Bash(grep -n \"^  {$\" /c/Users/yamin/callassist/callassist/src/lib/curriculum.ts)",
+      "WebFetch(domain:docs.sentry.io)",
+      "WebFetch(domain:sentry-build-ai.sentry.dev)",
+      "Bash(npm audit:*)"
     ]
   }
 }

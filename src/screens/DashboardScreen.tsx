@@ -3,25 +3,8 @@ import type { CSSProperties } from 'react';
 import { Button } from '../components/ui/Button';
 import type { CallSession } from '../types';
 import { getStreak } from '../lib/streak';
+import { formatDuration, formatDateShort, formatDateFull } from '../lib/formatters';
 import './DashboardScreen.css';
-
-function formatDuration(s: number) {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}m ${sec}s`;
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-  });
-}
-
-function formatDateFull(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
-    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
-  });
-}
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -219,7 +202,7 @@ export function DashboardScreen({
                       </div>
 
                       <div className="dashboard__call-meta">
-                        <span className="dashboard__call-date">{formatDate(session.endedAt)}</span>
+                        <span className="dashboard__call-date">{formatDateShort(session.endedAt)}</span>
                       </div>
 
                       <div className="dashboard__call-stats">
@@ -305,7 +288,7 @@ export function DashboardScreen({
                         {contact.latestLeadScore}
                       </span>
                       <span className="dashboard__crm-calls">{contact.totalCalls} {contact.totalCalls === 1 ? 'call' : 'calls'}</span>
-                      <span className="dashboard__crm-date">{formatDate(contact.lastCallDate)}</span>
+                      <span className="dashboard__crm-date">{formatDateShort(contact.lastCallDate)}</span>
                       <span className="dashboard__call-view">VIEW →</span>
                     </div>
                   </div>

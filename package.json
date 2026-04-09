@@ -38,6 +38,7 @@
     }
   },
   "dependencies": {
+    "@sentry/react": "^10.48.0",
     "@supabase/supabase-js": "^2.99.1",
     "openai": "^6.25.0",
     "react": "^19.2.0",

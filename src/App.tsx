@@ -98,11 +98,14 @@ export function App() {
     ? 'dashboard'
     : screen;
 
-  // Show onboarding for first-time users (no saved onboarding data)
+  // Show onboarding for first-time users (no saved onboarding data).
+  // setState calls here are intentional — they synchronize React with
+  // localStorage state after auth resolves (a genuine external system read).
   useEffect(() => {
     if (!authLoading && user && !transitionShown.current) {
       const hasOnboarded = !!localStorage.getItem('pp-onboarding');
       if (!hasOnboarded) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowOnboarding(true);
       } else {
         setShowTransition(true);

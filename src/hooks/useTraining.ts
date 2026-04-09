@@ -105,8 +105,8 @@ export function useTraining() {
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      const display = msg.includes('quota') ? 'OpenAI quota exceeded - add credits at platform.openai.com'
-        : msg.includes('401') ? 'Auth error - check your API key'
+      const display = msg.includes('quota') ? 'Service limit reached. Please try again later.'
+        : msg.includes('401') || msg.includes('403') ? 'Authentication failed. Please sign out and sign back in.'
         : 'Failed to start scenario. Check your connection.';
       setState(s => ({ ...s, isLoading: false, error: display }));
     }
@@ -169,7 +169,7 @@ export function useTraining() {
       }));
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      const display = msg.includes('quota') ? 'OpenAI quota exceeded - add credits at platform.openai.com'
+      const display = msg.includes('quota') ? 'Service limit reached. Please try again later.'
         : 'Failed to get response. Try again.';
       setState(s => ({ ...s, isLoading: false, error: display }));
     }
