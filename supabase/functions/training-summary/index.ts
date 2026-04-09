@@ -15,8 +15,14 @@ Deno.serve(async (req: Request) => {
   try {
     const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, overallScore, exitTrigger, language } = await req.json();
 
-    const langNote = language && language !== 'en-US'
-      ? `\n\nIMPORTANT: Write the entire summary in the language for BCP 47 code "${language}".`
+    const LANG_NAMES: Record<string, string> = {
+      'es-ES': 'Spanish', 'fr-FR': 'French', 'pt-BR': 'Portuguese',
+      'de-DE': 'German',  'it-IT': 'Italian', 'nl-NL': 'Dutch',
+      'zh-CN': 'Mandarin Chinese', 'ja-JP': 'Japanese', 'ar-SA': 'Arabic',
+    };
+    const langName = (language && language !== 'en-US') ? (LANG_NAMES[language] ?? language) : null;
+    const langPrefix = langName
+      ? `LANGUAGE REQUIREMENT: You must write ALL output exclusively in ${langName}. Every word of every field in your JSON response must be in ${langName}. Do not use English.\n\n`
       : '';
 
     // Build the full session transcript
@@ -42,7 +48,7 @@ Deno.serve(async (req: Request) => {
     // The overall score may not be available (no feedback was run per-turn now)
     const scoreNote = overallScore !== null ? `\nInternal score (do not display directly): ${overallScore}/10` : '';
 
-    const systemPrompt = `You are an experienced sales coach writing a post-session debrief for a sales rep who just finished a training simulation.
+    const systemPrompt = `${langPrefix}You are an experienced sales coach writing a post-session debrief for a sales rep who just finished a training simulation.
 
 Session details:
 Scenario: ${scenario} (${difficultyLabel})
@@ -75,8 +81,9 @@ Respond ONLY with valid JSON:
 - "assessment": 2-3 sentences of honest, specific coaching. Reference what actually happened in the conversation. What was the overall arc?
 - "strengths": 1-2 specific things the rep did well. Quote or reference their actual words. Empty array only if they did nothing right.
 - "improvements": 1-2 concrete, actionable improvements tied to actual moments in this session. What should they do differently? Be specific — not "be more confident" but "when the prospect said X, you should have Y."
-- "keyTakeaway": One crisp sentence — the single most useful thing to take from this session.${langNote}`;
+- "keyTakeaway": One crisp sentence — the single most useful thing to take from this session.`;
 
+    const langReminder = langName ? ` Respond entirely in ${langName}.` : '';
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -85,7 +92,7 @@ Respond ONLY with valid JSON:
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        messages: [{ role: "system", content: systemPrompt }, { role: "user", content: "Write the personalized session summary." }],
+        messages: [{ role: "system", content: systemPrompt }, { role: "user", content: `Write the personalized session summary.${langReminder}` }],
         response_format: { type: "json_object" },
         max_tokens: 600,
         temperature: 0.7,

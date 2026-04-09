@@ -15,6 +15,16 @@ Deno.serve(async (req: Request) => {
   try {
     const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, userResponse, language } = await req.json();
 
+    const LANG_NAMES: Record<string, string> = {
+      'es-ES': 'Spanish', 'fr-FR': 'French', 'pt-BR': 'Portuguese',
+      'de-DE': 'German',  'it-IT': 'Italian', 'nl-NL': 'Dutch',
+      'zh-CN': 'Mandarin Chinese', 'ja-JP': 'Japanese', 'ar-SA': 'Arabic',
+    };
+    const langName = language && language !== 'en-US' ? LANG_NAMES[language] ?? language : null;
+    const langPrefix = langName
+      ? `LANGUAGE REQUIREMENT: You must write ALL output exclusively in ${langName}. Every word of every field in your JSON response must be in ${langName}. Do not use English.\n\n`
+      : '';
+
     const isInit = !userResponse;
 
     const saleNote = saleContext ? `\nThe rep is selling: ${saleContext}.` : '';
@@ -24,12 +34,9 @@ Deno.serve(async (req: Request) => {
       : difficulty === 'hard'
       ? '\n\nDifficulty: HARD — Be very resistant and skeptical. Push back firmly on everything. Only soften slightly if the rep handles the situation exceptionally well. Make it genuinely challenging.'
       : '\n\nDifficulty: MEDIUM — Be realistically resistant. Don\'t cave easily, but don\'t be irrational. React proportionally to the quality of the rep\'s response.';
-    const langNote = language && language !== 'en-US'
-      ? `\n\nIMPORTANT: All prospect dialogue and scenario descriptions MUST be written in the language for BCP 47 code "${language}".`
-      : '';
 
     const systemPrompt = isInit
-      ? `You are simulating a sales training scenario for a sales rep to practice on.
+      ? `${langPrefix}You are simulating a sales training scenario for a sales rep to practice on.
 
 Scenario type: ${scenario}${saleNote}${subNote}
 
@@ -41,8 +48,8 @@ Respond ONLY with valid JSON:
 { "scenarioDescription": string, "openingLine": string }
 
 - "scenarioDescription": Who the prospect is and their specific situation. Make it match the scenario context above.
-- "openingLine": What the prospect says to kick off the scenario. It must reflect the specific situation described.${difficultyNote}${langNote}`
-      : `You are playing a realistic sales prospect in a training simulation.
+- "openingLine": What the prospect says to kick off the scenario. It must reflect the specific situation described.${difficultyNote}`
+      : `${langPrefix}You are playing a realistic sales prospect in a training simulation.
 
 Your persona: ${scenarioDescription}
 Scenario type: ${scenario}${saleNote}${subNote}
@@ -59,18 +66,19 @@ Also output a "tone" field — the single word that best describes your current 
 Choose from: Skeptical, Curious, Defensive, Warm, Disengaged, Frustrated, Excited, Hesitant, Neutral
 
 Respond ONLY with valid JSON:
-{ "prospectResponse": string, "prospectTone": string }${difficultyNote}${langNote}`;
+{ "prospectResponse": string, "prospectTone": string }${difficultyNote}`;
 
     const conversationHistory = (messages as Array<{ role: string; text: string }>).map((m) => ({
       role: m.role === 'rep' ? 'user' : 'assistant',
       content: m.text,
     }));
 
+    const langReminder = langName ? ` Remember: respond entirely in ${langName}.` : '';
     const openaiMessages = isInit
-      ? [{ role: 'user', content: 'Generate the scenario.' }]
+      ? [{ role: 'user', content: `Generate the scenario.${langReminder}` }]
       : [
           ...conversationHistory,
-          { role: 'user', content: userResponse },
+          { role: 'user', content: `${userResponse}${langReminder}` },
         ];
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
