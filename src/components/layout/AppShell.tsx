@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { SUPPORTED_LANGUAGES } from '../../lib/languages';
 import type { LanguageCode } from '../../lib/languages';
+import { getMilestone, formatTotalTime } from '../../lib/milestones';
+import { TiersOverlay } from '../TiersOverlay';
+import { TierBadge } from '../TierBadge';
 import './AppShell.css';
 
 type ShellScreen = 'dashboard' | 'training' | 'analytics';
@@ -21,31 +24,60 @@ interface AppShellProps {
   onChangeLanguage: (code: LanguageCode) => void;
   currentLangFlag: string;
   currentLangLabel: string;
+  userName: string;
+  userEmail: string;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
+  totalCallSeconds: number;
+  totalCallCount: number;
+  totalTrainingSessions: number;
+  totalTrainingSeconds: number;
+  profilePic: string | null;
+  onProfilePicChange: (dataUrl: string) => void;
   children: React.ReactNode;
+}
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2 && parts[0] && parts[1]) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase() || '?';
 }
 
 export function AppShell({
   activeScreen, onNavigate, onStartCall, onUploadCall, onSignOut,
   appLanguage, onChangeLanguage, currentLangLabel,
+  userName, userEmail, theme, onToggleTheme,
+  totalCallSeconds, totalCallCount, totalTrainingSessions, totalTrainingSeconds,
+  profilePic, onProfilePicChange,
   children,
 }: AppShellProps) {
   const [langOpen, setLangOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [tiersOpen, setTiersOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const picInputRef = useRef<HTMLInputElement>(null);
 
-  // Close on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
-    if (!langOpen) return;
+    if (!langOpen && !profileOpen) return;
     function handle(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setLangOpen(false);
-      }
+      if (langRef.current && !langRef.current.contains(e.target as Node)) setLangOpen(false);
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
     }
     document.addEventListener('mousedown', handle);
     return () => document.removeEventListener('mousedown', handle);
-  }, [langOpen]);
+  }, [langOpen, profileOpen]);
 
   return (
     <div className="app-shell">
+      {tiersOpen && (
+        <TiersOverlay
+          totalCalls={totalCallCount}
+          totalSessions={totalTrainingSessions}
+          onClose={() => setTiersOpen(false)}
+        />
+      )}
 
       {/* ── Top nav ── */}
       <header className="app-shell__topnav">
@@ -69,7 +101,7 @@ export function AppShell({
         <div className="app-shell__actions">
 
           {/* ── Language switcher ── */}
-          <div className="app-shell__lang-wrap" ref={dropdownRef}>
+          <div className="app-shell__lang-wrap" ref={langRef}>
             <button
               className="app-shell__lang-btn"
               onClick={() => setLangOpen(o => !o)}
@@ -112,7 +144,155 @@ export function AppShell({
 
           <button className="app-shell__btn-ghost" onClick={onUploadCall}>↑ Upload</button>
           <button className="app-shell__btn-primary" onClick={onStartCall}>▶ New Call</button>
-          <button className="app-shell__btn-signout" onClick={onSignOut}>Sign out</button>
+
+          {/* ── Profile avatar + dropdown ── */}
+          <div className="app-shell__profile-wrap" ref={profileRef}>
+            <button
+              className="app-shell__avatar"
+              onClick={() => setProfileOpen(o => !o)}
+              title={userName || userEmail}
+              aria-expanded={profileOpen}
+            >
+              {profilePic
+                ? <img src={profilePic} alt="Profile" className="app-shell__avatar-img" />
+                : getInitials(userName || userEmail)
+              }
+            </button>
+
+            {profileOpen && (() => {
+              const { current: milestone, next, progress } = getMilestone(totalCallCount, totalTrainingSessions);
+              const totalSeconds = totalCallSeconds + totalTrainingSeconds;
+
+              function handlePicClick() { picInputRef.current?.click(); }
+              function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                  const result = ev.target?.result as string;
+                  if (result) onProfilePicChange(result);
+                };
+                reader.readAsDataURL(file);
+                e.target.value = '';
+              }
+
+              return (
+                <div className="app-shell__profile-dropdown">
+
+                  {/* Hidden file input for pic upload */}
+                  <input
+                    ref={picInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handlePicChange}
+                  />
+
+                  {/* User info */}
+                  <div className="app-shell__profile-header">
+                    <div className="app-shell__profile-avatar-lg" onClick={handlePicClick} title="Change photo">
+                      {profilePic
+                        ? <img src={profilePic} alt="Profile" className="app-shell__avatar-img" />
+                        : getInitials(userName || userEmail)
+                      }
+                      <div className="app-shell__avatar-edit-overlay">
+                        <span>✎</span>
+                      </div>
+                    </div>
+                    <div className="app-shell__profile-info">
+                      {userName && <div className="app-shell__profile-name">{userName}</div>}
+                      <div className="app-shell__profile-email">{userEmail}</div>
+                      <button
+                        className="app-shell__profile-status"
+                        style={{ color: milestone.color }}
+                        onClick={() => { setProfileOpen(false); setTiersOpen(true); }}
+                        title="View all tiers"
+                      >
+                        <TierBadge tierId={milestone.id} color={milestone.color} size={16} unlocked />
+                        {milestone.label}
+                        <span className="app-shell__profile-status-arrow">›</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Next milestone progress */}
+                  {next && (
+                    <div className="app-shell__milestone-progress">
+                      <div className="app-shell__milestone-track">
+                        <div
+                          className="app-shell__milestone-fill"
+                          style={{ width: `${Math.round(progress * 100)}%`, background: next.color }}
+                        />
+                      </div>
+                      <div className="app-shell__milestone-label">
+                        {Math.round(progress * 100)}% to <span style={{ color: next.color }}>{next.label}</span>
+                      </div>
+                    </div>
+                  )}
+                  {!next && (
+                    <div className="app-shell__milestone-progress">
+                      <div className="app-shell__milestone-label" style={{ color: milestone.color }}>
+                        ✦ Max rank achieved
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="app-shell__profile-divider" />
+
+                  {/* Activity stats */}
+                  <div className="app-shell__profile-section-label">ACTIVITY</div>
+                  <div className="app-shell__profile-stats">
+                    <div className="app-shell__profile-stat">
+                      <span className="app-shell__profile-stat-icon">◉</span>
+                      <span className="app-shell__profile-stat-text">
+                        <strong>{totalCallCount}</strong> call{totalCallCount !== 1 ? 's' : ''} · {formatTotalTime(totalCallSeconds)}
+                      </span>
+                    </div>
+                    <div className="app-shell__profile-stat">
+                      <span className="app-shell__profile-stat-icon">◈</span>
+                      <span className="app-shell__profile-stat-text">
+                        <strong>{totalTrainingSessions}</strong> training session{totalTrainingSessions !== 1 ? 's' : ''} · {formatTotalTime(totalTrainingSeconds)}
+                      </span>
+                    </div>
+                    <div className="app-shell__profile-stat app-shell__profile-stat--total">
+                      <span className="app-shell__profile-stat-icon">⏱</span>
+                      <span className="app-shell__profile-stat-text">
+                        <strong>{formatTotalTime(totalSeconds)}</strong> total on platform
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="app-shell__profile-divider" />
+
+                  {/* Appearance */}
+                  <div className="app-shell__profile-section-label">APPEARANCE</div>
+                  <div className="app-shell__profile-appearance">
+                    <span className={`app-shell__theme-label${theme === 'dark' ? ' app-shell__theme-label--active' : ''}`}>Dark</span>
+                    <button
+                      className={`app-shell__theme-toggle${theme === 'light' ? ' app-shell__theme-toggle--light' : ''}`}
+                      onClick={onToggleTheme}
+                      aria-label="Toggle theme"
+                    >
+                      <span className="app-shell__theme-knob" />
+                    </button>
+                    <span className={`app-shell__theme-label${theme === 'light' ? ' app-shell__theme-label--active' : ''}`}>Light</span>
+                  </div>
+
+                  <div className="app-shell__profile-divider" />
+
+                  {/* Sign out */}
+                  <button
+                    className="app-shell__profile-signout"
+                    onClick={() => { setProfileOpen(false); onSignOut(); }}
+                  >
+                    Sign out
+                  </button>
+
+                </div>
+              );
+            })()}
+          </div>
+
         </div>
       </header>
 

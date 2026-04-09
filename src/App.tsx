@@ -19,7 +19,12 @@ import type { LanguageCode } from './lib/languages';
 import './screens/AuthScreen.css';
 import { supabase }         from './lib/supabase';
 import { MOCK_SESSIONS }    from './lib/mockSessions';
+import { getTrainingHistory } from './lib/trainingHistory';
 import type { CallConfig, CallSession, CallStage, TranscriptEntry, AISuggestion } from './types';
+
+const PROFILE_PIC_KEY = 'pp-profile-pic';
+// Estimated seconds per training exchange (~90s avg per rep turn)
+const SECONDS_PER_EXCHANGE = 90;
 
 // Prevent flash of wrong theme on initial load
 const _savedTheme = localStorage.getItem('theme');
@@ -92,6 +97,21 @@ export function App() {
   const [showTransition, setShowTransition] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const transitionShown = useRef(false);
+  const [profilePic, setProfilePic] = useState<string | null>(
+    () => localStorage.getItem(PROFILE_PIC_KEY)
+  );
+
+  function handleProfilePicChange(dataUrl: string) {
+    setProfilePic(dataUrl);
+    localStorage.setItem(PROFILE_PIC_KEY, dataUrl);
+  }
+
+  // Derived activity stats
+  const totalCallSeconds = pastSessions.reduce((sum, s) => sum + s.durationSeconds, 0);
+  const totalCallCount = pastSessions.length;
+  const trainingHistory = getTrainingHistory();
+  const totalTrainingSessions = trainingHistory.length;
+  const totalTrainingSeconds = trainingHistory.reduce((sum, h) => sum + h.exchanges * SECONDS_PER_EXCHANGE, 0);
 
   // Derive the effective screen: authenticated users on landing/auth go to dashboard
   const currentScreen: Screen = (user && (screen === 'landing' || screen === 'auth'))
@@ -213,7 +233,8 @@ export function App() {
           onDone={() => setShowTransition(false)}
         />
       )}
-      <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      {/* ThemeToggle only shown outside the shell — inside it lives in the profile dropdown */}
+      {!isShell && <ThemeToggle theme={theme} onToggle={toggleTheme} />}
 
       {isShell && (
         <AppShell
@@ -226,6 +247,16 @@ export function App() {
           onChangeLanguage={setAppLanguage}
           currentLangFlag={currentLang.flag}
           currentLangLabel={currentLang.label}
+          userName={loginUserName}
+          userEmail={user?.email ?? ''}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          totalCallSeconds={totalCallSeconds}
+          totalCallCount={totalCallCount}
+          totalTrainingSessions={totalTrainingSessions}
+          totalTrainingSeconds={totalTrainingSeconds}
+          profilePic={profilePic}
+          onProfilePicChange={handleProfilePicChange}
         >
           {currentScreen === 'dashboard' && (
             <DashboardScreen

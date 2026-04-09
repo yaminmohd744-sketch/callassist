@@ -311,24 +311,327 @@
   box-shadow: 0 2px 12px rgba(129, 74, 200, 0.3);
 }
 
-.app-shell__btn-signout {
-  padding: 7px 12px;
-  background: none;
-  border: none;
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.25);
-  cursor: pointer;
-  letter-spacing: 0.04em;
-  border-radius: 10px;
-  transition: color 150ms ease, background 150ms ease;
+/* ─── Profile avatar ─────────────────────────────────────────────────────── */
+
+.app-shell__profile-wrap {
+  position: relative;
 }
 
-.app-shell__btn-signout:hover {
-  color: rgba(255, 80, 80, 0.85);
-  background: rgba(255, 68, 68, 0.06);
+.app-shell__avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #814ac8 0%, #df7afe 100%);
+  border: none;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: box-shadow 150ms ease, transform 150ms ease;
+  box-shadow: 0 2px 12px rgba(129, 74, 200, 0.4);
 }
+
+.app-shell__avatar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(129, 74, 200, 0.6);
+}
+
+.app-shell__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+/* ─── Profile dropdown ───────────────────────────────────────────────────── */
+
+.app-shell__profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 240px;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 8px;
+  z-index: 1000;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  animation: lang-drop-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.app-shell__profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 12px;
+}
+
+.app-shell__profile-avatar-lg {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #814ac8 0%, #df7afe 100%);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.app-shell__avatar-edit-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.app-shell__profile-avatar-lg:hover .app-shell__avatar-edit-overlay {
+  opacity: 1;
+}
+
+.app-shell__profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.app-shell__profile-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-shell__profile-email {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-shell__profile-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-top: 3px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: opacity 0.15s;
+}
+
+.app-shell__profile-status:hover {
+  opacity: 0.75;
+}
+
+.app-shell__profile-status-arrow {
+  font-size: 13px;
+  font-weight: 400;
+  opacity: 0.5;
+}
+
+/* ── Milestone progress bar ── */
+
+.app-shell__milestone-progress {
+  padding: 4px 10px 10px;
+}
+
+.app-shell__milestone-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.app-shell__milestone-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app-shell__milestone-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* ── Activity stats ── */
+
+.app-shell__profile-stats {
+  padding: 2px 0 8px;
+}
+
+.app-shell__profile-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.app-shell__profile-stat--total {
+  margin-top: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 7px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.app-shell__profile-stat-icon {
+  font-size: 11px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.app-shell__profile-stat-text strong {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+.app-shell__profile-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 4px 0;
+}
+
+.app-shell__profile-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.25);
+  padding: 8px 10px 6px;
+}
+
+/* ── Appearance toggle ── */
+
+.app-shell__profile-appearance {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 10px;
+}
+
+.app-shell__theme-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.3);
+  transition: color 150ms ease;
+  user-select: none;
+}
+
+.app-shell__theme-label--active {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.app-shell__theme-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: background 200ms ease, border-color 200ms ease;
+  flex-shrink: 0;
+}
+
+.app-shell__theme-toggle--light {
+  background: rgba(129, 74, 200, 0.25);
+  border-color: rgba(129, 74, 200, 0.4);
+}
+
+.app-shell__theme-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), background 200ms ease;
+}
+
+.app-shell__theme-toggle--light .app-shell__theme-knob {
+  transform: translateX(18px);
+  background: #df7afe;
+}
+
+/* ── Sign out ── */
+
+.app-shell__profile-signout {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 9px 10px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  text-align: left;
+  transition: background 150ms ease, color 150ms ease;
+  margin-top: 2px;
+}
+
+.app-shell__profile-signout:hover {
+  background: rgba(255, 68, 68, 0.08);
+  color: rgba(255, 80, 80, 0.9);
+}
+
+/* Light theme overrides */
+[data-theme="light"] .app-shell__profile-dropdown {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+[data-theme="light"] .app-shell__profile-name { color: rgba(26, 23, 38, 0.9); }
+[data-theme="light"] .app-shell__profile-email { color: rgba(26, 23, 38, 0.4); }
+[data-theme="light"] .app-shell__profile-divider { background: rgba(0, 0, 0, 0.07); }
+[data-theme="light"] .app-shell__profile-section-label { color: rgba(26, 23, 38, 0.3); }
+[data-theme="light"] .app-shell__theme-label { color: rgba(26, 23, 38, 0.35); }
+[data-theme="light"] .app-shell__theme-label--active { color: rgba(26, 23, 38, 0.85); }
+[data-theme="light"] .app-shell__theme-toggle { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.1); }
+[data-theme="light"] .app-shell__theme-knob { background: rgba(0, 0, 0, 0.25); }
+[data-theme="light"] .app-shell__profile-signout { color: rgba(26, 23, 38, 0.4); }
+[data-theme="light"] .app-shell__profile-signout:hover { background: rgba(255, 68, 68, 0.06); color: rgba(200, 30, 30, 0.85); }
+[data-theme="light"] .app-shell__milestone-track { background: rgba(0,0,0,0.06); }
+[data-theme="light"] .app-shell__milestone-label { color: rgba(26, 23, 38, 0.35); }
+[data-theme="light"] .app-shell__profile-stat { color: rgba(26, 23, 38, 0.5); }
+[data-theme="light"] .app-shell__profile-stat--total { color: rgba(26, 23, 38, 0.7); border-color: rgba(0,0,0,0.06); }
+[data-theme="light"] .app-shell__profile-stat-text strong { color: rgba(26, 23, 38, 0.85); }
 
 /* ─── Content area ───────────────────────────────────────────────────────── */
 

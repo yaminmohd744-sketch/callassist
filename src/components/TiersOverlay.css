@@ -1,0 +1,265 @@
+/* ─── Tiers Overlay ─────────────────────────────────────────────────────────── */
+
+.tiers-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 36px 16px 48px;
+  overflow-y: auto;
+}
+
+.tiers-panel {
+  width: 100%;
+  max-width: 580px;
+  background: #0d0d18;
+  border: 1px solid rgba(129, 74, 200, 0.25);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(223, 122, 254, 0.08),
+    0 32px 80px rgba(0, 0, 0, 0.75),
+    0 0 60px rgba(129, 74, 200, 0.12);
+}
+
+/* ─── Header ── */
+
+.tiers-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26px 28px 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(129, 74, 200, 0.18) 0%,
+    rgba(223, 122, 254, 0.06) 100%
+  );
+  border-bottom: 1px solid rgba(129, 74, 200, 0.2);
+}
+
+.tiers-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: linear-gradient(90deg, #fff 30%, #df7afe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tiers-close {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.4);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  line-height: 1;
+}
+.tiers-close:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border-color: rgba(255,255,255,0.2);
+}
+
+.tiers-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
+  margin: 0;
+  padding: 14px 28px 20px;
+  line-height: 1.5;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.tiers-subtitle em { font-style: italic; color: rgba(255,255,255,0.5); }
+
+/* ─── Cards list ── */
+
+.tiers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 8px 0;
+}
+
+/* ─── Card ── */
+
+.tiers-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.2s;
+  position: relative;
+}
+
+.tiers-card:last-child {
+  border-bottom: none;
+}
+
+.tiers-card--unlocked {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--tier-color, #814ac8) 8%, transparent) 0%,
+    transparent 60%
+  );
+}
+.tiers-card--unlocked::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--tier-color, #814ac8);
+  box-shadow: 0 0 12px var(--tier-color, #814ac8);
+}
+
+.tiers-card--locked {
+  opacity: 0.55;
+}
+
+/* ─── Badge ── */
+
+.tiers-card__badge {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+}
+
+/* ─── Body ── */
+
+.tiers-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tiers-card__label {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.01em;
+}
+
+.tiers-card__unlocked-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.08);
+  color: inherit;
+  opacity: 0.75;
+}
+
+.tiers-card__desc {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.3);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.tiers-card--unlocked .tiers-card__desc {
+  color: rgba(255,255,255,0.45);
+}
+
+/* ─── Requirements ── */
+
+.tiers-card__reqs {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.tiers-card__req {
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.3);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tiers-card__req--met {
+  color: #34d399;
+}
+
+/* ─── Progress ── */
+
+.tiers-card__progress {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tiers-card__progress-track {
+  flex: 1;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.07);
+  overflow: hidden;
+}
+
+.tiers-card__progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+  opacity: 0.7;
+}
+
+.tiers-card__progress-label {
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.25);
+  white-space: nowrap;
+}
+
+/* ─── Light theme overrides ─────────────────────────────────────────────────── */
+
+[data-theme="light"] .tiers-panel {
+  background: #f5f3ff;
+  border-color: rgba(129, 74, 200, 0.2);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.15), 0 0 60px rgba(129, 74, 200, 0.08);
+}
+
+[data-theme="light"] .tiers-header {
+  background: linear-gradient(135deg, rgba(129, 74, 200, 0.1) 0%, rgba(223, 122, 254, 0.04) 100%);
+  border-color: rgba(129, 74, 200, 0.15);
+}
+
+[data-theme="light"] .tiers-title {
+  background: linear-gradient(90deg, #1a0a2e 30%, #814ac8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="light"] .tiers-close { color: rgba(26,23,38,0.4); border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.04); }
+[data-theme="light"] .tiers-close:hover { background: rgba(0,0,0,0.08); color: rgba(26,23,38,0.9); }
+[data-theme="light"] .tiers-subtitle { color: rgba(26,23,38,0.4); border-color: rgba(0,0,0,0.06); }
+[data-theme="light"] .tiers-subtitle em { color: rgba(26,23,38,0.55); }
+
+[data-theme="light"] .tiers-card { border-color: rgba(0,0,0,0.05); }
+[data-theme="light"] .tiers-card--unlocked {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--tier-color, #814ac8) 6%, #f5f3ff) 0%, #f5f3ff 60%);
+}
+
+[data-theme="light"] .tiers-card__label { color: rgba(26,23,38,0.45); }
+[data-theme="light"] .tiers-card__desc { color: rgba(26,23,38,0.35); }
+[data-theme="light"] .tiers-card--unlocked .tiers-card__desc { color: rgba(26,23,38,0.5); }
+[data-theme="light"] .tiers-card__req { color: rgba(26,23,38,0.35); }
+[data-theme="light"] .tiers-card__progress-track { background: rgba(0,0,0,0.08); }
+[data-theme="light"] .tiers-card__progress-label { color: rgba(26,23,38,0.3); }
