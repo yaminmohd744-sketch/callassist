@@ -337,6 +337,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
   const [featureAutoKey, setFeatureAutoKey]     = useState(0);
   const [activeSection, setActiveSection]       = useState<SectionId | null>(null);
   const [openFaq, setOpenFaq]                   = useState<number | null>(null);
+  const [billingCycle, setBillingCycle]         = useState<'monthly' | 'yearly'>('monthly');
   const [langIdx, setLangIdx]                   = useState(0);
 
   useEffect(() => {
@@ -768,11 +769,12 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
   // ─── Pricing section view ──────────────────────────────────────────────────
 
   if (activeSection === 'pricing') {
+    const yearly = billingCycle === 'yearly';
     const PLANS = [
       {
         tier: 'STARTER',
-        price: '$19',
-        period: '/month',
+        monthlyPrice: 19,
+        yearlyPrice: 16,
         desc: 'For reps learning the ropes.',
         cta: 'Start free trial',
         ctaStyle: 'outline' as const,
@@ -790,8 +792,8 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
       },
       {
         tier: 'PRO',
-        price: '$49',
-        period: '/month',
+        monthlyPrice: 49,
+        yearlyPrice: 41,
         desc: 'For reps ready to level up.',
         cta: '▶ Start free — 7-day trial',
         ctaStyle: 'primary' as const,
@@ -810,8 +812,8 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
       },
       {
         tier: 'BUSINESS',
-        price: '$79',
-        period: '/month',
+        monthlyPrice: 59,
+        yearlyPrice: 49,
         desc: 'Full access. No ceilings.',
         cta: 'Start Business trial',
         ctaStyle: 'outline' as const,
@@ -843,6 +845,22 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
             <p className="lp__sv-sub">No sales call. No quote request. Pick a plan and start closing in 60 seconds.</p>
           </div>
 
+          <div className="lp__billing-toggle">
+            <button
+              className={`lp__billing-btn${!yearly ? ' lp__billing-btn--active' : ''}`}
+              onClick={() => setBillingCycle('monthly')}
+            >
+              Monthly
+            </button>
+            <button
+              className={`lp__billing-btn${yearly ? ' lp__billing-btn--active' : ''}`}
+              onClick={() => setBillingCycle('yearly')}
+            >
+              Yearly
+              <span className="lp__billing-save">Save ~16%</span>
+            </button>
+          </div>
+
           <div className="lp__pricing-grid">
             {PLANS.map((plan, i) => (
               <div
@@ -853,8 +871,11 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
                 {plan.badge && <div className="lp__pricing-badge">{plan.badge}</div>}
                 <div className="lp__pricing-tier">{plan.tier}</div>
                 <div className="lp__pricing-price">
-                  {plan.price}<span>{plan.period}</span>
+                  ${yearly ? plan.yearlyPrice : plan.monthlyPrice}<span>/month</span>
                 </div>
+                {yearly && (
+                  <div className="lp__pricing-billed-note">billed ${plan.yearlyPrice * 12}/yr</div>
+                )}
                 <div className="lp__pricing-desc">{plan.desc}</div>
                 <div className="lp__pricing-divider" />
                 <ul className="lp__pricing-features">
@@ -2129,12 +2150,29 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         <h2 className="lp__section-h2 reveal" data-delay="0.1">Simple, transparent pricing</h2>
         <p className="lp__section-sub reveal" data-delay="0.18">No sales call. No quote request. Sign up and start closing.</p>
 
+        <div className="lp__billing-toggle reveal" data-delay="0.08">
+          <button
+            className={`lp__billing-btn${billingCycle === 'monthly' ? ' lp__billing-btn--active' : ''}`}
+            onClick={() => setBillingCycle('monthly')}
+          >
+            Monthly
+          </button>
+          <button
+            className={`lp__billing-btn${billingCycle === 'yearly' ? ' lp__billing-btn--active' : ''}`}
+            onClick={() => setBillingCycle('yearly')}
+          >
+            Yearly
+            <span className="lp__billing-save">Save ~16%</span>
+          </button>
+        </div>
+
         <div className="lp__pricing-grid reveal" data-delay="0.12">
 
           {/* STARTER */}
           <div className="lp__pricing-card">
             <div className="lp__pricing-tier">STARTER</div>
-            <div className="lp__pricing-price">$19<span>/month</span></div>
+            <div className="lp__pricing-price">${billingCycle === 'yearly' ? 16 : 19}<span>/month</span></div>
+            {billingCycle === 'yearly' && <div className="lp__pricing-billed-note">billed $192/yr</div>}
             <div className="lp__pricing-desc">For reps learning the ropes</div>
             <div className="lp__pricing-divider" />
             <ul className="lp__pricing-features">
@@ -2149,7 +2187,8 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           <div className="lp__pricing-card lp__pricing-card--pro">
             <div className="lp__pricing-badge">MOST POPULAR</div>
             <div className="lp__pricing-tier">PRO</div>
-            <div className="lp__pricing-price">$49<span>/month</span></div>
+            <div className="lp__pricing-price">${billingCycle === 'yearly' ? 41 : 49}<span>/month</span></div>
+            {billingCycle === 'yearly' && <div className="lp__pricing-billed-note">billed $492/yr</div>}
             <div className="lp__pricing-desc">For reps ready to level up</div>
             <div className="lp__pricing-divider" />
             <ul className="lp__pricing-features">
@@ -2163,7 +2202,8 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           {/* BUSINESS */}
           <div className="lp__pricing-card">
             <div className="lp__pricing-tier">BUSINESS</div>
-            <div className="lp__pricing-price">$79<span>/month</span></div>
+            <div className="lp__pricing-price">${billingCycle === 'yearly' ? 49 : 59}<span>/month</span></div>
+            {billingCycle === 'yearly' && <div className="lp__pricing-billed-note">billed $588/yr</div>}
             <div className="lp__pricing-desc">Full access. No ceilings.</div>
             <div className="lp__pricing-divider" />
             <ul className="lp__pricing-features">

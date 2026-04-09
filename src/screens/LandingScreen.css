@@ -984,6 +984,58 @@
 
 /* ─── Pricing ─────────────────────────────────────────────── */
 
+.lp__billing-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--border-radius-pill);
+  padding: 4px;
+  width: fit-content;
+  margin: 0 auto var(--space-8);
+}
+
+.lp__billing-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 22px;
+  border-radius: var(--border-radius-pill);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.lp__billing-btn--active {
+  background: rgba(129, 74, 200, 0.18);
+  color: var(--color-text-primary);
+  border: 1px solid rgba(129, 74, 200, 0.4);
+}
+
+.lp__billing-save {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-green);
+  background: rgba(57, 211, 83, 0.12);
+  border-radius: var(--border-radius-pill);
+  padding: 2px 7px;
+}
+
+.lp__pricing-billed-note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: -8px 0 4px;
+}
+
 .lp__pricing-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
