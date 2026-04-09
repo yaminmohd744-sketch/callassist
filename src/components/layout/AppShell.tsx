@@ -26,7 +26,7 @@ interface AppShellProps {
 
 export function AppShell({
   activeScreen, onNavigate, onStartCall, onUploadCall, onSignOut,
-  appLanguage, onChangeLanguage, currentLangFlag, currentLangLabel,
+  appLanguage, onChangeLanguage, currentLangLabel,
   children,
 }: AppShellProps) {
   const [langOpen, setLangOpen] = useState(false);
@@ -76,7 +76,11 @@ export function AppShell({
               title={`App language: ${currentLangLabel}`}
               aria-expanded={langOpen}
             >
-              <span className="app-shell__lang-flag">{currentLangFlag}</span>
+              <img
+                className="app-shell__lang-flag-img"
+                src={`https://flagcdn.com/w20/${appLanguage.split('-')[1].toLowerCase()}.png`}
+                alt={currentLangLabel}
+              />
               <span className="app-shell__lang-label">{currentLangLabel}</span>
               <span className={`app-shell__lang-caret${langOpen ? ' app-shell__lang-caret--open' : ''}`}>▾</span>
             </button>
@@ -90,13 +94,17 @@ export function AppShell({
                     className={`app-shell__lang-option${appLanguage === l.code ? ' app-shell__lang-option--active' : ''}`}
                     onClick={() => { onChangeLanguage(l.code); setLangOpen(false); }}
                   >
-                    <span className="app-shell__lang-option-flag">{l.flag}</span>
+                    <img
+                      className="app-shell__lang-option-flag-img"
+                      src={`https://flagcdn.com/w20/${l.code.split('-')[1].toLowerCase()}.png`}
+                      alt={l.label}
+                    />
                     <span className="app-shell__lang-option-label">{l.label}</span>
                     {appLanguage === l.code && <span className="app-shell__lang-option-check">✓</span>}
                   </button>
                 ))}
                 <div className="app-shell__lang-dropdown-note">
-                  Affects coaching, training & interface. Pick a different language per call in Pre-Call Setup.
+                  Affects coaching and training language. Override per call in Pre-Call Setup.
                 </div>
               </div>
             )}

@@ -57,13 +57,14 @@ const SUB_PROMPTS: Record<TrainingScenario, string[]> = {
 
 interface AcademySectionProps {
   user: User | null;
+  appLanguage?: string;
 }
 
 type AcademyPhase = 'overview' | 'walkthrough' | 'intro' | 'practice' | 'results';
 
 const TOTAL_LESSONS = ALL_LESSONS.length;
 
-export function AcademySection({ user }: AcademySectionProps) {
+export function AcademySection({ user, appLanguage = 'en-US' }: AcademySectionProps) {
   const { loading, saveSession, getLessonStats, isLessonUnlocked, getOverallStats } = useAcademy(user);
   const { state: trainingState, startScenario, confirmContext, sendResponse, endSession, reset } = useTraining();
 
@@ -114,7 +115,7 @@ export function AcademySection({ user }: AcademySectionProps) {
     const ctx = contextOverride !== undefined ? contextOverride : saleContext;
     const subPrompt = SUB_PROMPTS[activeLesson.scenario][activeLesson.subScenarioIndex] ?? '';
     saveContext(ctx.trim());
-    startScenario(activeLesson.scenario, 'en-US');
+    startScenario(activeLesson.scenario, appLanguage);
     await confirmContext(ctx || 'my product/service', activeLesson.difficulty, subPrompt);
     setPhase('practice');
   }

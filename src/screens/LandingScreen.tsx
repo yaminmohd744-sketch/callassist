@@ -35,8 +35,8 @@ const FEATURES = [
   {
     icon: '▣',
     title: 'AI Sales Academy',
-    desc: 'Structured curriculum from beginner to advanced. 9 lessons across 3 modules. Track your score every rep.',
-    bullets: ['3 modules, 9 lessons', 'Coaching tips before each lesson', 'Modules unlock as you progress'],
+    desc: 'Structured curriculum from beginner to advanced. 27 lessons across 3 modules — each one taught, then tested. Track your score every rep.',
+    bullets: ['3 modules, 27 lessons', 'Coached walkthrough before every test', 'Modules unlock as you progress'],
   },
   {
     icon: '⊕',
@@ -93,7 +93,6 @@ const COMPARE_ROWS = [
   { feature: 'Real-time objection coaching',   us: true,  them: true  },
   { feature: 'AI training / practice mode',    us: true,  them: true  },
   { feature: 'Multi-language coaching',        us: true,  them: false, note: 'English only' },
-  { feature: 'Built-in CRM (no token needed)',  us: true,  them: false, note: 'Requires 3rd-party CRM' },
   { feature: 'Works on phone calls',           us: true,  them: false, note: 'Meetings only' },
   { feature: 'All browsers (no extension)',    us: true,  them: false, note: 'Chrome only' },
   { feature: '7-day money-back guarantee',     us: true,  them: false, note: 'No refunds ever' },
@@ -136,7 +135,7 @@ const FEATURE_TABS = [
     items: [
       { icon: '◉', title: '8 scenarios, 3 difficulty levels', desc: 'Cold openers, objections, discovery, closing Easy, Medium, and Hard.' },
       { icon: '✎', title: 'Custom scenario builder', desc: 'Describe any prospect in plain text and the AI becomes them.' },
-      { icon: '▣', title: 'AI Sales Academy', desc: '9 structured lessons from beginner to advanced with score tracking.' },
+      { icon: '▣', title: 'AI Sales Academy', desc: '27 structured lessons from beginner to advanced — taught first, then tested, with full score tracking.' },
       { icon: '✓', title: 'Per-response feedback', desc: 'Every reply you send gets an instant score, pros, cons, and the ideal response.' },
     ],
   },
@@ -172,18 +171,21 @@ const ACADEMY_MODULES = [
     title: 'Cold Call Foundations',
     color: 'green',
     lessons: ['The Perfect Opener', 'Handling "Not Interested"', 'The Skeptical Prospect'],
+    totalCount: 9,
   },
   {
     level: 'INTERMEDIATE',
     title: 'Objection Handling',
     color: 'yellow',
     lessons: ['Price Objections', 'The "Think It Over" Trap', 'Breaking the Status Quo'],
+    totalCount: 9,
   },
   {
     level: 'ADVANCED',
     title: 'Discovery & Closing',
     color: 'red',
     lessons: ['Discovery That Reveals Pain', 'The Trial Close', 'Closing the Hard Prospect'],
+    totalCount: 9,
   },
 ];
 
@@ -201,8 +203,8 @@ const PRICING_FAQ = [
     a: 'It works for any outbound or inbound sales scenario where you\'re speaking with a prospect one-on-one. Before each call you enter your own pitch, product description, and call goal so the AI coaches you in the context of what you\'re actually selling, not a generic script. Reps selling SaaS, financial products, real estate, recruitment, and insurance have all used it effectively. The custom scenario builder in training lets you replicate the exact objections specific to your market.',
   },
   {
-    q: 'What happens to my transcripts and data if I downgrade or cancel?',
-    a: 'Your data stays accessible for 30 days after cancellation so you can export anything you need. Transcripts, call notes, lead scores, and AI summaries can all be downloaded before that window closes. After 30 days the account and its data are permanently deleted. We don\'t sell or share your data with third parties at any point paid, free, or cancelled.',
+    q: 'What happens to my transcripts and data if I cancel?',
+    a: 'Your data stays accessible for 30 days after cancellation so you can export anything you need. Transcripts, call notes, lead scores, and AI summaries can all be downloaded before that window closes. After 30 days the account and its data are permanently deleted. We don\'t sell or share your data with third parties — paid, free, or cancelled.',
   },
 ];
 
@@ -272,7 +274,7 @@ const HELP_TOPICS = [
   },
   {
     icon: '▣', title: 'Billing & account',
-    articles: ['Upgrading from Free to Pro', 'How the 7-day money-back guarantee works', 'Cancelling your subscription', 'What happens to my data after cancellation'],
+    articles: ['Upgrading from Free to Pro or Team', 'How the 7-day free trial works', 'Cancelling your subscription', 'What happens to my data after cancellation'],
   },
 ];
 
@@ -634,7 +636,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
             <div className="lp__sv-col">
               <div className="lp__sv-col-title">▣ AI Sales Academy</div>
-              <p className="lp__sv-col-sub">A structured 9-lesson curriculum from beginner to advanced. Each lesson scored watch your number climb session by session.</p>
+              <p className="lp__sv-col-sub">A structured 27-lesson curriculum from beginner to advanced. Each lesson is taught first, then tested — watch your score climb session by session.</p>
               {ACADEMY_MODULES.map((m, mi) => (
                 <div
                   key={mi}
@@ -646,6 +648,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
                       {m.level}
                     </span>
                     <span className="lp__sv-module-title">{m.title}</span>
+                    <span className="lp__sv-module-count">{m.totalCount} lessons</span>
                   </div>
                   <ul className="lp__sv-module-lessons">
                     {m.lessons.map((l, li) => (
@@ -656,6 +659,9 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
                         {l}
                       </li>
                     ))}
+                    <li className="lp__sv-module-more" style={{ '--i': mi * 3 + 7 } as React.CSSProperties}>
+                      + {m.totalCount - m.lessons.length} more lessons
+                    </li>
                   </ul>
                 </div>
               ))}
@@ -764,83 +770,64 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
   if (activeSection === 'pricing') {
     const PLANS = [
       {
-        tier: 'FREE',
-        price: '$0',
-        period: '/month',
-        desc: 'Try it out, no card needed',
-        cta: 'Get Started Free',
-        ctaStyle: 'outline' as const,
-        badge: null,
-        highlight: false,
-        features: [
-          '5 live calls / month',
-          '3 training sessions / month',
-          'Real-time coaching',
-          'Basic post-call summary',
-          'English & Spanish only',
-          'Community support',
-        ],
-        missing: ['CRM & contacts', 'AI Sales Academy', 'Call upload & analysis', 'Analytics'],
-      },
-      {
         tier: 'STARTER',
         price: '$19',
         period: '/month',
-        desc: 'For solo reps getting serious',
-        cta: 'Start Starter',
+        desc: 'For reps learning the ropes.',
+        cta: 'Start free trial',
         ctaStyle: 'outline' as const,
         badge: null,
         highlight: false,
         features: [
-          '25 live calls / month',
-          'Unlimited training sessions',
-          'Real-time coaching (5 languages)',
-          'Full post-call analysis + follow-up email',
-          'CRM (up to 50 contacts)',
-          'AI Sales Academy — Beginner module',
-          'Email support',
+          '15 live calls / month',
+          '10 training sessions / month',
+          'AI Academy — Beginner module',
+          'English & Spanish only',
+          'Basic post-call summary',
+          'Community support',
         ],
-        missing: ['All 10 languages', 'Unlimited contacts', 'Advanced analytics', 'Team features'],
+        missing: ['Intermediate & Advanced Academy', 'More languages', 'Analytics', 'Call upload'],
       },
       {
         tier: 'PRO',
         price: '$49',
         period: '/month',
-        desc: 'For serious individual reps',
-        cta: '▶ Start Pro — 7-day trial',
+        desc: 'For reps ready to level up.',
+        cta: '▶ Start free — 7-day trial',
         ctaStyle: 'primary' as const,
         badge: 'MOST POPULAR',
         highlight: true,
         features: [
-          'Unlimited live calls',
-          'Unlimited training sessions',
-          'All 10 languages',
-          'Full CRM (unlimited contacts)',
-          'Full AI Sales Academy (all 3 modules)',
-          'Advanced analytics & trends',
-          'Call upload & analysis',
-          'Priority support',
+          '60 live calls / month',
+          '30 training sessions / month',
+          'Full AI Academy — all 3 modules',
+          '6 languages',
+          'Full post-call analysis + follow-up email',
+          'Basic analytics',
+          'Email support',
         ],
-        missing: ['Team leaderboard', 'Manager dashboard', 'Shared call library'],
+        missing: ['Unlimited training', 'All 10 languages', 'Advanced analytics', 'Call upload'],
       },
       {
-        tier: 'TEAM',
-        price: '$99',
+        tier: 'BUSINESS',
+        price: '$79',
         period: '/month',
-        desc: '5 seats · $15/seat after that',
-        cta: 'Start Team Trial',
+        desc: 'Full access. No ceilings.',
+        cta: 'Start Business trial',
         ctaStyle: 'outline' as const,
         badge: null,
         highlight: false,
         features: [
-          'Everything in Pro',
-          '5 seats included',
-          '$15 / extra seat / month',
-          'Team leaderboard & competition',
+          'Unlimited live calls',
+          'Unlimited training sessions',
+          'Full AI Academy — all 3 modules',
+          'All 10 languages',
+          'Full post-call analysis + follow-up email',
+          'Advanced analytics & trends',
+          'Call upload & analysis',
+          'Team leaderboard & shared call library',
           'Manager analytics dashboard',
-          'Shared call library',
-          'Onboarding call with the team',
-          'Dedicated account support',
+          'Priority support',
         ],
         missing: [],
       },
@@ -893,7 +880,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
 
           <div className="lp__pricing-guarantee-row">
-            <span className="lp__pricing-guarantee-badge">✓ 7-day money-back guarantee on Starter, Pro & Team</span>
+            <span className="lp__pricing-guarantee-badge">✓ 7-day free trial on all plans — no card charged upfront</span>
             <span className="lp__pricing-guarantee-sep">·</span>
             <span className="lp__pricing-guarantee-note">Cancel anytime · No questions asked</span>
           </div>
@@ -2144,32 +2131,18 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
         <div className="lp__pricing-grid reveal" data-delay="0.12">
 
-          {/* FREE */}
-          <div className="lp__pricing-card">
-            <div className="lp__pricing-tier">FREE</div>
-            <div className="lp__pricing-price">$0<span>/month</span></div>
-            <div className="lp__pricing-desc">Try it out, no card needed</div>
-            <div className="lp__pricing-divider" />
-            <ul className="lp__pricing-features">
-              {['5 live calls / month','3 training sessions / month','Real-time coaching','Basic post-call summary','English & Spanish only'].map((f,i) => (
-                <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
-              ))}
-            </ul>
-            <button className="lp__btn lp__btn--outline lp__pricing-cta" onClick={onGetStarted}>Get Started Free</button>
-          </div>
-
           {/* STARTER */}
           <div className="lp__pricing-card">
             <div className="lp__pricing-tier">STARTER</div>
             <div className="lp__pricing-price">$19<span>/month</span></div>
-            <div className="lp__pricing-desc">For solo reps getting serious</div>
+            <div className="lp__pricing-desc">For reps learning the ropes</div>
             <div className="lp__pricing-divider" />
             <ul className="lp__pricing-features">
-              {['25 live calls / month','Unlimited training sessions','5 languages','Full post-call analysis','CRM up to 50 contacts','AI Academy — Beginner'].map((f,i) => (
+              {['15 live calls / month','10 training sessions / month','AI Academy — Beginner module','English & Spanish only','Basic post-call summary','Community support'].map((f,i) => (
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>
-            <button className="lp__btn lp__btn--outline lp__pricing-cta" onClick={onGetStarted}>Start Starter</button>
+            <button className="lp__btn lp__btn--outline lp__pricing-cta" onClick={onGetStarted}>Start free trial</button>
           </div>
 
           {/* PRO */}
@@ -2177,34 +2150,34 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
             <div className="lp__pricing-badge">MOST POPULAR</div>
             <div className="lp__pricing-tier">PRO</div>
             <div className="lp__pricing-price">$49<span>/month</span></div>
-            <div className="lp__pricing-desc">For serious individual reps</div>
+            <div className="lp__pricing-desc">For reps ready to level up</div>
             <div className="lp__pricing-divider" />
             <ul className="lp__pricing-features">
-              {['Unlimited live calls','Unlimited training','All 10 languages','Unlimited CRM contacts','Full AI Sales Academy','Advanced analytics','Priority support'].map((f,i) => (
+              {['60 live calls / month','Unlimited training sessions','AI Academy — Beginner + Intermediate','6 languages','Full post-call analysis + follow-up email','Basic analytics','Email support'].map((f,i) => (
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>
-            <button className="lp__btn lp__btn--primary lp__pricing-cta" onClick={onGetStarted}>▶ Start Pro — 7-day trial</button>
+            <button className="lp__btn lp__btn--primary lp__pricing-cta" onClick={onGetStarted}>▶ Start free — 7-day trial</button>
           </div>
 
-          {/* TEAM */}
+          {/* BUSINESS */}
           <div className="lp__pricing-card">
-            <div className="lp__pricing-tier">TEAM</div>
-            <div className="lp__pricing-price">$99<span>/month</span></div>
-            <div className="lp__pricing-desc">5 seats · $15/seat after</div>
+            <div className="lp__pricing-tier">BUSINESS</div>
+            <div className="lp__pricing-price">$79<span>/month</span></div>
+            <div className="lp__pricing-desc">Full access. No ceilings.</div>
             <div className="lp__pricing-divider" />
             <ul className="lp__pricing-features">
-              {['Everything in Pro','5 seats included','Team leaderboard','Manager dashboard','Shared call library','Onboarding call'].map((f,i) => (
+              {['Unlimited live calls','Unlimited training sessions','Full AI Academy — all 3 modules','All 10 languages','Advanced analytics & trends','Call upload & analysis','Team leaderboard & shared library','Manager dashboard','Priority support'].map((f,i) => (
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>
-            <button className="lp__btn lp__btn--outline lp__pricing-cta" onClick={onGetStarted}>Start Team Trial</button>
+            <button className="lp__btn lp__btn--outline lp__pricing-cta" onClick={onGetStarted}>Start Business trial</button>
           </div>
 
         </div>
 
         <div className="lp__guarantee reveal" data-delay="0.2">
-          ✓ 7-day money-back guarantee on Starter, Pro & Team · Cancel anytime
+          ✓ 7-day free trial on all plans — no card charged upfront · Cancel anytime
         </div>
       </section>
 

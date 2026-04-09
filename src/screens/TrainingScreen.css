@@ -229,6 +229,114 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
+/* ── Session History ─────────────────────────────────────────────────────────*/
+
+.training__history {
+  margin-top: var(--space-8);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: var(--space-6);
+}
+
+.training__history-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: 0.04em;
+  transition: color 150ms ease;
+}
+.training__history-toggle:hover { color: rgba(255, 255, 255, 0.8); }
+
+.training__history-count {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.training__history-caret {
+  font-size: 10px;
+  opacity: 0.6;
+  margin-left: auto;
+}
+
+.training__history-list {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.training__history-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  transition: background 150ms ease;
+}
+.training__history-item:hover { background: rgba(255, 255, 255, 0.055); }
+
+.training__history-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 180px;
+  flex-shrink: 0;
+}
+
+.training__history-scenario {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.training__history-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.training__history-headline {
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.training__history-meta {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.03em;
+}
+
+.training__history-score {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+  width: 40px;
+  text-align: right;
+}
+
+[data-theme="light"] .training__history-toggle { color: rgba(26, 23, 38, 0.4); }
+[data-theme="light"] .training__history-toggle:hover { color: rgba(26, 23, 38, 0.8); }
+[data-theme="light"] .training__history-item { background: rgba(26, 23, 38, 0.03); border-color: rgba(26, 23, 38, 0.07); }
+[data-theme="light"] .training__history-scenario { color: rgba(26, 23, 38, 0.8); }
+[data-theme="light"] .training__history-headline { color: rgba(26, 23, 38, 0.5); }
+[data-theme="light"] .training__history-meta { color: rgba(26, 23, 38, 0.35); }
+
 /* ── Active Session ──────────────────────────────────────────────────────────*/
 
 .training__messages {

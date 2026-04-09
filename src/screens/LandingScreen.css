@@ -986,10 +986,10 @@
 
 .lp__pricing-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-5);
   width: 100%;
-  max-width: 1140px;
+  max-width: 1050px;
   margin: 0 auto;
   align-items: start;
 }
@@ -1635,6 +1635,14 @@
   font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--color-text-primary);
+  flex: 1;
+}
+.lp__sv-module-count {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.03em;
+  font-weight: 500;
+  white-space: nowrap;
 }
 .lp__sv-module-lessons {
   list-style: none;
@@ -1658,6 +1666,12 @@
   flex-shrink: 0;
 }
 .lp__sv-module-lessons li:last-child { border-bottom: none; }
+.lp__sv-module-more {
+  font-style: italic;
+  opacity: 0.5 !important;
+  font-size: 11px !important;
+}
+.lp__sv-module-more::before { content: '' !important; }
 
 .lp__sv-mock-wrap {
   width: 100%;
@@ -3097,10 +3111,9 @@
 @media (max-width: 1100px) {
   .lp__contact-grid  { grid-template-columns: repeat(2, 1fr); }
   .lp__about-stats   { grid-template-columns: repeat(2, 1fr); }
-  .lp__pricing-grid  { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 800px) {
   .lp__pricing-grid  { grid-template-columns: 1fr; }
 }
 

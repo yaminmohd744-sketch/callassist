@@ -149,7 +149,9 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-.app-shell__lang-flag  { font-size: 15px; line-height: 1; }
+.app-shell__lang-flag     { font-size: 15px; line-height: 1; }
+.app-shell__lang-flag-img { width: 20px; height: 14px; object-fit: cover; border-radius: 2px; display: block; flex-shrink: 0; }
+.app-shell__lang-option-flag-img { width: 20px; height: 14px; object-fit: cover; border-radius: 2px; flex-shrink: 0; }
 .app-shell__lang-label { display: none; }
 
 @media (min-width: 900px) {

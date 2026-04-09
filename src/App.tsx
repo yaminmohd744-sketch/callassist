@@ -240,7 +240,7 @@ export function App() {
             />
           )}
           {currentScreen === 'training' && (
-            <TrainingScreen onBack={() => setScreen('dashboard')} />
+            <TrainingScreen onBack={() => setScreen('dashboard')} appLanguage={appLanguage} />
           )}
           {currentScreen === 'analytics' && (
             <AnalyticsScreen pastSessions={pastSessions} user={user} />

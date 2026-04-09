@@ -5,12 +5,15 @@ import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import { AcademySection } from './AcademySection';
 import { getSavedContexts, saveContext } from '../lib/saleContexts';
 import { recordPracticeToday } from '../lib/streak';
+import { saveTrainingSession, getTrainingHistory } from '../lib/trainingHistory';
+import type { TrainingHistoryEntry } from '../lib/trainingHistory';
 import type { TrainingScenario } from '../types';
 import type { TrainingDifficulty } from '../hooks/useTraining';
 import './TrainingScreen.css';
 
 interface TrainingScreenProps {
   onBack: () => void;
+  appLanguage?: string;
 }
 
 const SCENARIO_ROWS: { id: TrainingScenario; label: string; description: string; icon: string }[][] = [
@@ -86,7 +89,7 @@ const SUB_SCENARIOS: Record<TrainingScenario, SubScenario[]> = {
 
 type SelectionMode = 'split' | 'practice' | 'academy';
 
-export function TrainingScreen({ onBack }: TrainingScreenProps) {
+export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreenProps) {
   const { user } = useAuth();
   const { state, startScenario, confirmContext, sendResponse, endSession, reset } = useTraining();
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('split');
@@ -95,16 +98,39 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
   const [selectedSub, setSelectedSub] = useState<SubScenario | null>(null);
   const [customDesc, setCustomDesc] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<TrainingDifficulty>('medium');
-  const [language, setLanguage] = useState('en-US');
+  const [language, setLanguage] = useState(appLanguage);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<TrainingHistoryEntry[]>(() => getTrainingHistory());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [state.messages]);
 
+  // Sync app-level language if changed while in selection phase
   useEffect(() => {
-    if (state.phase === 'summary') recordPracticeToday();
-  }, [state.phase]);
+    if (state.phase === 'selection') setLanguage(appLanguage);
+  }, [appLanguage, state.phase]);
+
+  // Save to history and record streak when session summary arrives
+  useEffect(() => {
+    if (state.phase !== 'summary') return;
+    recordPracticeToday();
+    if (state.summary) {
+      const entry: TrainingHistoryEntry = {
+        id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`,
+        scenarioId: state.scenario ?? 'unknown',
+        scenarioLabel: SCENARIOS.find(s => s.id === state.scenario)?.label ?? state.scenario ?? 'Unknown',
+        difficulty: state.difficulty,
+        overallScore: state.overallScore,
+        headline: state.summary.headline,
+        exchanges: state.messages.filter(m => m.role === 'rep').length,
+        date: new Date().toISOString(),
+      };
+      saveTrainingSession(entry);
+      setHistory(getTrainingHistory());
+    }
+  }, [state.phase, state.summary]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleSwitchToSplit() {
     setSelectionMode('split');
@@ -324,21 +350,6 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
             <div ref={messagesEndRef} />
           </div>
           <div className="training__input-bar">
-            <div className="training__exit-triggers">
-              <span className="training__exit-label">END WITH</span>
-              <button className="training__exit-btn training__exit-btn--won" onClick={() => void endSession('deal-closed')} disabled={state.isLoading}>
-                Deal Closed ✓
-              </button>
-              <button className="training__exit-btn training__exit-btn--booked" onClick={() => void endSession('call-booked')} disabled={state.isLoading}>
-                Call Booked ◈
-              </button>
-              <button className="training__exit-btn training__exit-btn--next" onClick={() => void endSession('next-step')} disabled={state.isLoading}>
-                Next Step →
-              </button>
-              <button className="training__exit-btn training__exit-btn--lost" onClick={() => void endSession('lead-lost')} disabled={state.isLoading}>
-                Lead Lost ✗
-              </button>
-            </div>
             <div className="training__text-row">
               <textarea
                 className="training__input"
@@ -364,7 +375,7 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
         <div className="training__selection">
           <div className="training__selection-header">
             <h1 className="training__selection-title">Training Mode</h1>
-            <p className="training__selection-sub">Pick a scenario. The AI plays the prospect. You close the deal.</p>
+            <p className="training__selection-sub">Pick a scenario. The AI plays the prospect. End the call when you're ready for your coaching report.</p>
           </div>
           {state.error && <div className="training__error">{state.error}</div>}
           <div className="training__lang-row">
@@ -405,6 +416,46 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
             ))}
           </div>
           {state.isLoading && <div className="training__loading">Setting up scenario...</div>}
+
+          {history.length > 0 && (
+            <div className="training__history">
+              <button
+                className="training__history-toggle"
+                onClick={() => setShowHistory(v => !v)}
+              >
+                <span>◷ Session History</span>
+                <span className="training__history-count">{history.length}</span>
+                <span className="training__history-caret">{showHistory ? '▴' : '▾'}</span>
+              </button>
+              {showHistory && (
+                <div className="training__history-list">
+                  {history.map((h) => (
+                    <div key={h.id} className="training__history-item">
+                      <div className="training__history-left">
+                        <span className="training__history-scenario">{h.scenarioLabel}</span>
+                        <span className={`training__diff-badge training__diff-badge--${h.difficulty}`}>
+                          {h.difficulty.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="training__history-center">
+                        <span className="training__history-headline">{h.headline}</span>
+                        <span className="training__history-meta">{h.exchanges} exchange{h.exchanges !== 1 ? 's' : ''} · {new Date(h.date).toLocaleDateString()}</span>
+                      </div>
+                      {h.overallScore !== null && (
+                        <div className="training__history-score" style={{
+                          color: h.overallScore >= 8 ? 'var(--color-accent-green)'
+                            : h.overallScore >= 6 ? 'var(--color-accent-yellow)'
+                            : 'var(--color-accent-red)',
+                        }}>
+                          {h.overallScore.toFixed(1)}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
     );
@@ -473,7 +524,7 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                 </div>
                 <ul className="training__chooser-features">
                   <li>3 skill levels — Beginner to Advanced</li>
-                  <li>27 guided lessons with coaching tips</li>
+                  <li>27 lessons: taught first, then tested</li>
                   <li>Track your scores and improvement</li>
                 </ul>
                 <div className="training__chooser-cta">Start Learning →</div>
@@ -490,7 +541,7 @@ export function TrainingScreen({ onBack }: TrainingScreenProps) {
                   Switch to Practice ◎
                 </button>
               </div>
-              <AcademySection user={user} />
+              <AcademySection user={user} appLanguage={language} />
             </div>
           ) : null}
         </div>
