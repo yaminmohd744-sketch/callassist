@@ -29,3 +29,13 @@ export function getTrainingHistory(): TrainingHistoryEntry[] {
 export function clearTrainingHistory(): void {
   localStorage.removeItem(KEY);
 }
+
+export function getMonthlySessionCount(): number {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  return getTrainingHistory().filter(entry => {
+    const d = new Date(entry.date);
+    return d.getFullYear() === year && d.getMonth() === month;
+  }).length;
+}

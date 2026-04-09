@@ -96,7 +96,8 @@
       "Bash(npx tsc:*)",
       "Bash(node fix-quotes.js)",
       "Bash(mv \"c:\\\\Users\\\\yamin\\\\callassist\\\\callassist\\\\fix-quotes.js\" \"c:\\\\Users\\\\yamin\\\\callassist\\\\callassist\\\\fix-quotes.cjs\")",
-      "Bash(node fix-quotes.cjs)"
+      "Bash(node fix-quotes.cjs)",
+      "Bash(grep -n \"^  {$\" /c/Users/yamin/callassist/callassist/src/lib/curriculum.ts)"
     ]
   }
 }

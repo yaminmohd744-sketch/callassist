@@ -799,14 +799,14 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         highlight: true,
         features: [
           '60 live calls / month',
-          '30 training sessions / month',
           'Full AI Academy — all 3 modules',
+          '30 scenario training sessions / month',
           '6 languages',
           'Full post-call analysis + follow-up email',
           'Basic analytics',
           'Email support',
         ],
-        missing: ['Unlimited training', 'All 10 languages', 'Advanced analytics', 'Call upload'],
+        missing: ['Unlimited scenario sessions', 'All 10 languages', 'Advanced analytics', 'Call upload'],
       },
       {
         tier: 'BUSINESS',
@@ -2153,7 +2153,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
             <div className="lp__pricing-desc">For reps ready to level up</div>
             <div className="lp__pricing-divider" />
             <ul className="lp__pricing-features">
-              {['60 live calls / month','Unlimited training sessions','AI Academy — Beginner + Intermediate','6 languages','Full post-call analysis + follow-up email','Basic analytics','Email support'].map((f,i) => (
+              {['60 live calls / month','Full AI Academy — all 3 modules','30 scenario training sessions / month','6 languages','Full post-call analysis + follow-up email','Basic analytics','Email support'].map((f,i) => (
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>

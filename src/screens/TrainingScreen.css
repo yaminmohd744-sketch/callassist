@@ -127,6 +127,30 @@
   letter-spacing: -0.01em;
 }
 
+.training__session-quota {
+  display: inline-block;
+  margin-top: var(--space-3);
+  padding: 4px 12px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-radius: 4px;
+  background: rgba(129, 74, 200, 0.1);
+  border: 1px solid rgba(129, 74, 200, 0.3);
+  color: var(--color-text-secondary);
+}
+
+.training__session-quota--exhausted {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--color-accent-red);
+}
+
+.training__scenario-card--locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .training__selection-sub {
   font-size: var(--font-size-base);
   color: var(--color-text-secondary);

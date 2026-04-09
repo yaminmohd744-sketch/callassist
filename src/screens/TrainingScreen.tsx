@@ -5,8 +5,9 @@ import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import { AcademySection } from './AcademySection';
 import { getSavedContexts, saveContext } from '../lib/saleContexts';
 import { recordPracticeToday } from '../lib/streak';
-import { saveTrainingSession, getTrainingHistory } from '../lib/trainingHistory';
+import { saveTrainingSession, getTrainingHistory, getMonthlySessionCount } from '../lib/trainingHistory';
 import type { TrainingHistoryEntry } from '../lib/trainingHistory';
+import type { UserTier } from './AcademySection';
 import type { TrainingScenario } from '../types';
 import type { TrainingDifficulty } from '../hooks/useTraining';
 import './TrainingScreen.css';
@@ -89,6 +90,12 @@ const SUB_SCENARIOS: Record<TrainingScenario, SubScenario[]> = {
 
 type SelectionMode = 'split' | 'practice' | 'academy';
 
+const TIER_SCENARIO_LIMITS: Record<UserTier, number | null> = {
+  starter: 10,
+  pro: 30,
+  business: null, // unlimited
+};
+
 export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreenProps) {
   const { user } = useAuth();
   const { state, startScenario, confirmContext, sendResponse, endSession, reset } = useTraining();
@@ -101,6 +108,10 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
   const [language, setLanguage] = useState(appLanguage);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<TrainingHistoryEntry[]>(() => getTrainingHistory());
+  const [monthlyCount, setMonthlyCount] = useState(() => getMonthlySessionCount());
+  const userTier: UserTier = 'pro';
+  const scenarioLimit = TIER_SCENARIO_LIMITS[userTier];
+  const limitReached = scenarioLimit !== null && monthlyCount >= scenarioLimit;
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -129,6 +140,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
       };
       saveTrainingSession(entry);
       setHistory(getTrainingHistory());
+      setMonthlyCount(getMonthlySessionCount());
     }
   }, [state.phase, state.summary]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -376,6 +388,13 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
           <div className="training__selection-header">
             <h1 className="training__selection-title">Training Mode</h1>
             <p className="training__selection-sub">Pick a scenario. The AI plays the prospect. End the call when you're ready for your coaching report.</p>
+            {scenarioLimit !== null && (
+              <div className={`training__session-quota${limitReached ? ' training__session-quota--exhausted' : ''}`}>
+                {limitReached
+                  ? `Monthly limit reached — ${scenarioLimit} scenario sessions used this month. Resets next month.`
+                  : `${monthlyCount} / ${scenarioLimit} scenario sessions used this month`}
+              </div>
+            )}
           </div>
           {state.error && <div className="training__error">{state.error}</div>}
           <div className="training__lang-row">
@@ -401,10 +420,10 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
                   return (
                     <button
                       key={s.id}
-                      className={`training__scenario-card training__scenario-card--${s.id}`}
+                      className={`training__scenario-card training__scenario-card--${s.id}${limitReached ? ' training__scenario-card--locked' : ''}`}
                       style={{ animationDelay: `${globalIdx * 0.18}s` }}
-                      onClick={() => { startScenario(s.id, language); setContextInput(''); setSelectedSub(null); setCustomDesc(''); setSelectedDifficulty('medium'); }}
-                      disabled={state.isLoading}
+                      onClick={() => { if (limitReached) return; startScenario(s.id, language); setContextInput(''); setSelectedSub(null); setCustomDesc(''); setSelectedDifficulty('medium'); }}
+                      disabled={state.isLoading || limitReached}
                     >
                       <div className="training__scenario-icon">{s.icon}</div>
                       <div className="training__scenario-label">{s.label}</div>
@@ -541,7 +560,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
                   Switch to Practice ◎
                 </button>
               </div>
-              <AcademySection user={user} appLanguage={language} />
+              <AcademySection user={user} appLanguage={language} userTier={userTier} />
             </div>
           ) : null}
         </div>

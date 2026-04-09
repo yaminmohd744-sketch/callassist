@@ -55,16 +55,19 @@ const SUB_PROMPTS: Record<TrainingScenario, string[]> = {
   'custom': [],
 };
 
+export type UserTier = 'starter' | 'pro' | 'business';
+
 interface AcademySectionProps {
   user: User | null;
   appLanguage?: string;
+  userTier?: UserTier;
 }
 
 type AcademyPhase = 'overview' | 'walkthrough' | 'intro' | 'practice' | 'results';
 
 const TOTAL_LESSONS = ALL_LESSONS.length;
 
-export function AcademySection({ user, appLanguage = 'en-US' }: AcademySectionProps) {
+export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }: AcademySectionProps) {
   const { loading, saveSession, getLessonStats, isLessonUnlocked, getOverallStats } = useAcademy(user);
   const { state: trainingState, startScenario, confirmContext, sendResponse, endSession, reset } = useTraining();
 
@@ -151,9 +154,10 @@ export function AcademySection({ user, appLanguage = 'en-US' }: AcademySectionPr
     void endSession();
   }
 
-  // Module unlock: previous module must have ≥5 lessons passed
+  // Module unlock: pro/business users get full academy access; starter requires progression
   function isModuleUnlocked(modIndex: number): boolean {
     if (modIndex === 0) return true;
+    if (userTier === 'pro' || userTier === 'business') return true;
     const prevModule = CURRICULUM[modIndex - 1];
     const passedCount = prevModule.lessons.filter(l => {
       const stats = getLessonStats(l.id, l.passScore);
@@ -236,7 +240,10 @@ export function AcademySection({ user, appLanguage = 'en-US' }: AcademySectionPr
 
                 {!modUnlocked ? (
                   <div className="academy__locked-msg">
-                    Pass {prevPassedNeeded} more lesson{prevPassedNeeded !== 1 ? 's' : ''} in "{CURRICULUM[modIndex - 1]?.title}" to unlock
+                    {userTier === 'starter'
+                      ? <>Upgrade to Pro for full Academy access, or pass {prevPassedNeeded} more lesson{prevPassedNeeded !== 1 ? 's' : ''} in &ldquo;{CURRICULUM[modIndex - 1]?.title}&rdquo;</>
+                      : <>Pass {prevPassedNeeded} more lesson{prevPassedNeeded !== 1 ? 's' : ''} in &ldquo;{CURRICULUM[modIndex - 1]?.title}&rdquo; to unlock</>
+                    }
                   </div>
                 ) : (
                   <div className="academy__lessons">
