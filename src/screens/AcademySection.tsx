@@ -119,7 +119,7 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
     const subPrompt = SUB_PROMPTS[activeLesson.scenario][activeLesson.subScenarioIndex] ?? '';
     saveContext(ctx.trim());
     startScenario(activeLesson.scenario, appLanguage);
-    await confirmContext(ctx || 'my product/service', activeLesson.difficulty, subPrompt);
+    await confirmContext(ctx || 'my product/service', activeLesson.difficulty, subPrompt, appLanguage);
     setPhase('practice');
   }
 

@@ -67,8 +67,9 @@ export function useTraining() {
     setState(s => ({ ...s, phase: 'context', scenario, language, error: null }));
   }, []);
 
-  const confirmContext = useCallback(async (saleContext: string, difficulty: TrainingDifficulty, subScenarioContext: string) => {
+  const confirmContext = useCallback(async (saleContext: string, difficulty: TrainingDifficulty, subScenarioContext: string, languageOverride?: string) => {
     const { scenario, language } = stateRef.current;
+    const effectiveLanguage = languageOverride ?? language;
     setState(s => ({ ...s, isLoading: true, error: null, saleContext, difficulty, subScenarioContext }));
     try {
       const data = await callFunction('training-prospect', {
@@ -76,7 +77,7 @@ export function useTraining() {
         scenarioDescription: '',
         messages: [],
         userResponse: null,
-        language,
+        language: effectiveLanguage,
         saleContext,
         difficulty,
         subScenarioContext,
@@ -100,7 +101,7 @@ export function useTraining() {
         summary: null,
         isLoading: false,
         error: null,
-        language,
+        language: effectiveLanguage,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
