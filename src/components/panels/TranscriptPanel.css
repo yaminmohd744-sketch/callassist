@@ -160,7 +160,7 @@
   color: var(--color-text-muted);
 }
 
-.transcript-entry--prospect .transcript-entry__speaker { color: var(--color-accent-cyan); }
+.transcript-entry--prospect .transcript-entry__speaker { color: var(--color-prospect); }
 .transcript-entry--rep      .transcript-entry__speaker { color: var(--color-accent-purple); }
 
 .transcript-entry__time {
@@ -178,7 +178,7 @@
 
 .transcript-entry__cursor {
   display: inline;
-  color: var(--color-accent-cyan);
+  color: var(--color-prospect);
   animation: cursor-blink 0.8s step-end infinite;
 }
 
@@ -221,9 +221,9 @@
 }
 
 .transcript-panel__speaker-btn--active-prospect {
-  background: rgba(129, 74, 200, 0.12);
-  border-color: var(--color-accent-purple);
-  color: var(--color-accent-magenta);
+  background: var(--color-prospect-dim);
+  border-color: var(--color-prospect);
+  color: var(--color-prospect);
 }
 
 .transcript-panel__speaker-btn--active-rep {

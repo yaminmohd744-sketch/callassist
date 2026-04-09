@@ -571,7 +571,7 @@
 .lp__mock-msg { padding: var(--space-3) var(--space-4); line-height: 1.5; }
 .lp__mock-msg--prospect {
   color: var(--color-text-secondary);
-  border-left: 2px solid rgba(129, 74, 200, 0.5);
+  border-left: 2px solid var(--color-prospect-dim);
   margin: var(--space-3) var(--space-4);
   padding-left: var(--space-3);
 }
@@ -2000,7 +2000,7 @@
 }
 
 .demo-coach-prospect {
-  color: var(--color-text-muted);
+  color: var(--color-prospect);
   line-height: 1.45;
   animation: demo-coach-prospect 6s ease-in-out infinite;
 }
@@ -2044,7 +2044,7 @@
 }
 
 .demo-prac-prospect {
-  color: var(--color-text-muted);
+  color: var(--color-prospect);
   animation: demo-prac-p 6s ease-in-out infinite;
 }
 .demo-prac-you {

@@ -193,7 +193,7 @@
   color: var(--color-text-muted);
 }
 
-.postcall__entry-speaker--prospect { color: var(--color-accent-cyan); }
+.postcall__entry-speaker--prospect { color: var(--color-prospect); }
 .postcall__entry-speaker--rep      { color: var(--color-accent-purple); }
 
 .postcall__entry-time {

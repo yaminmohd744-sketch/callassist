@@ -402,9 +402,14 @@
   line-height: 1.6;
 }
 
+.training__msg--prospect .training__msg-label {
+  color: var(--color-prospect);
+}
+
 .training__msg--prospect .training__msg-bubble {
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
+  border-left: 2px solid var(--color-prospect);
   color: var(--color-text-primary);
 }
 

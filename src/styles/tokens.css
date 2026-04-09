@@ -16,6 +16,8 @@
   --color-accent-gradient: linear-gradient(135deg, #814ac8, #df7afe);
   --color-accent-cyan:    #814ac8; /* alias - keeps old references working */
   --color-accent-cyan-dim:#3d1f66;
+  --color-prospect:       #f9a8d4; /* light pink for prospect labels */
+  --color-prospect-dim:   rgba(249, 168, 212, 0.15);
   --color-accent-green:   #39d353;
   --color-accent-red:     #ff4444;
   --color-accent-yellow:  #f0e040;
@@ -90,6 +92,8 @@
   --color-accent-gradient:   linear-gradient(135deg, #7b3fbd, #b830e8);
   --color-accent-cyan:       #7b3fbd;
   --color-accent-cyan-dim:   #ece4f9;
+  --color-prospect:          #be185d; /* pink-700 for light theme */
+  --color-prospect-dim:      rgba(190, 24, 93, 0.1);
   --color-accent-green:      #1a8f35;
   --color-accent-red:        #d42020;
   --color-accent-yellow:     #9a7800;
