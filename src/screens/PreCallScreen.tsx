@@ -4,6 +4,7 @@ import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
 import { enhancePitch } from '../lib/ai';
 import type { CallConfig } from '../types';
+import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
 
 interface PreCallScreenProps {
@@ -20,6 +21,7 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
     callGoal: '',
     language: defaultLanguage,
   });
+  const t = useTranslations();
   const [errors, setErrors] = useState<Partial<CallConfig>>({});
   const [enhancing, setEnhancing] = useState(false);
   const [enhanced, setEnhanced] = useState(false);
@@ -62,16 +64,16 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
           <div className="precall__logo">PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span></div>
         </div>
 
-        <h2 className="precall__title">Pre-Call Setup</h2>
+        <h2 className="precall__title">{t.precall.title}</h2>
         <p className="precall__desc">Give the AI context before your call starts. The more detail, the better the coaching.</p>
 
         <div className="precall__form">
           <div className="precall__row">
             <div className={`precall__field ${errors.prospectName ? 'precall__field--error' : ''}`}>
-              <label className="precall__label">PROSPECT NAME <span className="precall__required">*</span></label>
+              <label className="precall__label">{t.precall.prospectName} <span className="precall__required">*</span></label>
               <input
                 className="precall__input"
-                placeholder="e.g. Sarah Johnson"
+                placeholder={t.precall.prospectNamePlaceholder}
                 value={form.prospectName}
                 onChange={e => handleChange('prospectName', e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -80,10 +82,10 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
             </div>
 
             <div className="precall__field">
-              <label className="precall__label">COMPANY</label>
+              <label className="precall__label">{t.precall.company}</label>
               <input
                 className="precall__input"
-                placeholder="e.g. Acme Corp"
+                placeholder={t.precall.companyPlaceholder}
                 value={form.company}
                 onChange={e => handleChange('company', e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -92,10 +94,10 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
           </div>
 
           <div className={`precall__field ${errors.callGoal ? 'precall__field--error' : ''}`}>
-            <label className="precall__label">CALL GOAL <span className="precall__required">*</span></label>
+            <label className="precall__label">{t.precall.callGoal} <span className="precall__required">*</span></label>
             <input
               className="precall__input"
-              placeholder="e.g. Book a 30-min demo call"
+              placeholder={t.precall.callGoalPlaceholder}
               value={form.callGoal}
               onChange={e => handleChange('callGoal', e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -105,7 +107,7 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
 
           <div className="precall__field">
             <div className="precall__label-row">
-              <label className="precall__label">YOUR PITCH / PRODUCT</label>
+              <label className="precall__label">{t.precall.yourPitch}</label>
               <button
                 type="button"
                 className={`precall__enhance-btn ${enhanced ? 'precall__enhance-btn--done' : ''}`}
@@ -124,7 +126,7 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
             </div>
             <textarea
               className="precall__textarea"
-              placeholder="Describe your product or service in a few words — hit Generate to let AI expand it into a full coaching context..."
+              placeholder={t.precall.yourPitchPlaceholder}
               value={form.yourPitch}
               onChange={e => handleChange('yourPitch', e.target.value)}
               rows={4}
@@ -132,7 +134,7 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
           </div>
 
           <div className="precall__field">
-            <label className="precall__label">CALL LANGUAGE</label>
+            <label className="precall__label">{t.precall.language}</label>
             <div className="precall__lang-grid">
               {SUPPORTED_LANGUAGES.map(l => (
                 <button
@@ -165,7 +167,7 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
             onClick={handleSubmit}
             className="precall__start"
           >
-            ▶ START CALL
+            ▶ {t.precall.startCall}
           </Button>
         </div>
       </div>

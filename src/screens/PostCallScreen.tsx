@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../components/ui/Button';
 import type { CallSession } from '../types';
 import { formatDuration, formatDateLong } from '../lib/formatters';
+import { useTranslations } from '../hooks/useTranslations';
 import './PostCallScreen.css';
 
 function downloadFile(filename: string, content: string) {
@@ -63,6 +64,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'transcript' | 'email'>('summary');
 
+  const t = useTranslations();
   const slug = (session.config.prospectName || 'call').toLowerCase().replace(/\s+/g, '-');
 
   async function handleCopyEmail() {
@@ -85,7 +87,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
   return (
     <div className="postcall">
       <div className="postcall__header">
-        <button className="postcall__back" onClick={onBack}>← DASHBOARD</button>
+        <button className="postcall__back" onClick={onBack}>← {t.postcall.backToDashboard}</button>
         <div className="postcall__title-section">
           <h1 className="postcall__title">Call Complete</h1>
           <div className="postcall__meta">
@@ -98,7 +100,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
         <div className="postcall__header-actions">
           <div className="postcall__crm-badge">✓ Saved to CRM</div>
           <Button variant="primary" size="md" onClick={onNewCall}>
-            ▶ NEW CALL
+            ▶ {t.postcall.newCall}
           </Button>
         </div>
       </div>
@@ -106,25 +108,25 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
       <div className="postcall__stats-row">
         <div className="postcall__stat">
           <div className="postcall__stat-val">{formatDuration(session.durationSeconds)}</div>
-          <div className="postcall__stat-label">DURATION</div>
+          <div className="postcall__stat-label">{t.postcall.duration}</div>
         </div>
         <div className="postcall__stat">
           <div className={`postcall__stat-val postcall__stat-val--${session.objectionsCount > 0 ? 'red' : 'default'}`}>
             {session.objectionsCount}
           </div>
-          <div className="postcall__stat-label">OBJECTIONS</div>
+          <div className="postcall__stat-label">{t.postcall.objections}</div>
         </div>
         <div className="postcall__stat">
           <div className={`postcall__stat-val postcall__stat-val--${probLevel}`}>
             {session.finalCloseProbability}%
           </div>
-          <div className="postcall__stat-label">CLOSE PROB</div>
+          <div className="postcall__stat-label">{t.postcall.score}</div>
         </div>
         <div className="postcall__stat">
           <div className={`postcall__stat-val postcall__stat-val--${scoreLevel}`}>
             {session.leadScore}
           </div>
-          <div className="postcall__stat-label">LEAD SCORE</div>
+          <div className="postcall__stat-label">{t.postcall.leadScore}</div>
         </div>
         <div className="postcall__stat">
           <div className="postcall__stat-val">{session.transcript.length}</div>
@@ -137,9 +139,9 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
       </div>
 
       <div className="postcall__tabs">
-        <button className={`postcall__tab ${activeTab === 'summary' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('summary')}>AI SUMMARY</button>
-        <button className={`postcall__tab ${activeTab === 'transcript' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('transcript')}>TRANSCRIPT</button>
-        <button className={`postcall__tab ${activeTab === 'email' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('email')}>FOLLOW-UP EMAIL</button>
+        <button className={`postcall__tab ${activeTab === 'summary' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('summary')}>{t.postcall.summary}</button>
+        <button className={`postcall__tab ${activeTab === 'transcript' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('transcript')}>{t.postcall.transcript}</button>
+        <button className={`postcall__tab ${activeTab === 'email' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('email')}>{t.postcall.followUp}</button>
       </div>
 
       <div className="postcall__content">
@@ -182,7 +184,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
           <div className="postcall__email-section">
             <div className="postcall__tab-actions">
               <Button variant="secondary" size="sm" onClick={handleCopyEmail}>
-                {copied ? '✓ COPIED' : '⎘ COPY'}
+                {copied ? `✓ ${t.postcall.copyEmail}` : `⎘ ${t.postcall.copyEmail}`}
               </Button>
               <Button variant="secondary" size="sm" onClick={handleDownloadEmail}>
                 ↓ DOWNLOAD .TXT

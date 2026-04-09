@@ -1,5 +1,6 @@
 import { MILESTONES } from '../lib/milestones';
 import { TierBadge } from './TierBadge';
+import { useTranslations } from '../hooks/useTranslations';
 import './TiersOverlay.css';
 
 interface TiersOverlayProps {
@@ -9,6 +10,7 @@ interface TiersOverlayProps {
 }
 
 export function TiersOverlay({ totalCalls, totalSessions, onClose }: TiersOverlayProps) {
+  const t = useTranslations();
   const ordered = [...MILESTONES].reverse();
 
   return (
@@ -16,14 +18,11 @@ export function TiersOverlay({ totalCalls, totalSessions, onClose }: TiersOverla
       <div className="tiers-panel" onClick={e => e.stopPropagation()}>
 
         <div className="tiers-header">
-          <div className="tiers-title">Rank Tiers</div>
-          <button className="tiers-close" onClick={onClose} aria-label="Close">✕</button>
+          <div className="tiers-title">{t.tiers.title}</div>
+          <button className="tiers-close" onClick={onClose} aria-label={t.common.close}>✕</button>
         </div>
 
-        <p className="tiers-subtitle">
-          Unlock tiers by completing real calls <em>and</em> training sessions.
-          Both must meet the threshold to advance.
-        </p>
+        <p className="tiers-subtitle">{t.tiers.subtitle}</p>
 
         <div className="tiers-list">
           {ordered.map((m) => {
@@ -46,16 +45,16 @@ export function TiersOverlay({ totalCalls, totalSessions, onClose }: TiersOverla
                 <div className="tiers-card__body">
                   <div className="tiers-card__label" style={unlocked ? { color: m.color } : undefined}>
                     {m.label}
-                    {unlocked && <span className="tiers-card__unlocked-tag">Unlocked</span>}
+                    {unlocked && <span className="tiers-card__unlocked-tag">{t.tiers.unlocked}</span>}
                   </div>
                   <div className="tiers-card__desc">{m.description}</div>
 
                   <div className="tiers-card__reqs">
                     <span className={`tiers-card__req${totalCalls >= m.minCalls ? ' tiers-card__req--met' : ''}`}>
-                      {totalCalls >= m.minCalls ? '✓' : '○'} {m.minCalls === 0 ? 'No calls required' : `${m.minCalls} calls`}
+                      {totalCalls >= m.minCalls ? '✓' : '○'} {m.minCalls === 0 ? t.tiers.noCalls : `${m.minCalls} ${t.tiers.calls}`}
                     </span>
                     <span className={`tiers-card__req${totalSessions >= m.minSessions ? ' tiers-card__req--met' : ''}`}>
-                      {totalSessions >= m.minSessions ? '✓' : '○'} {m.minSessions === 0 ? 'No sessions required' : `${m.minSessions} training sessions`}
+                      {totalSessions >= m.minSessions ? '✓' : '○'} {m.minSessions === 0 ? t.tiers.noSessions : `${m.minSessions} ${t.tiers.sessions}`}
                     </span>
                   </div>
 
@@ -67,7 +66,7 @@ export function TiersOverlay({ totalCalls, totalSessions, onClose }: TiersOverla
                           style={{ width: `${pct}%`, background: m.color }}
                         />
                       </div>
-                      <span className="tiers-card__progress-label">{pct}% there</span>
+                      <span className="tiers-card__progress-label">{pct}{t.tiers.percentThere}</span>
                     </div>
                   )}
                 </div>

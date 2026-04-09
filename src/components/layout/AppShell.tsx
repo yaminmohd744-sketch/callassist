@@ -4,15 +4,12 @@ import type { LanguageCode } from '../../lib/languages';
 import { getMilestone, formatTotalTime } from '../../lib/milestones';
 import { TiersOverlay } from '../TiersOverlay';
 import { TierBadge } from '../TierBadge';
+import { useTranslations } from '../../hooks/useTranslations';
 import './AppShell.css';
 
 type ShellScreen = 'dashboard' | 'training' | 'analytics';
 
-const NAV_ITEMS: { id: ShellScreen; label: string }[] = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'training',  label: 'Training'  },
-  { id: 'analytics', label: 'Analytics' },
-];
+const NAV_IDS: ShellScreen[] = ['dashboard', 'training', 'analytics'];
 
 interface AppShellProps {
   activeScreen: ShellScreen;
@@ -51,6 +48,7 @@ export function AppShell({
   profilePic, onProfilePicChange,
   children,
 }: AppShellProps) {
+  const t = useTranslations();
   const [langOpen, setLangOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [tiersOpen, setTiersOpen] = useState(false);
@@ -86,13 +84,13 @@ export function AppShell({
         </div>
 
         <nav className="app-shell__tabs" role="navigation">
-          {NAV_ITEMS.map(({ id, label }) => (
+          {NAV_IDS.map(id => (
             <button
               key={id}
               className={`app-shell__tab${activeScreen === id ? ' app-shell__tab--active' : ''}`}
               onClick={() => onNavigate(id)}
             >
-              {label}
+              {t.nav[id]}
               {activeScreen === id && <span className="app-shell__tab-bar" />}
             </button>
           ))}
@@ -105,7 +103,7 @@ export function AppShell({
             <button
               className="app-shell__lang-btn"
               onClick={() => setLangOpen(o => !o)}
-              title={`App language: ${currentLangLabel}`}
+              title={`${t.profile.appLanguage}: ${currentLangLabel}`}
               aria-expanded={langOpen}
             >
               <img
@@ -119,7 +117,7 @@ export function AppShell({
 
             {langOpen && (
               <div className="app-shell__lang-dropdown">
-                <div className="app-shell__lang-dropdown-label">App language</div>
+                <div className="app-shell__lang-dropdown-label">{t.profile.appLanguage}</div>
                 {SUPPORTED_LANGUAGES.map(l => (
                   <button
                     key={l.code}
@@ -135,15 +133,13 @@ export function AppShell({
                     {appLanguage === l.code && <span className="app-shell__lang-option-check">✓</span>}
                   </button>
                 ))}
-                <div className="app-shell__lang-dropdown-note">
-                  Affects coaching and training language. Override per call in Pre-Call Setup.
-                </div>
+                <div className="app-shell__lang-dropdown-note">{t.profile.langNote}</div>
               </div>
             )}
           </div>
 
-          <button className="app-shell__btn-ghost" onClick={onUploadCall}>↑ Upload</button>
-          <button className="app-shell__btn-primary" onClick={onStartCall}>▶ New Call</button>
+          <button className="app-shell__btn-ghost" onClick={onUploadCall}>{t.nav.upload}</button>
+          <button className="app-shell__btn-primary" onClick={onStartCall}>{t.nav.newCall}</button>
 
           {/* ── Profile avatar + dropdown ── */}
           <div className="app-shell__profile-wrap" ref={profileRef}>
@@ -232,7 +228,7 @@ export function AppShell({
                   {!next && (
                     <div className="app-shell__milestone-progress">
                       <div className="app-shell__milestone-label" style={{ color: milestone.color }}>
-                        ✦ Max rank achieved
+                        {t.profile.maxRank}
                       </div>
                     </div>
                   )}
@@ -240,24 +236,24 @@ export function AppShell({
                   <div className="app-shell__profile-divider" />
 
                   {/* Activity stats */}
-                  <div className="app-shell__profile-section-label">ACTIVITY</div>
+                  <div className="app-shell__profile-section-label">{t.profile.activity}</div>
                   <div className="app-shell__profile-stats">
                     <div className="app-shell__profile-stat">
                       <span className="app-shell__profile-stat-icon">◉</span>
                       <span className="app-shell__profile-stat-text">
-                        <strong>{totalCallCount}</strong> call{totalCallCount !== 1 ? 's' : ''} · {formatTotalTime(totalCallSeconds)}
+                        <strong>{totalCallCount}</strong> {t.profile.calls(totalCallCount)} · {formatTotalTime(totalCallSeconds)}
                       </span>
                     </div>
                     <div className="app-shell__profile-stat">
                       <span className="app-shell__profile-stat-icon">◈</span>
                       <span className="app-shell__profile-stat-text">
-                        <strong>{totalTrainingSessions}</strong> training session{totalTrainingSessions !== 1 ? 's' : ''} · {formatTotalTime(totalTrainingSeconds)}
+                        <strong>{totalTrainingSessions}</strong> {t.profile.trainingSessions(totalTrainingSessions)} · {formatTotalTime(totalTrainingSeconds)}
                       </span>
                     </div>
                     <div className="app-shell__profile-stat app-shell__profile-stat--total">
                       <span className="app-shell__profile-stat-icon">⏱</span>
                       <span className="app-shell__profile-stat-text">
-                        <strong>{formatTotalTime(totalSeconds)}</strong> total on platform
+                        <strong>{formatTotalTime(totalSeconds)}</strong> {t.profile.totalOnPlatform}
                       </span>
                     </div>
                   </div>
@@ -265,9 +261,9 @@ export function AppShell({
                   <div className="app-shell__profile-divider" />
 
                   {/* Appearance */}
-                  <div className="app-shell__profile-section-label">APPEARANCE</div>
+                  <div className="app-shell__profile-section-label">{t.profile.appearance}</div>
                   <div className="app-shell__profile-appearance">
-                    <span className={`app-shell__theme-label${theme === 'dark' ? ' app-shell__theme-label--active' : ''}`}>Dark</span>
+                    <span className={`app-shell__theme-label${theme === 'dark' ? ' app-shell__theme-label--active' : ''}`}>{t.profile.dark}</span>
                     <button
                       className={`app-shell__theme-toggle${theme === 'light' ? ' app-shell__theme-toggle--light' : ''}`}
                       onClick={onToggleTheme}
@@ -275,7 +271,7 @@ export function AppShell({
                     >
                       <span className="app-shell__theme-knob" />
                     </button>
-                    <span className={`app-shell__theme-label${theme === 'light' ? ' app-shell__theme-label--active' : ''}`}>Light</span>
+                    <span className={`app-shell__theme-label${theme === 'light' ? ' app-shell__theme-label--active' : ''}`}>{t.profile.light}</span>
                   </div>
 
                   <div className="app-shell__profile-divider" />
@@ -285,7 +281,7 @@ export function AppShell({
                     className="app-shell__profile-signout"
                     onClick={() => { setProfileOpen(false); onSignOut(); }}
                   >
-                    Sign out
+                    {t.common.signOut}
                   </button>
 
                 </div>

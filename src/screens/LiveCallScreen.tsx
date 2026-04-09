@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useTranslations } from '../hooks/useTranslations';
 import { Header } from '../components/layout/Header';
 import { StatusBar } from '../components/layout/StatusBar';
 import { TranscriptPanel } from '../components/panels/TranscriptPanel';
@@ -69,6 +70,7 @@ interface LiveCallScreenProps {
 }
 
 export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
+  const t = useTranslations();
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const transcriptRef = useRef<TranscriptEntry[]>([]);
   const [callStatus, setCallStatus] = useState<CallStatus>('standby');
@@ -224,7 +226,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
             className={`live-call__mobile-tab ${mobilePanel === p ? 'live-call__mobile-tab--active' : ''}`}
             onClick={() => setMobilePanel(p)}
           >
-            {p === 'transcript' ? '⊟ TRANSCRIPT' : p === 'ai' ? '◈ AI COACH' : '◉ PROFILE'}
+            {p === 'transcript' ? `⊟ ${t.liveCall.transcript}` : p === 'ai' ? `◈ ${t.liveCall.aiSuggestions}` : '◉ PROFILE'}
           </button>
         ))}
       </div>

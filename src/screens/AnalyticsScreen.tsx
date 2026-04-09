@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from '../hooks/useTranslations';
 import { supabase } from '../lib/supabase';
 import { getActivityDates } from '../lib/streak';
 import type { CallSession } from '../types';
@@ -228,6 +229,7 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
+  const t = useTranslations();
   const [tab, setTab] = useState<AnalyticsTab>('performance');
   const [trainingRecords, setTrainingRecords] = useState<TrainingRecord[]>([]);
   const [detailView, setDetailView] = useState<string | null>(null);
@@ -503,10 +505,10 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
     <div className="analytics">
       <div className="analytics__topbar">
         {detailView ? (
-          <button className="analytics__back-btn" onClick={() => setDetailView(null)}>← Analytics</button>
+          <button className="analytics__back-btn" onClick={() => setDetailView(null)}>← {t.analytics.title}</button>
         ) : (
           <div>
-            <h1 className="analytics__title">Analytics</h1>
+            <h1 className="analytics__title">{t.analytics.title}</h1>
             <p className="analytics__subtitle">Performance trends across calls and training</p>
           </div>
         )}
@@ -515,9 +517,9 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
       {!detailView && (
         <div className="analytics__tabs">
-          {(['performance', 'intel', 'training', 'team'] as AnalyticsTab[]).map(t => (
-            <button key={t} className={`analytics__tab ${tab === t ? 'analytics__tab--active' : ''}`} onClick={() => setTab(t)}>
-              {t === 'intel' ? 'CALL INTEL' : t.toUpperCase()}
+          {(['performance', 'intel', 'training', 'team'] as AnalyticsTab[]).map(tabId => (
+            <button key={tabId} className={`analytics__tab ${tab === tabId ? 'analytics__tab--active' : ''}`} onClick={() => setTab(tabId)}>
+              {tabId === 'intel' ? 'CALL INTEL' : tabId.toUpperCase()}
             </button>
           ))}
         </div>

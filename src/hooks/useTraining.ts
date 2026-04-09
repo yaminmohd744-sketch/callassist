@@ -70,6 +70,7 @@ export function useTraining() {
   const confirmContext = useCallback(async (saleContext: string, difficulty: TrainingDifficulty, subScenarioContext: string, languageOverride?: string) => {
     const { scenario, language } = stateRef.current;
     const effectiveLanguage = languageOverride ?? language;
+    console.log('[Training] starting session — language:', effectiveLanguage);
     setState(s => ({ ...s, isLoading: true, error: null, saleContext, difficulty, subScenarioContext }));
     try {
       const data = await callFunction('training-prospect', {

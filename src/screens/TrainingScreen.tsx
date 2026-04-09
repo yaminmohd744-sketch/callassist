@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import { useTranslations } from '../hooks/useTranslations';
 import { useTraining } from '../hooks/useTraining';
 import { useAuth } from '../hooks/useAuth';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
@@ -100,6 +101,7 @@ const TIER_SCENARIO_LIMITS: Record<UserTier, number | null> = {
 };
 
 export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreenProps) {
+  const t = useTranslations();
   const { user } = useAuth();
   const { state, startScenario, confirmContext, sendResponse, endSession, reset } = useTraining();
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('split');
@@ -180,7 +182,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
           <div className="training__summary">
             <div className="training__summary-header">
               <h2 className="training__summary-title">
-                {summary ? summary.headline : 'Session Complete'}
+                {summary ? summary.headline : t.training.sessionComplete}
               </h2>
               <p className="training__summary-sub">
                 {SCENARIOS.find(s => s.id === state.scenario)?.label ?? 'Training'} — {repMessages.length} exchange{repMessages.length !== 1 ? 's' : ''}
@@ -188,7 +190,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
             </div>
 
             {state.isLoading && (
-              <div className="training__summary-loading">Generating your coaching report...</div>
+              <div className="training__summary-loading">{t.training.generatingReport}</div>
             )}
 
             {summary && (
@@ -197,27 +199,27 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
                 <div className="training__summary-sections">
                   {summary.strengths.length > 0 && (
                     <div className="training__summary-section training__summary-section--pros">
-                      <div className="training__summary-section-title">✓ What you did well</div>
+                      <div className="training__summary-section-title">{t.training.strengths}</div>
                       <ul>{summary.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul>
                     </div>
                   )}
                   {summary.improvements.length > 0 && (
                     <div className="training__summary-section training__summary-section--cons">
-                      <div className="training__summary-section-title">✗ What to work on</div>
+                      <div className="training__summary-section-title">{t.training.improvements}</div>
                       <ul>{summary.improvements.map((s, i) => <li key={i}>{s}</li>)}</ul>
                     </div>
                   )}
                 </div>
                 <div className="training__summary-takeaway">
-                  <div className="training__summary-takeaway-label">KEY TAKEAWAY</div>
+                  <div className="training__summary-takeaway-label">{t.training.keyTakeaway}</div>
                   <div className="training__summary-takeaway-text">{summary.keyTakeaway}</div>
                 </div>
               </>
             )}
 
             <div className="training__summary-actions">
-              <button className="training__btn training__btn--primary" onClick={reset}>Practice Again</button>
-              <button className="training__btn training__btn--ghost" onClick={onBack}>Back to Dashboard</button>
+              <button className="training__btn training__btn--primary" onClick={reset}>{t.training.practiceAgain}</button>
+              <button className="training__btn training__btn--ghost" onClick={onBack}>{t.training.backToDashboard}</button>
             </div>
           </div>
         </main>
@@ -234,10 +236,10 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
         saveContext(contextInput.trim());
         if (isCustom) {
           const desc = customDesc.trim() || 'A prospect who needs persuasion to make a buying decision.';
-          void confirmContext(contextInput.trim() || 'my product/service', selectedDifficulty, desc);
+          void confirmContext(contextInput.trim() || 'my product/service', selectedDifficulty, desc, language);
         } else {
           const sub = selectedSub ?? subs[1];
-          void confirmContext(contextInput.trim() || 'my product/service', sub.difficulty, sub.prompt);
+          void confirmContext(contextInput.trim() || 'my product/service', sub.difficulty, sub.prompt, language);
         }
       }
 
@@ -325,9 +327,9 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
             {state.error && <div className="training__error">{state.error}</div>}
             <div className="training__context-actions">
               <button className="training__btn training__btn--primary" onClick={handleStart} disabled={state.isLoading}>
-                {state.isLoading ? 'Setting up...' : 'Start Training →'}
+                {state.isLoading ? t.common.loading : `${t.training.startTraining} →`}
               </button>
-              <button className="training__btn training__btn--ghost" onClick={reset}>Back</button>
+              <button className="training__btn training__btn--ghost" onClick={reset}>{t.common.back}</button>
             </div>
           </div>
         </main>
@@ -346,7 +348,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
                 {state.difficulty.toUpperCase()}
               </span>
             </div>
-            <button className="training__end-btn" onClick={() => void endSession('manual')}>End Session</button>
+            <button className="training__end-btn" onClick={() => void endSession('manual')}>{t.training.endSession}</button>
           </div>
           <div className="training__messages">
             {state.messages.map(msg => (
@@ -370,7 +372,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
             <div className="training__text-row">
               <textarea
                 className="training__input"
-                placeholder="Type your response..."
+                placeholder={t.training.yourResponse}
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -378,7 +380,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
                 disabled={state.isLoading}
               />
               <button className="training__send-btn" onClick={handleSend} disabled={state.isLoading || !input.trim()}>
-                SEND
+                {t.common.send}
               </button>
             </div>
           </div>
@@ -391,8 +393,8 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
       <main className="training__main">
         <div className="training__selection">
           <div className="training__selection-header">
-            <h1 className="training__selection-title">Training Mode</h1>
-            <p className="training__selection-sub">Pick a scenario. The AI plays the prospect. End the call when you're ready for your coaching report.</p>
+            <h1 className="training__selection-title">{t.training.title}</h1>
+            <p className="training__selection-sub">{t.training.subtitle}</p>
             {scenarioLimit !== null && (
               <div className={`training__session-quota${limitReached ? ' training__session-quota--exhausted' : ''}`}>
                 {limitReached
@@ -403,7 +405,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
           </div>
           {state.error && <div className="training__error">{state.error}</div>}
           <div className="training__lang-row">
-            <div className="training__lang-label">LANGUAGE</div>
+            <div className="training__lang-label">{t.training.language}</div>
             <div className="training__lang-select">
               {SUPPORTED_LANGUAGES.map(l => (
                 <button
@@ -439,7 +441,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
               </div>
             ))}
           </div>
-          {state.isLoading && <div className="training__loading">Setting up scenario...</div>}
+          {state.isLoading && <div className="training__loading">{t.common.loading}</div>}
 
           {history.length > 0 && (
             <div className="training__history">
@@ -447,7 +449,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
                 className="training__history-toggle"
                 onClick={() => setShowHistory(v => !v)}
               >
-                <span>◷ Session History</span>
+                <span>◷ {t.training.sessionHistory}</span>
                 <span className="training__history-count">{history.length}</span>
                 <span className="training__history-caret">{showHistory ? '▴' : '▾'}</span>
               </button>
@@ -565,7 +567,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
                   Switch to Practice ◎
                 </button>
               </div>
-              <Suspense fallback={<div className="training__loading">Loading Academy...</div>}>
+              <Suspense fallback={<div className="training__loading">{t.training.loadingAcademy}</div>}>
                 <AcademySection user={user} appLanguage={language} userTier={userTier} />
               </Suspense>
             </div>

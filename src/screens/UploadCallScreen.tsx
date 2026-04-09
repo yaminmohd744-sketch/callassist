@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslations } from '../hooks/useTranslations';
 import { generateSessionSummary } from '../lib/ai';
 import { OBJECTION_KEYWORDS, BUYING_KEYWORDS } from '../lib/keywords';
 import type { CallConfig, CallSession, TranscriptEntry, TranscriptSignal } from '../types';
@@ -61,6 +62,7 @@ function parseTranscript(text: string): TranscriptEntry[] {
 }
 
 export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
+  const t = useTranslations();
   const [prospectName, setProspectName] = useState('');
   const [company, setCompany] = useState('');
   const [callGoal, setCallGoal] = useState('');
@@ -137,8 +139,8 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
   return (
     <div className="upload-call">
       <div className="upload-call__header">
-        <button className="upload-call__back" onClick={onBack}>← Back to Dashboard</button>
-        <h1 className="upload-call__title">Upload Call for Analysis</h1>
+        <button className="upload-call__back" onClick={onBack}>← {t.postcall.backToDashboard}</button>
+        <h1 className="upload-call__title">{t.upload.title}</h1>
         <p className="upload-call__sub">
           Paste a transcript or upload a .txt file to get an AI summary, follow-up email, and lead score.
         </p>
@@ -216,15 +218,15 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
               disabled={isProcessing || !transcriptText.trim()}
             >
               {isProcessing
-                ? <><span className="upload-call__spinner" /> Analyzing...</>
-                : '◈ ANALYZE CALL'}
+                ? <><span className="upload-call__spinner" /> {t.upload.analyzing}</>
+                : `◈ ${t.upload.browseFiles}`}
             </button>
             <button
               className="upload-call__btn upload-call__btn--ghost"
               onClick={onBack}
               disabled={isProcessing}
             >
-              Cancel
+              {t.common.cancel}
             </button>
           </div>
         </div>
