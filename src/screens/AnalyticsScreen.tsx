@@ -509,17 +509,20 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
         ) : (
           <div>
             <h1 className="analytics__title">{t.analytics.title}</h1>
-            <p className="analytics__subtitle">Performance trends across calls and training</p>
+            <p className="analytics__subtitle">{t.analytics.subtitle}</p>
           </div>
         )}
-        {isMock && <span className="analytics__demo-badge">DEMO DATA</span>}
+        {isMock && <span className="analytics__demo-badge">{t.analytics.demoData.toUpperCase()}</span>}
       </div>
 
       {!detailView && (
         <div className="analytics__tabs">
           {(['performance', 'intel', 'training', 'team'] as AnalyticsTab[]).map(tabId => (
             <button key={tabId} className={`analytics__tab ${tab === tabId ? 'analytics__tab--active' : ''}`} onClick={() => setTab(tabId)}>
-              {tabId === 'intel' ? 'CALL INTEL' : tabId.toUpperCase()}
+              {tabId === 'performance' ? t.analytics.performance.toUpperCase()
+               : tabId === 'intel' ? t.analytics.callIntel.toUpperCase()
+               : tabId === 'training' ? t.analytics.training.toUpperCase()
+               : t.analytics.team.toUpperCase()}
             </button>
           ))}
         </div>
@@ -535,10 +538,10 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
           </div>
           <div className="analytics__stats">
             {[
-              { val: `${totalCalls}`, label: 'TOTAL CALLS', cls: '' },
-              { val: `${avgProb}%`, label: 'AVG CLOSE %', cls: `analytics__stat-val--${scoreTier(avgProb)}` },
-              { val: `${Math.max(...perfDetail.map(r => r.prob))}%`, label: 'BEST CALL', cls: 'analytics__stat-val--high' },
-              { val: `${perfDetail.filter(r => r.prob >= 61).length}`, label: 'CALLS WON', cls: 'analytics__stat-val--high' },
+              { val: `${totalCalls}`, label: t.analytics.totalCalls.toUpperCase(), cls: '' },
+              { val: `${avgProb}%`, label: t.analytics.avgClosePercent.toUpperCase(), cls: `analytics__stat-val--${scoreTier(avgProb)}` },
+              { val: `${Math.max(...perfDetail.map(r => r.prob))}%`, label: t.analytics.bestCall.toUpperCase(), cls: 'analytics__stat-val--high' },
+              { val: `${perfDetail.filter(r => r.prob >= 61).length}`, label: t.analytics.callsWon.toUpperCase(), cls: 'analytics__stat-val--high' },
             ].map((item, i) => (
               <div key={i} className="analytics__stat-card" style={an(i * 60)}>
                 <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
@@ -583,10 +586,10 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
               const topS = stageDetail.reduce((a, b) => b.count > a.count ? b : a, stageDetail[0] ?? { stage: '—', count: 0, avgProb: 0, avgDur: 0, probTier: 'low' as Tier });
               const bestS = stageDetail.reduce((a, b) => b.avgProb > a.avgProb ? b : a, stageDetail[0] ?? { stage: '—', count: 0, avgProb: 0, avgDur: 0, probTier: 'low' as Tier });
               return [
-                { val: `${stageDetail.length}`, label: 'ACTIVE STAGES', cls: '' },
-                { val: topS.stage.toUpperCase(), label: 'MOST CALLS', cls: '' },
-                { val: `${bestS.avgProb}%`, label: 'BEST STAGE AVG', cls: `analytics__stat-val--${bestS.probTier}` },
-                { val: fmtDur(avgDurSec), label: 'AVG DURATION', cls: '' },
+                { val: `${stageDetail.length}`, label: t.analytics.activeStages.toUpperCase(), cls: '' },
+                { val: topS.stage.toUpperCase(), label: t.analytics.mostCalls.toUpperCase(), cls: '' },
+                { val: `${bestS.avgProb}%`, label: t.analytics.bestStageAvg.toUpperCase(), cls: `analytics__stat-val--${bestS.probTier}` },
+                { val: fmtDur(avgDurSec), label: t.analytics.avgDuration.toUpperCase(), cls: '' },
               ].map((item, i) => (
                 <div key={i} className="analytics__stat-card" style={an(i * 60)}>
                   <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
@@ -636,10 +639,10 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
           </div>
           <div className="analytics__stats">
             {[
-              { val: `${tRecs.length}`, label: 'TOTAL SESSIONS', cls: '' },
-              { val: `${avgTrain}/10`, label: 'AVG SCORE', cls: `analytics__stat-val--${scoreTier(avgTrain * 10, 75, 50)}` },
-              { val: `${bestTrain.toFixed(1)}`, label: 'BEST SCORE', cls: 'analytics__stat-val--high' },
-              { val: `${tRecs.filter(r => r.score >= 7.5).length}`, label: 'HIGH SCORES', cls: 'analytics__stat-val--high' },
+              { val: `${tRecs.length}`, label: t.analytics.totalSessions.toUpperCase(), cls: '' },
+              { val: `${avgTrain}/10`, label: t.analytics.avgScore.toUpperCase(), cls: `analytics__stat-val--${scoreTier(avgTrain * 10, 75, 50)}` },
+              { val: `${bestTrain.toFixed(1)}`, label: t.analytics.bestScore.toUpperCase(), cls: 'analytics__stat-val--high' },
+              { val: `${tRecs.filter(r => r.score >= 7.5).length}`, label: t.analytics.highScores.toUpperCase(), cls: 'analytics__stat-val--high' },
             ].map((item, i) => (
               <div key={i} className="analytics__stat-card" style={an(i * 60)}>
                 <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
@@ -679,10 +682,10 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
           </div>
           <div className="analytics__stats">
             {[
-              { val: `${uniqLess}`, label: 'LESSONS TRIED', cls: '' },
-              { val: `${lessonDetail.filter(r => r.best >= 7.5).length}`, label: 'MASTERED', cls: 'analytics__stat-val--high' },
-              { val: `${lessonDetail.length ? (lessonDetail.reduce((s, r) => s + r.best, 0) / lessonDetail.length).toFixed(1) : '0'}/10`, label: 'AVG BEST', cls: '' },
-              { val: `${tRecs.length}`, label: 'TOTAL ATTEMPTS', cls: '' },
+              { val: `${uniqLess}`, label: t.analytics.lessonsTried.toUpperCase(), cls: '' },
+              { val: `${lessonDetail.filter(r => r.best >= 7.5).length}`, label: t.analytics.mastered.toUpperCase(), cls: 'analytics__stat-val--high' },
+              { val: `${lessonDetail.length ? (lessonDetail.reduce((s, r) => s + r.best, 0) / lessonDetail.length).toFixed(1) : '0'}/10`, label: t.analytics.avgBest.toUpperCase(), cls: '' },
+              { val: `${tRecs.length}`, label: t.analytics.totalAttempts.toUpperCase(), cls: '' },
             ].map((item, i) => (
               <div key={i} className="analytics__stat-card" style={an(i * 60)}>
                 <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
@@ -729,10 +732,10 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
               const callDays     = activityDays.filter(d => d.call && !d.training).length;
               const trainDays    = activityDays.filter(d => d.training && !d.call).length;
               return [
-                { val: `${activeDays}`, label: 'ACTIVE DAYS', cls: '' },
-                { val: `${bothDays}`, label: 'CALL + TRAINING', cls: bothDays > 5 ? 'analytics__stat-val--high' : '' },
-                { val: `${callDays}`, label: 'CALL ONLY', cls: '' },
-                { val: `${trainDays}`, label: 'TRAINING ONLY', cls: '' },
+                { val: `${activeDays}`, label: t.analytics.activeDays.toUpperCase(), cls: '' },
+                { val: `${bothDays}`, label: t.analytics.callAndTraining.toUpperCase(), cls: bothDays > 5 ? 'analytics__stat-val--high' : '' },
+                { val: `${callDays}`, label: t.analytics.callOnly.toUpperCase(), cls: '' },
+                { val: `${trainDays}`, label: t.analytics.trainingOnly.toUpperCase(), cls: '' },
               ].map((item, i) => (
                 <div key={i} className="analytics__stat-card" style={an(i * 60)}>
                   <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
@@ -783,10 +786,10 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
           <div className="analytics__stats">
             {[
-              { val: String(totalCalls),  label: 'TOTAL CALLS',    cls: '' },
-              { val: `${avgProb}%`,        label: 'AVG CLOSE PROB', cls: `analytics__stat-val--${scoreTier(avgProb)}` },
-              { val: String(avgScore),     label: 'AVG LEAD SCORE', cls: `analytics__stat-val--${scoreTier(avgScore, 70, 40)}` },
-              { val: fmtDur(avgDurSec),    label: 'AVG DURATION',   cls: '' },
+              { val: String(totalCalls),  label: t.analytics.totalCalls.toUpperCase(),    cls: '' },
+              { val: `${avgProb}%`,        label: t.analytics.avgCloseProb.toUpperCase(), cls: `analytics__stat-val--${scoreTier(avgProb)}` },
+              { val: String(avgScore),     label: t.analytics.avgLeadScore.toUpperCase(), cls: `analytics__stat-val--${scoreTier(avgScore, 70, 40)}` },
+              { val: fmtDur(avgDurSec),    label: t.analytics.avgDuration.toUpperCase(),  cls: '' },
             ].map((item, i) => (
               <div key={i} className="analytics__stat-card" style={an(i * 70)}>
                 <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
@@ -799,16 +802,16 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
             <div className="analytics__chart-card analytics__chart-card--wide analytics__chart-card--clickable" style={an(280)} onClick={() => setDetailView('prob')}>
               <div className="analytics__chart-title-row">
-                <span className="analytics__chart-title">CLOSE PROBABILITY — LAST {probBars.length} CALLS</span>
-                <span className="analytics__chart-hint">VIEW DETAILS →</span>
+                <span className="analytics__chart-title">{t.analytics.closeProbChart(probBars.length)}</span>
+                <span className="analytics__chart-hint">{t.analytics.viewDetails}</span>
               </div>
               <LineChart chartId="prob" points={probBars.map(b => ({ label: b.label, value: b.pct, tier: b.tier }))} maxVal={100} unit="%" style={an(320)} />
             </div>
 
             <div className="analytics__chart-card analytics__chart-card--clickable" style={an(400)} onClick={() => setDetailView('stage')}>
               <div className="analytics__chart-title-row">
-                <span className="analytics__chart-title">CALLS BY FINAL STAGE</span>
-                <span className="analytics__chart-hint">VIEW DETAILS →</span>
+                <span className="analytics__chart-title">{t.analytics.callsByStage.toUpperCase()}</span>
+                <span className="analytics__chart-hint">{t.analytics.viewDetails}</span>
               </div>
               <div className="analytics__bars">
                 {(Object.entries(stageCount) as [string, number][]).map(([stage, count], i) => (
@@ -825,8 +828,8 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
             <div className="analytics__chart-card analytics__chart-card--clickable" style={an(450)} onClick={() => setDetailView('activity')}>
               <div className="analytics__chart-title-row">
-                <span className="analytics__chart-title">ACTIVITY — LAST 28 DAYS</span>
-                <span className="analytics__chart-hint">VIEW DETAILS →</span>
+                <span className="analytics__chart-title">{t.analytics.activityDays.toUpperCase()}</span>
+                <span className="analytics__chart-hint">{t.analytics.viewDetails}</span>
               </div>
               <div className="analytics__activity-grid">
                 {activityDays.map((d, i) => (
@@ -845,9 +848,9 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
                 ))}
               </div>
               <div className="analytics__activity-legend">
-                <span className="analytics__activity-dot analytics__activity-dot--both" />Both
-                <span className="analytics__activity-dot analytics__activity-dot--call" />Call
-                <span className="analytics__activity-dot analytics__activity-dot--training" />Training
+                <span className="analytics__activity-dot analytics__activity-dot--both" />{t.analytics.both}
+                <span className="analytics__activity-dot analytics__activity-dot--call" />{t.analytics.call}
+                <span className="analytics__activity-dot analytics__activity-dot--training" />{t.analytics.trainingLabel}
               </div>
             </div>
 
@@ -981,10 +984,10 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
           <div className="analytics__stats">
             {[
-              { val: String(tRecs.length), label: 'TOTAL SESSIONS', cls: '' },
-              { val: `${avgTrain}/10`,      label: 'AVG SCORE',      cls: `analytics__stat-val--${scoreTier(avgTrain * 10, 75, 50)}` },
-              { val: bestTrain.toFixed(1),  label: 'BEST SCORE',     cls: 'analytics__stat-val--high' },
-              { val: String(uniqLess),      label: 'LESSONS TRIED',  cls: '' },
+              { val: String(tRecs.length), label: t.analytics.totalSessions.toUpperCase(), cls: '' },
+              { val: `${avgTrain}/10`,      label: t.analytics.avgScore.toUpperCase(),      cls: `analytics__stat-val--${scoreTier(avgTrain * 10, 75, 50)}` },
+              { val: bestTrain.toFixed(1),  label: t.analytics.bestScore.toUpperCase(),     cls: 'analytics__stat-val--high' },
+              { val: String(uniqLess),      label: t.analytics.lessonsTried.toUpperCase(),  cls: '' },
             ].map((item, i) => (
               <div key={i} className="analytics__stat-card" style={an(i * 70)}>
                 <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
@@ -997,8 +1000,8 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
 
             <div className="analytics__chart-card analytics__chart-card--wide analytics__chart-card--clickable" style={an(280)} onClick={() => setDetailView('score')}>
               <div className="analytics__chart-title-row">
-                <span className="analytics__chart-title">SCORE — LAST {Math.min(tRecs.length, 10)} SESSIONS</span>
-                <span className="analytics__chart-hint">VIEW DETAILS →</span>
+                <span className="analytics__chart-title">{t.analytics.scoreSessions(Math.min(tRecs.length, 10)).toUpperCase()}</span>
+                <span className="analytics__chart-hint">{t.analytics.viewDetails}</span>
               </div>
               <LineChart chartId="score" points={tRecs.slice(0, 10).map(r => ({ label: fmtDate(r.completed_at), value: r.score, tier: scoreTier(r.score * 10, 75, 50) }))} maxVal={10} style={an(320)} />
             </div>
@@ -1006,8 +1009,8 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
             {lessonBest.size > 0 && (
               <div className="analytics__chart-card analytics__chart-card--wide analytics__chart-card--clickable" style={an(420)} onClick={() => setDetailView('lesson')}>
                 <div className="analytics__chart-title-row">
-                  <span className="analytics__chart-title">BEST SCORE PER LESSON</span>
-                  <span className="analytics__chart-hint">VIEW DETAILS →</span>
+                  <span className="analytics__chart-title">{t.analytics.bestPerLesson.toUpperCase()}</span>
+                  <span className="analytics__chart-hint">{t.analytics.viewDetails}</span>
                 </div>
                 <LineChart chartId="lesson" points={LESSON_ORDER.filter(id => lessonBest.has(id)).map(id => ({ label: LESSON_SHORT[id] ?? id, value: lessonBest.get(id)!, tier: scoreTier(lessonBest.get(id)! * 10, 75, 50) }))} maxVal={10} style={an(460)} />
               </div>

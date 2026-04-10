@@ -504,27 +504,25 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
             >
               <div className="training__chooser-inner">
                 <div className="training__chooser-icon">◎</div>
-                <div className="training__chooser-title">PRACTICE SCENARIOS</div>
-                <div className="training__chooser-desc">
-                  Train with AI-powered prospect simulations. Get instant coaching feedback on every reply.
-                </div>
+                <div className="training__chooser-title">{t.trainingExtra.practiceTitle.toUpperCase()}</div>
+                <div className="training__chooser-desc">{t.trainingExtra.practiceDesc}</div>
                 <ul className="training__chooser-features">
-                  <li>9 unique sales scenarios</li>
-                  <li>Easy, medium, and brutal difficulty</li>
-                  <li>Full coaching report at the end of every session</li>
+                  <li>{t.trainingExtra.practiceFeature1}</li>
+                  <li>{t.trainingExtra.practiceFeature2}</li>
+                  <li>{t.trainingExtra.practiceFeature3}</li>
                 </ul>
-                <div className="training__chooser-cta">Start Practicing →</div>
+                <div className="training__chooser-cta">{t.trainingExtra.practiceCta}</div>
               </div>
             </div>
           ) : selectionMode === 'practice' ? (
             <div className="training__full-mode">
               <div className="training__switch-bar">
                 <button className="training__switch-btn" onClick={handleSwitchToSplit}>
-                  ← Back to selection
+                  {t.trainingExtra.backToSelection}
                 </button>
                 <span className="training__switch-sep">·</span>
                 <button className="training__switch-btn" onClick={() => { handleSwitchToSplit(); setTimeout(() => setSelectionMode('academy'), 10); }}>
-                  Switch to Academy ◈
+                  {t.trainingExtra.switchToAcademy}
                 </button>
               </div>
               {renderPracticeContent()}
@@ -544,27 +542,25 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
             >
               <div className="training__chooser-inner">
                 <div className="training__chooser-icon">◈</div>
-                <div className="training__chooser-title">AI ACADEMY</div>
-                <div className="training__chooser-desc">
-                  Structured lessons designed to build real sales skill — from cold openers to closing hard deals.
-                </div>
+                <div className="training__chooser-title">{t.trainingExtra.academyTitle.toUpperCase()}</div>
+                <div className="training__chooser-desc">{t.trainingExtra.academyDesc}</div>
                 <ul className="training__chooser-features">
-                  <li>3 skill levels — Beginner to Advanced</li>
-                  <li>27 lessons: taught first, then tested</li>
-                  <li>Track your scores and improvement</li>
+                  <li>{t.trainingExtra.academyFeature1}</li>
+                  <li>{t.trainingExtra.academyFeature2}</li>
+                  <li>{t.trainingExtra.academyFeature3}</li>
                 </ul>
-                <div className="training__chooser-cta">Start Learning →</div>
+                <div className="training__chooser-cta">{t.trainingExtra.academyCta}</div>
               </div>
             </div>
           ) : selectionMode === 'academy' ? (
             <div className="training__full-mode">
               <div className="training__switch-bar">
                 <button className="training__switch-btn" onClick={handleSwitchToSplit}>
-                  ← Back to selection
+                  {t.trainingExtra.backToSelection}
                 </button>
                 <span className="training__switch-sep">·</span>
                 <button className="training__switch-btn" onClick={() => { handleSwitchToSplit(); setTimeout(() => setSelectionMode('practice'), 10); }}>
-                  Switch to Practice ◎
+                  {t.trainingExtra.switchToPractice}
                 </button>
               </div>
               <Suspense fallback={<div className="training__loading">{t.training.loadingAcademy}</div>}>
