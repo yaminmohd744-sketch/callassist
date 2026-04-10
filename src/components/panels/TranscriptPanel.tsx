@@ -1,5 +1,6 @@
 import { memo, useRef, useEffect } from 'react';
 import type { TranscriptEntry } from '../../types';
+import { useTranslations } from '../../hooks/useTranslations';
 import './TranscriptPanel.css';
 
 function formatTime(seconds: number) {
@@ -27,6 +28,7 @@ export const TranscriptPanel = memo(function TranscriptPanel({
   onManualSubmit,
   onFlipSpeaker,
 }: TranscriptPanelProps) {
+  const t = useTranslations();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,9 +44,9 @@ export const TranscriptPanel = memo(function TranscriptPanel({
       <div className="transcript-panel__header">
         <div className="transcript-panel__title">
           <span className={`transcript-panel__indicator ${isListening ? 'transcript-panel__indicator--active' : ''}`} />
-          TRANSCRIPT FEED
+          {t.liveCall.transcriptFeed}
         </div>
-        {isListening && <span className="transcript-panel__live-badge">● LIVE</span>}
+        {isListening && <span className="transcript-panel__live-badge">● {t.liveCall.live}</span>}
       </div>
 
       {errorMessage && (
@@ -55,14 +57,14 @@ export const TranscriptPanel = memo(function TranscriptPanel({
         {entries.length === 0 && !interimText && (
           <div className="transcript-panel__empty">
             {isListening
-              ? 'Listening - speakers are detected automatically.'
-              : 'Mic starting... or type prospect dialogue below.'}
+              ? t.liveCall.listeningStatus
+              : t.liveCall.micStarting}
           </div>
         )}
 
         {entries.map(entry => {
           const isFlippable = entry.speaker !== 'system' && !!onFlipSpeaker;
-          const label = entry.speaker === 'rep' ? 'YOU' : entry.speaker === 'prospect' ? 'PROSPECT' : 'SYSTEM';
+          const label = entry.speaker === 'rep' ? t.liveCall.you : entry.speaker === 'prospect' ? t.liveCall.prospect : t.liveCall.system;
           return (
             <div
               key={entry.id}
@@ -91,7 +93,7 @@ export const TranscriptPanel = memo(function TranscriptPanel({
         {interimText && (
           <div className="transcript-entry transcript-entry--interim">
             <div className="transcript-entry__meta">
-              <span className="transcript-entry__speaker">LIVE</span>
+              <span className="transcript-entry__speaker">{t.liveCall.live}</span>
             </div>
             <div className="transcript-entry__text">{interimText}<span className="transcript-entry__cursor">_</span></div>
           </div>
@@ -103,7 +105,7 @@ export const TranscriptPanel = memo(function TranscriptPanel({
       <div className="transcript-panel__input">
         <input
           className="transcript-panel__text"
-          placeholder="Type what the prospect said..."
+          placeholder={t.liveCall.typeProspect}
           value={manualInput}
           onChange={e => onManualInputChange(e.target.value)}
           onKeyDown={handleKeyDown}

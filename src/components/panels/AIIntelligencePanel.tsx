@@ -2,14 +2,8 @@
 import { useState } from 'react';
 import { SuggestionCard } from '../cards/SuggestionCard';
 import type { AISuggestion, CallStage } from '../../types';
+import { useTranslations } from '../../hooks/useTranslations';
 import './AIIntelligencePanel.css';
-
-const STAGE_LABEL: Record<CallStage, string> = {
-  opener:    'OPENER',
-  discovery: 'DISCOVERY',
-  pitch:     'PITCH',
-  close:     'CLOSE',
-};
 
 const OBJECTION_REFERENCE = [
   {
@@ -45,14 +39,22 @@ interface AIIntelligencePanelProps {
 
 export function AIIntelligencePanel({ suggestions, callStage }: AIIntelligencePanelProps) {
   const [activeTab, setActiveTab] = useState<'coaching' | 'objections'>('coaching');
+  const t = useTranslations();
   const isEmpty = suggestions.length === 0;
+
+  const STAGE_LABEL: Record<CallStage, string> = {
+    opener:    t.liveCall.stageOpener,
+    discovery: t.liveCall.stageDiscovery,
+    pitch:     t.liveCall.stagePitch,
+    close:     t.liveCall.stageClose,
+  };
 
   return (
     <div className="ai-panel">
       <div className="ai-panel__header">
         <div className="ai-panel__header-left">
           <div className="ai-panel__title">
-            AI INTELLIGENCE FEED
+            {t.liveCall.aiFeed}
             <span className="ai-panel__cursor">▋</span>
           </div>
           <div className="ai-panel__tabs">
@@ -60,13 +62,13 @@ export function AIIntelligencePanel({ suggestions, callStage }: AIIntelligencePa
               className={`ai-panel__tab ${activeTab === 'coaching' ? 'ai-panel__tab--active' : ''}`}
               onClick={() => setActiveTab('coaching')}
             >
-              COACHING
+              {t.liveCall.coaching}
             </button>
             <button
               className={`ai-panel__tab ${activeTab === 'objections' ? 'ai-panel__tab--active' : ''}`}
               onClick={() => setActiveTab('objections')}
             >
-              OBJECTIONS
+              {t.liveCall.objections}
             </button>
           </div>
         </div>
@@ -90,10 +92,9 @@ export function AIIntelligencePanel({ suggestions, callStage }: AIIntelligencePa
         ) : isEmpty ? (
           <div className="ai-panel__empty">
             <div className="ai-panel__empty-icon">◎</div>
-            <div className="ai-panel__empty-title">Ready to Assist</div>
+            <div className="ai-panel__empty-title">{t.liveCall.readyToAssist}</div>
             <div className="ai-panel__empty-desc">
-              Click <strong>Listen</strong> in the transcript panel to start your mic.
-              I'll detect objections, buying signals, and coach you in real-time.
+              {t.liveCall.readyDesc}
             </div>
             <div className="ai-panel__empty-dots">
               <span />
