@@ -89,7 +89,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
       <div className="postcall__header">
         <button className="postcall__back" onClick={onBack}>← {t.postcall.backToDashboard}</button>
         <div className="postcall__title-section">
-          <h1 className="postcall__title">Call Complete</h1>
+          <h1 className="postcall__title">{t.postcall.title}</h1>
           <div className="postcall__meta">
             {session.config.prospectName && <span>{session.config.prospectName}</span>}
             {session.config.company && <><span className="postcall__sep">@</span><span>{session.config.company}</span></>}
@@ -98,7 +98,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
           </div>
         </div>
         <div className="postcall__header-actions">
-          <div className="postcall__crm-badge">✓ Saved to CRM</div>
+          <div className="postcall__crm-badge">✓ {t.postcall.savedToCrm}</div>
           <Button variant="primary" size="md" onClick={onNewCall}>
             ▶ {t.postcall.newCall}
           </Button>
@@ -130,11 +130,11 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
         </div>
         <div className="postcall__stat">
           <div className="postcall__stat-val">{session.transcript.length}</div>
-          <div className="postcall__stat-label">ENTRIES</div>
+          <div className="postcall__stat-label">{t.postcall.entries.toUpperCase()}</div>
         </div>
         <div className="postcall__stat">
           <div className="postcall__stat-val postcall__stat-stage">{session.callStage.toUpperCase()}</div>
-          <div className="postcall__stat-label">STAGE REACHED</div>
+          <div className="postcall__stat-label">{t.postcall.stageReached.toUpperCase()}</div>
         </div>
       </div>
 
@@ -155,7 +155,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
           <div className="postcall__transcript-section">
             <div className="postcall__tab-actions">
               <Button variant="secondary" size="sm" onClick={handleDownloadTranscript}>
-                ↓ DOWNLOAD .TXT
+                ↓ {t.postcall.download}
               </Button>
             </div>
             <div className="postcall__transcript">
@@ -187,7 +187,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
                 {copied ? `✓ ${t.postcall.copyEmail}` : `⎘ ${t.postcall.copyEmail}`}
               </Button>
               <Button variant="secondary" size="sm" onClick={handleDownloadEmail}>
-                ↓ DOWNLOAD .TXT
+                ↓ {t.postcall.download}
               </Button>
             </div>
             <pre className="postcall__pre postcall__pre--email">{session.followUpEmail}</pre>

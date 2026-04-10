@@ -131,6 +131,7 @@ export interface T {
   // Analytics
   analytics: {
     title: string;
+    subtitle: string;
     totalCalls: string;
     totalTime: string;
     avgScore: string;
@@ -139,6 +140,42 @@ export interface T {
     noCallsSub: string;
     callHistory: string;
     performance: string;
+    callIntel: string;
+    training: string;
+    team: string;
+    avgCloseProb: string;
+    avgLeadScore: string;
+    avgDuration: string;
+    closeProbChart: (n: number) => string;
+    callsByStage: string;
+    activityDays: string;
+    viewDetails: string;
+    both: string;
+    call: string;
+    demoData: string;
+    totalSessions: string;
+    bestScore: string;
+    lessonsTried: string;
+    scoreSessions: (n: number) => string;
+    bestPerLesson: string;
+  };
+  // Training extra
+  trainingExtra: {
+    practiceTitle: string;
+    practiceDesc: string;
+    practiceFeature1: string;
+    practiceFeature2: string;
+    practiceFeature3: string;
+    practiceCta: string;
+    academyTitle: string;
+    academyDesc: string;
+    academyFeature1: string;
+    academyFeature2: string;
+    academyFeature3: string;
+    academyCta: string;
+    backToSelection: string;
+    switchToAcademy: string;
+    switchToPractice: string;
   };
   // Pre-call
   precall: {
@@ -183,6 +220,10 @@ export interface T {
     score: string;
     objections: string;
     leadScore: string;
+    entries: string;
+    stageReached: string;
+    savedToCrm: string;
+    download: string;
   };
   // Auth
   auth: {
@@ -343,6 +384,7 @@ const en: T = {
   },
   analytics: {
     title: 'Analytics',
+    subtitle: 'Performance trends across calls and training',
     totalCalls: 'Total Calls',
     totalTime: 'Total Time',
     avgScore: 'Avg. Score',
@@ -351,6 +393,41 @@ const en: T = {
     noCallsSub: 'Complete some calls to see your analytics.',
     callHistory: 'Call History',
     performance: 'Performance',
+    callIntel: 'Call Intel',
+    training: 'Training',
+    team: 'Team',
+    avgCloseProb: 'Avg Close Prob',
+    avgLeadScore: 'Avg Lead Score',
+    avgDuration: 'Avg Duration',
+    closeProbChart: n => `Close Probability — Last ${n} Calls`,
+    callsByStage: 'Calls by Final Stage',
+    activityDays: 'Activity — Last 28 Days',
+    viewDetails: 'View Details →',
+    both: 'Both',
+    call: 'Call',
+    demoData: 'Demo Data',
+    totalSessions: 'Total Sessions',
+    bestScore: 'Best Score',
+    lessonsTried: 'Lessons Tried',
+    scoreSessions: n => `Score — Last ${n} Sessions`,
+    bestPerLesson: 'Best Score Per Lesson',
+  },
+  trainingExtra: {
+    practiceTitle: 'Practice Scenarios',
+    practiceDesc: 'Train with AI-powered prospect simulations. Get instant coaching feedback on every reply.',
+    practiceFeature1: '9 unique sales scenarios',
+    practiceFeature2: 'Easy, medium, and brutal difficulty',
+    practiceFeature3: 'Full coaching report at the end of every session',
+    practiceCta: 'Start Practicing →',
+    academyTitle: 'AI Academy',
+    academyDesc: 'Structured lessons designed to build real sales skill — from cold openers to closing hard deals.',
+    academyFeature1: '3 skill levels — Beginner to Advanced',
+    academyFeature2: '27 lessons: taught first, then tested',
+    academyFeature3: 'Track your scores and improvement',
+    academyCta: 'Start Learning →',
+    backToSelection: '← Back to selection',
+    switchToAcademy: 'Switch to Academy ◈',
+    switchToPractice: 'Switch to Practice ◎',
   },
   precall: {
     title: 'Pre-Call Setup',
@@ -392,6 +469,10 @@ const en: T = {
     score: 'Close Score',
     objections: 'Objections',
     leadScore: 'Lead Score',
+    entries: 'Entries',
+    stageReached: 'Stage Reached',
+    savedToCrm: 'Saved to CRM',
+    download: 'Download .TXT',
   },
   auth: {
     signIn: 'Sign in',
@@ -431,10 +512,11 @@ const es: T = {
   tiers: { title: 'Niveles de Rango', subtitle: 'Desbloquea niveles completando llamadas reales y sesiones de entrenamiento. Ambos deben alcanzar el umbral para avanzar.', unlocked: 'Desbloqueado', noCalls: 'Sin llamadas requeridas', noSessions: 'Sin sesiones requeridas', calls: 'llamadas', sessions: 'sesiones de entrenamiento', percentThere: '% ahí' },
   dashboard: { greeting: name => `Bienvenido de nuevo${name ? `, ${name}` : ''}`, tagline: 'Tu entrenador de ventas AI personal', streakMessage: n => `Racha de ${n} día${n !== 1 ? 's' : ''} — ¡sigue así!`, recentCalls: 'Llamadas Recientes', noCalls: 'Sin llamadas aún', noCallsSub: 'Inicia tu primera llamada para ver tu historial aquí.', startCall: 'Nueva Llamada', uploadCall: 'Subir Grabación', duration: 'Duración', score: 'Puntuación', stage: 'Etapa', viewSession: 'Ver', deleteSession: 'Eliminar', totalCalls: 'Total Llamadas', avgCloseProb: 'Prob. Cierre Prom.', totalObjections: 'Total Objeciones', avgDuration: 'Duración Prom.', practiceStreak: 'Racha de Práctica', total: 'total', overview: 'Resumen', contacts: 'Contactos', contactsSub: 'Todos los prospectos de tu historial', noContacts: 'Sin contactos aún', noContactsSub: 'Completa una llamada para ver los contactos aquí.', noResults: 'Sin resultados', searchPlaceholder: 'Buscar por nombre o empresa…', latestScore: 'Última Puntuación', bestCloseProb: 'Mejor Prob. Cierre', latestSummary: 'Último Resumen AI', latestNotes: 'Últimas Notas', latestEmail: 'Último Email de Seguimiento', callHistory: 'Historial de Llamadas', copy: 'Copiar', copied: 'Copiado', callCount: n => `${n} ${n === 1 ? 'llamada' : 'llamadas'}` },
   training: { title: 'Modo de Entrenamiento', subtitle: 'Elige un escenario. La IA interpreta al prospecto. Termina la llamada cuando estés listo para tu informe.', language: 'IDIOMA', startTraining: 'Iniciar Entrenamiento', endSession: 'Terminar Sesión', practicing: 'Practicando', yourResponse: 'Tu respuesta...', generating: 'Generando...', sessionComplete: 'Sesión Completa', practiceAgain: 'Practicar de Nuevo', backToDashboard: 'Volver al Panel', quota: (u, t) => `${u} / ${t} sesiones usadas este mes`, quotaExhausted: t => `Límite mensual alcanzado — ${t} sesiones usadas. Se restablece el próximo mes.`, setupContext: 'Configura tu escenario', whatSelling: '¿Qué estás vendiendo?', whatSellingPlaceholder: 'p.ej. software, consultoría, seguros...', selectSub: 'Selecciona un sub-escenario', difficulty: 'Dificultad', easy: 'Fácil', medium: 'Medio', hard: 'Difícil', customScenario: 'Describe tu escenario', customPlaceholder: 'Describe el prospecto y la situación...', sessionHistory: 'Historial de Sesiones', exchanges: n => `${n} intercambio${n !== 1 ? 's' : ''}`, score: 'Puntuación', keyTakeaway: 'CONCLUSIÓN CLAVE', strengths: '✓ Lo que hiciste bien', improvements: '✗ En qué trabajar', practice: 'Práctica', academy: 'Academia', loadingAcademy: 'Cargando Academia...', generatingReport: 'Generando tu informe de coaching...' },
-  analytics: { title: 'Análisis', totalCalls: 'Total de Llamadas', totalTime: 'Tiempo Total', avgScore: 'Puntuación Media', objections: 'Objeciones Manejadas', noCalls: 'Sin datos aún', noCallsSub: 'Completa algunas llamadas para ver tus análisis.', callHistory: 'Historial de Llamadas', performance: 'Rendimiento' },
+  analytics: { title: 'Análisis', subtitle: 'Tendencias de rendimiento en llamadas y entrenamiento', totalCalls: 'Total de Llamadas', totalTime: 'Tiempo Total', avgScore: 'Puntuación Media', objections: 'Objeciones Manejadas', noCalls: 'Sin datos aún', noCallsSub: 'Completa algunas llamadas para ver tus análisis.', callHistory: 'Historial de Llamadas', performance: 'Rendimiento', callIntel: 'Inteligencia', training: 'Entrenamiento', team: 'Equipo', avgCloseProb: 'Prob. Cierre Prom.', avgLeadScore: 'Puntuación Lead Prom.', avgDuration: 'Duración Prom.', closeProbChart: n => `Prob. Cierre — Últimas ${n} Llamadas`, callsByStage: 'Llamadas por Etapa', activityDays: 'Actividad — Últimos 28 Días', viewDetails: 'Ver Detalles →', both: 'Ambos', call: 'Llamada', demoData: 'Datos Demo', totalSessions: 'Total Sesiones', bestScore: 'Mejor Puntuación', lessonsTried: 'Lecciones Probadas', scoreSessions: n => `Puntuación — Últimas ${n} Sesiones`, bestPerLesson: 'Mejor Puntuación por Lección' },
+  trainingExtra: { practiceTitle: 'Escenarios de Práctica', practiceDesc: 'Entrena con simulaciones de prospectos impulsadas por IA. Obtén retroalimentación inmediata en cada respuesta.', practiceFeature1: '9 escenarios de ventas únicos', practiceFeature2: 'Dificultad fácil, media y brutal', practiceFeature3: 'Informe completo al final de cada sesión', practiceCta: 'Empezar a Practicar →', academyTitle: 'Academia AI', academyDesc: 'Lecciones estructuradas para desarrollar habilidades reales de ventas.', academyFeature1: '3 niveles — Principiante a Avanzado', academyFeature2: '27 lecciones: primero enseñadas, luego evaluadas', academyFeature3: 'Rastrea tus puntuaciones y progreso', academyCta: 'Empezar a Aprender →', backToSelection: '← Volver a la selección', switchToAcademy: 'Cambiar a Academia ◈', switchToPractice: 'Cambiar a Práctica ◎' },
   precall: { title: 'Configuración Previa', prospectName: 'Nombre del Prospecto', prospectNamePlaceholder: 'p.ej. Juan García', company: 'Empresa', companyPlaceholder: 'p.ej. Acme Corp', callGoal: 'Objetivo de la Llamada', callGoalPlaceholder: 'p.ej. Reservar una demo, cerrar el trato...', yourPitch: 'Tu Propuesta / Producto', yourPitchPlaceholder: '¿Qué estás vendiendo?', language: 'Idioma', startCall: 'Iniciar Llamada' },
   liveCall: { endCall: 'Terminar Llamada', mute: 'Silenciar', unmute: 'Activar Micrófono', aiSuggestions: 'Sugerencias de IA', transcript: 'Transcripción', closeProbability: 'Prob. de Cierre', stage: 'Etapa', note: 'Nota', addNote: 'Añadir nota...', listening: 'Escuchando...' },
-  postcall: { title: 'Revisión de Llamada', summary: 'Resumen', transcript: 'Transcripción', newCall: 'Nueva Llamada', backToDashboard: 'Volver al Panel', followUp: 'Correo de Seguimiento', copyEmail: 'Copiar Correo', notes: 'Notas', addNote: 'Añadir nota...', saveNote: 'Guardar', duration: 'Duración', score: 'Puntuación de Cierre', objections: 'Objeciones', leadScore: 'Puntuación del Prospecto' },
+  postcall: { title: 'Revisión de Llamada', summary: 'Resumen', transcript: 'Transcripción', newCall: 'Nueva Llamada', backToDashboard: 'Volver al Panel', followUp: 'Correo de Seguimiento', copyEmail: 'Copiar Correo', notes: 'Notas', addNote: 'Añadir nota...', saveNote: 'Guardar', duration: 'Duración', score: 'Puntuación de Cierre', objections: 'Objeciones', leadScore: 'Puntuación del Prospecto', entries: 'Entradas', stageReached: 'Etapa Alcanzada', savedToCrm: 'Guardado en CRM', download: 'Descargar .TXT' },
   auth: { signIn: 'Iniciar sesión', signUp: 'Registrarse', email: 'Correo electrónico', password: 'Contraseña', forgotPassword: '¿Olvidaste tu contraseña?', continueWithGoogle: 'Continuar con Google', alreadyHaveAccount: '¿Ya tienes cuenta?', dontHaveAccount: '¿No tienes cuenta?', backToHome: 'Volver al inicio' },
   onboarding: { welcome: 'Bienvenido a PitchPlus', yourName: 'Tu Nombre', yourNamePlaceholder: 'p.ej. Alex García', yourRole: 'Tu Rol', yourRolePlaceholder: 'p.ej. Ejecutivo de Cuentas', whatYouSell: '¿Qué vendes?', whatYouSellPlaceholder: 'p.ej. SaaS, consultoría, seguros...', language: 'Idioma Preferido', letsGo: 'Vamos →' },
   upload: { title: 'Subir Grabación', subtitle: 'Sube una grabación para obtener coaching de IA y un resumen completo.', dropzone: 'Suelta tu archivo de audio aquí', analyzing: 'Analizando tu llamada...', browseFiles: 'Buscar archivos' },
@@ -450,7 +532,7 @@ const fr: T = {
   analytics: { title: 'Analytique', totalCalls: 'Total d\'Appels', totalTime: 'Temps Total', avgScore: 'Score Moyen', objections: 'Objections Gérées', noCalls: 'Pas encore de données', noCallsSub: 'Complétez quelques appels pour voir vos analyses.', callHistory: 'Historique des Appels', performance: 'Performance' },
   precall: { title: 'Configuration Pré-Appel', prospectName: 'Nom du Prospect', prospectNamePlaceholder: 'ex. Jean Dupont', company: 'Entreprise', companyPlaceholder: 'ex. Acme Corp', callGoal: 'Objectif de l\'Appel', callGoalPlaceholder: 'ex. Réserver une démo, conclure l\'affaire...', yourPitch: 'Votre Offre / Produit', yourPitchPlaceholder: 'Que vendez-vous ?', language: 'Langue', startCall: 'Démarrer l\'Appel' },
   liveCall: { endCall: 'Terminer l\'Appel', mute: 'Muet', unmute: 'Réactiver', aiSuggestions: 'Suggestions IA', transcript: 'Transcription', closeProbability: 'Prob. de Clôture', stage: 'Étape', note: 'Note', addNote: 'Ajouter une note...', listening: 'En écoute...' },
-  postcall: { title: 'Révision d\'Appel', summary: 'Résumé', transcript: 'Transcription', newCall: 'Nouvel Appel', backToDashboard: 'Retour au Tableau de Bord', followUp: 'E-mail de Suivi', copyEmail: 'Copier l\'E-mail', notes: 'Notes', addNote: 'Ajouter une note...', saveNote: 'Enregistrer', duration: 'Durée', score: 'Score de Clôture', objections: 'Objections', leadScore: 'Score du Prospect' },
+  postcall: { title: 'Révision d\'Appel', summary: 'Résumé', transcript: 'Transcription', newCall: 'Nouvel Appel', backToDashboard: 'Retour au Tableau de Bord', followUp: 'E-mail de Suivi', copyEmail: 'Copier l\'E-mail', notes: 'Notes', addNote: 'Ajouter une note...', saveNote: 'Enregistrer', duration: 'Durée', score: 'Score de Clôture', objections: 'Objections', leadScore: 'Score du Prospect', entries: 'Entrées', stageReached: 'Étape Atteinte', savedToCrm: 'Enregistré dans le CRM', download: 'Télécharger .TXT' },
   auth: { signIn: 'Se connecter', signUp: 'S\'inscrire', email: 'E-mail', password: 'Mot de passe', forgotPassword: 'Mot de passe oublié ?', continueWithGoogle: 'Continuer avec Google', alreadyHaveAccount: 'Vous avez déjà un compte ?', dontHaveAccount: 'Vous n\'avez pas de compte ?', backToHome: 'Retour à l\'accueil' },
   onboarding: { welcome: 'Bienvenue sur PitchPlus', yourName: 'Votre Nom', yourNamePlaceholder: 'ex. Alex Martin', yourRole: 'Votre Rôle', yourRolePlaceholder: 'ex. Responsable Commercial', whatYouSell: 'Que vendez-vous ?', whatYouSellPlaceholder: 'ex. SaaS, conseil, assurance...', language: 'Langue Préférée', letsGo: 'C\'est parti →' },
   upload: { title: 'Importer un Enregistrement', subtitle: 'Importez un enregistrement pour obtenir un coaching IA et un compte-rendu complet.', dropzone: 'Déposez votre fichier audio ici', analyzing: 'Analyse de votre appel...', browseFiles: 'Parcourir les fichiers' },
@@ -466,7 +548,7 @@ const pt: T = {
   analytics: { title: 'Análise', totalCalls: 'Total de Chamadas', totalTime: 'Tempo Total', avgScore: 'Pontuação Média', objections: 'Objeções Tratadas', noCalls: 'Sem dados ainda', noCallsSub: 'Complete algumas chamadas para ver suas análises.', callHistory: 'Histórico de Chamadas', performance: 'Desempenho' },
   precall: { title: 'Configuração Pré-Chamada', prospectName: 'Nome do Prospect', prospectNamePlaceholder: 'ex. João Silva', company: 'Empresa', companyPlaceholder: 'ex. Acme Corp', callGoal: 'Objetivo da Chamada', callGoalPlaceholder: 'ex. Agendar uma demo, fechar o negócio...', yourPitch: 'Sua Proposta / Produto', yourPitchPlaceholder: 'O que você está vendendo?', language: 'Idioma', startCall: 'Iniciar Chamada' },
   liveCall: { endCall: 'Encerrar Chamada', mute: 'Mutar', unmute: 'Desmutar', aiSuggestions: 'Sugestões de IA', transcript: 'Transcrição', closeProbability: 'Prob. de Fechamento', stage: 'Etapa', note: 'Nota', addNote: 'Adicionar nota...', listening: 'Ouvindo...' },
-  postcall: { title: 'Revisão da Chamada', summary: 'Resumo', transcript: 'Transcrição', newCall: 'Nova Chamada', backToDashboard: 'Voltar ao Painel', followUp: 'E-mail de Acompanhamento', copyEmail: 'Copiar E-mail', notes: 'Notas', addNote: 'Adicionar nota...', saveNote: 'Salvar', duration: 'Duração', score: 'Pontuação de Fechamento', objections: 'Objeções', leadScore: 'Pontuação do Lead' },
+  postcall: { title: 'Revisão da Chamada', summary: 'Resumo', transcript: 'Transcrição', newCall: 'Nova Chamada', backToDashboard: 'Voltar ao Painel', followUp: 'E-mail de Acompanhamento', copyEmail: 'Copiar E-mail', notes: 'Notas', addNote: 'Adicionar nota...', saveNote: 'Salvar', duration: 'Duração', score: 'Pontuação de Fechamento', objections: 'Objeções', leadScore: 'Pontuação do Lead', entries: 'Entradas', stageReached: 'Etapa Atingida', savedToCrm: 'Salvo no CRM', download: 'Baixar .TXT' },
   auth: { signIn: 'Entrar', signUp: 'Cadastrar', email: 'E-mail', password: 'Senha', forgotPassword: 'Esqueceu a senha?', continueWithGoogle: 'Continuar com o Google', alreadyHaveAccount: 'Já tem uma conta?', dontHaveAccount: 'Não tem uma conta?', backToHome: 'Voltar ao início' },
   onboarding: { welcome: 'Bem-vindo ao PitchPlus', yourName: 'Seu Nome', yourNamePlaceholder: 'ex. Alex Santos', yourRole: 'Seu Cargo', yourRolePlaceholder: 'ex. Executivo de Contas', whatYouSell: 'O que você vende?', whatYouSellPlaceholder: 'ex. SaaS, consultoria, seguros...', language: 'Idioma Preferido', letsGo: 'Vamos →' },
   upload: { title: 'Enviar Gravação', subtitle: 'Envie uma gravação para obter coaching de IA e um resumo completo.', dropzone: 'Solte seu arquivo de áudio aqui', analyzing: 'Analisando sua chamada...', browseFiles: 'Procurar arquivos' },
@@ -482,7 +564,7 @@ const de: T = {
   analytics: { title: 'Analytik', totalCalls: 'Anrufe gesamt', totalTime: 'Gesamtzeit', avgScore: 'Ø Bewertung', objections: 'Behandelte Einwände', noCalls: 'Noch keine Daten', noCallsSub: 'Führen Sie Anrufe durch, um Ihre Analysen zu sehen.', callHistory: 'Anrufverlauf', performance: 'Leistung' },
   precall: { title: 'Anruf-Vorbereitung', prospectName: 'Name des Interessenten', prospectNamePlaceholder: 'z.B. Max Müller', company: 'Unternehmen', companyPlaceholder: 'z.B. Acme GmbH', callGoal: 'Anrufziel', callGoalPlaceholder: 'z.B. Demo buchen, Deal abschließen...', yourPitch: 'Ihr Angebot / Produkt', yourPitchPlaceholder: 'Was verkaufen Sie?', language: 'Sprache', startCall: 'Anruf Starten' },
   liveCall: { endCall: 'Anruf Beenden', mute: 'Stumm', unmute: 'Stummschaltung aufheben', aiSuggestions: 'KI-Vorschläge', transcript: 'Transkript', closeProbability: 'Abschlusswahrsch.', stage: 'Phase', note: 'Notiz', addNote: 'Notiz hinzufügen...', listening: 'Hört zu...' },
-  postcall: { title: 'Anruf-Review', summary: 'Zusammenfassung', transcript: 'Transkript', newCall: 'Neuer Anruf', backToDashboard: 'Zurück zum Dashboard', followUp: 'Follow-up E-Mail', copyEmail: 'E-Mail kopieren', notes: 'Notizen', addNote: 'Notiz hinzufügen...', saveNote: 'Speichern', duration: 'Dauer', score: 'Abschluss-Bewertung', objections: 'Einwände', leadScore: 'Lead-Bewertung' },
+  postcall: { title: 'Anruf-Review', summary: 'Zusammenfassung', transcript: 'Transkript', newCall: 'Neuer Anruf', backToDashboard: 'Zurück zum Dashboard', followUp: 'Follow-up E-Mail', copyEmail: 'E-Mail kopieren', notes: 'Notizen', addNote: 'Notiz hinzufügen...', saveNote: 'Speichern', duration: 'Dauer', score: 'Abschluss-Bewertung', objections: 'Einwände', leadScore: 'Lead-Bewertung', entries: 'Einträge', stageReached: 'Erreichte Phase', savedToCrm: 'Im CRM gespeichert', download: '.TXT herunterladen' },
   auth: { signIn: 'Anmelden', signUp: 'Registrieren', email: 'E-Mail', password: 'Passwort', forgotPassword: 'Passwort vergessen?', continueWithGoogle: 'Mit Google fortfahren', alreadyHaveAccount: 'Haben Sie bereits ein Konto?', dontHaveAccount: 'Noch kein Konto?', backToHome: 'Zurück zur Startseite' },
   onboarding: { welcome: 'Willkommen bei PitchPlus', yourName: 'Ihr Name', yourNamePlaceholder: 'z.B. Alex Müller', yourRole: 'Ihre Position', yourRolePlaceholder: 'z.B. Account Executive', whatYouSell: 'Was verkaufen Sie?', whatYouSellPlaceholder: 'z.B. SaaS, Beratung, Versicherung...', language: 'Bevorzugte Sprache', letsGo: 'Los geht\'s →' },
   upload: { title: 'Aufnahme Hochladen', subtitle: 'Laden Sie eine Aufnahme hoch für KI-Coaching und ein vollständiges Debriefing.', dropzone: 'Audiodatei hier ablegen', analyzing: 'Anruf wird analysiert...', browseFiles: 'Dateien durchsuchen' },
@@ -498,7 +580,7 @@ const it: T = {
   analytics: { title: 'Analisi', totalCalls: 'Chiamate Totali', totalTime: 'Tempo Totale', avgScore: 'Punteggio Medio', objections: 'Obiezioni Gestite', noCalls: 'Ancora nessun dato', noCallsSub: 'Completa alcune chiamate per vedere le tue analisi.', callHistory: 'Cronologia Chiamate', performance: 'Prestazione' },
   precall: { title: 'Configurazione Pre-Chiamata', prospectName: 'Nome del Prospect', prospectNamePlaceholder: 'es. Mario Rossi', company: 'Azienda', companyPlaceholder: 'es. Acme Srl', callGoal: 'Obiettivo della Chiamata', callGoalPlaceholder: 'es. Prenotare una demo, chiudere l\'affare...', yourPitch: 'La Tua Proposta / Prodotto', yourPitchPlaceholder: 'Cosa stai vendendo?', language: 'Lingua', startCall: 'Avvia Chiamata' },
   liveCall: { endCall: 'Termina Chiamata', mute: 'Silenzia', unmute: 'Riattiva', aiSuggestions: 'Suggerimenti IA', transcript: 'Trascrizione', closeProbability: 'Prob. di Chiusura', stage: 'Fase', note: 'Nota', addNote: 'Aggiungi nota...', listening: 'In ascolto...' },
-  postcall: { title: 'Revisione Chiamata', summary: 'Riepilogo', transcript: 'Trascrizione', newCall: 'Nuova Chiamata', backToDashboard: 'Torna alla Dashboard', followUp: 'Email di Follow-up', copyEmail: 'Copia Email', notes: 'Note', addNote: 'Aggiungi nota...', saveNote: 'Salva', duration: 'Durata', score: 'Punteggio di Chiusura', objections: 'Obiezioni', leadScore: 'Punteggio Lead' },
+  postcall: { title: 'Revisione Chiamata', summary: 'Riepilogo', transcript: 'Trascrizione', newCall: 'Nuova Chiamata', backToDashboard: 'Torna alla Dashboard', followUp: 'Email di Follow-up', copyEmail: 'Copia Email', notes: 'Note', addNote: 'Aggiungi nota...', saveNote: 'Salva', duration: 'Durata', score: 'Punteggio di Chiusura', objections: 'Obiezioni', leadScore: 'Punteggio Lead', entries: 'Voci', stageReached: 'Fase Raggiunta', savedToCrm: 'Salvato nel CRM', download: 'Scarica .TXT' },
   auth: { signIn: 'Accedi', signUp: 'Registrati', email: 'Email', password: 'Password', forgotPassword: 'Password dimenticata?', continueWithGoogle: 'Continua con Google', alreadyHaveAccount: 'Hai già un account?', dontHaveAccount: 'Non hai un account?', backToHome: 'Torna alla home' },
   onboarding: { welcome: 'Benvenuto su PitchPlus', yourName: 'Il Tuo Nome', yourNamePlaceholder: 'es. Alex Rossi', yourRole: 'Il Tuo Ruolo', yourRolePlaceholder: 'es. Account Executive', whatYouSell: 'Cosa vendi?', whatYouSellPlaceholder: 'es. SaaS, consulenza, assicurazione...', language: 'Lingua Preferita', letsGo: 'Andiamo →' },
   upload: { title: 'Carica Registrazione', subtitle: 'Carica una registrazione per ottenere coaching IA e un debriefing completo.', dropzone: 'Trascina il tuo file audio qui', analyzing: 'Analisi della chiamata in corso...', browseFiles: 'Sfoglia file' },
@@ -514,7 +596,7 @@ const nl: T = {
   analytics: { title: 'Analyse', totalCalls: 'Totaal Gesprekken', totalTime: 'Totale Tijd', avgScore: 'Gem. Score', objections: 'Bezwaren Behandeld', noCalls: 'Nog geen gegevens', noCallsSub: 'Voltooi wat gesprekken om uw analyses te zien.', callHistory: 'Gespreksgeschiedenis', performance: 'Prestatie' },
   precall: { title: 'Gespreksvoorbereiding', prospectName: 'Naam Prospect', prospectNamePlaceholder: 'bijv. Jan de Vries', company: 'Bedrijf', companyPlaceholder: 'bijv. Acme BV', callGoal: 'Gespreksdoel', callGoalPlaceholder: 'bijv. Demo boeken, deal sluiten...', yourPitch: 'Uw Aanbod / Product', yourPitchPlaceholder: 'Wat verkoopt u?', language: 'Taal', startCall: 'Gesprek Starten' },
   liveCall: { endCall: 'Gesprek Beëindigen', mute: 'Dempen', unmute: 'Dempen opheffen', aiSuggestions: 'AI-Suggesties', transcript: 'Transcript', closeProbability: 'Kans op Afsluiting', stage: 'Fase', note: 'Notitie', addNote: 'Notitie toevoegen...', listening: 'Luistert...' },
-  postcall: { title: 'Gespreksevaluatie', summary: 'Samenvatting', transcript: 'Transcript', newCall: 'Nieuw Gesprek', backToDashboard: 'Terug naar Dashboard', followUp: 'Opvolg-e-mail', copyEmail: 'E-mail kopiëren', notes: 'Notities', addNote: 'Notitie toevoegen...', saveNote: 'Opslaan', duration: 'Duur', score: 'Afsluitingsscore', objections: 'Bezwaren', leadScore: 'Leadscore' },
+  postcall: { title: 'Gespreksevaluatie', summary: 'Samenvatting', transcript: 'Transcript', newCall: 'Nieuw Gesprek', backToDashboard: 'Terug naar Dashboard', followUp: 'Opvolg-e-mail', copyEmail: 'E-mail kopiëren', notes: 'Notities', addNote: 'Notitie toevoegen...', saveNote: 'Opslaan', duration: 'Duur', score: 'Afsluitingsscore', objections: 'Bezwaren', leadScore: 'Leadscore', entries: 'Items', stageReached: 'Bereikte Fase', savedToCrm: 'Opgeslagen in CRM', download: '.TXT downloaden' },
   auth: { signIn: 'Inloggen', signUp: 'Registreren', email: 'E-mail', password: 'Wachtwoord', forgotPassword: 'Wachtwoord vergeten?', continueWithGoogle: 'Doorgaan met Google', alreadyHaveAccount: 'Heeft u al een account?', dontHaveAccount: 'Heeft u nog geen account?', backToHome: 'Terug naar home' },
   onboarding: { welcome: 'Welkom bij PitchPlus', yourName: 'Uw Naam', yourNamePlaceholder: 'bijv. Alex de Vries', yourRole: 'Uw Functie', yourRolePlaceholder: 'bijv. Account Executive', whatYouSell: 'Wat verkoopt u?', whatYouSellPlaceholder: 'bijv. SaaS, advies, verzekering...', language: 'Voorkeurstaal', letsGo: 'Aan de slag →' },
   upload: { title: 'Opname Uploaden', subtitle: 'Upload een opname voor AI-coaching en een volledig debriefing.', dropzone: 'Sleep uw audiobestand hier', analyzing: 'Gesprek analyseren...', browseFiles: 'Bestanden zoeken' },
@@ -530,7 +612,7 @@ const zh: T = {
   analytics: { title: '分析', totalCalls: '通话总数', totalTime: '总时长', avgScore: '平均评分', objections: '处理的异议', noCalls: '暂无数据', noCallsSub: '完成一些通话后查看您的分析。', callHistory: '通话历史', performance: '表现' },
   precall: { title: '通话前设置', prospectName: '潜在客户姓名', prospectNamePlaceholder: '例如：张三', company: '公司', companyPlaceholder: '例如：某科技有限公司', callGoal: '通话目标', callGoalPlaceholder: '例如：预约演示、完成成交...', yourPitch: '您的方案/产品', yourPitchPlaceholder: '您在销售什么？', language: '语言', startCall: '开始通话' },
   liveCall: { endCall: '结束通话', mute: '静音', unmute: '取消静音', aiSuggestions: 'AI建议', transcript: '实时转录', closeProbability: '成交概率', stage: '阶段', note: '备注', addNote: '添加备注...', listening: '监听中...' },
-  postcall: { title: '通话回顾', summary: '摘要', transcript: '转录', newCall: '新建通话', backToDashboard: '返回仪表板', followUp: '跟进邮件', copyEmail: '复制邮件', notes: '备注', addNote: '添加备注...', saveNote: '保存', duration: '时长', score: '成交评分', objections: '异议', leadScore: '线索评分' },
+  postcall: { title: '通话回顾', summary: '摘要', transcript: '转录', newCall: '新建通话', backToDashboard: '返回仪表板', followUp: '跟进邮件', copyEmail: '复制邮件', notes: '备注', addNote: '添加备注...', saveNote: '保存', duration: '时长', score: '成交评分', objections: '异议', leadScore: '线索评分', entries: '条目', stageReached: '达到阶段', savedToCrm: '已保存至CRM', download: '下载.TXT' },
   auth: { signIn: '登录', signUp: '注册', email: '邮箱', password: '密码', forgotPassword: '忘记密码？', continueWithGoogle: '使用Google继续', alreadyHaveAccount: '已有账户？', dontHaveAccount: '没有账户？', backToHome: '返回首页' },
   onboarding: { welcome: '欢迎使用PitchPlus', yourName: '您的姓名', yourNamePlaceholder: '例如：张三', yourRole: '您的职位', yourRolePlaceholder: '例如：客户经理', whatYouSell: '您销售什么？', whatYouSellPlaceholder: '例如：SaaS、咨询、保险...', language: '偏好语言', letsGo: '开始 →' },
   upload: { title: '上传录音', subtitle: '上传通话录音，获取AI辅导和完整分析报告。', dropzone: '将音频文件拖放到此处', analyzing: '正在分析您的通话...', browseFiles: '浏览文件' },
@@ -546,7 +628,7 @@ const ja: T = {
   analytics: { title: '分析', totalCalls: '通話合計', totalTime: '合計時間', avgScore: '平均スコア', objections: '処理した異議', noCalls: 'まだデータがありません', noCallsSub: '通話を完了すると分析が表示されます。', callHistory: '通話履歴', performance: 'パフォーマンス' },
   precall: { title: '通話前設定', prospectName: '見込み客名', prospectNamePlaceholder: '例: 田中 太郎', company: '会社', companyPlaceholder: '例: 株式会社サンプル', callGoal: '通話目標', callGoalPlaceholder: '例: デモを予約、成約...', yourPitch: 'あなたの提案/製品', yourPitchPlaceholder: '何を販売していますか？', language: '言語', startCall: '通話開始' },
   liveCall: { endCall: '通話終了', mute: 'ミュート', unmute: 'ミュート解除', aiSuggestions: 'AI提案', transcript: 'トランスクリプト', closeProbability: '成約確率', stage: 'ステージ', note: 'メモ', addNote: 'メモを追加...', listening: '聴取中...' },
-  postcall: { title: '通話レビュー', summary: 'サマリー', transcript: 'トランスクリプト', newCall: '新規通話', backToDashboard: 'ダッシュボードに戻る', followUp: 'フォローアップメール', copyEmail: 'メールをコピー', notes: 'メモ', addNote: 'メモを追加...', saveNote: '保存', duration: '通話時間', score: '成約スコア', objections: '異議', leadScore: 'リードスコア' },
+  postcall: { title: '通話レビュー', summary: 'サマリー', transcript: 'トランスクリプト', newCall: '新規通話', backToDashboard: 'ダッシュボードに戻る', followUp: 'フォローアップメール', copyEmail: 'メールをコピー', notes: 'メモ', addNote: 'メモを追加...', saveNote: '保存', duration: '通話時間', score: '成約スコア', objections: '異議', leadScore: 'リードスコア', entries: '件数', stageReached: '到達ステージ', savedToCrm: 'CRMに保存済み', download: '.TXTをダウンロード' },
   auth: { signIn: 'サインイン', signUp: 'サインアップ', email: 'メールアドレス', password: 'パスワード', forgotPassword: 'パスワードを忘れた？', continueWithGoogle: 'Googleで続ける', alreadyHaveAccount: 'すでにアカウントをお持ちですか？', dontHaveAccount: 'アカウントをお持ちでない方?', backToHome: 'ホームに戻る' },
   onboarding: { welcome: 'PitchPlusへようこそ', yourName: 'お名前', yourNamePlaceholder: '例: 田中 太郎', yourRole: '役職', yourRolePlaceholder: '例: アカウントエグゼクティブ', whatYouSell: '何を販売していますか？', whatYouSellPlaceholder: '例: SaaS、コンサルティング、保険...', language: '使用言語', letsGo: 'はじめる →' },
   upload: { title: '録音をアップロード', subtitle: '録音をアップロードしてAIコーチングと完全なレポートを取得してください。', dropzone: 'ここに音声ファイルをドロップ', analyzing: '通話を分析中...', browseFiles: 'ファイルを参照' },
@@ -562,7 +644,7 @@ const ar: T = {
   analytics: { title: 'التحليلات', totalCalls: 'إجمالي المكالمات', totalTime: 'الوقت الإجمالي', avgScore: 'متوسط النتيجة', objections: 'الاعتراضات المعالجة', noCalls: 'لا بيانات بعد', noCallsSub: 'أكمل بعض المكالمات لرؤية تحليلاتك.', callHistory: 'سجل المكالمات', performance: 'الأداء' },
   precall: { title: 'إعداد ما قبل المكالمة', prospectName: 'اسم العميل المحتمل', prospectNamePlaceholder: 'مثال: محمد علي', company: 'الشركة', companyPlaceholder: 'مثال: شركة المثال', callGoal: 'هدف المكالمة', callGoalPlaceholder: 'مثال: حجز عرض توضيحي، إتمام الصفقة...', yourPitch: 'عرضك / منتجك', yourPitchPlaceholder: 'ماذا تبيع؟', language: 'اللغة', startCall: 'بدء المكالمة' },
   liveCall: { endCall: 'إنهاء المكالمة', mute: 'كتم الصوت', unmute: 'إلغاء كتم الصوت', aiSuggestions: 'اقتراحات الذكاء الاصطناعي', transcript: 'النص', closeProbability: 'احتمالية الإغلاق', stage: 'المرحلة', note: 'ملاحظة', addNote: 'إضافة ملاحظة...', listening: 'جار الاستماع...' },
-  postcall: { title: 'مراجعة المكالمة', summary: 'الملخص', transcript: 'النص', newCall: 'مكالمة جديدة', backToDashboard: 'العودة للوحة القيادة', followUp: 'بريد المتابعة', copyEmail: 'نسخ البريد', notes: 'ملاحظات', addNote: 'إضافة ملاحظة...', saveNote: 'حفظ', duration: 'المدة', score: 'نتيجة الإغلاق', objections: 'الاعتراضات', leadScore: 'نتيجة العميل المحتمل' },
+  postcall: { title: 'مراجعة المكالمة', summary: 'الملخص', transcript: 'النص', newCall: 'مكالمة جديدة', backToDashboard: 'العودة للوحة القيادة', followUp: 'بريد المتابعة', copyEmail: 'نسخ البريد', notes: 'ملاحظات', addNote: 'إضافة ملاحظة...', saveNote: 'حفظ', duration: 'المدة', score: 'نتيجة الإغلاق', objections: 'الاعتراضات', leadScore: 'نتيجة العميل المحتمل', entries: 'مدخلات', stageReached: 'المرحلة المُنجزة', savedToCrm: 'محفوظ في CRM', download: 'تحميل .TXT' },
   auth: { signIn: 'تسجيل الدخول', signUp: 'إنشاء حساب', email: 'البريد الإلكتروني', password: 'كلمة المرور', forgotPassword: 'نسيت كلمة المرور؟', continueWithGoogle: 'المتابعة مع Google', alreadyHaveAccount: 'لديك حساب بالفعل؟', dontHaveAccount: 'ليس لديك حساب؟', backToHome: 'العودة للرئيسية' },
   onboarding: { welcome: 'مرحبًا بك في PitchPlus', yourName: 'اسمك', yourNamePlaceholder: 'مثال: محمد علي', yourRole: 'مسماك الوظيفي', yourRolePlaceholder: 'مثال: مدير حسابات', whatYouSell: 'ماذا تبيع؟', whatYouSellPlaceholder: 'مثال: برمجيات، استشارات، تأمين...', language: 'اللغة المفضلة', letsGo: 'لنبدأ →' },
   upload: { title: 'رفع تسجيل', subtitle: 'ارفع تسجيل مكالمة للحصول على تدريب ذكاء اصطناعي وتقرير كامل.', dropzone: 'اسحب ملف الصوت هنا', analyzing: 'جار تحليل مكالمتك...', browseFiles: 'استعراض الملفات' },

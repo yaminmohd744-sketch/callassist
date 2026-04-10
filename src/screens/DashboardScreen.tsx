@@ -13,10 +13,6 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
-function getGreeting(): string {
-  const h = new Date().getHours();
-  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-}
 
 interface DerivedContact {
   name: string;
@@ -239,8 +235,8 @@ export function DashboardScreen({
         <main className="dashboard__main">
           <div className="dashboard__topbar">
             <div>
-              <h1 className="dashboard__title">Contacts</h1>
-              <p className="dashboard__subtitle">All prospects from your call history</p>
+              <h1 className="dashboard__title">{t.dashboard.contacts}</h1>
+              <p className="dashboard__subtitle">{t.dashboard.contactsSub}</p>
             </div>
           </div>
 
@@ -248,7 +244,7 @@ export function DashboardScreen({
             <input
               className="dashboard__crm-search"
               type="text"
-              placeholder="Search by name or company…"
+              placeholder={t.dashboard.searchPlaceholder}
               value={contactSearch}
               onChange={e => setContactSearch(e.target.value)}
             />
@@ -257,17 +253,15 @@ export function DashboardScreen({
           {contacts.length === 0 ? (
             <div className="dashboard__empty">
               <div className="dashboard__empty-icon">◉</div>
-              <div className="dashboard__empty-title">No contacts yet</div>
-              <div className="dashboard__empty-desc">
-                Complete a call to see contacts appear here automatically.
-              </div>
+              <div className="dashboard__empty-title">{t.dashboard.noContacts}</div>
+              <div className="dashboard__empty-desc">{t.dashboard.noContactsSub}</div>
               <Button variant="primary" size="md" onClick={onStartCall}>
-                ▶ START A CALL
+                ▶ {t.dashboard.startCall.toUpperCase()}
               </Button>
             </div>
           ) : filteredContacts.length === 0 ? (
             <div className="dashboard__empty">
-              <div className="dashboard__empty-title">No results</div>
+              <div className="dashboard__empty-title">{t.dashboard.noResults}</div>
               <div className="dashboard__empty-desc">No contacts match "{contactSearch}"</div>
             </div>
           ) : (
@@ -287,9 +281,9 @@ export function DashboardScreen({
                       <span className={`dashboard__crm-score dashboard__crm-score--${level}`}>
                         {contact.latestLeadScore}
                       </span>
-                      <span className="dashboard__crm-calls">{contact.totalCalls} {contact.totalCalls === 1 ? 'call' : 'calls'}</span>
+                      <span className="dashboard__crm-calls">{t.dashboard.callCount(contact.totalCalls)}</span>
                       <span className="dashboard__crm-date">{formatDateShort(contact.lastCallDate)}</span>
-                      <span className="dashboard__call-view">VIEW →</span>
+                      <span className="dashboard__call-view">{t.dashboard.viewSession.toUpperCase()} →</span>
                     </div>
                   </div>
                 );
@@ -304,7 +298,7 @@ export function DashboardScreen({
         <main className="dashboard__main">
           <div className="dashboard__topbar">
             <button className="dashboard__crm-back" onClick={() => setSelectedContact(null)}>
-              ← Contacts
+              ← {t.dashboard.contacts}
             </button>
           </div>
 
@@ -323,25 +317,25 @@ export function DashboardScreen({
           <div className="dashboard__stats">
             <div className="dashboard__stat-card">
               <div className="dashboard__stat-val">{selectedContact.totalCalls}</div>
-              <div className="dashboard__stat-label">TOTAL CALLS</div>
+              <div className="dashboard__stat-label">{t.dashboard.totalCalls.toUpperCase()}</div>
             </div>
             <div className="dashboard__stat-card">
               <div className={`dashboard__stat-val dashboard__stat-val--${scoreLevel(selectedContact.latestLeadScore)}`}>
                 {selectedContact.latestLeadScore}
               </div>
-              <div className="dashboard__stat-label">LATEST SCORE</div>
+              <div className="dashboard__stat-label">{t.dashboard.latestScore.toUpperCase()}</div>
             </div>
             <div className="dashboard__stat-card">
               <div className={`dashboard__stat-val ${selectedContact.bestCloseProbability >= 61 ? 'dashboard__stat-val--high' : selectedContact.bestCloseProbability >= 31 ? 'dashboard__stat-val--medium' : 'dashboard__stat-val--low'}`}>
                 {selectedContact.bestCloseProbability}%
               </div>
-              <div className="dashboard__stat-label">BEST CLOSE PROB</div>
+              <div className="dashboard__stat-label">{t.dashboard.bestCloseProb.toUpperCase()}</div>
             </div>
             <div className="dashboard__stat-card">
               <div className="dashboard__stat-val">
                 {selectedContact.sessions.reduce((sum, s) => sum + s.objectionsCount, 0)}
               </div>
-              <div className="dashboard__stat-label">TOTAL OBJECTIONS</div>
+              <div className="dashboard__stat-label">{t.dashboard.totalObjections.toUpperCase()}</div>
             </div>
           </div>
 
@@ -349,7 +343,7 @@ export function DashboardScreen({
           {selectedContact.sessions[0]?.aiSummary && (
             <div className="dashboard__section">
               <div className="dashboard__section-header">
-                <span className="dashboard__section-title">LATEST AI SUMMARY</span>
+                <span className="dashboard__section-title">{t.dashboard.latestSummary.toUpperCase()}</span>
               </div>
               <div className="dashboard__crm-text-card">
                 <pre className="dashboard__crm-pre">{selectedContact.sessions[0].aiSummary}</pre>
@@ -361,7 +355,7 @@ export function DashboardScreen({
           {selectedContact.sessions[0]?.notes?.length > 0 && (
             <div className="dashboard__section">
               <div className="dashboard__section-header">
-                <span className="dashboard__section-title">LATEST CALL NOTES</span>
+                <span className="dashboard__section-title">{t.dashboard.latestNotes.toUpperCase()}</span>
               </div>
               <div className="dashboard__crm-text-card">
                 {selectedContact.sessions[0].notes.map((n, i) => (
@@ -375,12 +369,12 @@ export function DashboardScreen({
           {selectedContact.sessions[0]?.followUpEmail && (
             <div className="dashboard__section">
               <div className="dashboard__section-header">
-                <span className="dashboard__section-title">LATEST FOLLOW-UP EMAIL</span>
+                <span className="dashboard__section-title">{t.dashboard.latestEmail.toUpperCase()}</span>
                 <button
                   className="dashboard__crm-copy-btn"
                   onClick={() => handleCopyEmail(selectedContact.sessions[0].followUpEmail)}
                 >
-                  {emailCopied ? '✓ COPIED' : '⎘ COPY'}
+                  {emailCopied ? `✓ ${t.dashboard.copied.toUpperCase()}` : `⎘ ${t.dashboard.copy.toUpperCase()}`}
                 </button>
               </div>
               <div className="dashboard__crm-text-card">
@@ -392,8 +386,8 @@ export function DashboardScreen({
           {/* Call history */}
           <div className="dashboard__section">
             <div className="dashboard__section-header">
-              <span className="dashboard__section-title">CALL HISTORY</span>
-              <span className="dashboard__section-count">{selectedContact.totalCalls} {selectedContact.totalCalls === 1 ? 'call' : 'calls'}</span>
+              <span className="dashboard__section-title">{t.dashboard.callHistory.toUpperCase()}</span>
+              <span className="dashboard__section-count">{t.dashboard.callCount(selectedContact.totalCalls)}</span>
             </div>
             <div className="dashboard__call-list">
               {selectedContact.sessions.map((session, i) => {
@@ -415,7 +409,7 @@ export function DashboardScreen({
                       <span className={`dashboard__call-stage dashboard__call-stage--${session.callStage}`}>
                         {session.callStage.toUpperCase()}
                       </span>
-                      <span className="dashboard__call-view">VIEW →</span>
+                      <span className="dashboard__call-view">{t.dashboard.viewSession.toUpperCase()} →</span>
                     </div>
                   </div>
                 );
