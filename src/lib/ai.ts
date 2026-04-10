@@ -6,7 +6,7 @@ import {
   getQuickActionSuggestion,
   type Memory,
 } from './mockAI';
-import type { TranscriptEntry, CallStage, CallConfig, AISuggestion, AIAnalysisResult } from '../types';
+import type { TranscriptEntry, CallStage, CallConfig, AISuggestion, AIAnalysisResult, TranscriptSignal } from '../types';
 
 export { detectStage, STAGE_TIPS, getQuickActionSuggestion, type Memory };
 
@@ -103,7 +103,10 @@ export async function analyzeTranscript(
           // We intentionally do NOT extract type/headline from partial JSON —
           // those fields are only set once the stream is complete (see below).
           if (onStream && accumulated.includes('"body"')) {
-            const bodyMatch = accumulated.match(/"body"\s*:\s*"((?:[^"\\]|\\.)*)(?:"|$)/);
+            // Strip a trailing bare backslash (incomplete escape at chunk boundary)
+            // before running the regex so it doesn't fail to match.
+            const safeAccum = accumulated.endsWith('\\') ? accumulated.slice(0, -1) : accumulated;
+            const bodyMatch = safeAccum.match(/"body"\s*:\s*"((?:[^"\\]|\\.)*)(?:"|$)/);
             if (bodyMatch) {
               const partialBody = bodyMatch[1]
                 .replace(/\\n/g, '\n')
@@ -164,11 +167,12 @@ export async function analyzeTranscript(
       };
     }
 
+    const VALID_TYPES: AISuggestion['type'][] = ['tip', 'objection-response', 'close-attempt', 'discovery'];
     const suggestion: AISuggestion = {
       id: suggestionId,
-      type: data.type as AISuggestion['type'],
-      headline: data.headline as string,
-      body: data.body as string,
+      type: VALID_TYPES.includes(data.type as AISuggestion['type']) ? data.type as AISuggestion['type'] : 'tip',
+      headline: typeof data.headline === 'string' ? data.headline : '',
+      body: typeof data.body === 'string' ? data.body : '',
       triggeredBy: newEntry.text,
       timestampSeconds: elapsedSeconds,
       streaming: false,
@@ -202,6 +206,17 @@ export async function enhancePitch(
   } catch (err) {
     console.error('[CallAssist] Pitch enhancement failed:', err instanceof Error ? err.message : err);
     return pitch;
+  }
+}
+
+export async function classifySignalAI(text: string, language: string): Promise<TranscriptSignal> {
+  try {
+    const data = await callFunction('classify-signal', { text, language }) as Record<string, unknown>;
+    const signal = data.signal as string;
+    if (signal === 'objection' || signal === 'buying-signal' || signal === 'neutral') return signal;
+    return 'neutral';
+  } catch {
+    return 'neutral';
   }
 }
 

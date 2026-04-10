@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '../components/ui/Button';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
@@ -25,6 +25,7 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
   const [errors, setErrors] = useState<Partial<CallConfig>>({});
   const [enhancing, setEnhancing] = useState(false);
   const [enhanced, setEnhanced] = useState(false);
+  const enhancingRef = useRef(false);
 
   function handleChange(field: keyof CallConfig, value: string) {
     setForm(f => ({ ...f, [field]: value }));
@@ -33,7 +34,8 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
   }
 
   async function handleEnhancePitch() {
-    if (!form.yourPitch.trim() || enhancing) return;
+    if (!form.yourPitch.trim() || enhancingRef.current) return;
+    enhancingRef.current = true;
     setEnhancing(true);
     setEnhanced(false);
     try {
@@ -41,6 +43,7 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
       setForm(f => ({ ...f, yourPitch: result }));
       setEnhanced(true);
     } finally {
+      enhancingRef.current = false;
       setEnhancing(false);
     }
   }
@@ -143,7 +146,7 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
                   className={`precall__lang-btn ${form.language === l.code ? 'precall__lang-btn--active' : ''}`}
                   onClick={() => setForm(f => ({ ...f, language: l.code }))}
                 >
-                  <img className="precall__lang-flag" src={`https://flagcdn.com/w20/${l.code.split('-')[1].toLowerCase()}.png`} alt={l.label} />
+                  <img className="precall__lang-flag" src={`https://flagcdn.com/w20/${l.code.split('-')[1].toLowerCase()}.png`} alt={l.label} onError={e => { e.currentTarget.style.display = 'none'; }} />
                   <span>{l.label}</span>
                 </button>
               ))}

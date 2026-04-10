@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { Button } from '../components/ui/Button';
 import type { CallSession } from '../types';
@@ -24,14 +24,18 @@ interface DerivedContact {
   sessions: CallSession[];
 }
 
+function toTitleCase(str: string): string {
+  return str.replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function deriveContacts(sessions: CallSession[]): DerivedContact[] {
   const map = new Map<string, DerivedContact>();
   for (const s of sessions) {
     const key = `${(s.config.prospectName || '').toLowerCase()}||${(s.config.company || '').toLowerCase()}`;
     if (!map.has(key)) {
       map.set(key, {
-        name: s.config.prospectName || 'Unknown',
-        company: s.config.company || '',
+        name: toTitleCase(s.config.prospectName || 'Unknown'),
+        company: toTitleCase(s.config.company || ''),
         totalCalls: 0,
         latestLeadScore: s.leadScore,
         bestCloseProbability: 0,
@@ -83,7 +87,7 @@ export function DashboardScreen({
   const totalObjections = pastSessions.reduce((sum, s) => sum + s.objectionsCount, 0);
   const streak = getStreak();
 
-  const contacts = deriveContacts(pastSessions);
+  const contacts = useMemo(() => deriveContacts(pastSessions), [pastSessions]);
   const filteredContacts = contactSearch.trim()
     ? contacts.filter(c =>
         c.name.toLowerCase().includes(contactSearch.toLowerCase()) ||

@@ -8,7 +8,7 @@ import { LeadProfilePanel } from '../components/panels/LeadProfilePanel';
 import { useCallTimer } from '../hooks/useCallTimer';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useAICoach } from '../hooks/useAICoach';
-import { generateSessionSummary } from '../lib/ai';
+import { generateSessionSummary, classifySignalAI } from '../lib/ai';
 import { OBJECTION_KEYWORDS, BUYING_KEYWORDS, PROSPECT_PHRASES, REP_PHRASES, PROSPECT_REACTIONS } from '../lib/keywords';
 import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSignal } from '../types';
 import './LiveCallScreen.css';
@@ -78,8 +78,21 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [notes, setNotes] = useState<string[]>([]);
   const [noteInput, setNoteInput] = useState('');
   const [mobilePanel, setMobilePanel] = useState<'transcript' | 'ai' | 'lead'>('transcript');
+  const [manualSpeaker, setManualSpeaker] = useState<'rep' | 'prospect'>('prospect');
 
   const { elapsedSeconds, formattedTime, startTimer, stopTimer } = useCallTimer();
+
+  // For non-English calls, patch the signal on an existing entry after the AI classifies it.
+  const applySignal = useCallback((id: string, text: string) => {
+    if (config.language === 'en-US') return; // English uses fast keyword matching — no AI needed
+    classifySignalAI(text, config.language ?? 'en-US').then(signal => {
+      setTranscript(prev => {
+        const updated = prev.map(e => e.id === id ? { ...e, signal } : e);
+        transcriptRef.current = updated;
+        return updated;
+      });
+    });
+  }, [config.language]);
   const { suggestions, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion } = useAICoach();
 
   // Automatically classify each mic utterance as rep or prospect based on content.
@@ -101,8 +114,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     setTranscript(newTranscript);
     if (speaker === 'prospect') {
       processEntry(entry, newTranscript, elapsedSeconds, config);
+      applySignal(entry.id, text);
     }
-  }, [elapsedSeconds, processEntry, config]);
+  }, [elapsedSeconds, processEntry, config, applySignal]);
 
   const { isListening, interimText, errorMessage, startListening, stopListening } = useSpeechRecognition({
     onFinalTranscript: handleFinalTranscript,
@@ -124,21 +138,41 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     const text = manualInput.trim();
     if (!text) return;
 
-    // Manual input is always treated as prospect speech
     const entry: TranscriptEntry = {
       id: genId(),
-      speaker: 'prospect',
+      speaker: manualSpeaker,
       text,
       timestampSeconds: elapsedSeconds,
-      signal: classifySignal(text),
+      signal: manualSpeaker === 'prospect' ? classifySignal(text) : 'neutral',
     };
 
     const newTranscript = [...transcriptRef.current, entry];
     transcriptRef.current = newTranscript;
     setTranscript(newTranscript);
-    processEntry(entry, newTranscript, elapsedSeconds, config);
+    if (manualSpeaker === 'prospect') {
+      processEntry(entry, newTranscript, elapsedSeconds, config);
+      applySignal(entry.id, text);
+    }
     setManualInput('');
-  }, [manualInput, elapsedSeconds, processEntry, config]);
+  }, [manualInput, manualSpeaker, elapsedSeconds, processEntry, config, applySignal]);
+
+  const handleFlipSpeaker = useCallback((id: string) => {
+    setTranscript(prev => {
+      const updated = prev.map(e => {
+        if (e.id !== id) return e;
+        const flipped = e.speaker === 'rep' ? 'prospect' : 'rep';
+        return { ...e, speaker: flipped, signal: flipped === 'prospect' ? classifySignal(e.text) : 'neutral' as const };
+      });
+      transcriptRef.current = updated;
+      // Re-run AI for the flipped entry if it became a prospect entry
+      const flippedEntry = updated.find(e => e.id === id);
+      if (flippedEntry?.speaker === 'prospect') {
+        processEntry(flippedEntry, updated, flippedEntry.timestampSeconds, config);
+        applySignal(flippedEntry.id, flippedEntry.text);
+      }
+      return updated;
+    });
+  }, [processEntry, config, applySignal]);
 
   const handleAddNote = useCallback(() => {
     const text = noteInput.trim();
@@ -203,6 +237,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           manualInput={manualInput}
           onManualInputChange={setManualInput}
           onManualSubmit={handleManualSubmit}
+          onFlipSpeaker={handleFlipSpeaker}
+          manualSpeaker={manualSpeaker}
+          onManualSpeakerToggle={() => setManualSpeaker(s => s === 'prospect' ? 'rep' : 'prospect')}
         />
         <AIIntelligencePanel
           suggestions={suggestions}

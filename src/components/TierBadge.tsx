@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { CSSProperties } from 'react';
 
 interface Props {
@@ -266,7 +267,8 @@ function Legend({ c, dim, id }: B) {
 }
 
 export function TierBadge({ tierId, color, size = 48, unlocked = true }: Props) {
-  const id = `tb-${tierId}`;
+  const uid = useId();
+  const id = `tb-${tierId}-${uid.replace(/:/g, '')}`;
   const lockedStyle: CSSProperties = { filter: 'grayscale(1) brightness(0.4)', opacity: 0.55 };
   const style = unlocked ? undefined : lockedStyle;
   const props = { c: color, dim: size, id };

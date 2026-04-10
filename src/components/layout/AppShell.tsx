@@ -110,6 +110,7 @@ export function AppShell({
                 className="app-shell__lang-flag-img"
                 src={`https://flagcdn.com/w20/${appLanguage.split('-')[1].toLowerCase()}.png`}
                 alt={currentLangLabel}
+                onError={e => { e.currentTarget.style.display = 'none'; }}
               />
               <span className="app-shell__lang-label">{currentLangLabel}</span>
               <span className={`app-shell__lang-caret${langOpen ? ' app-shell__lang-caret--open' : ''}`}>▾</span>
@@ -128,6 +129,7 @@ export function AppShell({
                       className="app-shell__lang-option-flag-img"
                       src={`https://flagcdn.com/w20/${l.code.split('-')[1].toLowerCase()}.png`}
                       alt={l.label}
+                      onError={e => { e.currentTarget.style.display = 'none'; }}
                     />
                     <span className="app-shell__lang-option-label">{l.label}</span>
                     {appLanguage === l.code && <span className="app-shell__lang-option-check">✓</span>}
@@ -150,7 +152,12 @@ export function AppShell({
               aria-expanded={profileOpen}
             >
               {profilePic
-                ? <img src={profilePic} alt="Profile" className="app-shell__avatar-img" />
+                ? <img
+                    src={profilePic}
+                    alt="Profile"
+                    className="app-shell__avatar-img"
+                    onError={e => { e.currentTarget.style.display = 'none'; }}
+                  />
                 : getInitials(userName || userEmail)
               }
             </button>

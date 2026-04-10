@@ -16,6 +16,8 @@ interface TranscriptPanelProps {
   onManualInputChange: (val: string) => void;
   onManualSubmit: () => void;
   onFlipSpeaker?: (id: string) => void;
+  manualSpeaker?: 'rep' | 'prospect';
+  onManualSpeakerToggle?: () => void;
 }
 
 export const TranscriptPanel = memo(function TranscriptPanel({
@@ -27,6 +29,8 @@ export const TranscriptPanel = memo(function TranscriptPanel({
   onManualInputChange,
   onManualSubmit,
   onFlipSpeaker,
+  manualSpeaker = 'prospect',
+  onManualSpeakerToggle,
 }: TranscriptPanelProps) {
   const t = useTranslations();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -103,9 +107,19 @@ export const TranscriptPanel = memo(function TranscriptPanel({
       </div>
 
       <div className="transcript-panel__input">
+        {onManualSpeakerToggle && (
+          <button
+            type="button"
+            className="transcript-panel__speaker-toggle"
+            onClick={onManualSpeakerToggle}
+            title="Toggle speaker: rep or prospect"
+          >
+            {manualSpeaker === 'prospect' ? t.liveCall.prospect : t.liveCall.you}
+          </button>
+        )}
         <input
           className="transcript-panel__text"
-          placeholder={t.liveCall.typeProspect}
+          placeholder={manualSpeaker === 'prospect' ? t.liveCall.typeProspect : t.liveCall.typeProspect}
           value={manualInput}
           onChange={e => onManualInputChange(e.target.value)}
           onKeyDown={handleKeyDown}

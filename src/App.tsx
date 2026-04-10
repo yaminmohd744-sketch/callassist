@@ -12,6 +12,7 @@ import { AuthScreen }       from './screens/AuthScreen';
 import { OnboardingScreen } from './screens/OnboardingScreen';
 import { ThemeToggle }      from './components/ThemeToggle';
 import { AppShell }         from './components/layout/AppShell';
+import { ErrorBoundary }    from './components/ErrorBoundary';
 import { LoginTransitionOverlay } from './components/LoginTransitionOverlay';
 import { useAuth }          from './hooks/useAuth';
 import { useAppLanguage }   from './hooks/useAppLanguage';
@@ -143,7 +144,8 @@ export function App() {
       .select('*')
       .eq('user_id', user.id)
       .order('ended_at', { ascending: false })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) { console.error('[CallAssist] Failed to load sessions:', error.message); return; }
         const real = data ? data.map(rowToSession) : [];
         setPastSessions(real.length > 0 ? real : MOCK_SESSIONS);
       });
@@ -159,12 +161,13 @@ export function App() {
     setCallSession(session);
     setScreen('post-call');
     if (user) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('call_sessions')
         .insert(sessionToRow(session, user.id))
         .select()
         .single();
-      if (data) setPastSessions(prev => [rowToSession(data as DbRow), ...prev]);
+      if (error) { console.error('[CallAssist] Failed to save session:', error.message); }
+      else if (data) setPastSessions(prev => [rowToSession(data as DbRow), ...prev]);
     }
   }
 
@@ -176,11 +179,12 @@ export function App() {
   async function handleDeleteSession(endedAt: string) {
     setPastSessions(prev => prev.filter(s => s.endedAt !== endedAt));
     if (user) {
-      await supabase
+      const { error } = await supabase
         .from('call_sessions')
         .delete()
         .eq('user_id', user.id)
         .eq('ended_at', endedAt);
+      if (error) console.error('[CallAssist] Failed to delete session:', error.message);
     }
   }
 
@@ -259,51 +263,65 @@ export function App() {
           onProfilePicChange={handleProfilePicChange}
         >
           {currentScreen === 'dashboard' && (
-            <DashboardScreen
-              pastSessions={pastSessions}
-              onStartCall={() => setScreen('pre-call')}
-              onUploadCall={() => setScreen('upload-call')}
-              onViewSession={handleViewSession}
-              onDeleteSession={handleDeleteSession}
-              userName={
-                user?.user_metadata?.full_name?.split(' ')[0] ||
-                user?.user_metadata?.name?.split(' ')[0] ||
-                user?.email?.split('@')[0] ||
-                ''
-              }
-            />
+            <ErrorBoundary>
+              <DashboardScreen
+                pastSessions={pastSessions}
+                onStartCall={() => setScreen('pre-call')}
+                onUploadCall={() => setScreen('upload-call')}
+                onViewSession={handleViewSession}
+                onDeleteSession={handleDeleteSession}
+                userName={
+                  user?.user_metadata?.full_name?.split(' ')[0] ||
+                  user?.user_metadata?.name?.split(' ')[0] ||
+                  user?.email?.split('@')[0] ||
+                  ''
+                }
+              />
+            </ErrorBoundary>
           )}
           {currentScreen === 'training' && (
-            <TrainingScreen onBack={() => setScreen('dashboard')} appLanguage={appLanguage} />
+            <ErrorBoundary>
+              <TrainingScreen onBack={() => setScreen('dashboard')} appLanguage={appLanguage} />
+            </ErrorBoundary>
           )}
           {currentScreen === 'analytics' && (
-            <AnalyticsScreen pastSessions={pastSessions} user={user} />
+            <ErrorBoundary>
+              <AnalyticsScreen pastSessions={pastSessions} user={user} />
+            </ErrorBoundary>
           )}
         </AppShell>
       )}
 
       {currentScreen === 'pre-call' && (
-        <PreCallScreen
-          onStartCall={handleStartCall}
-          onBack={() => setScreen('dashboard')}
-          defaultLanguage={appLanguage}
-        />
+        <ErrorBoundary>
+          <PreCallScreen
+            onStartCall={handleStartCall}
+            onBack={() => setScreen('dashboard')}
+            defaultLanguage={appLanguage}
+          />
+        </ErrorBoundary>
       )}
       {currentScreen === 'live-call' && callConfig && (
-        <LiveCallScreen config={callConfig} onEndCall={handleEndCall} />
+        <ErrorBoundary>
+          <LiveCallScreen config={callConfig} onEndCall={handleEndCall} />
+        </ErrorBoundary>
       )}
       {currentScreen === 'upload-call' && (
-        <UploadCallScreen
-          onEndCall={handleEndCall}
-          onBack={() => setScreen('dashboard')}
-        />
+        <ErrorBoundary>
+          <UploadCallScreen
+            onEndCall={handleEndCall}
+            onBack={() => setScreen('dashboard')}
+          />
+        </ErrorBoundary>
       )}
       {currentScreen === 'post-call' && callSession && (
-        <PostCallScreen
-          session={callSession}
-          onBack={() => setScreen('dashboard')}
-          onNewCall={() => setScreen('pre-call')}
-        />
+        <ErrorBoundary>
+          <PostCallScreen
+            session={callSession}
+            onBack={() => setScreen('dashboard')}
+            onNewCall={() => setScreen('pre-call')}
+          />
+        </ErrorBoundary>
       )}
     </>
   );
