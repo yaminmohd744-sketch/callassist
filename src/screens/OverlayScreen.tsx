@@ -4,10 +4,10 @@ import type { AISuggestion, CallStage } from '../types/index';
 import './OverlayScreen.css';
 
 const TYPE_LABEL: Record<AISuggestion['type'], string> = {
-  'objection-handler': 'OBJECTION',
-  'closing-prompt':    'CLOSE',
-  'tip':               'TIP',
-  'alert':             'ALERT',
+  'objection-response': 'OBJECTION',
+  'close-attempt':      'CLOSE',
+  'tip':                'TIP',
+  'discovery':          'GO DEEPER',
 };
 
 const STAGE_LABEL: Record<CallStage, string> = {

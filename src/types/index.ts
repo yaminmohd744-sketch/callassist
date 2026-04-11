@@ -23,7 +23,7 @@ export interface TranscriptEntry {
 
 // ─── AI Suggestions ──────────────────────────────────────────────────────────
 
-export type SuggestionType = 'objection-handler' | 'closing-prompt' | 'tip' | 'alert';
+export type SuggestionType = 'tip' | 'objection-response' | 'close-attempt' | 'discovery';
 
 export interface AISuggestion {
   id: string;

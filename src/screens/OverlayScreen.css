@@ -151,11 +151,11 @@
   border-left: 3px solid transparent;
 }
 
-.overlay__card--objection-handler {
+.overlay__card--objection-response {
   background: rgba(255, 100, 50, 0.1);
   border-left-color: #ff6432;
 }
-.overlay__card--closing-prompt {
+.overlay__card--close-attempt {
   background: rgba(57, 255, 20, 0.08);
   border-left-color: #39ff14;
 }

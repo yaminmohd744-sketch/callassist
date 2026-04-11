@@ -413,7 +413,7 @@ export function AnalyticsScreen({ pastSessions, user }: AnalyticsScreenProps) {
     };
     for (const session of pastSessions) {
       for (const s of session.suggestions ?? []) {
-        if (s.type !== 'objection-handler') continue;
+        if (s.type !== 'objection-response') continue;
         const cat = classify(s.triggeredBy ?? '');
         if (!cat) continue;
         if (!cats[cat]) cats[cat] = { count: 0, techniques: [], won: 0 };

@@ -362,7 +362,7 @@ function analyzeWithKeywords(
         const base = fill(raw, config);
         const hint = ctx ? buildContextHint(ctx, newEntry.text) : null;
         const body = hint ? `${base}\n\n- ${hint}` : base;
-        suggestions.push(makeSuggestion('objection-handler', def.label, body, newEntry.text, elapsedSeconds));
+        suggestions.push(makeSuggestion('objection-response', def.label, body, newEntry.text, elapsedSeconds));
         probability -= 10;
         objectionsCount += 1;
         break;
@@ -376,7 +376,7 @@ function analyzeWithKeywords(
         const base = fill(def.response, config);
         const hint = ctx ? buildContextHint(ctx, newEntry.text) : null;
         const body = hint ? `${base}\n\n- ${hint}` : base;
-        suggestions.push(makeSuggestion('closing-prompt', def.label, body, newEntry.text, elapsedSeconds));
+        suggestions.push(makeSuggestion('close-attempt', def.label, body, newEntry.text, elapsedSeconds));
         probability += 8;
         break;
       }
@@ -666,8 +666,8 @@ export function generateSessionSummary(
   closeProbability: number,
   objectionsCount: number
 ): { aiSummary: string; followUpEmail: string; leadScore: number } {
-  const buyingSignals = suggestions.filter(s => s.type === 'closing-prompt').length;
-  const objectionHandlers = suggestions.filter(s => s.type === 'objection-handler').length;
+  const buyingSignals = suggestions.filter(s => s.type === 'close-attempt').length;
+  const objectionHandlers = suggestions.filter(s => s.type === 'objection-response').length;
   const totalEntries = transcript.length;
 
   let sentiment = 'neutral';
@@ -683,10 +683,10 @@ export function generateSessionSummary(
     `Overall sentiment: ${sentiment}.`,
     ``,
     objectionHandlers > 0
-      ? `Key objections handled: ${suggestions.filter(s => s.type === 'objection-handler').map(s => s.headline).join(', ')}.`
+      ? `Key objections handled: ${suggestions.filter(s => s.type === 'objection-response').map(s => s.headline).join(', ')}.`
       : `No significant objections raised.`,
     buyingSignals > 0
-      ? `Positive signals: ${suggestions.filter(s => s.type === 'closing-prompt').map(s => s.headline).slice(0, 3).join(', ')}.`
+      ? `Positive signals: ${suggestions.filter(s => s.type === 'close-attempt').map(s => s.headline).slice(0, 3).join(', ')}.`
       : ``,
     ``,
     `Recommended next step: ${closeProbability >= 60 ? 'Schedule a follow-up demo or proposal call.' : closeProbability >= 40 ? 'Send detailed info and follow up in 2-3 days.' : 'Nurture relationship - re-engage in 2 weeks with new angle.'}`,

@@ -78,10 +78,10 @@ export function useAICoach() {
       const primary = result.suggestions[0];
       memoryRef.current = {
         lastLabel: primary.headline,
-        lastObjectionType: primary.type === 'objection-handler'
+        lastObjectionType: primary.type === 'objection-response'
           ? primary.headline
           : memoryRef.current.lastObjectionType,
-        closeAttempted: memoryRef.current.closeAttempted || primary.type === 'closing-prompt',
+        closeAttempted: memoryRef.current.closeAttempted || primary.type === 'close-attempt',
       };
       // Keyword-fallback path - suggestion not already in state via onStream.
       setSuggestions(prev => {

@@ -8,10 +8,10 @@
   flex-shrink: 0;
 }
 
-.suggestion-card--objection-handler { border-left-color: var(--color-accent-red); }
-.suggestion-card--closing-prompt    { border-left-color: var(--color-accent-green); }
-.suggestion-card--tip               { border-left-color: var(--color-accent-purple); }
-.suggestion-card--alert             { border-left-color: var(--color-accent-yellow); }
+.suggestion-card--objection-response { border-left-color: var(--color-accent-red); }
+.suggestion-card--close-attempt      { border-left-color: var(--color-accent-green); }
+.suggestion-card--tip                { border-left-color: var(--color-accent-purple); }
+.suggestion-card--discovery          { border-left-color: var(--color-accent-cyan); }
 
 .suggestion-card__header {
   display: flex;
@@ -26,10 +26,10 @@
   letter-spacing: 0.12em;
 }
 
-.suggestion-card--objection-handler .suggestion-card__badge { color: var(--color-accent-red); }
-.suggestion-card--closing-prompt    .suggestion-card__badge { color: var(--color-accent-green); }
-.suggestion-card--tip               .suggestion-card__badge { color: var(--color-accent-purple); }
-.suggestion-card--alert             .suggestion-card__badge { color: var(--color-accent-yellow); }
+.suggestion-card--objection-response .suggestion-card__badge { color: var(--color-accent-red); }
+.suggestion-card--close-attempt      .suggestion-card__badge { color: var(--color-accent-green); }
+.suggestion-card--tip                .suggestion-card__badge { color: var(--color-accent-purple); }
+.suggestion-card--discovery          .suggestion-card__badge { color: var(--color-accent-cyan); }
 
 .suggestion-card__time {
   font-size: var(--font-size-xs);

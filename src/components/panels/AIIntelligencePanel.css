@@ -169,6 +169,43 @@
   margin-top: 2px;
 }
 
+/* ── Voice tone capture button ───────────────────────────────────────────── */
+
+.ai-panel__tone-btn {
+  width: 100%;
+  padding: 7px 12px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+  margin-bottom: var(--space-3);
+}
+
+.ai-panel__tone-btn:hover {
+  color: var(--color-accent-cyan);
+  border-color: var(--color-accent-cyan);
+}
+
+.ai-panel__tone-btn--active {
+  color: var(--color-accent-cyan);
+  border-color: var(--color-accent-cyan);
+  background: color-mix(in srgb, var(--color-accent-cyan) 8%, transparent);
+}
+
+.ai-panel__tone-error {
+  font-size: var(--font-size-xs);
+  color: var(--color-accent-red);
+  line-height: 1.4;
+  margin-bottom: var(--space-3);
+  opacity: 0.85;
+}
+
 /* Objection quick-reference */
 .ai-panel__objections {
   display: flex;

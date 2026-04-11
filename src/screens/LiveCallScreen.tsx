@@ -8,6 +8,7 @@ import { LeadProfilePanel } from '../components/panels/LeadProfilePanel';
 import { useCallTimer } from '../hooks/useCallTimer';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useAICoach } from '../hooks/useAICoach';
+import { useAudioTone } from '../hooks/useAudioTone';
 import { generateSessionSummary, classifySignalAI } from '../lib/ai';
 import { OBJECTION_KEYWORDS, BUYING_KEYWORDS, PROSPECT_PHRASES, REP_PHRASES, PROSPECT_REACTIONS } from '../lib/keywords';
 import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSignal } from '../types';
@@ -94,6 +95,12 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     });
   }, [config.language]);
   const { suggestions, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion } = useAICoach();
+  const {
+    tone: prospectTone,
+    coaching: toneCoaching,
+    startCapture: startToneCapture,
+    stopCapture: stopToneCapture,
+  } = useAudioTone({ prospectName: config.prospectName, callGoal: config.callGoal, yourPitch: config.yourPitch });
 
   // Automatically classify each mic utterance as rep or prospect based on content.
   // Only prospect entries trigger AI analysis.
@@ -131,6 +138,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     setCallStatus('active');
     startTimer();
     startListening();
+    startToneCapture();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -189,6 +197,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
   const handleEndCall = useCallback(async () => {
     stopListening();
+    stopToneCapture();
     stopTimer();
     const { aiSummary, followUpEmail, leadScore } = await generateSessionSummary(
       config,
@@ -244,6 +253,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         <AIIntelligencePanel
           suggestions={suggestions}
           callStage={callStage}
+          prospectTone={prospectTone}
+          toneCoaching={toneCoaching}
         />
         <LeadProfilePanel
           config={config}

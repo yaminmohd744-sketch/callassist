@@ -3,10 +3,10 @@ import type { AISuggestion, SuggestionType } from '../../types';
 import './SuggestionCard.css';
 
 const TYPE_LABEL: Record<SuggestionType, string> = {
-  'objection-handler': 'HANDLE OBJECTION',
-  'closing-prompt':    'CLOSE',
-  'tip':               'NEXT MOVE',
-  'alert':             'ALERT',
+  'objection-response': 'HANDLE OBJECTION',
+  'close-attempt':      'CLOSE',
+  'tip':                'NEXT MOVE',
+  'discovery':          'GO DEEPER',
 };
 
 function formatTime(seconds: number) {
