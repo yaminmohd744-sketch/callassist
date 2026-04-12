@@ -11,7 +11,7 @@ import { useAICoach } from '../hooks/useAICoach';
 import { useAudioTone } from '../hooks/useAudioTone';
 import { generateSessionSummary, classifySignalAI } from '../lib/ai';
 import { OBJECTION_KEYWORDS, BUYING_KEYWORDS, PROSPECT_PHRASES, REP_PHRASES, PROSPECT_REACTIONS } from '../lib/keywords';
-import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSignal } from '../types';
+import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSignal, TranscriptSpeaker } from '../types';
 import './LiveCallScreen.css';
 
 function genId() {
@@ -168,7 +168,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     setTranscript(prev => {
       const updated = prev.map(e => {
         if (e.id !== id) return e;
-        const flipped = e.speaker === 'rep' ? 'prospect' : 'rep';
+        const flipped: TranscriptSpeaker = e.speaker === 'rep' ? 'prospect' : 'rep';
         return { ...e, speaker: flipped, signal: flipped === 'prospect' ? classifySignal(e.text) : 'neutral' as const };
       });
       transcriptRef.current = updated;

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './LandingScreen.css';
 
 interface LandingScreenProps {
-  onGetStarted: () => void;
+  onDownload: () => void;
 }
 
 type SectionId = 'features' | 'training' | 'languages' | 'pricing' | 'download' | 'changelog' | 'help' | 'about' | 'blog' | 'careers' | 'contact' | 'privacy' | 'terms' | 'cookies';
@@ -330,7 +330,18 @@ const LANG_PHRASES = [
   { flag: '🇯🇵', lang: 'Japanese',   text: '"具体的に何を変えますか？"' },
 ];
 
-export function LandingScreen({ onGetStarted }: LandingScreenProps) {
+function WinLogo() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <path d="M0 0h7.5v7.5H0z"/>
+      <path d="M8.5 0H16v7.5H8.5z"/>
+      <path d="M0 8.5h7.5V16H0z"/>
+      <path d="M8.5 8.5H16V16H8.5z"/>
+    </svg>
+  );
+}
+
+export function LandingScreen({ onDownload }: LandingScreenProps) {
   const [visibleFrames, setVisibleFrames]       = useState(1);
   const [menuOpen, setMenuOpen]                 = useState(false);
   const [featureTabIdx, setFeatureTabIdx]       = useState(0);
@@ -339,6 +350,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
   const [openFaq, setOpenFaq]                   = useState<number | null>(null);
   const [billingCycle, setBillingCycle]         = useState<'monthly' | 'yearly'>('monthly');
   const [langIdx, setLangIdx]                   = useState(0);
+  const [navCtaVisible, setNavCtaVisible]       = useState(false);
 
   useEffect(() => {
     if (visibleFrames >= DEMO_FRAMES.length) return;
@@ -371,6 +383,21 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
     );
     els.forEach(el => observer.observe(el));
     return () => observer.disconnect();
+  }, [activeSection]);
+
+  // Show nav CTA only after scrolling past the hero (≈ 80% of viewport height)
+  useEffect(() => {
+    if (activeSection !== null) return;
+    const container = document.querySelector('.lp') ?? window;
+    const threshold = window.innerHeight * 0.8;
+    function onScroll() {
+      const scrolled = container === window
+        ? window.scrollY
+        : (container as Element).scrollTop;
+      setNavCtaVisible(scrolled > threshold);
+    }
+    container.addEventListener('scroll', onScroll, { passive: true });
+    return () => container.removeEventListener('scroll', onScroll);
   }, [activeSection]);
 
   // Auto-advance feature tabs
@@ -428,8 +455,13 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         )}
 
         <div className="lp__nav-actions">
-          <button className="lp__nav-signin" onClick={onGetStarted}>Sign In</button>
-          <button className="lp__nav-cta" onClick={onGetStarted}>Get Started Free</button>
+          <button
+            className="lp__win-btn lp__nav-cta-win"
+            onClick={onDownload}
+            style={{ opacity: navCtaVisible ? 1 : 0, pointerEvents: navCtaVisible ? 'auto' : 'none' }}
+          >
+            <WinLogo /> Get for Windows
+          </button>
           <button className="lp__nav-burger" onClick={() => setMenuOpen(o => !o)} aria-label="menu">
             <span /><span /><span />
           </button>
@@ -574,8 +606,8 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
 
           <div className="lp__sv-cta">
-            <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
-              ▶ Start for Free
+            <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+              <WinLogo /> Get for Windows
             </button>
             <p className="lp__sv-cta-note">No credit card · 7-day money-back</p>
           </div>
@@ -692,8 +724,8 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
 
           <div className="lp__sv-cta">
-            <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
-              Start Training Free →
+            <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+              <WinLogo /> Get for Windows
             </button>
             <p className="lp__sv-cta-note">No credit card · Free plan available</p>
           </div>
@@ -756,8 +788,8 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
 
           <div className="lp__sv-cta">
-            <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
-              ▶ Start for Free
+            <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+              <WinLogo /> Get for Windows
             </button>
             <p className="lp__sv-cta-note">No credit card · 10 languages from day one</p>
           </div>
@@ -776,7 +808,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         monthlyPrice: 19,
         yearlyPrice: 16,
         desc: 'For reps learning the ropes.',
-        cta: 'Start free trial',
+        cta: 'Get for Windows',
         ctaStyle: 'outline' as const,
         badge: null,
         highlight: false,
@@ -795,7 +827,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         monthlyPrice: 49,
         yearlyPrice: 41,
         desc: 'For reps ready to level up.',
-        cta: '▶ Start free — 7-day trial',
+        cta: 'Get for Windows',
         ctaStyle: 'primary' as const,
         badge: 'MOST POPULAR',
         highlight: true,
@@ -815,7 +847,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         monthlyPrice: 59,
         yearlyPrice: 49,
         desc: 'Full access. No ceilings.',
-        cta: 'Start Business trial',
+        cta: 'Get for Windows',
         ctaStyle: 'outline' as const,
         badge: null,
         highlight: false,
@@ -892,7 +924,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
                 </ul>
                 <button
                   className={`lp__btn lp__btn--${plan.ctaStyle} lp__pricing-cta`}
-                  onClick={onGetStarted}
+                  onClick={onDownload}
                 >
                   {plan.cta}
                 </button>
@@ -938,19 +970,19 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         <div className="lp__sv lp__sv--download">
           <div className="lp__sv-hero">
             <div className="lp__sv-label">DOWNLOAD</div>
-            <h2 className="lp__sv-h2">No download. No install.<br />Just open and sell.</h2>
+            <h2 className="lp__sv-h2">One install.<br />Always ready to sell.</h2>
             <p className="lp__sv-sub">
-              Pitch Plus runs entirely in your browser. No Chrome extension, no desktop app,
-              no setup wizard. Open a tab, enter your prospect's details, and you're live in under 30 seconds.
+              Pitch Plus is a native Windows desktop app. Install it once and it's always a click away —
+              no browser tab, no extension, no lag. Just open and coach.
             </p>
           </div>
 
           <div className="lp__info-grid">
             {[
-              { icon: '◎', title: 'Any browser', desc: 'Works on Chrome, Firefox, Safari, and Edge. Nothing to install — just sign in and go.' },
-              { icon: '◈', title: 'Any device', desc: 'Laptop, desktop, or tablet. If your browser supports Web Speech API, Pitch Plus works.' },
+              { icon: '◎', title: 'Windows native', desc: 'Built for Windows 10 & 11. Installs like any app and runs in the background — no browser needed.' },
+              { icon: '◈', title: 'Lightweight', desc: 'Minimal CPU and memory footprint. Runs alongside Zoom, Teams, or any call software without slowdown.' },
               { icon: '✦', title: 'Any call type', desc: 'Phone calls, Zoom, Teams, Google Meet — anything you can speak into your microphone.' },
-              { icon: '▣', title: 'Any OS', desc: 'Windows, macOS, Linux, ChromeOS. No platform restrictions, ever.' },
+              { icon: '▣', title: 'Always on', desc: 'Stays in your system tray ready to launch. One click and you\'re live before the first ring.' },
             ].map((item, i) => (
               <div key={i} className="lp__info-card">
                 <div className="lp__info-card-icon">{item.icon}</div>
@@ -962,8 +994,8 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
           <div className="lp__sv-howto">
             {[
-              { num: '01', title: 'Sign up free', desc: 'Create your account in 30 seconds. No credit card required for the free plan.' },
-              { num: '02', title: 'Open a new tab', desc: 'Navigate to Pitch Plus in any supported browser. Bookmark it for one-click access.' },
+              { num: '01', title: 'Download the app', desc: 'Click Download Free and run the installer. Takes under a minute on any Windows 10 or 11 machine.' },
+              { num: '02', title: 'Create your account', desc: 'Sign up inside the app in 30 seconds. No credit card required for the free plan.' },
               { num: '03', title: 'Allow microphone', desc: 'Grant microphone permission once. Pitch Plus never records without your explicit start.' },
               { num: '04', title: 'Start your call', desc: 'Enter your prospect\'s details, hit Start, and get live coaching the moment they speak.' },
             ].map((step, i) => (
@@ -976,10 +1008,10 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
 
           <div className="lp__sv-cta">
-            <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
-              ▶ Get Started Free
+            <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+              <WinLogo /> Get for Windows
             </button>
-            <p className="lp__sv-cta-note">No credit card · No downloads · Live in 30 seconds</p>
+            <p className="lp__sv-cta-note">No credit card · Windows 10 &amp; 11 · Free to start</p>
           </div>
         </div>
       </div>
@@ -1158,8 +1190,8 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </div>
 
           <div className="lp__sv-cta">
-            <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
-              ▶ Try it yourself
+            <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+              <WinLogo /> Get for Windows
             </button>
             <p className="lp__sv-cta-note">Free plan · No credit card required</p>
           </div>
@@ -1885,11 +1917,11 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
           </h1>
           <p className="lp__hero-sub">
             Real-time coaching. Training mode. Post-call AI analysis. Works on phone calls,
-            Zoom, Teams, Meet - in 10 languages. No downloads, no extensions.
+            Zoom, Teams, Meet - in 10 languages. Native Windows desktop app.
           </p>
           <div className="lp__hero-actions">
-            <button className="lp__btn lp__btn--primary" onClick={onGetStarted}>
-              ▶ Start for Free
+            <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+              <WinLogo /> Get for Windows
             </button>
             <button className="lp__btn lp__btn--ghost" onClick={() => scrollTo('how-it-works')}>
               See how it works →
@@ -1929,11 +1961,11 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
 
       {/* ── Trust bar ── */}
       <div className="lp__trust reveal">
-        <div className="lp__trust-item">✓ Chrome · Firefox · Safari · Edge</div>
+        <div className="lp__trust-item">✓ Windows 10 &amp; 11</div>
         <div className="lp__trust-sep" />
         <div className="lp__trust-item">✓ 7-day money-back guarantee</div>
         <div className="lp__trust-sep" />
-        <div className="lp__trust-item">✓ No downloads or extensions</div>
+        <div className="lp__trust-item">✓ No browser needed</div>
         <div className="lp__trust-sep" />
         <div className="lp__trust-item">✓ 10 languages supported</div>
       </div>
@@ -2033,8 +2065,8 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 'var(--space-10)' }}>
-          <button className="lp__btn lp__btn--primary" onClick={onGetStarted}>
-            Start Training Free →
+          <button className="lp__win-btn" onClick={onDownload}>
+            <WinLogo /> Get for Windows
           </button>
         </div>
       </section>
@@ -2180,7 +2212,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>
-            <button className="lp__btn lp__btn--outline lp__pricing-cta" onClick={onGetStarted}>Start free trial</button>
+            <button className="lp__win-btn lp__win-btn--outline lp__pricing-cta" onClick={onDownload}><WinLogo /> Get for Windows</button>
           </div>
 
           {/* PRO */}
@@ -2196,7 +2228,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>
-            <button className="lp__btn lp__btn--primary lp__pricing-cta" onClick={onGetStarted}>▶ Start free — 7-day trial</button>
+            <button className="lp__win-btn lp__pricing-cta" onClick={onDownload}><WinLogo /> Get for Windows</button>
           </div>
 
           {/* BUSINESS */}
@@ -2211,7 +2243,7 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>
-            <button className="lp__btn lp__btn--outline lp__pricing-cta" onClick={onGetStarted}>Start Business trial</button>
+            <button className="lp__win-btn lp__win-btn--outline lp__pricing-cta" onClick={onDownload}><WinLogo /> Get for Windows</button>
           </div>
 
         </div>
@@ -2227,10 +2259,10 @@ export function LandingScreen({ onGetStarted }: LandingScreenProps) {
         <p className="lp__cta-banner-sub">
           Join sales reps using AI to win more calls - in any language, on any device.
         </p>
-        <button className="lp__btn lp__btn--primary lp__btn--lg" onClick={onGetStarted}>
-          ▶ Start for Free
+        <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+          <WinLogo /> Get for Windows
         </button>
-        <p className="lp__cta-banner-note">No credit card · 7-day money-back · Works everywhere</p>
+        <p className="lp__cta-banner-note">No credit card · 7-day money-back · Windows 10 &amp; 11</p>
       </section>
 
       {/* ── Footer ── */}

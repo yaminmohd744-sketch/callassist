@@ -103,6 +103,56 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
+/* Windows download button */
+.lp__win-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--color-accent-gradient);
+  border: none;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: #ffffff;
+  padding: 10px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(129, 74, 200, 0.35);
+}
+.lp__win-btn:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 4px 18px rgba(129, 74, 200, 0.55);
+}
+.lp__win-btn--lg {
+  font-size: var(--font-size-base);
+  padding: 13px 28px;
+  gap: 11px;
+  border-radius: 10px;
+}
+.lp__win-btn--lg svg { width: 18px; height: 18px; }
+.lp__win-btn--outline {
+  background: transparent;
+  border: 1.5px solid var(--color-accent-purple);
+  color: var(--color-accent-purple);
+  box-shadow: none;
+}
+.lp__win-btn--outline:hover {
+  background: rgba(129, 74, 200, 0.08);
+  box-shadow: none;
+  filter: none;
+}
+
+/* Nav download CTA — fades in on scroll */
+.lp__nav-cta-win {
+  font-size: 0.8rem;
+  padding: 8px 18px;
+  border-radius: 7px;
+  transition: opacity 0.25s ease, filter var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+/* keep old .lp__nav-cta in case it's used elsewhere */
 .lp__nav-cta {
   background: var(--color-accent-gradient);
   border: none;

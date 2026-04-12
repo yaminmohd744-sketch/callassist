@@ -27,6 +27,9 @@ const PROFILE_PIC_KEY = 'pp-profile-pic';
 // Estimated seconds per training exchange (~90s avg per rep turn)
 const SECONDS_PER_EXCHANGE = 90;
 
+// True when running inside the Electron desktop app
+const isElectron = navigator.userAgent.includes('Electron');
+
 // Prevent flash of wrong theme on initial load
 const _savedTheme = localStorage.getItem('theme');
 if (_savedTheme === 'light') document.documentElement.dataset.theme = 'light';
@@ -90,7 +93,7 @@ export function App() {
     document.documentElement.dataset.theme = next === 'light' ? 'light' : '';
   }
 
-  const [screen, setScreen]             = useState<Screen>('landing');
+  const [screen, setScreen]             = useState<Screen>(isElectron ? 'auth' : 'landing');
   const [showIntro, setShowIntro]       = useState(true);
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
@@ -192,15 +195,26 @@ export function App() {
   if (authLoading) return <div className="app-loading">LOADING...</div>;
 
   if (!user) {
-    if (screen === 'auth') return (
+    // Desktop app: skip landing, go straight to auth
+    if (isElectron || screen === 'auth') return (
       <>
-        <AuthScreen onBack={() => setScreen('landing')} />
+        <AuthScreen onBack={isElectron ? () => {} : () => setScreen('landing')} />
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </>
     );
+    // Web app: show landing page first
     return (
       <>
-        <LandingScreen onGetStarted={() => setScreen('auth')} />
+        <LandingScreen onDownload={() => {
+          // Try to open the installed desktop app via the custom protocol.
+          // If the app isn't installed, fall back to the installer download after 1.5 s.
+          // TODO: replace the fallback URL with your real hosted installer once built.
+          const DOWNLOAD_URL = 'https://pitchplus.app/download/PitchPlus-Setup.exe';
+          window.location.href = 'pitchplus://open';
+          setTimeout(() => {
+            window.open(DOWNLOAD_URL, '_blank');
+          }, 1500);
+        }} />
         {showIntro && <IntroScreen onDone={() => setShowIntro(false)} />}
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </>
