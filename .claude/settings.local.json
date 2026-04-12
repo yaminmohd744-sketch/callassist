@@ -104,7 +104,10 @@
       "Bash(grep -rn \">[A-Z ]\\\\{3,\\\\}<\\\\|'[A-Z][A-Z ]\\\\{2,\\\\}'\" src/components/layout/Header.tsx src/components/layout/StatusBar.tsx src/components/panels/TranscriptPanel.tsx src/components/panels/AIIntelligencePanel.tsx src/components/panels/LeadProfilePanel.tsx)",
       "Bash(grep -rn \">[A-Z][a-zA-Z ]\\\\{3,\\\\}<\\\\|placeholder=\" src/screens/OnboardingScreen.tsx src/screens/AuthScreen.tsx)",
       "Bash(ELECTRON_RUN_AS_NODE=\"\" npm run electron:build)",
-      "Bash(ELECTRON_RUN_AS_NODE=\"\" NODE_OPTIONS=\"--max-old-space-size=8192\" npx electron-builder --win)"
+      "Bash(ELECTRON_RUN_AS_NODE=\"\" NODE_OPTIONS=\"--max-old-space-size=8192\" npx electron-builder --win)",
+      "Bash(magick --version)",
+      "Bash(ELECTRON_RUN_AS_NODE=\"\" NODE_OPTIONS=\"--max-old-space-size=8192\" CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder --win --config.win.signingHashAlgorithms='[]')",
+      "Bash(powershell -Command \"Compress-Archive -Path 'win-unpacked' -DestinationPath 'Pitch-Plus-Windows.zip' -Force\")"
     ]
   }
 }

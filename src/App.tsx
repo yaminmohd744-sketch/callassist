@@ -206,14 +206,15 @@ export function App() {
     return (
       <>
         <LandingScreen onDownload={() => {
-          // Try to open the installed desktop app via the custom protocol.
-          // If the app isn't installed, fall back to the installer download after 1.5 s.
-          // TODO: replace the fallback URL with your real hosted installer once built.
-          const DOWNLOAD_URL = 'https://pitchplus.app/download/PitchPlus-Setup.exe';
-          window.location.href = 'pitchplus://open';
-          setTimeout(() => {
-            window.open(DOWNLOAD_URL, '_blank');
-          }, 1500);
+          // Silently try to open the installed desktop app via the custom protocol.
+          // Using a hidden iframe avoids the OS error dialog if the app isn't installed.
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = 'pitchplus://open';
+          document.body.appendChild(iframe);
+          setTimeout(() => document.body.removeChild(iframe), 2000);
+          // Fallback: if app isn't installed, go to sign-in so they can still register
+          setTimeout(() => setScreen('auth'), 1800);
         }} />
         {showIntro && <IntroScreen onDone={() => setShowIntro(false)} />}
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
