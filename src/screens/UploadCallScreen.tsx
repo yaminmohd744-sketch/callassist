@@ -21,10 +21,17 @@ function classifySignal(text: string): TranscriptSignal {
   return 'neutral';
 }
 
-function parseTranscript(text: string): TranscriptEntry[] {
+interface ParseResult {
+  entries: TranscriptEntry[];
+  /** Lines that had no speaker prefix and fell back to alternating assignment */
+  unparsedCount: number;
+}
+
+function parseTranscript(text: string): ParseResult {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const entries: TranscriptEntry[] = [];
   let turn = 0;
+  let unparsedCount = 0;
 
   for (const line of lines) {
     if (/^(call date|duration|recording|file|date|time):/i.test(line)) continue;
@@ -45,6 +52,7 @@ function parseTranscript(text: string): TranscriptEntry[] {
       // Alternating lines: even = rep, odd = prospect
       speaker = turn % 2 === 0 ? 'rep' : 'prospect';
       content = line;
+      unparsedCount++;
     }
 
     if (!content) continue;
@@ -58,7 +66,7 @@ function parseTranscript(text: string): TranscriptEntry[] {
     });
     turn++;
   }
-  return entries;
+  return { entries, unparsedCount };
 }
 
 export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
@@ -70,6 +78,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
   const [fileName, setFileName] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [parseWarning, setParseWarning] = useState('');
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -84,6 +93,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
     const text = transcriptText.trim();
     if (!text) { setError('Paste a transcript or upload a .txt file first.'); return; }
     setError('');
+    setParseWarning('');
     setIsProcessing(true);
 
     try {
@@ -95,7 +105,12 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
         language: 'en-US',
       };
 
-      const transcript = parseTranscript(text);
+      const { entries: transcript, unparsedCount } = parseTranscript(text);
+      if (unparsedCount > 0) {
+        setParseWarning(
+          `${unparsedCount} line${unparsedCount > 1 ? 's' : ''} had no "REP:" / "PROSPECT:" prefix — speaker was guessed by alternating order. Check the transcript if results look off.`
+        );
+      }
       if (transcript.length === 0) {
         setError('Could not parse the transcript. Check the format and try again.');
         setIsProcessing(false);
@@ -209,6 +224,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
             rows={16}
           />
 
+          {parseWarning && <div className="upload-call__warning">{parseWarning}</div>}
           {error && <div className="upload-call__error">{error}</div>}
 
           <div className="upload-call__actions">

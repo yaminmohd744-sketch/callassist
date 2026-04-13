@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { getDeepgramCode } from '../lib/languages';
 
-const DEEPGRAM_API_KEY = (import.meta as unknown as { env: Record<string, string> }).env.VITE_DEEPGRAM_API_KEY;
+const DEEPGRAM_API_KEY = import.meta.env.VITE_DEEPGRAM_API_KEY;
 
 // ─── Minimal Web Speech API types ─────────────────────────────────────────────
 
@@ -19,8 +19,15 @@ interface WSR {
   abort(): void;
 }
 
+// Browsers expose SpeechRecognition under different names; neither is in the
+// standard lib, so we augment window with the narrowest possible type.
+interface SpeechRecognitionWindow extends Window {
+  SpeechRecognition?: new () => WSR;
+  webkitSpeechRecognition?: new () => WSR;
+}
+
 function getWebSpeech(): WSR | null {
-  const W = window as unknown as { SpeechRecognition?: new () => WSR; webkitSpeechRecognition?: new () => WSR };
+  const W = window as SpeechRecognitionWindow;
   const Ctor = W.SpeechRecognition ?? W.webkitSpeechRecognition;
   return Ctor ? new Ctor() : null;
 }
@@ -47,6 +54,8 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
   // Utterance buffer - accumulates is_final chunks and flushes them as one entry
   // after a short silence, so fragmented mid-sentence commits get merged.
+  // Capped at MAX_BUFFER_CHUNKS to prevent unbounded memory growth on very long calls.
+  const MAX_BUFFER_CHUNKS = 50;
   const bufferRef     = useRef<string[]>([]);
   const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -225,8 +234,9 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
           if (!text) return;
           bufferRef.current.push(text);
           setInterimText('');
-          // speech_final = Deepgram is confident the utterance is complete → flush immediately
-          flushBuffer(data.speech_final);
+          // Flush immediately if the buffer is getting too large so memory stays bounded,
+          // or if Deepgram signals the utterance is complete.
+          flushBuffer(data.speech_final || bufferRef.current.length >= MAX_BUFFER_CHUNKS);
         } else {
           setInterimText(transcript);
         }

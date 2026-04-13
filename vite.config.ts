@@ -7,6 +7,11 @@ export default defineConfig({
   // base './' ensures file:// paths work when Electron loads the built app
   base: './',
   server: {
+    port: 5173,
+    strictPort: true,
+    watch: {
+      ignored: ['**/release/**', '**/dist/**'],
+    },
     proxy: {
       '/api/apollo': {
         target: 'https://api.apollo.io',

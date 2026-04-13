@@ -10,7 +10,6 @@ interface OnboardingScreenProps {
 export interface OnboardingData {
   name: string;
   experience: string;
-  fundamental: string;
   language: LanguageCode;
 }
 
@@ -23,29 +22,22 @@ const EXPERIENCE_OPTIONS = [
   { value: 'manager',   label: 'Sales manager',        sub: 'I lead a team'            },
 ];
 
-const FUNDAMENTALS = [
-  { value: 'objections',  label: 'Objection handling',    icon: '🛡️', sub: 'Turn resistance into curiosity'    },
-  { value: 'closing',     label: 'Closing techniques',    icon: '✓',  sub: 'Ask for the deal and hold it'     },
-  { value: 'openers',     label: 'Cold call openers',     icon: '📞', sub: 'Earn the right to speak'          },
-  { value: 'discovery',   label: 'Discovery questions',   icon: '🔍', sub: 'Uncover the real pain'             },
-  { value: 'tonality',    label: 'Tonality & confidence', icon: '🎙️', sub: 'Sound like someone worth talking to' },
-  { value: 'followthrough', label: 'Following through',   icon: '↗',  sub: 'Stay consistent without being annoying' },
-];
-
 const STEPS = [
   { title: 'Welcome to Pitch Plus'          },
   { title: 'How deep into sales are you?'   },
-  { title: 'What do you want to master?'    },
   { title: 'What language do you sell in?'  },
   { title: "You're ready to close."         },
 ];
 
+function flagUrl(code: LanguageCode) {
+  return `https://flagcdn.com/w40/${code.split('-')[1].toLowerCase()}.png`;
+}
+
 export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
-  const [step, setStep]           = useState(0);
-  const [name, setName]           = useState('');
+  const [step, setStep]             = useState(0);
+  const [name, setName]             = useState('');
   const [experience, setExperience] = useState('');
-  const [fundamental, setFundamental] = useState('');
-  const [language, setLanguage]   = useState<LanguageCode>('en-US');
+  const [language, setLanguage]     = useState<LanguageCode>('en-US');
 
   const total    = STEPS.length;
   const progress = (step / (total - 1)) * 100;
@@ -53,8 +45,6 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
   const canNext = (() => {
     if (step === 0) return name.trim().length > 0;
     if (step === 1) return experience !== '';
-    if (step === 2) return fundamental !== '';
-    if (step === 3) return true;
     return true;
   })();
 
@@ -62,7 +52,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
   function back() { setStep(s => Math.max(s - 1, 0)); }
 
   function finish() {
-    onDone({ name, experience, fundamental, language });
+    onDone({ name, experience, language });
   }
 
   const selectedLang = SUPPORTED_LANGUAGES.find(l => l.code === language) ?? SUPPORTED_LANGUAGES[0];
@@ -124,29 +114,8 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 2: Fundamental ── */}
+        {/* ── Step 2: Language ── */}
         {step === 2 && (
-          <div className="ob__slide">
-            <h1 className="ob__h1">What fundamental do you want to master?</h1>
-            <p className="ob__sub">Your dashboard, training scenarios, and coaching prompts will prioritise this.</p>
-            <div className="ob__chip-grid">
-              {FUNDAMENTALS.map(f => (
-                <button
-                  key={f.value}
-                  className={`ob__chip${fundamental === f.value ? ' ob__chip--active' : ''}`}
-                  onClick={() => setFundamental(f.value)}
-                >
-                  <span className="ob__chip-icon">{f.icon}</span>
-                  <span className="ob__chip-title">{f.label}</span>
-                  <span className="ob__chip-sub">{f.sub}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Step 3: Language ── */}
-        {step === 3 && (
           <div className="ob__slide">
             <h1 className="ob__h1">What language do you sell in?</h1>
             <p className="ob__sub">
@@ -160,7 +129,12 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
                   className={`ob__lang-chip${language === l.code ? ' ob__lang-chip--active' : ''}`}
                   onClick={() => setLanguage(l.code)}
                 >
-                  <span className="ob__lang-flag">{l.flag}</span>
+                  <img
+                    className="ob__lang-flag"
+                    src={flagUrl(l.code)}
+                    alt={l.label}
+                    onError={e => { e.currentTarget.style.display = 'none'; }}
+                  />
                   <span>{l.label}</span>
                 </button>
               ))}
@@ -168,8 +142,8 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 4: Ready ── */}
-        {step === 4 && (
+        {/* ── Step 3: Ready ── */}
+        {step === 3 && (
           <div className="ob__slide ob__slide--center">
             <div className="ob__ready-icon">✦</div>
             <h1 className="ob__h1">
@@ -177,7 +151,14 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
             </h1>
             <p className="ob__sub">
               Your coaching is calibrated, your app language is set to{' '}
-              <strong>{selectedLang.flag} {selectedLang.label}</strong>,
+              <strong>
+                <img
+                  className="ob__ready-flag"
+                  src={flagUrl(selectedLang.code)}
+                  alt={selectedLang.label}
+                />{' '}
+                {selectedLang.label}
+              </strong>,
               and your first training scenario is ready.
             </p>
             <div className="ob__ready-summary">
@@ -189,14 +170,11 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
                 </span>
               </div>
               <div className="ob__ready-row">
-                <span className="ob__ready-row-icon">✦</span>
-                <span className="ob__ready-row-label">Focus</span>
-                <span className="ob__ready-row-val">
-                  {FUNDAMENTALS.find(f => f.value === fundamental)?.label}
-                </span>
-              </div>
-              <div className="ob__ready-row">
-                <span className="ob__ready-row-icon">{selectedLang.flag}</span>
+                <img
+                  className="ob__ready-row-icon ob__ready-row-flag"
+                  src={flagUrl(selectedLang.code)}
+                  alt={selectedLang.label}
+                />
                 <span className="ob__ready-row-label">Language</span>
                 <span className="ob__ready-row-val">{selectedLang.label}</span>
               </div>

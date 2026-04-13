@@ -13,8 +13,16 @@ export { detectStage, STAGE_TIPS, getQuickActionSuggestion, type Memory };
 const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
+const FETCH_TIMEOUT_MS = 30_000;
+
+function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = FETCH_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
 async function callFunction(name: string, body: unknown): Promise<unknown> {
-  const res = await fetch(`${FUNCTIONS_BASE}/${name}`, {
+  const res = await fetchWithTimeout(`${FUNCTIONS_BASE}/${name}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -53,6 +61,8 @@ export async function analyzeTranscript(
   onStream?: StreamCallback
 ): Promise<AIAnalysisResult> {
   try {
+    const streamController = new AbortController();
+    const streamTimer = setTimeout(() => streamController.abort(), FETCH_TIMEOUT_MS);
     const res = await fetch(`${FUNCTIONS_BASE}/analyze-transcript`, {
       method: 'POST',
       headers: {
@@ -71,7 +81,9 @@ export async function analyzeTranscript(
         lastLabel: memory?.lastLabel ?? null,
         language: config?.language ?? 'en-US',
       }),
+      signal: streamController.signal,
     });
+    clearTimeout(streamTimer);
 
     if (!res.ok || !res.body) throw new Error(`analyze-transcript returned ${res.status}`);
 

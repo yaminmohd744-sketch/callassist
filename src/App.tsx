@@ -27,6 +27,27 @@ const PROFILE_PIC_KEY = 'pp-profile-pic';
 // Estimated seconds per training exchange (~90s avg per rep turn)
 const SECONDS_PER_EXCHANGE = 90;
 
+interface OnboardingData {
+  name?: string;
+  language?: string;
+  role?: string;
+  product?: string;
+}
+
+function getOnboardingData(): OnboardingData {
+  try {
+    const raw = JSON.parse(localStorage.getItem('pp-onboarding') || '{}') as Record<string, unknown>;
+    return {
+      name:     typeof raw.name     === 'string' ? raw.name     : undefined,
+      language: typeof raw.language === 'string' ? raw.language : undefined,
+      role:     typeof raw.role     === 'string' ? raw.role     : undefined,
+      product:  typeof raw.product  === 'string' ? raw.product  : undefined,
+    };
+  } catch {
+    return {};
+  }
+}
+
 // True when running inside the Electron desktop app
 const isElectron = navigator.userAgent.includes('Electron');
 
@@ -224,10 +245,7 @@ export function App() {
 
   const isShell = currentScreen === 'dashboard' || currentScreen === 'training' || currentScreen === 'analytics';
 
-  const onboardingData = (() => {
-    try { return JSON.parse(localStorage.getItem('pp-onboarding') || '{}'); }
-    catch { return {}; }
-  })();
+  const onboardingData = getOnboardingData();
 
   const loginUserName =
     onboardingData.name ||
