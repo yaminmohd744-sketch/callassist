@@ -58,7 +58,8 @@ function toTitleCase(str: string): string {
 function deriveContacts(sessions: CallSession[]): DerivedContact[] {
   const map = new Map<string, DerivedContact>();
   for (const s of sessions) {
-    const key = `${(s.config.prospectName || '').toLowerCase()}||${(s.config.company || '').toLowerCase()}`;
+    const rawKey = `${(s.config.prospectName || '').toLowerCase()}||${(s.config.company || '').toLowerCase()}`;
+    const key = rawKey === '||' ? `anon||${s.endedAt}` : rawKey;
     if (!map.has(key)) {
       map.set(key, {
         name: toTitleCase(s.config.prospectName || 'Unknown'),
@@ -119,12 +120,13 @@ export function DashboardScreen({
   const streak = getStreak();
 
   const contacts = useMemo(() => deriveContacts(pastSessions), [pastSessions]);
-  const filteredContacts = contactSearch.trim()
-    ? contacts.filter(c =>
-        c.name.toLowerCase().includes(contactSearch.toLowerCase()) ||
-        c.company.toLowerCase().includes(contactSearch.toLowerCase())
-      )
-    : contacts;
+  const filteredContacts = useMemo(() => {
+    if (!contactSearch.trim()) return contacts;
+    const q = contactSearch.toLowerCase();
+    return contacts.filter(c =>
+      c.name.toLowerCase().includes(q) || c.company.toLowerCase().includes(q)
+    );
+  }, [contacts, contactSearch]);
 
   async function handleCopyEmail(email: string) {
     await navigator.clipboard.writeText(email);

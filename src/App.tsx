@@ -51,9 +51,9 @@ function getOnboardingData(): OnboardingData {
 // True when running inside the Electron desktop app
 const isElectron = navigator.userAgent.includes('Electron');
 
-// Prevent flash of wrong theme on initial load
-const _savedTheme = localStorage.getItem('theme');
-if (_savedTheme === 'light') document.documentElement.dataset.theme = 'light';
+// Read once at module scope for FOUC prevention and React state initialisation
+const INITIAL_THEME = (localStorage.getItem('theme') ?? 'dark') as 'dark' | 'light';
+document.documentElement.dataset.theme = INITIAL_THEME === 'light' ? 'light' : '';
 
 type Screen = 'landing' | 'auth' | 'dashboard' | 'training' | 'analytics' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
 
@@ -63,18 +63,18 @@ type DbRow = Record<string, unknown>;
 
 function rowToSession(row: DbRow): CallSession {
   return {
-    config:                row.config              as CallConfig,
-    transcript:            row.transcript          as TranscriptEntry[],
-    suggestions:           row.suggestions         as AISuggestion[],
-    durationSeconds:       row.duration_seconds    as number,
-    finalCloseProbability: row.final_close_prob    as number,
-    objectionsCount:       row.objections_count    as number,
-    callStage:             row.call_stage          as CallStage,
-    endedAt:               row.ended_at            as string,
-    aiSummary:             row.ai_summary          as string,
-    followUpEmail:         row.follow_up_email     as string,
-    leadScore:             row.lead_score          as number,
-    notes:                 (row.notes              as string[] | null) ?? [],
+    config:                (row.config as CallConfig) ?? ({} as CallConfig),
+    transcript:            Array.isArray(row.transcript) ? row.transcript as TranscriptEntry[] : [],
+    suggestions:           Array.isArray(row.suggestions) ? row.suggestions as AISuggestion[] : [],
+    durationSeconds:       typeof row.duration_seconds === 'number' ? row.duration_seconds : 0,
+    finalCloseProbability: typeof row.final_close_prob === 'number' ? row.final_close_prob : 50,
+    objectionsCount:       typeof row.objections_count === 'number' ? row.objections_count : 0,
+    callStage:             (row.call_stage as CallStage) ?? 'opener',
+    endedAt:               typeof row.ended_at === 'string' ? row.ended_at : new Date().toISOString(),
+    aiSummary:             typeof row.ai_summary === 'string' ? row.ai_summary : '',
+    followUpEmail:         typeof row.follow_up_email === 'string' ? row.follow_up_email : '',
+    leadScore:             typeof row.lead_score === 'number' ? row.lead_score : 0,
+    notes:                 Array.isArray(row.notes) ? row.notes as string[] : [],
   };
 }
 
@@ -103,9 +103,7 @@ export function App() {
   const { user, loading: authLoading } = useAuth();
   const { appLanguage, setAppLanguage, currentLang } = useAppLanguage();
 
-  const [theme, setTheme] = useState<'dark' | 'light'>(
-    () => (localStorage.getItem('theme') ?? 'dark') as 'dark' | 'light'
-  );
+  const [theme, setTheme] = useState<'dark' | 'light'>(INITIAL_THEME);
 
   function toggleTheme() {
     const next = theme === 'dark' ? 'light' : 'dark';

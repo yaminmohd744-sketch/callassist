@@ -27,6 +27,11 @@ export function useAICoach() {
   const recentTriggersRef = useRef<Map<string, number>>(new Map());
   const memoryRef = useRef<Memory>({ ...initialMemory });
 
+  const updateState = useCallback((nextState: AICoachState) => {
+    stateRef.current = nextState;
+    setCoachState(nextState);
+  }, []);
+
   const processEntry = useCallback(async (
     entry: TranscriptEntry,
     fullTranscript: TranscriptEntry[],
@@ -71,8 +76,7 @@ export function useAICoach() {
       objectionsCount: result.updatedObjectionsCount,
     };
 
-    stateRef.current = nextState;
-    setCoachState(nextState);
+    updateState(nextState);
 
     if (result.suggestions.length > 0) {
       const primary = result.suggestions[0];
@@ -89,7 +93,7 @@ export function useAICoach() {
         return [primary, ...prev];
       });
     }
-  }, []);
+  }, [updateState]);
 
   const addQuickActionSuggestion = useCallback((
     action: QuickAction,
@@ -101,12 +105,11 @@ export function useAICoach() {
   }, []);
 
   const reset = useCallback(() => {
-    stateRef.current = { ...initialState };
+    updateState({ ...initialState });
     setSuggestions([]);
-    setCoachState({ ...initialState });
     recentTriggersRef.current.clear();
     memoryRef.current = { ...initialMemory };
-  }, []);
+  }, [updateState]);
 
   return {
     suggestions,

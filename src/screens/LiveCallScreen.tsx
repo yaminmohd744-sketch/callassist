@@ -12,11 +12,8 @@ import { useAudioTone } from '../hooks/useAudioTone';
 import { generateSessionSummary, classifySignalAI } from '../lib/ai';
 import { OBJECTION_KEYWORDS, BUYING_KEYWORDS, PROSPECT_PHRASES, REP_PHRASES, PROSPECT_REACTIONS } from '../lib/keywords';
 import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSignal, TranscriptSpeaker } from '../types';
+import { genId } from '../lib/id';
 import './LiveCallScreen.css';
-
-function genId() {
-  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
-}
 
 function classifySignal(text: string): TranscriptSignal {
   const lower = text.toLowerCase();
@@ -80,19 +77,26 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [noteInput, setNoteInput] = useState('');
   const [mobilePanel, setMobilePanel] = useState<'transcript' | 'ai' | 'lead'>('transcript');
   const [manualSpeaker, setManualSpeaker] = useState<'rep' | 'prospect'>('prospect');
+  const [isSummarising, setIsSummarising] = useState(false);
 
   const { elapsedSeconds, formattedTime, startTimer, stopTimer } = useCallTimer();
+
+  const signalAbortRef = useRef<AbortController | null>(null);
 
   // For non-English calls, patch the signal on an existing entry after the AI classifies it.
   const applySignal = useCallback((id: string, text: string) => {
     if (config.language === 'en-US') return; // English uses fast keyword matching — no AI needed
-    classifySignalAI(text, config.language ?? 'en-US').then(signal => {
+    signalAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    signalAbortRef.current = ctrl;
+    classifySignalAI(text, config.language ?? 'en-US', ctrl.signal).then(signal => {
+      if (ctrl.signal.aborted) return;
       setTranscript(prev => {
         const updated = prev.map(e => e.id === id ? { ...e, signal } : e);
         transcriptRef.current = updated;
         return updated;
       });
-    });
+    }).catch(() => { /* aborted — ignore */ });
   }, [config.language]);
   const { suggestions, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion } = useAICoach();
   const {
@@ -139,6 +143,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     startTimer();
     startListening();
     startToneCapture();
+    return () => { stopToneCapture(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -199,32 +204,37 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     stopListening();
     stopToneCapture();
     stopTimer();
-    const { aiSummary, followUpEmail, leadScore, coaching } = await generateSessionSummary(
-      config,
-      transcript,
-      suggestions,
-      closeProbability,
-      objectionsCount
-    );
+    setIsSummarising(true);
+    try {
+      const { aiSummary, followUpEmail, leadScore, coaching } = await generateSessionSummary(
+        config,
+        transcript,
+        suggestions,
+        closeProbability,
+        objectionsCount
+      );
 
-    localStorage.setItem('callassist:nextCallTip', coaching.nextCallTip);
+      localStorage.setItem('callassist:nextCallTip', coaching.nextCallTip);
 
-    const session: CallSession = {
-      config,
-      transcript,
-      suggestions,
-      durationSeconds: elapsedSeconds,
-      finalCloseProbability: closeProbability,
-      objectionsCount,
-      callStage,
-      endedAt: new Date().toISOString(),
-      aiSummary,
-      followUpEmail,
-      leadScore,
-      notes,
-      coaching,
-    };
-    onEndCall(session);
+      const session: CallSession = {
+        config,
+        transcript,
+        suggestions,
+        durationSeconds: elapsedSeconds,
+        finalCloseProbability: closeProbability,
+        objectionsCount,
+        callStage,
+        endedAt: new Date().toISOString(),
+        aiSummary,
+        followUpEmail,
+        leadScore,
+        notes,
+        coaching,
+      };
+      onEndCall(session);
+    } finally {
+      setIsSummarising(false);
+    }
   }, [stopListening, stopTimer, config, transcript, suggestions, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);
 
   return (
@@ -281,6 +291,12 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           </button>
         ))}
       </div>
+      {isSummarising && (
+        <div className="live-call__summarising-overlay" role="status" aria-live="polite">
+          <div className="live-call__summarising-spinner" />
+          <p className="live-call__summarising-text">Generating your coaching report…</p>
+        </div>
+      )}
     </div>
   );
 }

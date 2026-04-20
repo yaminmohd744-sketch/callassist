@@ -1,4 +1,5 @@
 import type { TranscriptEntry, AISuggestion, AIAnalysisResult, CallStage, SuggestionType, CoachingWalkthrough, CoachingKeyMoment, CoachingItem } from '../types';
+import { genId } from './id';
 
 // ─── Memory ───────────────────────────────────────────────────────────────────
 
@@ -307,10 +308,6 @@ function buildContextHint(ctx: ConversationContext, currentTrigger: string): str
 }
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
-
-function genId(): string {
-  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
-}
 
 export function detectStage(elapsedSeconds: number): CallStage {
   if (elapsedSeconds < 60)  return 'opener';

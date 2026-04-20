@@ -33,6 +33,7 @@ export interface AISuggestion {
   triggeredBy: string;
   timestampSeconds: number;
   streaming?: boolean;
+  isFallback?: boolean;
 }
 
 // ─── Call State ──────────────────────────────────────────────────────────────

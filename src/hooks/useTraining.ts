@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useLayoutEffect } from 'react';
 import type { TrainingScenario, TrainingMessage, TrainingFeedback, SessionSummary } from '../types';
+import { genId } from '../lib/id';
 
 const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -19,10 +20,6 @@ async function callFunction(name: string, body: unknown): Promise<unknown> {
     throw new Error(`${name} returned ${res.status}: ${text}`);
   }
   return res.json();
-}
-
-function genId(): string {
-  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
 }
 
 export type TrainingPhase = 'selection' | 'context' | 'active' | 'summary';

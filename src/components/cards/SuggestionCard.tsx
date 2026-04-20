@@ -55,6 +55,9 @@ export function SuggestionCard({ suggestion }: SuggestionCardProps) {
           Triggered by: <em>"{suggestion.triggeredBy.slice(0, 60)}{suggestion.triggeredBy.length > 60 ? '...' : ''}"</em>
         </div>
       )}
+      {suggestion.isFallback && (
+        <div className="suggestion-card__fallback-note">~ offline mode</div>
+      )}
     </div>
   );
 }

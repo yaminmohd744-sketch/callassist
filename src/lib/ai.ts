@@ -18,6 +18,8 @@ const FETCH_TIMEOUT_MS = 30_000;
 function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = FETCH_TIMEOUT_MS): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  // If caller passed an external signal, propagate its abort into our controller
+  (init.signal as AbortSignal | undefined)?.addEventListener('abort', () => controller.abort(), { once: true });
   return fetch(url, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
@@ -38,11 +40,9 @@ async function callFunction(name: string, body: unknown): Promise<unknown> {
   return res.json();
 }
 
-type StreamCallback = (s: AISuggestion) => void;
+import { genId } from './id';
 
-function genId(): string {
-  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
-}
+type StreamCallback = (s: AISuggestion) => void;
 
 function clamp(val: number, min: number, max: number): number {
   return Math.min(Math.max(val, min), max);
@@ -158,6 +158,8 @@ export async function analyzeTranscript(
       data = JSON.parse(accumulated.slice(start, end + 1)) as Record<string, unknown>;
     }
 
+    if (typeof data !== 'object' || data === null) throw new Error('Malformed AI response structure');
+
     if (!data.shouldShow) {
       // Remove any streaming placeholder we showed
       if (streamingShown && onStream) {
@@ -200,10 +202,14 @@ export async function analyzeTranscript(
     };
   } catch (err) {
     console.error('[CallAssist] AI call failed, using fallback:', err instanceof Error ? err.message : err);
-    return mockAnalyzeTranscript(
+    const fallback = await mockAnalyzeTranscript(
       newEntry, fullTranscript, currentStage, elapsedSeconds,
       currentProbability, currentObjectionsCount, recentTriggers, config, memory, onStream
     );
+    return {
+      ...fallback,
+      suggestions: fallback.suggestions.map((s: AISuggestion) => ({ ...s, isFallback: true })),
+    };
   }
 }
 
@@ -221,9 +227,19 @@ export async function enhancePitch(
   }
 }
 
-export async function classifySignalAI(text: string, language: string): Promise<TranscriptSignal> {
+export async function classifySignalAI(text: string, language: string, abortSignal?: AbortSignal): Promise<TranscriptSignal> {
   try {
-    const data = await callFunction('classify-signal', { text, language }) as Record<string, unknown>;
+    const res = await fetchWithTimeout(
+      `${FUNCTIONS_BASE}/classify-signal`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` },
+        body: JSON.stringify({ text, language }),
+        signal: abortSignal,
+      }
+    );
+    if (!res.ok) return 'neutral';
+    const data = await res.json() as Record<string, unknown>;
     const signal = data.signal as string;
     if (signal === 'objection' || signal === 'buying-signal' || signal === 'neutral') return signal;
     return 'neutral';

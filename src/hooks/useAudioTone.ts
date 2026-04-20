@@ -80,8 +80,11 @@ export function useAudioTone(config: AudioToneConfig): AudioToneState {
           setCoaching({ tone: data.tone, move: data.move, say: data.say });
         }
       }
-    } catch {
+    } catch (err) {
       // Silently degrade — never crash the call (includes AbortError on timeout)
+      if (import.meta.env.DEV && !(err instanceof DOMException && err.name === 'AbortError')) {
+        console.warn('[AudioTone] Chunk analysis failed:', err);
+      }
     } finally {
       clearTimeout(timeoutId);
       isProcessingRef.current = false;

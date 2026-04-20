@@ -3,15 +3,12 @@ import { useTranslations } from '../hooks/useTranslations';
 import { generateSessionSummary } from '../lib/ai';
 import { OBJECTION_KEYWORDS, BUYING_KEYWORDS } from '../lib/keywords';
 import type { CallConfig, CallSession, TranscriptEntry, TranscriptSignal } from '../types';
+import { genId } from '../lib/id';
 import './UploadCallScreen.css';
 
 interface UploadCallScreenProps {
   onEndCall: (session: CallSession) => void;
   onBack: () => void;
-}
-
-function genId() {
-  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
 }
 
 function classifySignal(text: string): TranscriptSignal {

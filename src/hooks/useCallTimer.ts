@@ -7,6 +7,7 @@ export function useCallTimer() {
 
   const startTimer = useCallback(() => {
     if (running) return;
+    if (intervalRef.current) clearInterval(intervalRef.current);
     setRunning(true);
     intervalRef.current = setInterval(() => {
       setElapsedSeconds(s => s + 1);
