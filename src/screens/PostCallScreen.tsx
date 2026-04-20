@@ -62,7 +62,7 @@ function renderSummary(text: string) {
 
 export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenProps) {
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'summary' | 'transcript' | 'email'>('summary');
+  const [activeTab, setActiveTab] = useState<'coaching' | 'summary' | 'transcript' | 'email'>(session.coaching ? 'coaching' : 'summary');
 
   const t = useTranslations();
   const slug = (session.config.prospectName || 'call').toLowerCase().replace(/\s+/g, '-');
@@ -139,12 +139,68 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
       </div>
 
       <div className="postcall__tabs">
+        {session.coaching && (
+          <button className={`postcall__tab ${activeTab === 'coaching' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('coaching')}>COACHING</button>
+        )}
         <button className={`postcall__tab ${activeTab === 'summary' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('summary')}>{t.postcall.summary}</button>
         <button className={`postcall__tab ${activeTab === 'transcript' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('transcript')}>{t.postcall.transcript}</button>
         <button className={`postcall__tab ${activeTab === 'email' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('email')}>{t.postcall.followUp}</button>
       </div>
 
       <div className="postcall__content">
+        {activeTab === 'coaching' && session.coaching && (
+          <div className="coaching">
+            <div className="coaching__verdict">
+              <span className="coaching__verdict-icon">{session.finalCloseProbability >= 55 ? '◆' : session.finalCloseProbability >= 35 ? '◇' : '△'}</span>
+              <span className="coaching__verdict-text">{session.coaching.overallVerdict}</span>
+            </div>
+
+            <div className="coaching__grid">
+              <div className="coaching__section coaching__section--green">
+                <div className="coaching__section-title">WHAT WENT WELL</div>
+                <ul className="coaching__list">
+                  {session.coaching.whatWentWell.map((item, i) => (
+                    <li key={i} className="coaching__list-item coaching__list-item--green">{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="coaching__section coaching__section--orange">
+                <div className="coaching__section-title">AREAS TO IMPROVE</div>
+                <ul className="coaching__list">
+                  {session.coaching.areasToImprove.map((item, i) => (
+                    <li key={i} className="coaching__list-item coaching__list-item--orange">{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {session.coaching.keyMoments.length > 0 && (
+              <div className="coaching__moments">
+                <div className="coaching__section-title">KEY MOMENTS</div>
+                <div className="coaching__moments-list">
+                  {session.coaching.keyMoments.map((m, i) => {
+                    const mins = String(Math.floor(m.timestampSeconds / 60)).padStart(2, '0');
+                    const secs = String(m.timestampSeconds % 60).padStart(2, '0');
+                    return (
+                      <div key={i} className={`coaching__moment coaching__moment--${m.label === 'Objection' ? 'objection' : 'signal'}`}>
+                        <span className="coaching__moment-time">{mins}:{secs}</span>
+                        <span className="coaching__moment-label">{m.label}</span>
+                        <span className="coaching__moment-note">{m.note}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="coaching__tip">
+              <div className="coaching__tip-label">TIP FOR NEXT CALL</div>
+              <div className="coaching__tip-text">{session.coaching.nextCallTip}</div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'summary' && (
           <div className="postcall__summary">
             {renderSummary(session.aiSummary)}

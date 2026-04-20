@@ -601,6 +601,266 @@
   border-color: var(--color-accent-purple);
 }
 
+/* ─── History Tab ──────────────────────────────────────────── */
+
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 900px;
+}
+
+.history__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.history__date-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--color-text-muted);
+  padding: 0 0 var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-1);
+}
+
+.history__card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.history__card:hover,
+.history__card--expanded {
+  border-color: rgba(129, 74, 200, 0.35);
+}
+
+.history__card-header {
+  display: grid;
+  grid-template-columns: 40px 1fr auto auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  cursor: pointer;
+  user-select: none;
+}
+
+.history__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.history__avatar--high   { background: rgba(57,211,83,0.12); color: var(--color-accent-green); border-color: rgba(57,211,83,0.25); }
+.history__avatar--medium { background: rgba(245,166,35,0.12); color: #f5a623; border-color: rgba(245,166,35,0.25); }
+.history__avatar--low    { background: rgba(255,68,68,0.1);  color: var(--color-accent-red); border-color: rgba(255,68,68,0.2); }
+
+.history__card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.history__card-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history__card-company {
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.history__card-goal {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history__card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.history__meta-dot { color: var(--color-border); }
+
+.history__meta-stage {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.history__meta-stage--close     { color: var(--color-accent-green); }
+.history__meta-stage--pitch     { color: var(--color-accent-cyan); }
+.history__meta-stage--discovery { color: #f5a623; }
+.history__meta-stage--opener    { color: var(--color-text-muted); }
+
+.history__card-scores {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.history__score-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--border-radius-pill);
+  white-space: nowrap;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-muted);
+}
+
+.history__score-pill--high   { background: rgba(57,211,83,0.12); color: var(--color-accent-green); }
+.history__score-pill--medium { background: rgba(245,166,35,0.1); color: #f5a623; }
+.history__score-pill--low    { background: rgba(255,68,68,0.08); color: var(--color-accent-red); }
+
+.history__verdict-mini {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-align: right;
+  max-width: 180px;
+  line-height: 1.35;
+}
+
+.history__chevron {
+  font-size: 9px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  margin-left: var(--space-1);
+}
+
+/* Expanded body */
+.history__card-body {
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.history__coaching-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.history__coaching-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.history__coaching-heading {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.history__coaching-heading--green  { color: var(--color-accent-green); }
+.history__coaching-heading--orange { color: #f5a623; }
+
+.history__coaching-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.history__coaching-item {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  padding-left: var(--space-3);
+  position: relative;
+}
+
+.history__coaching-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.history__coaching-item--green::before  { background: var(--color-accent-green); }
+.history__coaching-item--orange::before { background: #f5a623; }
+
+.history__tip {
+  padding: var(--space-3) var(--space-4);
+  background: linear-gradient(135deg, rgba(129,74,200,0.1), rgba(223,122,254,0.06));
+  border: 1px solid rgba(129,74,200,0.25);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  line-height: 1.55;
+}
+
+.history__tip-label {
+  font-weight: 700;
+  color: var(--color-accent-magenta);
+  letter-spacing: 0.06em;
+}
+
+.history__tip-text {
+  color: var(--color-text-primary);
+}
+
+.history__coaching-summary {}
+
+.history__summary-pre {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.history__card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 700px) {
+  .history__card-header { grid-template-columns: 40px 1fr auto; }
+  .history__card-scores { display: none; }
+  .history__coaching-grid { grid-template-columns: 1fr; }
+}
+
 /* ─── Responsive ───────────────────────────────────────────── */
 
 @media (max-width: 900px) {

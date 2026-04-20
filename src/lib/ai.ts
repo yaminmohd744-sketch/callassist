@@ -6,7 +6,7 @@ import {
   getQuickActionSuggestion,
   type Memory,
 } from './mockAI';
-import type { TranscriptEntry, CallStage, CallConfig, AISuggestion, AIAnalysisResult, TranscriptSignal } from '../types';
+import type { TranscriptEntry, CallStage, CallConfig, AISuggestion, AIAnalysisResult, TranscriptSignal, CoachingWalkthrough } from '../types';
 
 export { detectStage, STAGE_TIPS, getQuickActionSuggestion, type Memory };
 
@@ -238,7 +238,8 @@ export async function generateSessionSummary(
   suggestions: AISuggestion[],
   closeProbability: number,
   objectionsCount: number
-): Promise<{ aiSummary: string; followUpEmail: string; leadScore: number }> {
+): Promise<{ aiSummary: string; followUpEmail: string; leadScore: number; coaching: CoachingWalkthrough }> {
+  const fallback = mockGenerateSessionSummary(config, transcript, suggestions, closeProbability, objectionsCount);
   try {
     const data = await callFunction('generate-summary', {
       config, transcript, suggestions, closeProbability, objectionsCount,
@@ -249,9 +250,10 @@ export async function generateSessionSummary(
       aiSummary: (data.aiSummary as string) ?? '',
       followUpEmail: (data.followUpEmail as string) ?? '',
       leadScore: typeof data.leadScore === 'number' ? clamp(data.leadScore, 0, 100) : 50,
+      coaching: fallback.coaching,
     };
   } catch (err) {
     console.error('[CallAssist] Summary call failed, using fallback:', err instanceof Error ? err.message : err);
-    return mockGenerateSessionSummary(config, transcript, suggestions, closeProbability, objectionsCount);
+    return fallback;
   }
 }

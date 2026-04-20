@@ -7,6 +7,32 @@ import { formatDuration, formatDateShort, formatDateFull } from '../lib/formatte
 import { useTranslations } from '../hooks/useTranslations';
 import './DashboardScreen.css';
 
+interface DateGroup {
+  label: string;
+  sessions: CallSession[];
+}
+
+function groupSessionsByDate(sessions: CallSession[]): DateGroup[] {
+  const sorted = [...sessions].sort((a, b) => new Date(b.endedAt).getTime() - new Date(a.endedAt).getTime());
+  const now = new Date();
+  const startOfToday     = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfYesterday = new Date(startOfToday.getTime() - 86400000);
+  const startOfWeek      = new Date(startOfToday.getTime() - 6 * 86400000);
+  const startOfMonth     = new Date(startOfToday.getTime() - 29 * 86400000);
+
+  const buckets: { label: string; filter: (d: Date) => boolean }[] = [
+    { label: 'TODAY',         filter: d => d >= startOfToday },
+    { label: 'YESTERDAY',     filter: d => d >= startOfYesterday && d < startOfToday },
+    { label: 'THIS WEEK',     filter: d => d >= startOfWeek && d < startOfYesterday },
+    { label: 'THIS MONTH',    filter: d => d >= startOfMonth && d < startOfWeek },
+    { label: 'OLDER',         filter: d => d < startOfMonth },
+  ];
+
+  return buckets
+    .map(b => ({ label: b.label, sessions: sorted.filter(s => b.filter(new Date(s.endedAt))) }))
+    .filter(g => g.sessions.length > 0);
+}
+
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2 && parts[0] && parts[1]) return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -74,10 +100,13 @@ interface DashboardScreenProps {
 export function DashboardScreen({
   pastSessions, onStartCall, onUploadCall, onViewSession, onDeleteSession, userName,
 }: DashboardScreenProps) {
-  const [activeView, setActiveView] = useState<'dashboard' | 'contacts'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'contacts' | 'history'>('dashboard');
   const [contactSearch, setContactSearch] = useState('');
   const [selectedContact, setSelectedContact] = useState<DerivedContact | null>(null);
   const [emailCopied, setEmailCopied] = useState(false);
+  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
+
+  const historyGroups = useMemo(() => groupSessionsByDate(pastSessions), [pastSessions]);
 
   const t = useTranslations();
   const totalCalls = pastSessions.length;
@@ -120,6 +149,12 @@ export function DashboardScreen({
           onClick={() => { setActiveView('contacts'); setSelectedContact(null); }}
         >
           <span className="dashboard__tab-icon">◉</span>{t.dashboard.contacts}
+        </button>
+        <button
+          className={`dashboard__tab ${activeView === 'history' ? 'dashboard__tab--active' : ''}`}
+          onClick={() => { setActiveView('history'); setExpandedSessionId(null); }}
+        >
+          <span className="dashboard__tab-icon">▤</span>HISTORY
         </button>
       </nav>
 
@@ -292,6 +327,140 @@ export function DashboardScreen({
                   </div>
                 );
               })}
+            </div>
+          )}
+        </main>
+      )}
+
+      {/* ── History view ── */}
+      {activeView === 'history' && (
+        <main className="dashboard__main">
+          <div className="dashboard__topbar">
+            <div>
+              <h1 className="dashboard__title">CALL HISTORY</h1>
+              <p className="dashboard__subtitle">Every call you've made — click any entry to review the coaching breakdown.</p>
+            </div>
+          </div>
+
+          {pastSessions.length === 0 ? (
+            <div className="dashboard__empty">
+              <div className="dashboard__empty-icon">▤</div>
+              <div className="dashboard__empty-title">No calls yet</div>
+              <div className="dashboard__empty-desc">Your call history will appear here after your first call.</div>
+              <Button variant="primary" size="md" onClick={onStartCall}>▶ START A CALL</Button>
+            </div>
+          ) : (
+            <div className="history">
+              {historyGroups.map(group => (
+                <div key={group.label} className="history__group">
+                  <div className="history__date-label">{group.label}</div>
+                  {group.sessions.map(session => {
+                    const id = session.endedAt;
+                    const expanded = expandedSessionId === id;
+                    const probLevel = session.finalCloseProbability >= 61 ? 'high' : session.finalCloseProbability >= 31 ? 'medium' : 'low';
+                    const scoreL = session.leadScore >= 70 ? 'high' : session.leadScore >= 40 ? 'medium' : 'low';
+                    const d = new Date(session.endedAt);
+                    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const dateStr = formatDateFull(session.endedAt);
+                    return (
+                      <div key={id} className={`history__card ${expanded ? 'history__card--expanded' : ''}`}>
+                        {/* Card header — always visible */}
+                        <div
+                          className="history__card-header"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setExpandedSessionId(expanded ? null : id)}
+                          onKeyDown={e => e.key === 'Enter' && setExpandedSessionId(expanded ? null : id)}
+                        >
+                          <div className={`history__avatar history__avatar--${scoreL}`}>
+                            {getInitials(session.config.prospectName || 'U')}
+                          </div>
+
+                          <div className="history__card-info">
+                            <div className="history__card-name">
+                              {session.config.prospectName || 'Unknown prospect'}
+                              {session.config.company && (
+                                <span className="history__card-company"> · {session.config.company}</span>
+                              )}
+                            </div>
+                            <div className="history__card-goal">{session.config.callGoal || 'No goal set'}</div>
+                            <div className="history__card-meta">
+                              <span className="history__meta-date">{dateStr} at {timeStr}</span>
+                              <span className="history__meta-dot">·</span>
+                              <span className="history__meta-dur">{formatDuration(session.durationSeconds)}</span>
+                              <span className="history__meta-dot">·</span>
+                              <span className={`history__meta-stage history__meta-stage--${session.callStage}`}>{session.callStage.toUpperCase()}</span>
+                            </div>
+                          </div>
+
+                          <div className="history__card-scores">
+                            <div className={`history__score-pill history__score-pill--${probLevel}`}>
+                              {session.finalCloseProbability}% close
+                            </div>
+                            <div className={`history__score-pill history__score-pill--${scoreL}`}>
+                              score {session.leadScore}
+                            </div>
+                            {session.coaching && (
+                              <div className="history__verdict-mini">{session.coaching.overallVerdict}</div>
+                            )}
+                          </div>
+
+                          <div className="history__chevron">{expanded ? '▲' : '▼'}</div>
+                        </div>
+
+                        {/* Expanded coaching breakdown */}
+                        {expanded && (
+                          <div className="history__card-body">
+                            {session.coaching ? (
+                              <>
+                                <div className="history__coaching-grid">
+                                  <div className="history__coaching-col">
+                                    <div className="history__coaching-heading history__coaching-heading--green">WHAT WENT WELL</div>
+                                    <ul className="history__coaching-list">
+                                      {session.coaching.whatWentWell.map((item, i) => (
+                                        <li key={i} className="history__coaching-item history__coaching-item--green">{item}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                  <div className="history__coaching-col">
+                                    <div className="history__coaching-heading history__coaching-heading--orange">AREAS TO IMPROVE</div>
+                                    <ul className="history__coaching-list">
+                                      {session.coaching.areasToImprove.map((item, i) => (
+                                        <li key={i} className="history__coaching-item history__coaching-item--orange">{item}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </div>
+                                <div className="history__tip">
+                                  <span className="history__tip-label">NEXT CALL TIP — </span>
+                                  <span className="history__tip-text">{session.coaching.nextCallTip}</span>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="history__coaching-summary">
+                                <pre className="history__summary-pre">{session.aiSummary}</pre>
+                              </div>
+                            )}
+
+                            <div className="history__card-actions">
+                              <Button variant="primary" size="sm" onClick={() => onViewSession(session)}>
+                                VIEW FULL REPORT →
+                              </Button>
+                              <button
+                                className="dashboard__call-delete"
+                                title={t.dashboard.deleteSession}
+                                onClick={() => onDeleteSession(session.endedAt)}
+                              >
+                                ✕ DELETE
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           )}
         </main>

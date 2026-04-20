@@ -247,6 +247,178 @@
   flex-shrink: 0;
 }
 
+/* ─── Coaching Tab ────────────────────────────────────────────── */
+
+.coaching {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: 860px;
+}
+
+.coaching__verdict {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent-purple);
+  border-radius: var(--border-radius-md);
+}
+
+.coaching__verdict-icon {
+  font-size: var(--font-size-lg);
+  color: var(--color-accent-magenta);
+  flex-shrink: 0;
+}
+
+.coaching__verdict-text {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.coaching__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 600px) {
+  .coaching__grid { grid-template-columns: 1fr; }
+}
+
+.coaching__section {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-5);
+}
+
+.coaching__section--green { border-top: 2px solid var(--color-accent-green); }
+.coaching__section--orange { border-top: 2px solid var(--color-accent-yellow, #f5a623); }
+
+.coaching__section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.coaching__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.coaching__list-item {
+  font-size: var(--font-size-sm);
+  line-height: 1.55;
+  padding-left: var(--space-4);
+  position: relative;
+  color: var(--color-text-secondary);
+}
+
+.coaching__list-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.coaching__list-item--green::before { background: var(--color-accent-green); }
+.coaching__list-item--orange::before { background: var(--color-accent-yellow, #f5a623); }
+
+.coaching__moments {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-5);
+}
+
+.coaching__moments-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.coaching__moment {
+  display: grid;
+  grid-template-columns: 48px 100px 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--border-radius-sm);
+  border-left: 2px solid var(--color-border);
+}
+
+.coaching__moment--objection {
+  border-left-color: var(--color-accent-red);
+  background: rgba(255, 68, 68, 0.04);
+}
+
+.coaching__moment--signal {
+  border-left-color: var(--color-accent-green);
+  background: rgba(57, 211, 83, 0.04);
+}
+
+.coaching__moment-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.coaching__moment-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.coaching__moment--objection .coaching__moment-label { color: var(--color-accent-red); }
+.coaching__moment--signal .coaching__moment-label { color: var(--color-accent-green); }
+
+.coaching__moment-note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coaching__tip {
+  background: linear-gradient(135deg, rgba(129, 74, 200, 0.12), rgba(223, 122, 254, 0.08));
+  border: 1px solid rgba(129, 74, 200, 0.3);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-5) var(--space-6);
+}
+
+.coaching__tip-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-accent-magenta);
+  margin-bottom: var(--space-2);
+}
+
+.coaching__tip-text {
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+/* ─── Header actions ───────────────────────────────────────── */
+
 .postcall__crm-badge {
   font-size: var(--font-size-xs);
   font-weight: 600;

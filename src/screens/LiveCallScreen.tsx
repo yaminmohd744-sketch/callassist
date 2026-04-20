@@ -199,13 +199,15 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     stopListening();
     stopToneCapture();
     stopTimer();
-    const { aiSummary, followUpEmail, leadScore } = await generateSessionSummary(
+    const { aiSummary, followUpEmail, leadScore, coaching } = await generateSessionSummary(
       config,
       transcript,
       suggestions,
       closeProbability,
       objectionsCount
     );
+
+    localStorage.setItem('callassist:nextCallTip', coaching.nextCallTip);
 
     const session: CallSession = {
       config,
@@ -220,6 +222,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       followUpEmail,
       leadScore,
       notes,
+      coaching,
     };
     onEndCall(session);
   }, [stopListening, stopTimer, config, transcript, suggestions, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);

@@ -1,4 +1,4 @@
-import type { TranscriptEntry, AISuggestion, AIAnalysisResult, CallStage, SuggestionType } from '../types';
+import type { TranscriptEntry, AISuggestion, AIAnalysisResult, CallStage, SuggestionType, CoachingWalkthrough, CoachingKeyMoment } from '../types';
 
 // ─── Memory ───────────────────────────────────────────────────────────────────
 
@@ -657,6 +657,124 @@ export async function analyzeTranscript(
   );
 }
 
+// ─── Coaching Walkthrough ─────────────────────────────────────────────────────
+
+function generateCoaching(
+  config: CallConfig,
+  transcript: TranscriptEntry[],
+  suggestions: AISuggestion[],
+  closeProbability: number,
+  objectionsCount: number
+): CoachingWalkthrough {
+  const buyingSignals = suggestions.filter(s => s.type === 'close-attempt').length;
+  const repEntries = transcript.filter(e => e.speaker === 'rep');
+  const prospectEntries = transcript.filter(e => e.speaker === 'prospect');
+  const talkRatio = transcript.length > 0 ? repEntries.length / transcript.length : 0.5;
+  const lastTimestamp = transcript.length > 0 ? transcript[transcript.length - 1].timestampSeconds : 0;
+  const reachedCloseStage = lastTimestamp > 200;
+
+  const whatWentWell: string[] = [];
+  const areasToImprove: string[] = [];
+
+  if (buyingSignals >= 2) {
+    whatWentWell.push(`Triggered ${buyingSignals} buying signals — the prospect was actively engaged.`);
+  } else if (buyingSignals === 1) {
+    whatWentWell.push('Got a buying signal — there was real interest in the room.');
+  }
+
+  if (objectionsCount >= 1 && suggestions.some(s => s.type === 'objection-response')) {
+    whatWentWell.push(`Handled ${objectionsCount} objection${objectionsCount > 1 ? 's' : ''} — you kept the conversation alive.`);
+  }
+
+  if (closeProbability >= 65) {
+    whatWentWell.push(`Close probability hit ${closeProbability}% — strong overall momentum.`);
+  } else if (closeProbability >= 50) {
+    whatWentWell.push('Maintained a solid close probability throughout the call.');
+  }
+
+  if (talkRatio <= 0.45 && prospectEntries.length > 2) {
+    whatWentWell.push('Good talk ratio — you gave the prospect room to speak.');
+  }
+
+  if (reachedCloseStage) {
+    whatWentWell.push('Pushed through to the close stage — full call structure executed.');
+  }
+
+  if (whatWentWell.length === 0) {
+    whatWentWell.push('You engaged and stayed on the call — that\'s the starting point.');
+  }
+
+  if (talkRatio > 0.6 && transcript.length > 4) {
+    areasToImprove.push('Talk-to-listen ratio was off — aim for 40% you, 60% prospect. Ask a question, then stop.');
+  }
+
+  if (objectionsCount >= 3) {
+    areasToImprove.push('High objection count signals a framing issue — confirm the pain before you introduce the solution.');
+  } else if (objectionsCount >= 2) {
+    areasToImprove.push('Two objections raised — review your value framing. Confirm the problem before pitching the fix.');
+  }
+
+  if (buyingSignals === 0 && transcript.length > 4) {
+    areasToImprove.push('No buying signals surfaced — try more open-ended questions to pull out interest.');
+  }
+
+  if (closeProbability < 40) {
+    areasToImprove.push('Low close probability — focus on confirming pain in their words before moving to the pitch.');
+  }
+
+  if (!reachedCloseStage && lastTimestamp > 0) {
+    areasToImprove.push('Never reached the close stage — always end with a next step, even "can I send you one page?"');
+  }
+
+  if (prospectEntries.length === 0 && transcript.length > 0) {
+    areasToImprove.push('No prospect speech detected — practice listening more and pitching less.');
+  }
+
+  if (areasToImprove.length === 0) {
+    areasToImprove.push('Keep sharpening your discovery — the best reps always find new pain to surface.');
+  }
+
+  const keyMoments: CoachingKeyMoment[] = [];
+  for (const entry of transcript) {
+    if (entry.signal !== 'neutral') {
+      keyMoments.push({
+        timestampSeconds: entry.timestampSeconds,
+        label: entry.signal === 'objection' ? 'Objection' : 'Buying Signal',
+        note: entry.text.length > 80 ? entry.text.slice(0, 77) + '...' : entry.text,
+      });
+    }
+    if (keyMoments.length >= 5) break;
+  }
+
+  let nextCallTip: string;
+  if (talkRatio > 0.6 && transcript.length > 4) {
+    nextCallTip = 'After every statement, ask one question — then go silent. The next person to speak loses.';
+  } else if (buyingSignals === 0 && transcript.length > 4) {
+    nextCallTip = 'Open with a pain question: "What does this problem cost your team each month?" Then listen.';
+  } else if (objectionsCount >= 3) {
+    nextCallTip = 'Don\'t pitch until they\'ve confirmed the pain out loud. Lead with the problem, not the product.';
+  } else if (closeProbability >= 65) {
+    nextCallTip = `Follow up with ${config.prospectName || 'your prospect'} within 2 hours — strike while the interest is warm.`;
+  } else if (!reachedCloseStage) {
+    nextCallTip = 'Always close with a next step: "Can we get 20 minutes this week?" Ask it on every call, no exceptions.';
+  } else {
+    nextCallTip = 'Confirm pain before pitching. Ask: "How long has this been a problem?" and wait for their answer.';
+  }
+
+  let overallVerdict: string;
+  if (closeProbability >= 70) {
+    overallVerdict = 'Strong call — high close potential. Follow up fast.';
+  } else if (closeProbability >= 55) {
+    overallVerdict = 'Solid call with room to push harder. Good foundation built.';
+  } else if (closeProbability >= 35) {
+    overallVerdict = 'Mixed results — clear areas to sharpen before the next attempt.';
+  } else {
+    overallVerdict = 'Tough call — use this as a learning rep. See the coaching notes below.';
+  }
+
+  return { overallVerdict, whatWentWell, areasToImprove, keyMoments, nextCallTip };
+}
+
 // ─── Session Summary ──────────────────────────────────────────────────────────
 
 export function generateSessionSummary(
@@ -665,7 +783,7 @@ export function generateSessionSummary(
   suggestions: AISuggestion[],
   closeProbability: number,
   objectionsCount: number
-): { aiSummary: string; followUpEmail: string; leadScore: number } {
+): { aiSummary: string; followUpEmail: string; leadScore: number; coaching: CoachingWalkthrough } {
   const buyingSignals = suggestions.filter(s => s.type === 'close-attempt').length;
   const objectionHandlers = suggestions.filter(s => s.type === 'objection-response').length;
   const totalEntries = transcript.length;
@@ -714,11 +832,13 @@ Best,
 [Your Contact Info]`;
 
   const leadScore = Math.round((closeProbability * 0.7) + (buyingSignals * 5) - (objectionsCount * 3));
+  const coaching = generateCoaching(config, transcript, suggestions, closeProbability, objectionsCount);
 
   return {
     aiSummary,
     followUpEmail,
     leadScore: clamp(leadScore, 0, 100),
+    coaching,
   };
 }
 

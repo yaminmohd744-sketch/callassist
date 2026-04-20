@@ -14,6 +14,8 @@ interface PreCallScreenProps {
 }
 
 export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }: PreCallScreenProps) {
+  const [prevTip] = useState<string | null>(() => localStorage.getItem('callassist:nextCallTip'));
+  const [tipDismissed, setTipDismissed] = useState(false);
   const [form, setForm] = useState<CallConfig>({
     prospectName: '',
     company: '',
@@ -66,6 +68,16 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
           <button className="precall__back" onClick={onBack}>← BACK</button>
           <div className="precall__logo">PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span></div>
         </div>
+
+        {prevTip && !tipDismissed && (
+          <div className="precall__tip-banner">
+            <div className="precall__tip-banner-inner">
+              <span className="precall__tip-banner-label">TIP FROM LAST CALL</span>
+              <span className="precall__tip-banner-text">{prevTip}</span>
+            </div>
+            <button className="precall__tip-dismiss" onClick={() => setTipDismissed(true)} aria-label="Dismiss">✕</button>
+          </div>
+        )}
 
         <h2 className="precall__title">{t.precall.title}</h2>
         <p className="precall__desc">Give the AI context before your call starts. The more detail, the better the coaching.</p>

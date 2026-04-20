@@ -1083,3 +1083,134 @@
   max-width: 360px;
   opacity: 0.7;
 }
+
+/* ── Voice Input Bar ─────────────────────────────────────────────────────────*/
+
+.training__voice-bar {
+  flex-shrink: 0;
+  padding: 18px 24px 20px;
+  background: var(--color-bg-surface);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-height: 118px;
+}
+
+.training__voice-status {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.training__voice-status--listening { color: var(--color-accent-red); }
+.training__voice-status--speaking  { color: #df7afe; }
+.training__voice-status--loading   { color: var(--color-accent-purple); }
+
+.training__mic-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 2px solid rgba(129, 74, 200, 0.55);
+  background: rgba(129, 74, 200, 0.07);
+  color: var(--color-accent-purple);
+  font-size: 22px;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.training__mic-btn:hover:not(:disabled) {
+  background: rgba(129, 74, 200, 0.15);
+  border-color: var(--color-accent-purple);
+  transform: scale(1.05);
+}
+
+.training__mic-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.training__mic-btn--listening {
+  border-color: var(--color-accent-red);
+  background: rgba(255, 68, 68, 0.1);
+  color: var(--color-accent-red);
+  animation: mic-pulse 1.3s ease-in-out infinite;
+}
+
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.38); }
+  50%       { box-shadow: 0 0 0 14px rgba(255, 68, 68, 0); }
+}
+
+.training__voice-interim {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  text-align: center;
+  max-width: 440px;
+  opacity: 0.75;
+  min-height: 18px;
+  line-height: 1.45;
+}
+
+/* Prospect Speaking State */
+.training__prospect-speaking {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.training__sound-waves {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+}
+
+.training__sound-bar {
+  width: 3px;
+  border-radius: 2px;
+  background: #df7afe;
+  animation: sound-wave 0.7s ease-in-out infinite alternate;
+}
+
+.training__sound-bar:nth-child(1) { height: 10px; animation-delay: 0.00s; }
+.training__sound-bar:nth-child(2) { height: 20px; animation-delay: 0.10s; }
+.training__sound-bar:nth-child(3) { height: 30px; animation-delay: 0.17s; }
+.training__sound-bar:nth-child(4) { height: 20px; animation-delay: 0.10s; }
+.training__sound-bar:nth-child(5) { height: 10px; animation-delay: 0.00s; }
+
+@keyframes sound-wave {
+  from { transform: scaleY(0.35); opacity: 0.55; }
+  to   { transform: scaleY(1);    opacity: 1;    }
+}
+
+.training__skip-btn {
+  padding: 4px 14px;
+  border-radius: 100px;
+  border: 1px solid rgba(223, 122, 254, 0.25);
+  background: transparent;
+  color: rgba(223, 122, 254, 0.6);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.training__skip-btn:hover {
+  border-color: #df7afe;
+  color: #df7afe;
+  background: rgba(223, 122, 254, 0.07);
+}

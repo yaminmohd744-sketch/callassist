@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { useAcademy } from '../hooks/useAcademy';
 import { useTraining } from '../hooks/useTraining';
+import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
+import { useProspectVoice } from '../hooks/useProspectVoice';
 import { CURRICULUM, ALL_LESSONS } from '../lib/curriculum';
 import type { CurriculumLesson, CurriculumModule } from '../lib/curriculum';
 import type { TrainingScenario } from '../types';
@@ -76,10 +78,66 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
   const [activeModule, setActiveModule] = useState<CurriculumModule | null>(null);
   const [saleContext, setSaleContext] = useState('');
   const [saved, setSaved] = useState(false);
-  const [input, setInput] = useState('');
   const [showTranscript, setShowTranscript] = useState(false);
   const [showEndWarning, setShowEndWarning] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Voice I/O
+  const voiceBufferRef = useRef<string>('');
+  const lastProspectIdRef = useRef<string | null>(null);
+  const autoSubmitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { isSpeaking, speak, stop: stopSpeaking } = useProspectVoice(appLanguage);
+  const { isListening, interimText, startListening, stopListening, errorMessage: speechError } =
+    useSpeechRecognition({
+      onFinalTranscript: (text) => {
+        voiceBufferRef.current = voiceBufferRef.current
+          ? `${voiceBufferRef.current} ${text}`
+          : text;
+        // Auto-submit after 1.5 s of silence
+        if (autoSubmitTimerRef.current) clearTimeout(autoSubmitTimerRef.current);
+        autoSubmitTimerRef.current = setTimeout(() => {
+          const responseText = voiceBufferRef.current.trim();
+          voiceBufferRef.current = '';
+          if (responseText) {
+            stopListening();
+            void sendResponse(responseText);
+          }
+        }, 1500);
+      },
+      language: appLanguage,
+    });
+
+  // Auto-play each new prospect message
+  useEffect(() => {
+    if (phase !== 'practice') return;
+    const msgs = trainingState.messages;
+    const last = msgs[msgs.length - 1];
+    if (last?.role === 'prospect' && last.id !== lastProspectIdRef.current) {
+      lastProspectIdRef.current = last.id;
+      speak(last.text, last.prospectTone);
+    }
+  }, [trainingState.messages, phase, speak]);
+
+  // Auto-start mic once prospect finishes speaking
+  useEffect(() => {
+    if (phase !== 'practice' || trainingState.phase !== 'active') return;
+    if (!isSpeaking && !isListening && !trainingState.isLoading) {
+      const t = setTimeout(() => {
+        voiceBufferRef.current = '';
+        void startListening();
+      }, 400);
+      return () => clearTimeout(t);
+    }
+  }, [isSpeaking, isListening, trainingState.isLoading, phase, trainingState.phase, startListening]);
+
+  // Cleanup voice when leaving practice
+  useEffect(() => {
+    if (phase !== 'practice') {
+      if (autoSubmitTimerRef.current) clearTimeout(autoSubmitTimerRef.current);
+      stopSpeaking();
+      stopListening();
+    }
+  }, [phase, stopSpeaking, stopListening]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -108,7 +166,6 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
     setActiveModule(mod);
     setSaleContext('');
     setSaved(false);
-    setInput('');
     setShowEndWarning(false);
     reset();
     setPhase('walkthrough');
@@ -124,15 +181,19 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
     setPhase('practice');
   }
 
-  function handleSend() {
-    const text = input.trim();
-    if (!text || trainingState.isLoading) return;
-    setInput('');
-    void sendResponse(text);
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  function handleVoiceToggle() {
+    if (isListening) {
+      // Send immediately without waiting for silence timer
+      if (autoSubmitTimerRef.current) clearTimeout(autoSubmitTimerRef.current);
+      stopListening();
+      const text = voiceBufferRef.current.trim();
+      voiceBufferRef.current = '';
+      if (text) void sendResponse(text);
+    } else if (!isSpeaking && !trainingState.isLoading) {
+      stopSpeaking();
+      voiceBufferRef.current = '';
+      void startListening();
+    }
   }
 
   function handleBack() {
@@ -152,6 +213,8 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
       return;
     }
     setShowEndWarning(false);
+    stopListening();
+    stopSpeaking();
     void endSession();
   }
 
@@ -546,25 +609,44 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="training__input-bar">
-            <div className="training__text-row">
-              <textarea
-                className="training__input"
-                placeholder="Type your response..."
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                rows={2}
-                disabled={trainingState.isLoading}
-              />
-              <button
-                className="training__send-btn"
-                onClick={handleSend}
-                disabled={trainingState.isLoading || !input.trim()}
-              >
-                SEND
-              </button>
-            </div>
+          <div className="training__voice-bar">
+            {isSpeaking ? (
+              <div className="training__prospect-speaking">
+                <div className="training__voice-status training__voice-status--speaking">
+                  PROSPECT SPEAKING
+                </div>
+                <div className="training__sound-waves">
+                  <div className="training__sound-bar" />
+                  <div className="training__sound-bar" />
+                  <div className="training__sound-bar" />
+                  <div className="training__sound-bar" />
+                  <div className="training__sound-bar" />
+                </div>
+                <button className="training__skip-btn" onClick={stopSpeaking}>
+                  Skip ›
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className={`training__voice-status${isListening ? ' training__voice-status--listening' : trainingState.isLoading ? ' training__voice-status--loading' : ''}`}>
+                  {isListening ? 'YOUR TURN' : trainingState.isLoading ? 'AI THINKING...' : 'WAITING...'}
+                </div>
+                <button
+                  className={`training__mic-btn${isListening ? ' training__mic-btn--listening' : ''}`}
+                  onClick={handleVoiceToggle}
+                  disabled={trainingState.isLoading}
+                  title={isListening ? 'Send now' : 'Start speaking'}
+                >
+                  {isListening ? '⏹' : '🎙'}
+                </button>
+                {(interimText || voiceBufferRef.current) && (
+                  <div className="training__voice-interim">
+                    {voiceBufferRef.current ? `${voiceBufferRef.current} ${interimText}`.trim() : interimText}
+                  </div>
+                )}
+                {speechError && <div className="training__error">{speechError}</div>}
+              </>
+            )}
           </div>
         </main>
       </div>

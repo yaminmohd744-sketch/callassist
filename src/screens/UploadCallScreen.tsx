@@ -125,9 +125,11 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
       const totalWords = transcript.reduce((s, e) => s + e.text.split(/\s+/).length, 0);
       const durationSeconds = Math.max(30, Math.round((totalWords / 130) * 60));
 
-      const { aiSummary, followUpEmail, leadScore } = await generateSessionSummary(
+      const { aiSummary, followUpEmail, leadScore, coaching } = await generateSessionSummary(
         config, transcript, [], finalCloseProbability, objectionsCount
       );
+
+      localStorage.setItem('callassist:nextCallTip', coaching.nextCallTip);
 
       const session: CallSession = {
         config,
@@ -142,6 +144,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
         followUpEmail,
         leadScore,
         notes: [],
+        coaching,
       };
 
       onEndCall(session);

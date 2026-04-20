@@ -112,6 +112,22 @@ export interface SessionSummary {
   keyTakeaway: string;
 }
 
+// ─── Coaching ────────────────────────────────────────────────────────────────
+
+export interface CoachingKeyMoment {
+  timestampSeconds: number;
+  label: string;
+  note: string;
+}
+
+export interface CoachingWalkthrough {
+  overallVerdict: string;
+  whatWentWell: string[];
+  areasToImprove: string[];
+  keyMoments: CoachingKeyMoment[];
+  nextCallTip: string;
+}
+
 // ─── Session ─────────────────────────────────────────────────────────────────
 
 export interface CallSession {
@@ -127,4 +143,5 @@ export interface CallSession {
   followUpEmail: string;
   leadScore: number;
   notes: string[];
+  coaching?: CoachingWalkthrough;
 }
