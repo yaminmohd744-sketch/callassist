@@ -160,7 +160,10 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
                 <div className="coaching__section-title">WHAT WENT WELL</div>
                 <ul className="coaching__list">
                   {session.coaching.whatWentWell.map((item, i) => (
-                    <li key={i} className="coaching__list-item coaching__list-item--green">{item}</li>
+                    <li key={i} className="coaching__list-item coaching__list-item--green">
+                      <div className="coaching__item-point">{item.point}</div>
+                      <div className="coaching__item-note">{item.salesNote}</div>
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -169,7 +172,10 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
                 <div className="coaching__section-title">AREAS TO IMPROVE</div>
                 <ul className="coaching__list">
                   {session.coaching.areasToImprove.map((item, i) => (
-                    <li key={i} className="coaching__list-item coaching__list-item--orange">{item}</li>
+                    <li key={i} className="coaching__list-item coaching__list-item--orange">
+                      <div className="coaching__item-point">{item.point}</div>
+                      <div className="coaching__item-note">{item.salesNote}</div>
+                    </li>
                   ))}
                 </ul>
               </div>

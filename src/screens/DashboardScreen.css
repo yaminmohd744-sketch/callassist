@@ -817,6 +817,21 @@
 .history__coaching-item--green::before  { background: var(--color-accent-green); }
 .history__coaching-item--orange::before { background: #f5a623; }
 
+.history__item-point {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xs);
+}
+
+.history__item-note {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  border-left: 2px solid var(--color-border);
+  padding-left: var(--space-2);
+  margin-top: 4px;
+}
+
 .history__tip {
   padding: var(--space-3) var(--space-4);
   background: linear-gradient(135deg, rgba(129,74,200,0.1), rgba(223,122,254,0.06));

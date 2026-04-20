@@ -120,10 +120,15 @@ export interface CoachingKeyMoment {
   note: string;
 }
 
+export interface CoachingItem {
+  point: string;
+  salesNote: string;
+}
+
 export interface CoachingWalkthrough {
   overallVerdict: string;
-  whatWentWell: string[];
-  areasToImprove: string[];
+  whatWentWell: CoachingItem[];
+  areasToImprove: CoachingItem[];
   keyMoments: CoachingKeyMoment[];
   nextCallTip: string;
 }

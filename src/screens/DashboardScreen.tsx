@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { Button } from '../components/ui/Button';
+import { CallWalkthroughModal } from '../components/CallWalkthroughModal';
 import type { CallSession } from '../types';
 import { getStreak } from '../lib/streak';
 import { formatDuration, formatDateShort, formatDateFull } from '../lib/formatters';
@@ -105,6 +106,7 @@ export function DashboardScreen({
   const [selectedContact, setSelectedContact] = useState<DerivedContact | null>(null);
   const [emailCopied, setEmailCopied] = useState(false);
   const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
+  const [walkthroughSession, setWalkthroughSession] = useState<CallSession | null>(null);
 
   const historyGroups = useMemo(() => groupSessionsByDate(pastSessions), [pastSessions]);
 
@@ -418,7 +420,10 @@ export function DashboardScreen({
                                     <div className="history__coaching-heading history__coaching-heading--green">WHAT WENT WELL</div>
                                     <ul className="history__coaching-list">
                                       {session.coaching.whatWentWell.map((item, i) => (
-                                        <li key={i} className="history__coaching-item history__coaching-item--green">{item}</li>
+                                        <li key={i} className="history__coaching-item history__coaching-item--green">
+                                          <div className="history__item-point">{item.point}</div>
+                                          <div className="history__item-note">{item.salesNote}</div>
+                                        </li>
                                       ))}
                                     </ul>
                                   </div>
@@ -426,7 +431,10 @@ export function DashboardScreen({
                                     <div className="history__coaching-heading history__coaching-heading--orange">AREAS TO IMPROVE</div>
                                     <ul className="history__coaching-list">
                                       {session.coaching.areasToImprove.map((item, i) => (
-                                        <li key={i} className="history__coaching-item history__coaching-item--orange">{item}</li>
+                                        <li key={i} className="history__coaching-item history__coaching-item--orange">
+                                          <div className="history__item-point">{item.point}</div>
+                                          <div className="history__item-note">{item.salesNote}</div>
+                                        </li>
                                       ))}
                                     </ul>
                                   </div>
@@ -443,7 +451,7 @@ export function DashboardScreen({
                             )}
 
                             <div className="history__card-actions">
-                              <Button variant="primary" size="sm" onClick={() => onViewSession(session)}>
+                              <Button variant="primary" size="sm" onClick={() => setWalkthroughSession(session)}>
                                 VIEW FULL REPORT →
                               </Button>
                               <button
@@ -464,6 +472,15 @@ export function DashboardScreen({
             </div>
           )}
         </main>
+      )}
+
+      {/* ── Walkthrough modal ── */}
+      {walkthroughSession && (
+        <CallWalkthroughModal
+          session={walkthroughSession}
+          onViewFull={() => { setWalkthroughSession(null); onViewSession(walkthroughSession); }}
+          onClose={() => setWalkthroughSession(null)}
+        />
       )}
 
       {/* ── Contact detail view ── */}

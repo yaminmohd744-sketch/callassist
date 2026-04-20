@@ -1,4 +1,4 @@
-import type { TranscriptEntry, AISuggestion, AIAnalysisResult, CallStage, SuggestionType, CoachingWalkthrough, CoachingKeyMoment } from '../types';
+import type { TranscriptEntry, AISuggestion, AIAnalysisResult, CallStage, SuggestionType, CoachingWalkthrough, CoachingKeyMoment, CoachingItem } from '../types';
 
 // ─── Memory ───────────────────────────────────────────────────────────────────
 
@@ -673,65 +673,113 @@ function generateCoaching(
   const lastTimestamp = transcript.length > 0 ? transcript[transcript.length - 1].timestampSeconds : 0;
   const reachedCloseStage = lastTimestamp > 200;
 
-  const whatWentWell: string[] = [];
-  const areasToImprove: string[] = [];
+  const whatWentWell: CoachingItem[] = [];
+  const areasToImprove: CoachingItem[] = [];
 
   if (buyingSignals >= 2) {
-    whatWentWell.push(`Triggered ${buyingSignals} buying signals — the prospect was actively engaged.`);
+    whatWentWell.push({
+      point: `Generated ${buyingSignals} buying signals — the prospect was actively engaging.`,
+      salesNote: `When interest shows up this clearly, most reps panic and over-explain. You kept your composure and let the prospect lean in. That's the move — your job at that point is to stop selling and start confirming.`,
+    });
   } else if (buyingSignals === 1) {
-    whatWentWell.push('Got a buying signal — there was real interest in the room.');
+    whatWentWell.push({
+      point: 'Got a buying signal — real interest surfaced during the call.',
+      salesNote: `One buying signal is a crack in the door. The best reps recognize it and immediately shift from pitching to progressing — "sounds like that resonates, what would the next step look like?" You opened that door.`,
+    });
   }
 
   if (objectionsCount >= 1 && suggestions.some(s => s.type === 'objection-response')) {
-    whatWentWell.push(`Handled ${objectionsCount} objection${objectionsCount > 1 ? 's' : ''} — you kept the conversation alive.`);
+    whatWentWell.push({
+      point: `Handled ${objectionsCount} objection${objectionsCount > 1 ? 's' : ''} without losing the conversation.`,
+      salesNote: `Handling an objection without losing the frame separates closers from order-takers. The instinct is to defend the product — you didn't. You kept asking questions. That's the right move every time.`,
+    });
   }
 
   if (closeProbability >= 65) {
-    whatWentWell.push(`Close probability hit ${closeProbability}% — strong overall momentum.`);
+    whatWentWell.push({
+      point: `Close probability reached ${closeProbability}% — strong momentum built throughout.`,
+      salesNote: `High close probability means the prospect sees value and feels understood. The risk now is talking them out of it. Less is more at this stage — confirm the pain, confirm the next step, get off the call.`,
+    });
   } else if (closeProbability >= 50) {
-    whatWentWell.push('Maintained a solid close probability throughout the call.');
+    whatWentWell.push({
+      point: 'Held a solid close probability — the prospect stayed in the conversation.',
+      salesNote: `Keeping probability above 50% means you never fully lost the room. A lot of reps collapse at the first objection. You didn't. The foundation is there — now it's about sharpening the close.`,
+    });
   }
 
   if (talkRatio <= 0.45 && prospectEntries.length > 2) {
-    whatWentWell.push('Good talk ratio — you gave the prospect room to speak.');
+    whatWentWell.push({
+      point: 'Good talk ratio — the prospect spoke more than you.',
+      salesNote: `The best salespeople in any room talk the least. Every second a prospect speaks is information you can use. You let them talk. That's a skill most reps never develop.`,
+    });
   }
 
   if (reachedCloseStage) {
-    whatWentWell.push('Pushed through to the close stage — full call structure executed.');
+    whatWentWell.push({
+      point: 'Moved through all stages and reached the close.',
+      salesNote: `Running a full call structure — opener to discovery to pitch to close — is harder than it looks. Most calls die in discovery because reps pitch too early. You didn't. That discipline compounds over time.`,
+    });
   }
 
   if (whatWentWell.length === 0) {
-    whatWentWell.push('You engaged and stayed on the call — that\'s the starting point.');
+    whatWentWell.push({
+      point: 'You stayed on the call and engaged — that\'s the foundation.',
+      salesNote: `Every elite rep has calls like this. The ones who improve are the ones who review them. The fact that you're here analysing it means you're already ahead of reps who just move on.`,
+    });
   }
 
   if (talkRatio > 0.6 && transcript.length > 4) {
-    areasToImprove.push('Talk-to-listen ratio was off — aim for 40% you, 60% prospect. Ask a question, then stop.');
+    areasToImprove.push({
+      point: 'Talk-to-listen ratio was off — you spoke more than the prospect.',
+      salesNote: `When you're doing most of the talking, you're pitching yourself instead of the prospect. Every question you don't ask is a pain point you'll never know about. The rule: say something, ask something, shut up. Rinse and repeat.`,
+    });
   }
 
   if (objectionsCount >= 3) {
-    areasToImprove.push('High objection count signals a framing issue — confirm the pain before you introduce the solution.');
+    areasToImprove.push({
+      point: `${objectionsCount} objections raised — high resistance throughout the call.`,
+      salesNote: `Three or more objections usually means you pitched before the pain was confirmed. The fix isn't better objection handling — it's better discovery. If they feel understood, they rarely push back this hard.`,
+    });
   } else if (objectionsCount >= 2) {
-    areasToImprove.push('Two objections raised — review your value framing. Confirm the problem before pitching the fix.');
+    areasToImprove.push({
+      point: 'Two objections raised — resistance appeared before the value landed.',
+      salesNote: `Two objections back-to-back is a sign the pitch came before the pain was real to them. Practice saying: "Help me understand the problem better before I tell you anything about what we do." That shift changes everything.`,
+    });
   }
 
   if (buyingSignals === 0 && transcript.length > 4) {
-    areasToImprove.push('No buying signals surfaced — try more open-ended questions to pull out interest.');
+    areasToImprove.push({
+      point: 'No buying signals detected — the prospect didn\'t express interest.',
+      salesNote: `If no interest surfaced, you either didn't find the pain or didn't connect it to something they care about. Buying signals aren't volunteered — they're earned with the right questions. "What would it mean for your team if this was solved?" produces them.`,
+    });
   }
 
   if (closeProbability < 40) {
-    areasToImprove.push('Low close probability — focus on confirming pain in their words before moving to the pitch.');
+    areasToImprove.push({
+      point: `Close probability stayed low at ${closeProbability}% — the call didn't build momentum.`,
+      salesNote: `Low probability means the prospect doesn't see the gap between where they are and where they want to be. That gap is your entire job. You can't pitch into a gap they don't feel yet.`,
+    });
   }
 
   if (!reachedCloseStage && lastTimestamp > 0) {
-    areasToImprove.push('Never reached the close stage — always end with a next step, even "can I send you one page?"');
+    areasToImprove.push({
+      point: 'Never reached the close stage — no next step was established.',
+      salesNote: `A call with no next step is a conversation, not a sale. It doesn't have to be a full close — even "can I send you one thing?" is a micro-commitment that keeps the deal alive. Always ask for something before you hang up.`,
+    });
   }
 
   if (prospectEntries.length === 0 && transcript.length > 0) {
-    areasToImprove.push('No prospect speech detected — practice listening more and pitching less.');
+    areasToImprove.push({
+      point: 'Very little prospect input — the conversation was one-directional.',
+      salesNote: `If you're the only one talking, the prospect is either checked out or you haven't asked them anything worth responding to. Stop, ask one question, and wait. Silence is more uncomfortable for them than it is for you.`,
+    });
   }
 
   if (areasToImprove.length === 0) {
-    areasToImprove.push('Keep sharpening your discovery — the best reps always find new pain to surface.');
+    areasToImprove.push({
+      point: 'No major weaknesses detected — solid execution overall.',
+      salesNote: `Clean calls are rare. The next level is refining your discovery questions to surface deeper, more specific pain. The difference between a 70% close rate and 90% is almost always how well you understand the prospect's real problem.`,
+    });
   }
 
   const keyMoments: CoachingKeyMoment[] = [];

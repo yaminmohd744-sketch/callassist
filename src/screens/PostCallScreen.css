@@ -337,6 +337,21 @@
 .coaching__list-item--green::before { background: var(--color-accent-green); }
 .coaching__list-item--orange::before { background: var(--color-accent-yellow, #f5a623); }
 
+.coaching__item-point {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 5px;
+}
+
+.coaching__item-note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  border-left: 2px solid var(--color-border);
+  padding-left: var(--space-3);
+  margin-top: 4px;
+}
+
 .coaching__moments {
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
