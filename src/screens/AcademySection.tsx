@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from '../hooks/useTranslations';
 import type { User } from '@supabase/supabase-js';
 import { useAcademy } from '../hooks/useAcademy';
 import { useTraining } from '../hooks/useTraining';
@@ -70,7 +71,8 @@ type AcademyPhase = 'overview' | 'walkthrough' | 'intro' | 'practice' | 'results
 const TOTAL_LESSONS = ALL_LESSONS.length;
 
 export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }: AcademySectionProps) {
-  const { loading, saveSession, getLessonStats, isLessonUnlocked, getOverallStats } = useAcademy(user);
+  const t = useTranslations();
+  const { loading, saveSession, getLessonStats, isLessonUnlocked, getLessonLockReason, getOverallStats } = useAcademy(user);
   const { state: trainingState, startScenario, confirmContext, sendResponse, endSession, reset } = useTraining();
 
   const [phase, setPhase] = useState<AcademyPhase>('overview');
@@ -323,7 +325,7 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
                           className={`academy__lesson-row ${passed ? 'academy__lesson-row--mastered' : ''} ${!lessonUnlocked ? 'academy__lesson-row--locked' : ''}`}
                           onClick={() => lessonUnlocked && handleSelectLesson(lesson, mod)}
                           disabled={loading || !lessonUnlocked}
-                          title={!lessonUnlocked ? `Score ≥ ${mod.lessons[lessonIndex - 1]?.passScore} on the previous lesson to unlock` : undefined}
+                          title={!lessonUnlocked ? getLessonLockReason(mod.lessons, lessonIndex) : undefined}
                         >
                           <span className="academy__lesson-status">
                             {!lessonUnlocked ? '🔒' : passed ? '✓' : attempted ? '◈' : '○'}
@@ -508,7 +510,7 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
               </div>
 
               <div className="academy__intro-context">
-                <div className="academy__intro-context-label">WHAT ARE YOU SELLING?</div>
+                <div className="academy__intro-context-label">{t.training.whatSelling.toUpperCase()}</div>
                 <textarea
                   className="academy__intro-context-input"
                   placeholder="e.g. a $485k 3-bedroom house in Miami, FL"
@@ -520,7 +522,7 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
                 />
                 {getSavedContexts().length > 0 && (
                   <div className="training__presets">
-                    <span className="training__presets-label">RECENT</span>
+                    <span className="training__presets-label">{t.training.recent}</span>
                     {getSavedContexts().map((c, i) => (
                       <button key={i} className="training__preset-btn" onClick={() => setSaleContext(c)}>{c}</button>
                     ))}
@@ -536,7 +538,7 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
                   onClick={() => void handleStartPractice()}
                   disabled={trainingState.isLoading}
                 >
-                  {trainingState.isLoading ? 'Setting up...' : 'Start Test →'}
+                  {trainingState.isLoading ? t.common.loading : `${t.common.start} →`}
                 </button>
                 <button className="academy__btn academy__btn--ghost" onClick={handleBack}>
                   Back to Academy
@@ -593,13 +595,13 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
           <div className="training__messages">
             {trainingState.messages.map(msg => (
               <div key={msg.id} className={`training__msg training__msg--${msg.role}`}>
-                <div className="training__msg-label">{msg.role === 'prospect' ? 'PROSPECT' : 'YOU'}</div>
+                <div className="training__msg-label">{msg.role === 'prospect' ? t.liveCall.prospect : t.liveCall.you}</div>
                 <div className="training__msg-bubble">{msg.text}</div>
               </div>
             ))}
             {trainingState.isLoading && (
               <div className="training__msg training__msg--prospect">
-                <div className="training__msg-label">PROSPECT</div>
+                <div className="training__msg-label">{t.liveCall.prospect}</div>
                 <div className="training__msg-bubble training__msg-bubble--loading">
                   <span /><span /><span />
                 </div>
@@ -613,7 +615,7 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
             {isSpeaking ? (
               <div className="training__prospect-speaking">
                 <div className="training__voice-status training__voice-status--speaking">
-                  PROSPECT SPEAKING
+                  {t.training.prospectSpeaking}
                 </div>
                 <div className="training__sound-waves">
                   <div className="training__sound-bar" />
@@ -629,7 +631,7 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
             ) : (
               <>
                 <div className={`training__voice-status${isListening ? ' training__voice-status--listening' : trainingState.isLoading ? ' training__voice-status--loading' : ''}`}>
-                  {isListening ? 'YOUR TURN' : trainingState.isLoading ? 'AI THINKING...' : 'WAITING...'}
+                  {isListening ? t.training.yourTurn : trainingState.isLoading ? t.training.aiThinking : t.training.waiting}
                 </div>
                 <button
                   className={`training__mic-btn${isListening ? ' training__mic-btn--listening' : ''}`}
@@ -762,7 +764,7 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
               <div className="academy__transcript-review">
                 {trainingState.messages.map(msg => (
                   <div key={msg.id} className={`training__msg training__msg--${msg.role}`}>
-                    <div className="training__msg-label">{msg.role === 'prospect' ? 'PROSPECT' : 'YOU'}</div>
+                    <div className="training__msg-label">{msg.role === 'prospect' ? t.liveCall.prospect : t.liveCall.you}</div>
                     <div className="training__msg-bubble">{msg.text}</div>
                   </div>
                 ))}

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from './ui/Button';
 import type { CallSession } from '../types';
+import { generateCoaching } from '../lib/mockAI';
 import { formatDuration, formatDateFull } from '../lib/formatters';
 import './CallWalkthroughModal.css';
 
@@ -20,7 +21,14 @@ function buildSteps(session: CallSession): Step[] {
 }
 
 export function CallWalkthroughModal({ session, onViewFull, onClose }: Props) {
-  const coaching = session.coaching;
+  // For sessions loaded from history before coaching was persisted, generate it on the fly
+  const coaching = useMemo(
+    () => session.coaching ?? generateCoaching(
+      session.config, session.transcript, session.suggestions,
+      session.finalCloseProbability, session.objectionsCount
+    ),
+    [session]
+  );
   const steps = buildSteps(session);
   const [stepIndex, setStepIndex] = useState(0);
   const [animKey, setAnimKey] = useState(0);

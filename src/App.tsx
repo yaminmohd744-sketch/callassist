@@ -21,7 +21,7 @@ import './screens/AuthScreen.css';
 import { supabase }         from './lib/supabase';
 import { MOCK_SESSIONS }    from './lib/mockSessions';
 import { getTrainingHistory } from './lib/trainingHistory';
-import type { CallConfig, CallSession, CallStage, TranscriptEntry, AISuggestion } from './types';
+import type { CallConfig, CallSession, CallStage, TranscriptEntry, AISuggestion, CoachingWalkthrough } from './types';
 
 const PROFILE_PIC_KEY = 'pp-profile-pic';
 // Estimated seconds per training exchange (~90s avg per rep turn)
@@ -75,6 +75,7 @@ function rowToSession(row: DbRow): CallSession {
     followUpEmail:         typeof row.follow_up_email === 'string' ? row.follow_up_email : '',
     leadScore:             typeof row.lead_score === 'number' ? row.lead_score : 0,
     notes:                 Array.isArray(row.notes) ? row.notes as string[] : [],
+    coaching:              row.coaching as CoachingWalkthrough ?? undefined,
   };
 }
 
@@ -93,6 +94,7 @@ function sessionToRow(s: CallSession, userId: string) {
     follow_up_email:  s.followUpEmail,
     lead_score:       s.leadScore,
     notes:            s.notes,
+    coaching:         s.coaching ?? null,
   };
 }
 
@@ -317,7 +319,7 @@ export function App() {
           )}
           {currentScreen === 'analytics' && (
             <ErrorBoundary>
-              <AnalyticsScreen pastSessions={pastSessions} user={user} />
+              <AnalyticsScreen pastSessions={pastSessions} />
             </ErrorBoundary>
           )}
         </AppShell>

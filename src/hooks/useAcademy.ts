@@ -72,17 +72,46 @@ export function useAcademy(user: User | null) {
     };
   }
 
-  /**
-   * Returns true if this lesson is available to attempt.
-   * - First lesson in the module is always unlocked.
-   * - Every subsequent lesson requires the previous one to have been passed
-   *   (best score >= previous lesson's passScore).
-   */
   function isLessonUnlocked(lessons: CurriculumLesson[], lessonIndex: number): boolean {
     if (lessonIndex === 0) return true;
+    const lesson = lessons[lessonIndex];
+
+    if (lesson.difficulty === 'medium') {
+      const allEasyPassed = lessons
+        .filter(l => l.difficulty === 'easy')
+        .every(l => getLessonStats(l.id, l.passScore)?.passed === true);
+      if (!allEasyPassed) return false;
+    }
+
+    if (lesson.difficulty === 'hard') {
+      const allLowerPassed = lessons
+        .filter(l => l.difficulty === 'easy' || l.difficulty === 'medium')
+        .every(l => getLessonStats(l.id, l.passScore)?.passed === true);
+      if (!allLowerPassed) return false;
+    }
+
     const prev = lessons[lessonIndex - 1];
     const stats = getLessonStats(prev.id, prev.passScore);
     return stats?.passed === true;
+  }
+
+  function getLessonLockReason(lessons: CurriculumLesson[], lessonIndex: number): string {
+    const lesson = lessons[lessonIndex];
+
+    if (lesson.difficulty === 'medium') {
+      const unpassed = lessons.filter(l => l.difficulty === 'easy' && !getLessonStats(l.id, l.passScore)?.passed);
+      if (unpassed.length > 0) return `Pass all Easy lessons first (${unpassed.length} remaining)`;
+    }
+
+    if (lesson.difficulty === 'hard') {
+      const unpassed = lessons.filter(
+        l => (l.difficulty === 'easy' || l.difficulty === 'medium') && !getLessonStats(l.id, l.passScore)?.passed
+      );
+      if (unpassed.length > 0) return `Pass all Easy and Medium lessons first (${unpassed.length} remaining)`;
+    }
+
+    const prev = lessons[lessonIndex - 1];
+    return `Score ≥ ${prev?.passScore} on the previous lesson to unlock`;
   }
 
   function getOverallStats() {
@@ -94,5 +123,5 @@ export function useAcademy(user: User | null) {
     return { attempted, avgScore, totalSessions: records.length };
   }
 
-  return { records, loading, saveSession, getLessonStats, isLessonUnlocked, getOverallStats };
+  return { records, loading, saveSession, getLessonStats, isLessonUnlocked, getLessonLockReason, getOverallStats };
 }

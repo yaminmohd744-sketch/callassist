@@ -1611,3 +1611,173 @@
   margin-top: 2px;
   border: 1px solid var(--color-border-subtle);
 }
+
+/* ── Switch bar active state ─────────────────────────────────────────────────*/
+
+.training__switch-btn--active {
+  color: var(--color-accent-magenta);
+  background: rgba(223, 122, 254, 0.08);
+}
+
+/* ── Training Stats Drawer (below switch bar) ────────────────────────────────*/
+
+.training__stats-drawer {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  animation: stats-slide-down 0.2s ease both;
+  flex-shrink: 0;
+}
+
+@keyframes stats-slide-down {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.training__stats-demo {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-purple);
+  background: rgba(129, 74, 200, 0.12);
+  border: 1px solid rgba(129, 74, 200, 0.3);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.training__stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.training__stat-pill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  transition: background 150ms ease;
+}
+.training__stat-pill:hover { background: rgba(255, 255, 255, 0.055); }
+
+.training__stat-val {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.training__stat-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.training__stats-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.training__stats-chart {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.training__stats-chart-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.training__sparkline {
+  width: 100%;
+  height: 44px;
+  display: block;
+  overflow: visible;
+}
+
+.training__sparkline-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.training__sparkline-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+.training__scenario-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.training__scenario-bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.training__scenario-bar-label {
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.5);
+  width: 90px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.training__scenario-bar-track {
+  flex: 1;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.training__scenario-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.85;
+}
+
+.training__scenario-bar-val {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Light theme overrides */
+[data-theme="light"] .training__stats-drawer { background: var(--color-bg-surface); border-bottom-color: var(--color-border); }
+[data-theme="light"] .training__stat-pill { background: rgba(26, 23, 38, 0.03); border-color: rgba(26, 23, 38, 0.07); }
+[data-theme="light"] .training__stats-chart { background: rgba(26, 23, 38, 0.02); border-color: rgba(26, 23, 38, 0.07); }
+[data-theme="light"] .training__stats-chart-title { color: rgba(26, 23, 38, 0.35); }
+[data-theme="light"] .training__stat-label { color: rgba(26, 23, 38, 0.35); }
+[data-theme="light"] .training__scenario-bar-label { color: rgba(26, 23, 38, 0.5); }
+[data-theme="light"] .training__scenario-bar-track { background: rgba(26, 23, 38, 0.08); }

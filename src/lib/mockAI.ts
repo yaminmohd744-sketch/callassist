@@ -656,128 +656,183 @@ export async function analyzeTranscript(
 
 // ─── Coaching Walkthrough ─────────────────────────────────────────────────────
 
-function generateCoaching(
+function trunc(text: string, max = 70): string {
+  return text.length > max ? text.slice(0, max - 1).trimEnd() + '…' : text;
+}
+
+export function generateCoaching(
   config: CallConfig,
   transcript: TranscriptEntry[],
   suggestions: AISuggestion[],
   closeProbability: number,
   objectionsCount: number
 ): CoachingWalkthrough {
-  const buyingSignals = suggestions.filter(s => s.type === 'close-attempt').length;
-  const repEntries = transcript.filter(e => e.speaker === 'rep');
+  const prospect = config.prospectName || 'the prospect';
+  const company  = config.company || 'their company';
+  const goal     = config.callGoal || 'close the deal';
+
+  const repEntries      = transcript.filter(e => e.speaker === 'rep');
   const prospectEntries = transcript.filter(e => e.speaker === 'prospect');
-  const talkRatio = transcript.length > 0 ? repEntries.length / transcript.length : 0.5;
-  const lastTimestamp = transcript.length > 0 ? transcript[transcript.length - 1].timestampSeconds : 0;
+  const buyingSignalEntries = transcript.filter(e => e.signal === 'buying-signal');
+  const objectionEntries    = transcript.filter(e => e.signal === 'objection');
+  const buyingSignals   = buyingSignalEntries.length;
+  const talkRatio       = transcript.length > 0 ? repEntries.length / transcript.length : 0.5;
+  const lastTimestamp   = transcript.length > 0 ? transcript[transcript.length - 1].timestampSeconds : 0;
   const reachedCloseStage = lastTimestamp > 200;
+
+  // Pull the opener — first substantive rep utterance
+  const openerEntry = repEntries.find(e => e.text.trim().length > 10);
+  const openerText  = openerEntry ? trunc(openerEntry.text, 80) : null;
+  const openerIsQuestion = openerText ? openerText.includes('?') : false;
+  const openerMentionsProspect = openerText
+    ? openerText.toLowerCase().includes((config.prospectName || '').toLowerCase()) && (config.prospectName || '').length > 1
+    : false;
+
+  // Pull the first objection
+  const firstObjection = objectionEntries[0];
+  // Find the rep's response to the first objection (next rep entry after it)
+  const firstObjIndex = firstObjection ? transcript.indexOf(firstObjection) : -1;
+  const repResponseToObj = firstObjIndex >= 0
+    ? transcript.slice(firstObjIndex + 1).find(e => e.speaker === 'rep')
+    : null;
+
+  // Did the rep ask ANY discovery questions?
+  const discoveryQuestions = repEntries.filter(e => e.text.includes('?'));
 
   const whatWentWell: CoachingItem[] = [];
   const areasToImprove: CoachingItem[] = [];
 
+  // ── WHAT WENT WELL ──
+
   if (buyingSignals >= 2) {
+    const quote = trunc(buyingSignalEntries[0].text, 70);
     whatWentWell.push({
-      point: `Generated ${buyingSignals} buying signals — the prospect was actively engaging.`,
-      salesNote: `When interest shows up this clearly, most reps panic and over-explain. You kept your composure and let the prospect lean in. That's the move — your job at that point is to stop selling and start confirming.`,
+      point: `${prospect} gave ${buyingSignals} buying signals — real interest surfaced.`,
+      salesNote: `When ${prospect} said "${quote}" — that was the door opening. You generated genuine interest, which means your pitch connected with something real. Most reps blow this moment by over-explaining. The move is to stop selling and start confirming: "Sounds like this resonates — what would next steps look like for you?"`,
     });
   } else if (buyingSignals === 1) {
+    const quote = trunc(buyingSignalEntries[0].text, 70);
     whatWentWell.push({
-      point: 'Got a buying signal — real interest surfaced during the call.',
-      salesNote: `One buying signal is a crack in the door. The best reps recognize it and immediately shift from pitching to progressing — "sounds like that resonates, what would the next step look like?" You opened that door.`,
+      point: `${prospect} showed interest — a buying signal came through.`,
+      salesNote: `When ${prospect} said "${quote}" — that was real interest. One signal is a crack in the door. The best reps recognise it and immediately shift from pitching to progressing. Next time: "That resonates — what would it take on your end to move this forward?"`,
     });
   }
 
   if (objectionsCount >= 1 && suggestions.some(s => s.type === 'objection-response')) {
+    const objQuote = firstObjection ? trunc(firstObjection.text, 60) : 'the objection raised';
     whatWentWell.push({
-      point: `Handled ${objectionsCount} objection${objectionsCount > 1 ? 's' : ''} without losing the conversation.`,
-      salesNote: `Handling an objection without losing the frame separates closers from order-takers. The instinct is to defend the product — you didn't. You kept asking questions. That's the right move every time.`,
+      point: `Kept the conversation going through ${objectionsCount} objection${objectionsCount > 1 ? 's' : ''}.`,
+      salesNote: `When ${prospect} said "${objQuote}", you didn't fold. Staying composed under objection pressure separates closers from order-takers. The instinct is to defend — you kept asking. That's the right move every time.`,
     });
   }
 
   if (closeProbability >= 65) {
     whatWentWell.push({
-      point: `Close probability reached ${closeProbability}% — strong momentum built throughout.`,
-      salesNote: `High close probability means the prospect sees value and feels understood. The risk now is talking them out of it. Less is more at this stage — confirm the pain, confirm the next step, get off the call.`,
+      point: `Close probability hit ${closeProbability}% — strong momentum built with ${prospect}.`,
+      salesNote: `Getting to ${closeProbability}% with ${prospect} at ${company} means they saw value and felt understood. The risk at this stage is talking them out of it. Confirm the pain, confirm the next step, then get off the call. Less words, more commitment.`,
     });
   } else if (closeProbability >= 50) {
     whatWentWell.push({
-      point: 'Held a solid close probability — the prospect stayed in the conversation.',
-      salesNote: `Keeping probability above 50% means you never fully lost the room. A lot of reps collapse at the first objection. You didn't. The foundation is there — now it's about sharpening the close.`,
+      point: `Held above 50% close probability — ${prospect} stayed engaged throughout.`,
+      salesNote: `Staying above 50% with ${prospect} means you never fully lost the room. A lot of reps collapse at the first pushback. The foundation is there — the gap to close is sharpening how you connect their pain at ${company} to the specific outcome you deliver.`,
     });
   }
 
   if (talkRatio <= 0.45 && prospectEntries.length > 2) {
     whatWentWell.push({
-      point: 'Good talk ratio — the prospect spoke more than you.',
-      salesNote: `The best salespeople in any room talk the least. Every second a prospect speaks is information you can use. You let them talk. That's a skill most reps never develop.`,
+      point: `Good talk ratio — ${prospect} spoke more than you did.`,
+      salesNote: `You let ${prospect} talk. Every second they speak is intel you can use to close them. Most reps fill silence with more pitch. You didn't — and that's what keeps prospects on the line. The best salespeople in any room talk the least.`,
     });
   }
 
-  if (reachedCloseStage) {
+  if (reachedCloseStage && discoveryQuestions.length >= 2) {
     whatWentWell.push({
-      point: 'Moved through all stages and reached the close.',
-      salesNote: `Running a full call structure — opener to discovery to pitch to close — is harder than it looks. Most calls die in discovery because reps pitch too early. You didn't. That discipline compounds over time.`,
+      point: `Ran a full call structure — discovery through to the close stage.`,
+      salesNote: `You asked ${discoveryQuestions.length} discovery question${discoveryQuestions.length !== 1 ? 's' : ''} and reached the close stage with ${prospect}. Most calls die in discovery because reps pitch too early. Running the full structure compounds — ${prospect} felt heard before you pitched.`,
     });
   }
 
   if (whatWentWell.length === 0) {
     whatWentWell.push({
-      point: 'You stayed on the call and engaged — that\'s the foundation.',
-      salesNote: `Every elite rep has calls like this. The ones who improve are the ones who review them. The fact that you're here analysing it means you're already ahead of reps who just move on.`,
+      point: 'You ran the call and engaged — that\'s the foundation to build on.',
+      salesNote: `Every elite rep has calls that don't land. The ones who compound are the ones who review them. The fact that you're here analysing this call with ${prospect} at ${company} means you're already ahead of reps who just move on.`,
+    });
+  }
+
+  // ── AREAS TO IMPROVE ──
+
+  if (openerText && !openerIsQuestion && !openerMentionsProspect) {
+    const betterOpener = `"${prospect}, most ${company ? 'teams at ' + company : 'companies'} struggle with ${goal.toLowerCase().includes('appoint') ? 'booking consistent meetings' : goal.toLowerCase()}. Is that on your radar right now?"`;
+    areasToImprove.push({
+      point: `Opener was a statement, not a hook — ${prospect} had no reason to engage immediately.`,
+      salesNote: `You opened with "${openerText}" — that's easy to dismiss. Instead, lead with their world: ${betterOpener}. A question tied to a specific pain forces a yes/no and gets them talking in the first 10 seconds.`,
+    });
+  } else if (openerText && !openerIsQuestion) {
+    areasToImprove.push({
+      point: 'Opener was a statement — missing the hook that pulls them into the conversation.',
+      salesNote: `You opened with "${openerText}". Statements let prospects stay passive. Flip it to a pain question: "What's the biggest friction in [their specific process] right now?" Forces engagement from word one.`,
     });
   }
 
   if (talkRatio > 0.6 && transcript.length > 4) {
+    const repWordsCount = repEntries.reduce((n, e) => n + e.text.split(' ').length, 0);
     areasToImprove.push({
-      point: 'Talk-to-listen ratio was off — you spoke more than the prospect.',
-      salesNote: `When you're doing most of the talking, you're pitching yourself instead of the prospect. Every question you don't ask is a pain point you'll never know about. The rule: say something, ask something, shut up. Rinse and repeat.`,
+      point: `You spoke ${Math.round(talkRatio * 100)}% of the call — ${prospect} didn't get space to commit.`,
+      salesNote: `You averaged roughly ${Math.round(repWordsCount / Math.max(repEntries.length, 1))} words per turn. After your next statement, stop and ask: "Does that make sense for what you're dealing with at ${company}?" Then go silent. The first person to speak after a question loses — and it shouldn't be you.`,
     });
   }
 
-  if (objectionsCount >= 3) {
+  if (firstObjection && repResponseToObj) {
+    const objQuote    = trunc(firstObjection.text, 65);
+    const repResponse = trunc(repResponseToObj.text, 65);
     areasToImprove.push({
-      point: `${objectionsCount} objections raised — high resistance throughout the call.`,
-      salesNote: `Three or more objections usually means you pitched before the pain was confirmed. The fix isn't better objection handling — it's better discovery. If they feel understood, they rarely push back this hard.`,
+      point: `Objection from ${prospect} wasn't fully neutralised before moving on.`,
+      salesNote: `${prospect} said: "${objQuote}"\nYou responded: "${repResponse}"\nInstead, try: "That's fair — help me understand, is it the [price/timing/fit] itself, or is it that you're not sure this solves the problem yet?" Isolating the real objection before responding stops you from defending the wrong thing.`,
     });
   } else if (objectionsCount >= 2) {
     areasToImprove.push({
-      point: 'Two objections raised — resistance appeared before the value landed.',
-      salesNote: `Two objections back-to-back is a sign the pitch came before the pain was real to them. Practice saying: "Help me understand the problem better before I tell you anything about what we do." That shift changes everything.`,
+      point: `${objectionsCount} objections raised — resistance built before the value landed.`,
+      salesNote: `Multiple objections from ${prospect} usually means the pitch came before the pain was confirmed. The fix isn't better objection handling — it's better discovery. Ask: "Before I tell you anything about what we do, help me understand the problem." If they feel understood, they don't push back this hard.`,
     });
   }
 
   if (buyingSignals === 0 && transcript.length > 4) {
-    areasToImprove.push({
-      point: 'No buying signals detected — the prospect didn\'t express interest.',
-      salesNote: `If no interest surfaced, you either didn't find the pain or didn't connect it to something they care about. Buying signals aren't volunteered — they're earned with the right questions. "What would it mean for your team if this was solved?" produces them.`,
-    });
+    const repQuestion = discoveryQuestions[0];
+    if (repQuestion) {
+      areasToImprove.push({
+        point: `No buying signals from ${prospect} — the pain didn't land as urgent.`,
+        salesNote: `You asked "${trunc(repQuestion.text, 65)}" but ${prospect} didn't light up. The issue is usually that the question stays surface-level. Go deeper: "What does that problem cost ${company} per month?" or "What happens if this isn't fixed in the next quarter?" Urgency doesn't come from your pitch — it comes from their answer.`,
+      });
+    } else {
+      areasToImprove.push({
+        point: `No buying signals and no discovery questions — ${prospect} had no reason to show interest.`,
+        salesNote: `Buying signals aren't volunteered — they're earned with the right questions. Try: "What would it mean for your team at ${company} if this was solved?" That question ties the solution to a real outcome they care about.`,
+      });
+    }
   }
 
   if (closeProbability < 40) {
     areasToImprove.push({
-      point: `Close probability stayed low at ${closeProbability}% — the call didn't build momentum.`,
-      salesNote: `Low probability means the prospect doesn't see the gap between where they are and where they want to be. That gap is your entire job. You can't pitch into a gap they don't feel yet.`,
+      point: `Close probability stayed low at ${closeProbability}% — the call didn't build urgency with ${prospect}.`,
+      salesNote: `Low probability means ${prospect} doesn't yet see the gap between where ${company} is and where they want to be. That gap is your entire job. You can't pitch into a gap they don't feel. Ask: "On a scale of 1–10, how big a priority is fixing [this problem] right now?" Their answer tells you exactly where to push.`,
     });
   }
 
   if (!reachedCloseStage && lastTimestamp > 0) {
     areasToImprove.push({
-      point: 'Never reached the close stage — no next step was established.',
-      salesNote: `A call with no next step is a conversation, not a sale. It doesn't have to be a full close — even "can I send you one thing?" is a micro-commitment that keeps the deal alive. Always ask for something before you hang up.`,
-    });
-  }
-
-  if (prospectEntries.length === 0 && transcript.length > 0) {
-    areasToImprove.push({
-      point: 'Very little prospect input — the conversation was one-directional.',
-      salesNote: `If you're the only one talking, the prospect is either checked out or you haven't asked them anything worth responding to. Stop, ask one question, and wait. Silence is more uncomfortable for them than it is for you.`,
+      point: `Call ended without a next step — no commitment established with ${prospect}.`,
+      salesNote: `A call with no next step is a conversation, not a sale. Before you end with ${prospect} next time: "Based on what you've told me, the next step would be [X] — can we get 20 minutes to go through it properly?" Even a micro-commitment keeps the deal alive.`,
     });
   }
 
   if (areasToImprove.length === 0) {
     areasToImprove.push({
       point: 'No major weaknesses detected — solid execution overall.',
-      salesNote: `Clean calls are rare. The next level is refining your discovery questions to surface deeper, more specific pain. The difference between a 70% close rate and 90% is almost always how well you understand the prospect's real problem.`,
+      salesNote: `Clean calls are rare. The next level with ${prospect} is refining how you tie the close to a specific outcome: "If we solve [X] at ${company}, what does that unlock for you?" That question turns a good call into a signed deal.`,
     });
   }
+
+  // ── KEY MOMENTS ──
 
   const keyMoments: CoachingKeyMoment[] = [];
   for (const entry of transcript) {
@@ -785,36 +840,44 @@ function generateCoaching(
       keyMoments.push({
         timestampSeconds: entry.timestampSeconds,
         label: entry.signal === 'objection' ? 'Objection' : 'Buying Signal',
-        note: entry.text.length > 80 ? entry.text.slice(0, 77) + '...' : entry.text,
+        note: trunc(entry.text, 80),
       });
     }
     if (keyMoments.length >= 5) break;
   }
 
+  // ── NEXT CALL TIP (specific to this call) ──
+
   let nextCallTip: string;
-  if (talkRatio > 0.6 && transcript.length > 4) {
-    nextCallTip = 'After every statement, ask one question — then go silent. The next person to speak loses.';
-  } else if (buyingSignals === 0 && transcript.length > 4) {
-    nextCallTip = 'Open with a pain question: "What does this problem cost your team each month?" Then listen.';
-  } else if (objectionsCount >= 3) {
-    nextCallTip = 'Don\'t pitch until they\'ve confirmed the pain out loud. Lead with the problem, not the product.';
+  if (openerText && !openerIsQuestion) {
+    const tipOpener = `"${prospect}, most ${company !== 'their company' ? 'teams at ' + company : 'companies in your space'} are dealing with [pain point]. Is that something you're running into?"`;
+    nextCallTip = `Your opener with ${prospect} was a statement — flip it to a question. Try: ${tipOpener} A pain-led question in the first 10 seconds forces engagement before they've mentally checked out.`;
+  } else if (talkRatio > 0.6 && transcript.length > 4) {
+    nextCallTip = `You spoke ${Math.round(talkRatio * 100)}% of this call with ${prospect}. Next time: after every statement, ask one question and go silent. Specifically try: "What does that look like at ${company} right now?" — then don't speak until they do.`;
+  } else if (firstObjection) {
+    const objQuote = trunc(firstObjection.text, 55);
+    nextCallTip = `When ${prospect} said "${objQuote}" — isolate before you respond. Try: "Is it the [X] specifically, or is it more that you're not sure this is the right fit yet?" Isolating stops you defending the wrong objection.`;
+  } else if (buyingSignals === 0 && discoveryQuestions.length === 0) {
+    nextCallTip = `No discovery questions were asked with ${prospect}. Before your next call, prepare 3 pain questions specific to ${company}: "What's the #1 thing slowing your team down?", "What have you tried?", "What does solving it unlock?" Ask them in that order.`;
   } else if (closeProbability >= 65) {
-    nextCallTip = `Follow up with ${config.prospectName || 'your prospect'} within 2 hours — strike while the interest is warm.`;
+    nextCallTip = `${prospect} was at ${closeProbability}% close probability — follow up within 2 hours with one clear ask. Don't re-pitch. Just: "Following up from our call — are you ready to move forward with [next step]?" Short. Specific. Forces a decision.`;
   } else if (!reachedCloseStage) {
-    nextCallTip = 'Always close with a next step: "Can we get 20 minutes this week?" Ask it on every call, no exceptions.';
+    nextCallTip = `You never asked ${prospect} for a next step. End every call with: "Based on what you've told me, I'd suggest [X] as the next step — does that work for you?" Even a 'maybe' becomes a commitment when you name the next action.`;
   } else {
-    nextCallTip = 'Confirm pain before pitching. Ask: "How long has this been a problem?" and wait for their answer.';
+    nextCallTip = `Before your next call with anyone at ${company}, confirm the pain is real: "How long has this been a problem?" and "What have you tried?" If they can't answer, the pain isn't urgent enough — and no pitch will fix that.`;
   }
+
+  // ── OVERALL VERDICT ──
 
   let overallVerdict: string;
   if (closeProbability >= 70) {
-    overallVerdict = 'Strong call — high close potential. Follow up fast.';
+    overallVerdict = `Strong call with ${prospect} — high close potential. Follow up fast before momentum fades.`;
   } else if (closeProbability >= 55) {
-    overallVerdict = 'Solid call with room to push harder. Good foundation built.';
+    overallVerdict = `Solid call with ${prospect} at ${company}. Good foundation — the gap is sharpening the close.`;
   } else if (closeProbability >= 35) {
-    overallVerdict = 'Mixed results — clear areas to sharpen before the next attempt.';
+    overallVerdict = `Mixed results with ${prospect}. Clear areas to sharpen — see the coaching breakdown below.`;
   } else {
-    overallVerdict = 'Tough call — use this as a learning rep. See the coaching notes below.';
+    overallVerdict = `Tough call with ${prospect} at ${company}. Use this as a learning rep — the coaching notes below show exactly what to fix.`;
   }
 
   return { overallVerdict, whatWentWell, areasToImprove, keyMoments, nextCallTip };
