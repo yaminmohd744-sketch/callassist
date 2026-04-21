@@ -117,7 +117,14 @@
       "Bash(powershell -Command \"Stop-Process -Id 18612,19872,42392 -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 500; netstat -ano | Select-String ':5173 |:5174 |:5175 '\")",
       "Bash(xargs wc:*)",
       "Bash(find /c/Users/yamin/callassist/callassist/src -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) -exec wc -l {} +)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(npx create-video@latest)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); exports=d.get\\('exports',{}\\); keys=[k for k in exports if 'figtree' in k.lower\\(\\) or 'Figtree' in k]; print\\(keys[:5]\\)\")",
+      "Bash(node -e \"const p=require\\('./node_modules/@remotion/google-fonts/package.json'\\); const keys=Object.keys\\(p.exports||{}\\).filter\\(k=>k.toLowerCase\\(\\).includes\\('figtree'\\)\\); console.log\\(keys.slice\\(0,3\\)\\)\")",
+      "Bash(node -e \"const p=require\\('./node_modules/@remotion/google-fonts/package.json'\\); const keys=Object.keys\\(p.exports||{}\\); console.log\\(keys.slice\\(0,5\\)\\); console.log\\('total:', keys.length\\)\")",
+      "Bash(node -e \"const p=require\\('./node_modules/@remotion/google-fonts/package.json'\\); const keys=Object.keys\\(p.exports||{}\\); const fig=keys.find\\(k=>k.includes\\('igtree'\\)\\); console.log\\('Figtree key:', fig\\)\")",
+      "Bash(node -e \"import\\('@remotion/google-fonts/Figtree'\\).then\\(m=>console.log\\('OK', Object.keys\\(m\\)\\)\\).catch\\(e=>console.error\\('ERR', e.message\\)\\)\")",
+      "Bash(npx remotion:*)"
     ]
   }
 }
