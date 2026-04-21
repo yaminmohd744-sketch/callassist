@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import {
   analyzeTranscript as mockAnalyzeTranscript,
   generateSessionSummary as mockGenerateSessionSummary,
@@ -70,8 +71,13 @@ export async function analyzeTranscript(
 ): Promise<AIAnalysisResult> {
   try {
     const streamController = new AbortController();
-    // Propagate caller's abort signal into the internal stream controller.
-    externalSignal?.addEventListener('abort', () => streamController.abort(), { once: true });
+    // Propagate caller's abort signal — check already-aborted state first to avoid the race
+    // where the signal fires before the listener is attached.
+    if (externalSignal?.aborted) {
+      streamController.abort();
+    } else {
+      externalSignal?.addEventListener('abort', () => streamController.abort(), { once: true });
+    }
     const streamTimer = setTimeout(() => streamController.abort(), FETCH_TIMEOUT_MS);
     const authToken = await getAuthToken();
     const res = await fetch(`${FUNCTIONS_BASE}/analyze-transcript`, {
@@ -213,6 +219,7 @@ export async function analyzeTranscript(
     };
   } catch (err) {
     console.error('[CallAssist] AI call failed, using fallback:', err instanceof Error ? err.message : err);
+    Sentry.captureException(err, { tags: { section: 'analyze-transcript' } });
     const fallback = await mockAnalyzeTranscript(
       newEntry, fullTranscript, currentStage, elapsedSeconds,
       currentProbability, currentObjectionsCount, recentTriggers, config, memory, onStream
@@ -234,6 +241,7 @@ export async function enhancePitch(
     return (data.enhancedPitch as string) ?? pitch;
   } catch (err) {
     console.error('[CallAssist] Pitch enhancement failed:', err instanceof Error ? err.message : err);
+    Sentry.captureException(err, { tags: { section: 'enhance-pitch' } });
     return pitch;
   }
 }
@@ -281,6 +289,7 @@ export async function generateSessionSummary(
     };
   } catch (err) {
     console.error('[CallAssist] Summary call failed, using fallback:', err instanceof Error ? err.message : err);
+    Sentry.captureException(err, { tags: { section: 'generate-summary' } });
     return fallback;
   }
 }

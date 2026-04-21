@@ -287,6 +287,11 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
       ws.onclose = (e) => {
         if (wsRef.current !== ws) return;
+        // Clean up media resources before attempting fallback so they don't leak.
+        try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
+        mediaRecorderRef.current = null;
+        streamRef.current?.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
         setIsListening(false);
         // Unexpected close → fall back to browser speech.
         if (e.code !== 1000 && e.code !== 1001 && activeRef.current) {

@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { SuggestionCard } from '../cards/SuggestionCard';
 import type { AISuggestion, CallStage, ProspectTone, ToneCoaching } from '../../types';
 import { useTranslations } from '../../hooks/useTranslations';
@@ -17,33 +17,6 @@ const TONE_COLOR: Record<ProspectTone, string> = {
   Neutral:     '#94a3b8',
 };
 
-const OBJECTION_REFERENCE = [
-  {
-    objection: '"It\'s too expensive"',
-    rebuttal: '"Is it the price, or whether you\'ll see the return? What ROI would make this a no-brainer?"',
-  },
-  {
-    objection: '"I need to think about it"',
-    rebuttal: '"What specifically are you thinking through? Let\'s work through it now so you have everything you need."',
-  },
-  {
-    objection: '"Send me some information"',
-    rebuttal: '"Of course what specifically would help you most? And what would need to be in that info to move things forward?"',
-  },
-  {
-    objection: '"We\'re happy with our current solution"',
-    rebuttal: '"That\'s great to hear. If you could change one thing about it, what would it be?"',
-  },
-  {
-    objection: '"Not the right time"',
-    rebuttal: '"When would be the right time? What needs to change between now and then?"',
-  },
-  {
-    objection: '"I need to run it by my team"',
-    rebuttal: '"If they\'re on board, are you ready to move forward? What would they need to see?"',
-  },
-];
-
 interface AIIntelligencePanelProps {
   suggestions: AISuggestion[];
   callStage: CallStage;
@@ -57,7 +30,6 @@ export function AIIntelligencePanel({
   prospectTone,
   toneCoaching,
 }: AIIntelligencePanelProps) {
-  const [activeTab, setActiveTab] = useState<'coaching' | 'objections'>('coaching');
   const t = useTranslations();
 
   const STAGE_LABEL: Record<CallStage, string> = {
@@ -96,20 +68,6 @@ export function AIIntelligencePanel({
             {t.liveCall.aiFeed}
             <span className="ai-panel__cursor">▋</span>
           </div>
-          <div className="ai-panel__tabs">
-            <button
-              className={`ai-panel__tab ${activeTab === 'coaching' ? 'ai-panel__tab--active' : ''}`}
-              onClick={() => setActiveTab('coaching')}
-            >
-              {t.liveCall.coaching}
-            </button>
-            <button
-              className={`ai-panel__tab ${activeTab === 'objections' ? 'ai-panel__tab--active' : ''}`}
-              onClick={() => setActiveTab('objections')}
-            >
-              {t.liveCall.objections}
-            </button>
-          </div>
         </div>
         <div className="ai-panel__header-right">
           {prospectTone && (
@@ -128,16 +86,7 @@ export function AIIntelligencePanel({
       </div>
 
       <div className="ai-panel__body">
-        {activeTab === 'objections' ? (
-          <div className="ai-panel__objections">
-            {OBJECTION_REFERENCE.map((item, i) => (
-              <div key={i} className="ai-panel__objection-card">
-                <div className="ai-panel__objection-q">{item.objection}</div>
-                <div className="ai-panel__objection-a">{item.rebuttal}</div>
-              </div>
-            ))}
-          </div>
-        ) : isEmpty ? (
+        {isEmpty ? (
           <div className="ai-panel__empty">
             <div className="ai-panel__empty-icon">◎</div>
             <div className="ai-panel__empty-title">{t.liveCall.readyToAssist}</div>

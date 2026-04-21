@@ -1,8 +1,15 @@
 import { useState, useRef, useCallback } from 'react';
+import * as Sentry from '@sentry/react';
 import type { ProspectTone, ToneCoaching } from '../types';
+import { supabase } from '../lib/supabase';
 
 const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+async function getAuthToken(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token ?? ANON_KEY;
+}
 
 // Chunk duration in ms — low latency as requested
 const CHUNK_MS = 4000;
@@ -54,12 +61,13 @@ export function useAudioTone(config: AudioToneConfig): AudioToneState {
       }
       const base64 = btoa(binary);
 
+      const authToken = await getAuthToken();
       const res = await fetch(`${FUNCTIONS_BASE}/analyze-tone`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': ANON_KEY,
-          'Authorization': `Bearer ${ANON_KEY}`,
+          'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           audio: base64,
@@ -81,9 +89,11 @@ export function useAudioTone(config: AudioToneConfig): AudioToneState {
         }
       }
     } catch (err) {
-      // Silently degrade — never crash the call (includes AbortError on timeout)
-      if (import.meta.env.DEV && !(err instanceof DOMException && err.name === 'AbortError')) {
+      // Never crash the call — but always report non-abort errors
+      const isAbort = err instanceof DOMException && err.name === 'AbortError';
+      if (!isAbort) {
         console.warn('[AudioTone] Chunk analysis failed:', err);
+        Sentry.captureException(err, { tags: { section: 'audio-tone' } });
       }
     } finally {
       clearTimeout(timeoutId);

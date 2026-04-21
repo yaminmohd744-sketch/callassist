@@ -80,10 +80,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [isSummarising, setIsSummarising] = useState(false);
 
   const { elapsedSeconds, formattedTime, startTimer, stopTimer } = useCallTimer();
-  const [overlayOpen, setOverlayOpen] = useState(false);
-
   const signalAbortRef = useRef<AbortController | null>(null);
-  const overlayPushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // For non-English calls, patch the signal on an existing entry after the AI classifies it.
   const applySignal = useCallback((id: string, text: string) => {
@@ -154,40 +151,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     return () => { stopToneCapture(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Keep overlay in sync with the latest call data. Debounced to avoid flooding
-  // the IPC channel on every streaming token during AI analysis.
-  useEffect(() => {
-    if (!overlayOpen || !window.electronAPI) return;
-    if (overlayPushTimerRef.current) clearTimeout(overlayPushTimerRef.current);
-    overlayPushTimerRef.current = setTimeout(() => {
-      window.electronAPI?.pushOverlayData({
-        suggestions,
-        closeProbability,
-        callStage,
-        prospectName: config.prospectName,
-      });
-    }, 150);
-    return () => {
-      if (overlayPushTimerRef.current) clearTimeout(overlayPushTimerRef.current);
-    };
-  }, [overlayOpen, suggestions, closeProbability, callStage, config.prospectName]);
-
-  // Track when the overlay window is closed so the pill resets correctly
-  useEffect(() => {
-    if (!window.electronAPI?.onOverlayClosed) return;
-    return window.electronAPI.onOverlayClosed(() => setOverlayOpen(false));
-  }, []);
-
-  function handleLaunchOverlay() {
-    if (!window.electronAPI) return;
-    window.electronAPI.launchOverlay(); // focuses if already open, creates if not
-    if (!overlayOpen) {
-      // Only minimize main the first time the overlay is popped out
-      window.electronAPI.minimizeMain();
-      setOverlayOpen(true);
-    }
-  }
 
   const handleManualSubmit = useCallback(() => {
     const text = manualInput.trim();
@@ -287,26 +250,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         company={config.company}
         onEndCall={handleEndCall}
       />
-      {window.electronAPI && (
-        <div className="live-call__copilot-pill" onClick={handleLaunchOverlay}>
-          <span className="live-call__copilot-icon">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5"/>
-              <circle cx="7" cy="7" r="2.5" fill="currentColor"/>
-            </svg>
-          </span>
-          <span className="live-call__copilot-label">Co-Pilot</span>
-          <span className="live-call__copilot-sep">·</span>
-          <span className="live-call__copilot-action">
-            {overlayOpen ? 'Open' : 'Pop out'}
-          </span>
-          <span className="live-call__copilot-hide">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </span>
-        </div>
-      )}
       <StatusBar
         status={callStatus}
         formattedTime={formattedTime}

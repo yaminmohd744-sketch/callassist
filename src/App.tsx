@@ -128,6 +128,8 @@ export function App() {
 
   function handleProfilePicChange(dataUrl: string) {
     setProfilePic(dataUrl);
+    // Skip persisting images over ~500KB to avoid filling localStorage quota
+    if (dataUrl.length > 500_000) return;
     try { localStorage.setItem(PROFILE_PIC_KEY, dataUrl); } catch { /* storage full — pic not persisted */ }
   }
 

@@ -1,17 +1,24 @@
 import { useState, useCallback, useRef, useLayoutEffect } from 'react';
 import type { TrainingScenario, TrainingMessage, TrainingFeedback, SessionSummary } from '../types';
 import { genId } from '../lib/id';
+import { supabase } from '../lib/supabase';
 
 const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
+async function getAuthToken(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token ?? ANON_KEY;
+}
+
 async function callFunction(name: string, body: unknown): Promise<unknown> {
+  const authToken = await getAuthToken();
   const res = await fetch(`${FUNCTIONS_BASE}/${name}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'apikey': ANON_KEY,
-      'Authorization': `Bearer ${ANON_KEY}`,
+      'Authorization': `Bearer ${authToken}`,
     },
     body: JSON.stringify(body),
   });

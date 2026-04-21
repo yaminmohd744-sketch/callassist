@@ -20,7 +20,15 @@ export function saveTrainingSession(entry: TrainingHistoryEntry): void {
 
 export function getTrainingHistory(): TrainingHistoryEntry[] {
   try {
-    return JSON.parse(localStorage.getItem(KEY) || '[]') as TrainingHistoryEntry[];
+    const data = JSON.parse(localStorage.getItem(KEY) || '[]');
+    if (!Array.isArray(data)) return [];
+    return data.filter((item): item is TrainingHistoryEntry =>
+      item !== null &&
+      typeof item === 'object' &&
+      typeof item.id === 'string' &&
+      typeof item.scenarioId === 'string' &&
+      typeof item.date === 'string'
+    );
   } catch {
     return [];
   }
