@@ -6,7 +6,6 @@ type Mode = 'sign-in' | 'sign-up' | 'reset';
 
 interface AuthScreenProps {
   onBack?: () => void;
-  onSignedUp?: () => void;
 }
 
 export function AuthScreen({ onBack }: AuthScreenProps) {

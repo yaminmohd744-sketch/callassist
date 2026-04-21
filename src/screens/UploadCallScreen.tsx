@@ -83,6 +83,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
     setFileName(file.name);
     const reader = new FileReader();
     reader.onload = ev => setTranscriptText((ev.target?.result as string) ?? '');
+    reader.onerror = () => setError('Could not read file. Please try another file.');
     reader.readAsText(file);
   }
 
@@ -126,7 +127,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
         config, transcript, [], finalCloseProbability, objectionsCount
       );
 
-      localStorage.setItem('callassist:nextCallTip', coaching.nextCallTip);
+      try { localStorage.setItem('callassist:nextCallTip', coaching.nextCallTip); } catch { /* storage full */ }
 
       const session: CallSession = {
         config,

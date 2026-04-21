@@ -14,6 +14,7 @@ export interface ElectronAPI {
   minimizeMain:        () => void;
   pushOverlayData:     (data: OverlayData) => void;
   onSuggestionsUpdate: (callback: (data: OverlayData) => void) => () => void;
+  onOverlayClosed:     (callback: () => void) => () => void;
 }
 
 declare global {

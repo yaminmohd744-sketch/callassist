@@ -26,6 +26,7 @@ export function useAICoach() {
   const [coachState, setCoachState] = useState<AICoachState>({ ...initialState });
   const recentTriggersRef = useRef<Map<string, number>>(new Map());
   const memoryRef = useRef<Memory>({ ...initialMemory });
+  const analysisAbortRef = useRef<AbortController | null>(null);
 
   const updateState = useCallback((nextState: AICoachState) => {
     stateRef.current = nextState;
@@ -57,6 +58,11 @@ export function useAICoach() {
       });
     };
 
+    // Abort any in-flight analysis before starting a new one.
+    analysisAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    analysisAbortRef.current = ctrl;
+
     const result = await analyzeTranscript(
       entry,
       fullTranscript,
@@ -67,7 +73,8 @@ export function useAICoach() {
       recentTriggersRef.current,
       config,
       memoryRef.current,
-      onStream
+      onStream,
+      ctrl.signal
     );
 
     const nextState: AICoachState = {
@@ -105,6 +112,8 @@ export function useAICoach() {
   }, []);
 
   const reset = useCallback(() => {
+    analysisAbortRef.current?.abort();
+    analysisAbortRef.current = null;
     updateState({ ...initialState });
     setSuggestions([]);
     recentTriggersRef.current.clear();

@@ -83,6 +83,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [overlayOpen, setOverlayOpen] = useState(false);
 
   const signalAbortRef = useRef<AbortController | null>(null);
+  const overlayPushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // For non-English calls, patch the signal on an existing entry after the AI classifies it.
   const applySignal = useCallback((id: string, text: string) => {
@@ -99,7 +100,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       });
     }).catch(() => { /* aborted — ignore */ });
   }, [config.language]);
-  const { suggestions, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion } = useAICoach();
+  const { suggestions, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion, reset: resetCoach } = useAICoach();
   const {
     tone: prospectTone,
     coaching: toneCoaching,
@@ -136,6 +137,12 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   });
 
   useEffect(() => {
+    // Reset AI coach so each new call starts with a clean slate.
+    resetCoach();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     // Run once on mount to start the call immediately. startTimer and
     // startListening are stable callback refs that never change identity, so
     // omitting them from the dep array is intentional — re-running this effect
@@ -148,22 +155,38 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keep overlay in sync with the latest call data whenever it's open
+  // Keep overlay in sync with the latest call data. Debounced to avoid flooding
+  // the IPC channel on every streaming token during AI analysis.
   useEffect(() => {
     if (!overlayOpen || !window.electronAPI) return;
-    window.electronAPI.pushOverlayData({
-      suggestions,
-      closeProbability,
-      callStage,
-      prospectName: config.prospectName,
-    });
+    if (overlayPushTimerRef.current) clearTimeout(overlayPushTimerRef.current);
+    overlayPushTimerRef.current = setTimeout(() => {
+      window.electronAPI?.pushOverlayData({
+        suggestions,
+        closeProbability,
+        callStage,
+        prospectName: config.prospectName,
+      });
+    }, 150);
+    return () => {
+      if (overlayPushTimerRef.current) clearTimeout(overlayPushTimerRef.current);
+    };
   }, [overlayOpen, suggestions, closeProbability, callStage, config.prospectName]);
+
+  // Track when the overlay window is closed so the pill resets correctly
+  useEffect(() => {
+    if (!window.electronAPI?.onOverlayClosed) return;
+    return window.electronAPI.onOverlayClosed(() => setOverlayOpen(false));
+  }, []);
 
   function handleLaunchOverlay() {
     if (!window.electronAPI) return;
-    window.electronAPI.launchOverlay();
-    window.electronAPI.minimizeMain();
-    setOverlayOpen(true);
+    window.electronAPI.launchOverlay(); // focuses if already open, creates if not
+    if (!overlayOpen) {
+      // Only minimize main the first time the overlay is popped out
+      window.electronAPI.minimizeMain();
+      setOverlayOpen(true);
+    }
   }
 
   const handleManualSubmit = useCallback(() => {

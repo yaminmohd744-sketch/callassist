@@ -26,6 +26,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
   override render() {
     if (this.state.hasError) {
+      const btnBase: React.CSSProperties = {
+        padding: '0.5rem 1.5rem',
+        borderRadius: '6px',
+        border: 'none',
+        cursor: 'pointer',
+        fontSize: '0.9rem',
+      };
       return (
         <div style={{
           display: 'flex',
@@ -40,22 +47,22 @@ export class ErrorBoundary extends Component<Props, State> {
         }}>
           <h2 style={{ margin: 0 }}>Something went wrong</h2>
           <p style={{ color: '#888', margin: 0, fontSize: '0.9rem' }}>
-            {this.state.message}
+            {this.state.message || 'An unexpected error occurred.'}
           </p>
-          <button
-            onClick={() => window.location.reload()}
-            style={{
-              padding: '0.5rem 1.5rem',
-              borderRadius: '6px',
-              border: 'none',
-              cursor: 'pointer',
-              background: '#4f46e5',
-              color: '#fff',
-              fontSize: '0.9rem',
-            }}
-          >
-            Reload app
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button
+              onClick={() => { window.location.hash = ''; window.location.reload(); }}
+              style={{ ...btnBase, background: '#222', color: '#fff' }}
+            >
+              Go to dashboard
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              style={{ ...btnBase, background: '#4f46e5', color: '#fff' }}
+            >
+              Reload app
+            </button>
+          </div>
         </div>
       );
     }

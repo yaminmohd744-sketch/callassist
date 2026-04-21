@@ -7,11 +7,17 @@ import {
   type Memory,
 } from './mockAI';
 import type { TranscriptEntry, CallStage, CallConfig, AISuggestion, AIAnalysisResult, TranscriptSignal, CoachingWalkthrough } from '../types';
+import { supabase } from './supabase';
 
 export { detectStage, STAGE_TIPS, getQuickActionSuggestion, type Memory };
 
 const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+async function getAuthToken(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token ?? ANON_KEY;
+}
 
 const FETCH_TIMEOUT_MS = 30_000;
 
@@ -24,12 +30,13 @@ function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = FETCH_TIME
 }
 
 async function callFunction(name: string, body: unknown): Promise<unknown> {
+  const authToken = await getAuthToken();
   const res = await fetchWithTimeout(`${FUNCTIONS_BASE}/${name}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'apikey': ANON_KEY,
-      'Authorization': `Bearer ${ANON_KEY}`,
+      'Authorization': `Bearer ${authToken}`,
     },
     body: JSON.stringify(body),
   });
@@ -58,17 +65,21 @@ export async function analyzeTranscript(
   recentTriggers: Map<string, number>,
   config?: CallConfig,
   memory?: Memory,
-  onStream?: StreamCallback
+  onStream?: StreamCallback,
+  externalSignal?: AbortSignal
 ): Promise<AIAnalysisResult> {
   try {
     const streamController = new AbortController();
+    // Propagate caller's abort signal into the internal stream controller.
+    externalSignal?.addEventListener('abort', () => streamController.abort(), { once: true });
     const streamTimer = setTimeout(() => streamController.abort(), FETCH_TIMEOUT_MS);
+    const authToken = await getAuthToken();
     const res = await fetch(`${FUNCTIONS_BASE}/analyze-transcript`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': ANON_KEY,
-        'Authorization': `Bearer ${ANON_KEY}`,
+        'Authorization': `Bearer ${authToken}`,
       },
       body: JSON.stringify({
         entry: newEntry,
@@ -233,7 +244,7 @@ export async function classifySignalAI(text: string, language: string, abortSign
       `${FUNCTIONS_BASE}/classify-signal`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` },
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': `Bearer ${await getAuthToken()}` },
         body: JSON.stringify({ text, language }),
         signal: abortSignal,
       }

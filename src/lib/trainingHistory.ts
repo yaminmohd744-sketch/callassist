@@ -15,7 +15,7 @@ const MAX = 30;
 export function saveTrainingSession(entry: TrainingHistoryEntry): void {
   const history = getTrainingHistory();
   const updated = [entry, ...history].slice(0, MAX);
-  localStorage.setItem(KEY, JSON.stringify(updated));
+  try { localStorage.setItem(KEY, JSON.stringify(updated)); } catch { /* storage full — history not saved */ }
 }
 
 export function getTrainingHistory(): TrainingHistoryEntry[] {

@@ -110,7 +110,7 @@ export function App() {
   function toggleTheme() {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
-    localStorage.setItem('theme', next);
+    try { localStorage.setItem('theme', next); } catch { /* storage full */ }
     document.documentElement.dataset.theme = next === 'light' ? 'light' : '';
   }
 
@@ -128,7 +128,7 @@ export function App() {
 
   function handleProfilePicChange(dataUrl: string) {
     setProfilePic(dataUrl);
-    localStorage.setItem(PROFILE_PIC_KEY, dataUrl);
+    try { localStorage.setItem(PROFILE_PIC_KEY, dataUrl); } catch { /* storage full — pic not persisted */ }
   }
 
   // Derived activity stats
@@ -258,7 +258,7 @@ export function App() {
     <>
       {showOnboarding && (
         <OnboardingScreen onDone={data => {
-          localStorage.setItem('pp-onboarding', JSON.stringify(data));
+          try { localStorage.setItem('pp-onboarding', JSON.stringify(data)); } catch { /* storage full */ }
           setAppLanguage(data.language as LanguageCode);
           setShowOnboarding(false);
           setShowTransition(true);

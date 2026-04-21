@@ -11,4 +11,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('overlay-data', handler);
     return () => ipcRenderer.removeListener('overlay-data', handler);
   },
+  onOverlayClosed: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('overlay-closed', handler);
+    return () => ipcRenderer.removeListener('overlay-closed', handler);
+  },
 });

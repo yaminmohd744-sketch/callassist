@@ -28,12 +28,13 @@ function createOverlayWindow() {
   }
 
   const { width } = screen.getPrimaryDisplay().workAreaSize;
+  const overlayWidth = 400;
 
   overlayWindow = new BrowserWindow({
-    width: 360,
+    width: overlayWidth,
     height: 520,
-    x: width - 380,
-    y: 40,
+    x: Math.floor((width - overlayWidth) / 2),
+    y: 16,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -55,6 +56,7 @@ function createOverlayWindow() {
 
   overlayWindow.on('closed', () => {
     overlayWindow = null;
+    if (mainWindow) mainWindow.webContents.send('overlay-closed');
   });
 }
 

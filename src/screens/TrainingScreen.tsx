@@ -116,6 +116,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
   const [selectedDifficulty, setSelectedDifficulty] = useState<TrainingDifficulty>('medium');
   const [language, setLanguage] = useState(appLanguage);
   const [showHistory, setShowHistory] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
   const [history, setHistory] = useState<TrainingHistoryEntry[]>(() => getTrainingHistory());
   const [monthlyCount, setMonthlyCount] = useState(() => getMonthlySessionCount());
   const userTier: UserTier = 'pro';
@@ -528,6 +529,13 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
                 <button className="training__switch-btn" onClick={() => { handleSwitchToSplit(); setTimeout(() => setSelectionMode('academy'), 10); }}>
                   {t.trainingExtra.switchToAcademy}
                 </button>
+                <span className="training__switch-sep">·</span>
+                <button
+                  className={`training__switch-btn${showProgress ? ' training__switch-btn--active' : ''}`}
+                  onClick={() => setShowProgress(v => !v)}
+                >
+                  ◎ Your Progress
+                </button>
               </div>
               {renderPracticeContent()}
             </div>
@@ -575,6 +583,167 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
         </div>
 
       </div>
+
+      {showProgress && (() => {
+        const scored = history.filter(h => h.overallScore !== null);
+        const avgScore = scored.length ? scored.reduce((s, h) => s + h.overallScore!, 0) / scored.length : null;
+        const bestScore = scored.length ? Math.max(...scored.map(h => h.overallScore!)) : null;
+        const easyCount = history.filter(h => h.difficulty === 'easy').length;
+        const medCount = history.filter(h => h.difficulty === 'medium').length;
+        const hardCount = history.filter(h => h.difficulty === 'hard').length;
+
+        const sparkData = scored.slice(0, 10).reverse();
+        const W = 100, H = 60, PAD = 6;
+        const sparkPoints = sparkData.length > 1
+          ? sparkData.map((h, i) => {
+              const x = PAD + (i / (sparkData.length - 1)) * (W - PAD * 2);
+              const y = PAD + ((10 - h.overallScore!) / 10) * (H - PAD * 2);
+              return `${x},${y}`;
+            }).join(' ')
+          : null;
+
+        const scenarioCounts: Record<string, number> = {};
+        history.forEach(h => { scenarioCounts[h.scenarioLabel] = (scenarioCounts[h.scenarioLabel] ?? 0) + 1; });
+        const topScenarios = Object.entries(scenarioCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+        const maxCount = topScenarios[0]?.[1] ?? 1;
+
+        return (
+          <div className="progress-overlay">
+            <div className="progress-overlay__header">
+              <div className="progress-overlay__title">
+                <span className="progress-overlay__icon">◎</span>
+                YOUR PROGRESS
+              </div>
+              <button className="progress-overlay__close" onClick={() => setShowProgress(false)}>✕</button>
+            </div>
+            <div className="progress-overlay__body">
+              {history.length === 0 ? (
+                <div style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)', textAlign: 'center', paddingTop: 'var(--space-10)' }}>
+                  No sessions yet — complete a practice session to see your stats.
+                </div>
+              ) : (
+                <>
+                  <div className="progress-overlay__stats-row">
+                    {[
+                      { val: history.length, label: 'SESSIONS' },
+                      { val: avgScore !== null ? avgScore.toFixed(1) : '—', label: 'AVG SCORE' },
+                      { val: bestScore !== null ? bestScore.toFixed(1) : '—', label: 'BEST SCORE' },
+                      { val: easyCount, label: 'EASY' },
+                      { val: medCount, label: 'MEDIUM' },
+                      { val: hardCount, label: 'HARD' },
+                    ].map(({ val, label }) => (
+                      <div key={label} className="training__stat-pill">
+                        <div className="training__stat-val" style={{
+                          color: label === 'EASY' ? 'var(--color-accent-green)'
+                            : label === 'HARD' ? 'var(--color-accent-red)'
+                            : label === 'MEDIUM' ? 'var(--color-accent-yellow)'
+                            : label === 'BEST SCORE' ? 'var(--color-accent-magenta)'
+                            : 'var(--color-text-primary)',
+                        }}>{val}</div>
+                        <div className="training__stat-label">{label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="progress-overlay__charts">
+                    {sparkPoints && (
+                      <div className="progress-overlay__chart progress-overlay__chart--wide">
+                        <div className="training__stats-chart-title">SCORE TREND (LAST {sparkData.length} SCORED SESSIONS)</div>
+                        <svg className="progress-overlay__sparkline" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+                          <defs>
+                            <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#814ac8" stopOpacity="0.35" />
+                              <stop offset="100%" stopColor="#814ac8" stopOpacity="0" />
+                            </linearGradient>
+                          </defs>
+                          <polygon
+                            points={`${sparkPoints} ${W - PAD},${H} ${PAD},${H}`}
+                            fill="url(#sparkGrad)"
+                          />
+                          <polyline
+                            points={sparkPoints}
+                            fill="none"
+                            stroke="#df7afe"
+                            strokeWidth="1.5"
+                            strokeLinejoin="round"
+                            strokeLinecap="round"
+                          />
+                          {sparkData.map((h, i) => {
+                            const x = PAD + (i / (sparkData.length - 1)) * (W - PAD * 2);
+                            const y = PAD + ((10 - h.overallScore!) / 10) * (H - PAD * 2);
+                            return <circle key={h.id} cx={x} cy={y} r="2" fill="#df7afe" />;
+                          })}
+                        </svg>
+                        <div className="training__sparkline-labels">
+                          {sparkData.map((h, i) => (
+                            <span key={h.id} className="training__sparkline-label" style={{
+                              color: h.overallScore! >= 8 ? 'var(--color-accent-green)'
+                                : h.overallScore! >= 6 ? 'var(--color-accent-yellow)'
+                                : 'var(--color-accent-red)',
+                            }}>
+                              {i === 0 ? 'oldest' : i === sparkData.length - 1 ? 'latest' : ''}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {topScenarios.length > 0 && (
+                      <div className="progress-overlay__chart progress-overlay__chart--wide">
+                        <div className="training__stats-chart-title">SCENARIOS PRACTICED</div>
+                        <div className="training__scenario-bars">
+                          {topScenarios.map(([label, count]) => (
+                            <div key={label} className="training__scenario-bar-row">
+                              <span className="training__scenario-bar-label">{label}</span>
+                              <div className="training__scenario-bar-track">
+                                <div
+                                  className="training__scenario-bar-fill"
+                                  style={{ width: `${(count / maxCount) * 100}%`, background: 'var(--color-accent-purple)' }}
+                                />
+                              </div>
+                              <span className="training__scenario-bar-val" style={{ color: 'var(--color-accent-magenta)' }}>{count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="progress-overlay__history">
+                    <div className="training__stats-chart-title" style={{ marginBottom: 'var(--space-3)' }}>SESSION HISTORY</div>
+                    <div className="training__history-list">
+                      {history.map(h => (
+                        <div key={h.id} className="training__history-item">
+                          <div className="training__history-left">
+                            <span className="training__history-scenario">{h.scenarioLabel}</span>
+                            <span className={`training__diff-badge training__diff-badge--${h.difficulty}`}>
+                              {h.difficulty.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="training__history-center">
+                            <span className="training__history-headline">{h.headline}</span>
+                            <span className="training__history-meta">{h.exchanges} exchange{h.exchanges !== 1 ? 's' : ''} · {new Date(h.date).toLocaleDateString()}</span>
+                          </div>
+                          {h.overallScore !== null && (
+                            <div className="training__history-score" style={{
+                              color: h.overallScore >= 8 ? 'var(--color-accent-green)'
+                                : h.overallScore >= 6 ? 'var(--color-accent-yellow)'
+                                : 'var(--color-accent-red)',
+                            }}>
+                              {h.overallScore.toFixed(1)}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
     </div>
   );
 }

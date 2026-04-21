@@ -1,7 +1,28 @@
 import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { getDeepgramCode } from '../lib/languages';
+import { supabase } from '../lib/supabase';
 
-const DEEPGRAM_API_KEY = import.meta.env.VITE_DEEPGRAM_API_KEY;
+const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+
+async function fetchDeepgramKey(): Promise<string | null> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const authToken = session?.access_token ?? import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+    const res = await fetch(`${FUNCTIONS_BASE}/deepgram-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+        'Authorization': `Bearer ${authToken}`,
+      },
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as { key?: string };
+    return data.key ?? null;
+  } catch {
+    return null;
+  }
+}
 
 // ─── Minimal Web Speech API types ─────────────────────────────────────────────
 
@@ -166,8 +187,10 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
     if (activeRef.current) return;
     activeRef.current = true;
 
-    // No Deepgram key → go straight to browser speech.
-    if (!DEEPGRAM_API_KEY) {
+    // Fetch a short-lived Deepgram key from the Edge Function proxy.
+    // Falls back to Web Speech if the proxy isn't configured or the fetch fails.
+    const deepgramKey = await fetchDeepgramKey();
+    if (!deepgramKey) {
       startWebSpeechFallback();
       return;
     }
@@ -202,7 +225,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         '&keywords=proposal:2',
       ].join('');
 
-      const ws = new WebSocket(url, ['token', DEEPGRAM_API_KEY]);
+      const ws = new WebSocket(url, ['token', deepgramKey]);
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -242,6 +265,15 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         }
       };
 
+      // One-shot guard: onerror and onclose can both fire for the same failure.
+      // Ensure only the first one triggers the fallback.
+      let didFallback = false;
+      const tryFallback = () => {
+        if (didFallback) return;
+        didFallback = true;
+        startWebSpeechFallback();
+      };
+
       ws.onerror = () => {
         if (wsRef.current !== ws) return;
         // Deepgram auth/connection failed - silently fall back to browser speech.
@@ -250,7 +282,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         mediaRecorderRef.current = null;
         stream.getTracks().forEach(t => t.stop());
         streamRef.current = null;
-        startWebSpeechFallback();
+        tryFallback();
       };
 
       ws.onclose = (e) => {
@@ -258,7 +290,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         setIsListening(false);
         // Unexpected close → fall back to browser speech.
         if (e.code !== 1000 && e.code !== 1001 && activeRef.current) {
-          startWebSpeechFallback();
+          tryFallback();
         }
       };
 
