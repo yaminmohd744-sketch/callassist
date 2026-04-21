@@ -125,7 +125,7 @@ export async function analyzeTranscript(
                 .replace(/\\"/g, '"')
                 .replace(/\\\\/g, '\\');
 
-              if (!streamingShown && partialBody.length > 12) {
+              if (!streamingShown && partialBody.length > 6) {
                 streamingShown = true;
               }
               if (streamingShown) {

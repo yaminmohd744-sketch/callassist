@@ -124,7 +124,11 @@
       "Bash(node -e \"const p=require\\('./node_modules/@remotion/google-fonts/package.json'\\); const keys=Object.keys\\(p.exports||{}\\); console.log\\(keys.slice\\(0,5\\)\\); console.log\\('total:', keys.length\\)\")",
       "Bash(node -e \"const p=require\\('./node_modules/@remotion/google-fonts/package.json'\\); const keys=Object.keys\\(p.exports||{}\\); const fig=keys.find\\(k=>k.includes\\('igtree'\\)\\); console.log\\('Figtree key:', fig\\)\")",
       "Bash(node -e \"import\\('@remotion/google-fonts/Figtree'\\).then\\(m=>console.log\\('OK', Object.keys\\(m\\)\\)\\).catch\\(e=>console.error\\('ERR', e.message\\)\\)\")",
-      "Bash(npx remotion:*)"
+      "Bash(npx remotion:*)",
+      "Bash(ELECTRON_RUN_AS_NODE=\"\" npm run electron:dev)",
+      "Bash(xargs -I{} taskkill /PID {} /F)",
+      "Bash(taskkill /PID 21804 /F)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)"
     ]
   }
 }

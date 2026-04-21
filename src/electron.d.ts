@@ -9,10 +9,11 @@ export interface OverlayData {
 
 export interface ElectronAPI {
   isElectron: true;
-  /** Subscribe to live suggestion updates pushed from the main window. Returns a cleanup function. */
+  launchOverlay:       () => void;
+  closeOverlay:        () => void;
+  minimizeMain:        () => void;
+  pushOverlayData:     (data: OverlayData) => void;
   onSuggestionsUpdate: (callback: (data: OverlayData) => void) => () => void;
-  /** Close the overlay window. */
-  closeOverlay: () => void;
 }
 
 declare global {

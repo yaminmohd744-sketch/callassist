@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
 
 const isDev = !!process.defaultApp || process.env.NODE_ENV !== 'production';
@@ -19,6 +19,58 @@ if (!gotLock) {
 }
 
 let mainWindow = null;
+let overlayWindow = null;
+
+function createOverlayWindow() {
+  if (overlayWindow) {
+    overlayWindow.focus();
+    return;
+  }
+
+  const { width } = screen.getPrimaryDisplay().workAreaSize;
+
+  overlayWindow = new BrowserWindow({
+    width: 360,
+    height: 520,
+    x: width - 380,
+    y: 40,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    resizable: false,
+    skipTaskbar: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  const overlayURL = isDev
+    ? 'http://localhost:5173/#overlay'
+    : `file://${path.join(__dirname, '../dist/index.html')}#overlay`;
+
+  overlayWindow.loadURL(overlayURL);
+  overlayWindow.setAlwaysOnTop(true, 'screen-saver');
+
+  overlayWindow.on('closed', () => {
+    overlayWindow = null;
+  });
+}
+
+ipcMain.on('launch-overlay', () => createOverlayWindow());
+
+ipcMain.on('close-overlay', () => {
+  if (overlayWindow) overlayWindow.close();
+});
+
+ipcMain.on('push-overlay-data', (_, data) => {
+  if (overlayWindow) overlayWindow.webContents.send('overlay-data', data);
+});
+
+ipcMain.on('minimize-main', () => {
+  if (mainWindow) mainWindow.minimize();
+});
 
 function focusOrCreateWindow() {
   if (mainWindow) {

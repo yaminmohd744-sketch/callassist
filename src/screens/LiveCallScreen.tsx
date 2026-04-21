@@ -80,6 +80,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [isSummarising, setIsSummarising] = useState(false);
 
   const { elapsedSeconds, formattedTime, startTimer, stopTimer } = useCallTimer();
+  const [overlayOpen, setOverlayOpen] = useState(false);
 
   const signalAbortRef = useRef<AbortController | null>(null);
 
@@ -147,6 +148,24 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Keep overlay in sync with the latest call data whenever it's open
+  useEffect(() => {
+    if (!overlayOpen || !window.electronAPI) return;
+    window.electronAPI.pushOverlayData({
+      suggestions,
+      closeProbability,
+      callStage,
+      prospectName: config.prospectName,
+    });
+  }, [overlayOpen, suggestions, closeProbability, callStage, config.prospectName]);
+
+  function handleLaunchOverlay() {
+    if (!window.electronAPI) return;
+    window.electronAPI.launchOverlay();
+    window.electronAPI.minimizeMain();
+    setOverlayOpen(true);
+  }
+
   const handleManualSubmit = useCallback(() => {
     const text = manualInput.trim();
     if (!text) return;
@@ -204,6 +223,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     stopListening();
     stopToneCapture();
     stopTimer();
+    window.electronAPI?.closeOverlay();
     setIsSummarising(true);
     try {
       const { aiSummary, followUpEmail, leadScore, coaching } = await generateSessionSummary(
@@ -244,6 +264,26 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         company={config.company}
         onEndCall={handleEndCall}
       />
+      {window.electronAPI && (
+        <div className="live-call__copilot-pill" onClick={handleLaunchOverlay}>
+          <span className="live-call__copilot-icon">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5"/>
+              <circle cx="7" cy="7" r="2.5" fill="currentColor"/>
+            </svg>
+          </span>
+          <span className="live-call__copilot-label">Co-Pilot</span>
+          <span className="live-call__copilot-sep">·</span>
+          <span className="live-call__copilot-action">
+            {overlayOpen ? 'Open' : 'Pop out'}
+          </span>
+          <span className="live-call__copilot-hide">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </span>
+        </div>
+      )}
       <StatusBar
         status={callStatus}
         formattedTime={formattedTime}

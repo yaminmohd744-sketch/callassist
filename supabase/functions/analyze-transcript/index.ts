@@ -20,9 +20,9 @@ Deno.serve(async (req: Request) => {
       ? `\nThe call is in "${language}" — write the body in that language. Headline stays in English.`
       : "";
 
-    // Only last 4 exchanges for speed — enough context without bloat
+    // Only last 3 exchanges for speed — enough context without bloat
     const recentEntries = (transcript as Array<{ speaker: string; text: string }>)
-      .slice(-4)
+      .slice(-3)
       .map((e) => `${e.speaker === "rep" ? "REP" : "PROSPECT"}: ${e.text}`)
       .join("\n");
 
@@ -82,13 +82,13 @@ Respond ONLY with valid JSON (no markdown):
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: "Give your coaching suggestion." },
         ],
         stream: true,
-        max_tokens: 220,
+        max_tokens: 150,
         temperature: 0.55,
       }),
     });
