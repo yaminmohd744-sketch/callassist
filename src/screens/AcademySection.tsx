@@ -70,7 +70,7 @@ type AcademyPhase = 'overview' | 'walkthrough' | 'intro' | 'practice' | 'results
 
 const TOTAL_LESSONS = ALL_LESSONS.length;
 
-export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }: AcademySectionProps) {
+export function AcademySection({ user, appLanguage = 'en-US' }: AcademySectionProps) {
   const t = useTranslations();
   const { loading, saveSession, getLessonStats, isLessonUnlocked, getLessonLockReason, getOverallStats } = useAcademy(user);
   const { state: trainingState, startScenario, confirmContext, sendResponse, endSession, reset } = useTraining();
@@ -220,16 +220,16 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
     void endSession();
   }
 
-  // Module unlock: pro/business users get full academy access; starter requires progression
   function isModuleUnlocked(modIndex: number): boolean {
     if (modIndex === 0) return true;
-    if (userTier === 'pro' || userTier === 'business') return true;
-    const prevModule = CURRICULUM[modIndex - 1];
-    const passedCount = prevModule.lessons.filter(l => {
-      const stats = getLessonStats(l.id, l.passScore);
-      return stats?.passed === true;
-    }).length;
-    return passedCount >= 5;
+    // All lessons in every preceding module must be passed
+    for (let i = 0; i < modIndex; i++) {
+      const allPassed = CURRICULUM[i].lessons.every(
+        l => getLessonStats(l.id, l.passScore)?.passed === true
+      );
+      if (!allPassed) return false;
+    }
+    return true;
   }
 
   function scoreColor(score: number) {
@@ -289,10 +289,11 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
           {CURRICULUM.map((mod, modIndex) => {
             const modUnlocked = isModuleUnlocked(modIndex);
             const passedInMod = mod.lessons.filter(l => getLessonStats(l.id, l.passScore)?.passed === true).length;
-            const prevPassed = modIndex > 0
-              ? CURRICULUM[modIndex - 1].lessons.filter(l => getLessonStats(l.id, l.passScore)?.passed === true).length
+            // Count unpassed lessons across all preceding modules
+            const totalPrecedingUnpassed = modIndex > 0
+              ? CURRICULUM.slice(0, modIndex).reduce((acc, m) =>
+                  acc + m.lessons.filter(l => !getLessonStats(l.id, l.passScore)?.passed).length, 0)
               : 0;
-            const prevPassedNeeded = Math.max(0, 5 - prevPassed);
 
             return (
               <div key={mod.id} className={`academy__module ${!modUnlocked ? 'academy__module--locked' : ''}`}>
@@ -306,10 +307,11 @@ export function AcademySection({ user, appLanguage = 'en-US', userTier = 'pro' }
 
                 {!modUnlocked ? (
                   <div className="academy__locked-msg">
-                    {userTier === 'starter'
-                      ? <>Upgrade to Pro for full Academy access, or pass {prevPassedNeeded} more lesson{prevPassedNeeded !== 1 ? 's' : ''} in &ldquo;{CURRICULUM[modIndex - 1]?.title}&rdquo;</>
-                      : <>Pass {prevPassedNeeded} more lesson{prevPassedNeeded !== 1 ? 's' : ''} in &ldquo;{CURRICULUM[modIndex - 1]?.title}&rdquo; to unlock</>
-                    }
+                    Pass {totalPrecedingUnpassed} more lesson{totalPrecedingUnpassed !== 1 ? 's' : ''} in{' '}
+                    {modIndex === 1
+                      ? <>&ldquo;{CURRICULUM[0].title}&rdquo;</>
+                      : <>&ldquo;{CURRICULUM[0].title}&rdquo; and &ldquo;{CURRICULUM[1].title}&rdquo;</>
+                    }{' '}to unlock
                   </div>
                 ) : (
                   <div className="academy__lessons">
