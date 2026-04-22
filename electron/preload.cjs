@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   closeOverlay:     () => ipcRenderer.send('close-overlay'),
   minimizeMain:     () => ipcRenderer.send('minimize-main'),
   pushOverlayData:  (data) => ipcRenderer.send('push-overlay-data', data),
+  restoreMain:      () => ipcRenderer.send('restore-main'),
+  endCallFromOverlay: () => ipcRenderer.send('end-call-from-overlay'),
   onSuggestionsUpdate: (callback) => {
     const handler = (_, data) => callback(data);
     ipcRenderer.on('overlay-data', handler);
@@ -15,5 +17,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const handler = () => callback();
     ipcRenderer.on('overlay-closed', handler);
     return () => ipcRenderer.removeListener('overlay-closed', handler);
+  },
+  onTriggerEndCall: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('trigger-end-call', handler);
+    return () => ipcRenderer.removeListener('trigger-end-call', handler);
   },
 });

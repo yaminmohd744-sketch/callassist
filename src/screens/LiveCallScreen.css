@@ -12,65 +12,206 @@
   min-height: 0;
 }
 
-/* ── Co-Pilot top-center pill ────────────────────────────────────────────────*/
-.live-call__copilot-pill {
+/* ── Floating Bubble (share-screen minimize mode) ────────────────────────────*/
+.live-call__bubble {
   position: fixed;
-  top: 10px;
+  top: 16px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1000;
-  background: rgba(22, 22, 28, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  color: rgba(255, 255, 255, 0.85);
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 7px 16px;
-  cursor: pointer;
+  z-index: 9999;
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  background: var(--color-bg-elevated);
+  border: 1px solid rgba(129, 74, 200, 0.5);
+  border-radius: var(--border-radius-lg);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(129, 74, 200, 0.12),
+    0 0 32px rgba(129, 74, 200, 0.15);
+  overflow: hidden;
+  font-family: var(--font-sans);
+  user-select: none;
+}
+
+/* drag handle row */
+.live-call__bubble-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: grab;
+  background: rgba(129, 74, 200, 0.07);
+  border-bottom: 1px solid rgba(129, 74, 200, 0.18);
+}
+
+.live-call__bubble-bar:active {
+  cursor: grabbing;
+}
+
+/* left: brand + prospect name */
+.live-call__bubble-brand {
   display: flex;
   align-items: center;
   gap: 7px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.45), 0 0 0 0.5px rgba(255,255,255,0.06);
-  transition: background 0.18s, box-shadow 0.18s;
-  user-select: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.live-call__bubble-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent-green);
+  box-shadow: var(--glow-green);
+  animation: bubble-mic-pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.live-call__bubble-logo {
+  font-size: var(--font-size-sm);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: var(--color-text-primary);
   white-space: nowrap;
 }
 
-.live-call__copilot-pill:hover {
-  background: rgba(32, 32, 40, 0.96);
-  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(255,255,255,0.1);
+.live-call__bubble-logo .lp__logo-plus {
+  background: var(--color-accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.live-call__copilot-icon {
-  color: #ffffff;
+.live-call__bubble-prospect {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* center: stage badge + probability */
+.live-call__bubble-stats {
   display: flex;
   align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.live-call__copilot-label {
-  font-weight: 600;
-  color: #ffffff;
-  letter-spacing: 0.01em;
+.live-call__bubble-stage {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-purple);
+  background: rgba(129, 74, 200, 0.15);
+  border: 1px solid rgba(129, 74, 200, 0.3);
+  border-radius: var(--border-radius-sm);
+  padding: 2px 7px;
 }
 
-.live-call__copilot-sep {
-  color: rgba(255, 255, 255, 0.25);
-  font-size: 13px;
+.live-call__bubble-prob {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
 }
 
-.live-call__copilot-action {
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 11px;
-}
-
-.live-call__copilot-hide {
-  color: rgba(255, 255, 255, 0.4);
+/* right: restore + end buttons */
+.live-call__bubble-actions {
   display: flex;
   align-items: center;
-  margin-left: 2px;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.live-call__bubble-restore {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.live-call__bubble-restore:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--color-text-primary);
+}
+
+.live-call__bubble-end {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--border-radius-pill);
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.35);
+  color: var(--color-accent-red);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.live-call__bubble-end:hover {
+  background: rgba(255, 68, 68, 0.22);
+}
+
+/* suggestion row */
+.live-call__bubble-suggestion {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+}
+
+.live-call__bubble-suggestion-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-magenta);
+  white-space: nowrap;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+
+.live-call__bubble-suggestion-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* idle state before first suggestion */
+.live-call__bubble-listening {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.live-call__bubble-mic-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent-green);
+  animation: bubble-mic-pulse 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes bubble-mic-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
 }
 
 /* ── Mobile Tab Bar ──────────────────────────────────────────────────────────*/

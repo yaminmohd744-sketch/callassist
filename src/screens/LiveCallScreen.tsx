@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useLayoutEffect, type MouseEvent as ReactMouseEvent } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { Header } from '../components/layout/Header';
 import { StatusBar } from '../components/layout/StatusBar';
@@ -78,6 +78,34 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [mobilePanel, setMobilePanel] = useState<'transcript' | 'ai' | 'lead'>('transcript');
   const [manualSpeaker, setManualSpeaker] = useState<'rep' | 'prospect'>('prospect');
   const [isSummarising, setIsSummarising] = useState(false);
+  const [minimized, setMinimized] = useState(false);
+
+  const bubbleRef = useRef<HTMLDivElement>(null);
+  const dragOffset = useRef<{ x: number; y: number } | null>(null);
+
+  const handleBubbleDragStart = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
+    if (!bubbleRef.current) return;
+    const rect = bubbleRef.current.getBoundingClientRect();
+    dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+    const onMove = (ev: MouseEvent) => {
+      if (!dragOffset.current || !bubbleRef.current) return;
+      const x = Math.max(0, Math.min(window.innerWidth - bubbleRef.current.offsetWidth, ev.clientX - dragOffset.current.x));
+      const y = Math.max(0, Math.min(window.innerHeight - bubbleRef.current.offsetHeight, ev.clientY - dragOffset.current.y));
+      bubbleRef.current.style.left = `${x}px`;
+      bubbleRef.current.style.top = `${y}px`;
+      bubbleRef.current.style.transform = 'none';
+    };
+
+    const onUp = () => {
+      dragOffset.current = null;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, []);
 
   const { elapsedSeconds, formattedTime, startTimer, stopTimer } = useCallTimer();
   const signalAbortRef = useRef<AbortController | null>(null);
@@ -137,6 +165,26 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     // Reset AI coach so each new call starts with a clean slate.
     resetCoach();
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Push live call data to the Electron overlay window whenever it changes.
+  useEffect(() => {
+    if (!window.electronAPI) return;
+    window.electronAPI.pushOverlayData({
+      suggestions,
+      closeProbability,
+      callStage,
+      prospectName: config.prospectName,
+    });
+  }, [suggestions, closeProbability, callStage, config.prospectName]);
+
+  // Listen for the overlay's "End Session" button — restores main window and ends the call.
+  // Uses a ref so the listener always calls the latest handleEndCall without re-registering.
+  useEffect(() => {
+    if (!window.electronAPI) return;
+    return window.electronAPI.onTriggerEndCall(() => {
+      handleEndCallRef.current();
+    });
   }, []);
 
   useEffect(() => {
@@ -243,60 +291,141 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     }
   }, [stopListening, stopTimer, config, transcript, suggestions, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);
 
+  // Keep a stable ref so the overlay's trigger-end-call listener always calls the latest version.
+  const handleEndCallRef = useRef(handleEndCall);
+  useLayoutEffect(() => { handleEndCallRef.current = handleEndCall; });
+
+  const handleShareScreen = useCallback(() => {
+    if (window.electronAPI) {
+      // Electron: open a real always-on-top overlay window, minimize main window to taskbar.
+      window.electronAPI.launchOverlay();
+      window.electronAPI.minimizeMain();
+    } else {
+      // Web fallback: collapse to in-app floating bubble.
+      setMinimized(true);
+    }
+  }, []);
+
+  const latestSuggestion = suggestions.length > 0 ? suggestions[suggestions.length - 1] : null;
+  const stageLabelMap: Record<string, string> = {
+    opener: 'OPENER', discovery: 'DISCOVERY', pitch: 'PITCH', close: 'CLOSE',
+  };
+  const suggestionTypeLabel: Record<string, string> = {
+    'objection-response': 'HANDLE',
+    'close-attempt': 'CLOSE',
+    'tip': 'NEXT',
+    'discovery': 'DEEPER',
+  };
+
   return (
     <div className="live-call">
-      <Header
-        prospectName={config.prospectName}
-        company={config.company}
-        onEndCall={handleEndCall}
-      />
-      <StatusBar
-        status={callStatus}
-        formattedTime={formattedTime}
-        objectionsCount={objectionsCount}
-        closeProbability={closeProbability}
-      />
-      <div className="live-call__panels" data-mobile={mobilePanel}>
-        <TranscriptPanel
-          entries={transcript}
-          isListening={isListening}
-          interimText={interimText}
-          errorMessage={errorMessage}
-          manualInput={manualInput}
-          onManualInputChange={setManualInput}
-          onManualSubmit={handleManualSubmit}
-          onFlipSpeaker={handleFlipSpeaker}
-          manualSpeaker={manualSpeaker}
-          onManualSpeakerToggle={() => setManualSpeaker(s => s === 'prospect' ? 'rep' : 'prospect')}
-        />
-        <AIIntelligencePanel
-          suggestions={suggestions}
-          callStage={callStage}
-          prospectTone={prospectTone}
-          toneCoaching={toneCoaching}
-        />
-        <LeadProfilePanel
-          config={config}
-          closeProbability={closeProbability}
-          objectionsCount={objectionsCount}
-          onAction={handleQuickAction}
-          notes={notes}
-          noteInput={noteInput}
-          onNoteChange={setNoteInput}
-          onAddNote={handleAddNote}
-        />
-      </div>
-      <div className="live-call__mobile-tabs">
-        {(['transcript', 'ai', 'lead'] as const).map(p => (
-          <button
-            key={p}
-            className={`live-call__mobile-tab ${mobilePanel === p ? 'live-call__mobile-tab--active' : ''}`}
-            onClick={() => setMobilePanel(p)}
-          >
-            {p === 'transcript' ? `⊟ ${t.liveCall.transcript}` : p === 'ai' ? `◈ ${t.liveCall.aiSuggestions}` : '◉ PROFILE'}
-          </button>
-        ))}
-      </div>
+      {!minimized && (
+        <>
+          <Header
+            prospectName={config.prospectName}
+            company={config.company}
+            onEndCall={handleEndCall}
+            onMinimize={handleShareScreen}
+          />
+          <StatusBar
+            status={callStatus}
+            formattedTime={formattedTime}
+            objectionsCount={objectionsCount}
+            closeProbability={closeProbability}
+          />
+          <div className="live-call__panels" data-mobile={mobilePanel}>
+            <TranscriptPanel
+              entries={transcript}
+              isListening={isListening}
+              interimText={interimText}
+              errorMessage={errorMessage}
+              manualInput={manualInput}
+              onManualInputChange={setManualInput}
+              onManualSubmit={handleManualSubmit}
+              onFlipSpeaker={handleFlipSpeaker}
+              manualSpeaker={manualSpeaker}
+              onManualSpeakerToggle={() => setManualSpeaker(s => s === 'prospect' ? 'rep' : 'prospect')}
+            />
+            <AIIntelligencePanel
+              suggestions={suggestions}
+              callStage={callStage}
+              prospectTone={prospectTone}
+              toneCoaching={toneCoaching}
+            />
+            <LeadProfilePanel
+              config={config}
+              closeProbability={closeProbability}
+              objectionsCount={objectionsCount}
+              onAction={handleQuickAction}
+              notes={notes}
+              noteInput={noteInput}
+              onNoteChange={setNoteInput}
+              onAddNote={handleAddNote}
+            />
+          </div>
+          <div className="live-call__mobile-tabs">
+            {(['transcript', 'ai', 'lead'] as const).map(p => (
+              <button
+                key={p}
+                className={`live-call__mobile-tab ${mobilePanel === p ? 'live-call__mobile-tab--active' : ''}`}
+                onClick={() => setMobilePanel(p)}
+              >
+                {p === 'transcript' ? `⊟ ${t.liveCall.transcript}` : p === 'ai' ? `◈ ${t.liveCall.aiSuggestions}` : '◉ PROFILE'}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {minimized && (
+        <div ref={bubbleRef} className="live-call__bubble">
+          <div className="live-call__bubble-bar" onMouseDown={handleBubbleDragStart}>
+            <div className="live-call__bubble-brand">
+              <span className="live-call__bubble-dot" />
+              <span className="live-call__bubble-logo">
+                PITCH<span className="lp__logo-plus">PLUS</span>
+              </span>
+              {config.prospectName && (
+                <span className="live-call__bubble-prospect">· {config.prospectName}</span>
+              )}
+            </div>
+            <div className="live-call__bubble-stats">
+              <span className="live-call__bubble-stage">{stageLabelMap[callStage] ?? callStage.toUpperCase()}</span>
+              <span className="live-call__bubble-prob">{closeProbability}%</span>
+            </div>
+            <div className="live-call__bubble-actions">
+              <button
+                className="live-call__bubble-restore"
+                onClick={() => setMinimized(false)}
+                title="Restore full view"
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 8L6 4L10 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              <button className="live-call__bubble-end" onClick={handleEndCall}>
+                ■ End
+              </button>
+            </div>
+          </div>
+          {latestSuggestion ? (
+            <div className="live-call__bubble-suggestion">
+              <span className="live-call__bubble-suggestion-label">
+                {suggestionTypeLabel[latestSuggestion.type] ?? 'NEXT'}
+              </span>
+              <span className="live-call__bubble-suggestion-text">
+                {latestSuggestion.body}
+              </span>
+            </div>
+          ) : (
+            <div className="live-call__bubble-listening">
+              <span className="live-call__bubble-mic-pulse" />
+              Listening to your call…
+            </div>
+          )}
+        </div>
+      )}
+
       {isSummarising && (
         <div className="live-call__summarising-overlay" role="status" aria-live="polite">
           <div className="live-call__summarising-spinner" />

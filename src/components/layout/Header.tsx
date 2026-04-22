@@ -7,9 +7,10 @@ interface HeaderProps {
   prospectName: string;
   company: string;
   onEndCall: () => void;
+  onMinimize?: () => void;
 }
 
-export function Header({ prospectName, company, onEndCall }: HeaderProps) {
+export function Header({ prospectName, company, onEndCall, onMinimize }: HeaderProps) {
   const t = useTranslations();
   return (
     <header className="header">
@@ -24,6 +25,16 @@ export function Header({ prospectName, company, onEndCall }: HeaderProps) {
       <div className="header__mode-badge">● {t.liveCall.liveMode}</div>
 
       <div className="header__right">
+        {onMinimize && (
+          <button className="header__minimize" onClick={onMinimize} title="Share screen — minimize to bubble">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M4 9.5L7 6.5L10 9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M7 6.5V11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            Share Screen
+          </button>
+        )}
         <Button variant="danger" size="sm" onClick={onEndCall}>
           ■ {t.liveCall.endCall}
         </Button>

@@ -11,10 +11,10 @@ const STAGE_LABEL: Record<CallStage, string> = {
 };
 
 const TYPE_LABEL: Record<AISuggestion['type'], string> = {
-  'objection-response': 'HANDLE OBJECTION',
+  'objection-response': 'HANDLE',
   'close-attempt':      'CLOSE',
-  'tip':                'NEXT MOVE',
-  'discovery':          'GO DEEPER',
+  'tip':                'NEXT',
+  'discovery':          'DEEPER',
 };
 
 const DEMO_DATA: OverlayData = {
@@ -31,22 +31,13 @@ const DEMO_DATA: OverlayData = {
       timestampSeconds: 120,
       streaming: false,
     },
-    {
-      id: 'd2',
-      type: 'objection-response',
-      headline: 'Objection: "We already have a solution for this"',
-      body: '"That\'s great — what\'s the one thing you wish it did better? Most teams we work with find that\'s the gap costing them the most time."',
-      triggeredBy: 'demo',
-      timestampSeconds: 210,
-      streaming: false,
-    },
   ],
 };
 
 export function OverlayScreen() {
   const isDemo = !window.electronAPI;
   const [data, setData] = useState<OverlayData | null>(isDemo ? DEMO_DATA : null);
-  const [minimized, setMinimized] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
     if (!window.electronAPI) return;
@@ -56,78 +47,67 @@ export function OverlayScreen() {
     return cleanup;
   }, []);
 
-  function handleClose() {
-    window.electronAPI?.closeOverlay();
-  }
-
   const suggestions = data?.suggestions ?? [];
-  const prob = data?.closeProbability ?? 0;
-  const stage = data?.callStage ?? 'opener';
-  const name = data?.prospectName ?? '';
-
-  // Show the 3 most recent suggestions, newest on top
-  const feed = [...suggestions].reverse().slice(0, 3);
+  const prob        = data?.closeProbability ?? 0;
+  const stage       = data?.callStage ?? 'opener';
+  const name        = data?.prospectName ?? '';
+  const latest      = suggestions.length > 0 ? suggestions[suggestions.length - 1] : null;
 
   return (
     <div className="ov">
-      {/* Drag handle / pill bar */}
+      {/* ── Bar row (drag handle) ── */}
       <div className="ov__bar">
-        <div className="ov__bar-left">
-          <span className="ov__icon">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <circle cx="6.5" cy="6.5" r="5.5" stroke="white" strokeWidth="1.4"/>
-              <circle cx="6.5" cy="6.5" r="2" fill="white"/>
-            </svg>
+        <div className="ov__brand">
+          <span className="ov__dot" />
+          <span className="ov__logo">
+            PITCH<span className="ov__logo-plus">PLUS</span>
           </span>
-          <span className="ov__brand">Co-Pilot</span>
           {name && <span className="ov__prospect">· {name}</span>}
         </div>
-        <div className="ov__bar-right">
-          <div className={`ov__stage ov__stage--${stage}`}>{STAGE_LABEL[stage]}</div>
-          <div className="ov__prob">{prob}%</div>
+
+        <div className="ov__stats">
+          <span className={`ov__stage ov__stage--${stage}`}>{STAGE_LABEL[stage]}</span>
+          <span className="ov__prob">{prob}%</span>
+        </div>
+
+        <div className="ov__actions">
           <button
-            className="ov__ctrl"
-            onClick={() => setMinimized(m => !m)}
-            title={minimized ? 'Expand' : 'Collapse'}
+            className="ov__btn-icon"
+            onClick={() => setExpanded(e => !e)}
+            title={expanded ? 'Collapse' : 'Expand'}
           >
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              {minimized
-                ? <path d="M2 6.5L5 3.5L8 6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                : <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              {expanded
+                ? <path d="M2 7L5.5 3.5L9 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                : <path d="M2 4L5.5 7.5L9 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               }
             </svg>
           </button>
-          <button className="ov__ctrl ov__ctrl--close" onClick={handleClose} title="Close">
-            <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-              <path d="M1.5 1.5L7.5 7.5M7.5 1.5L1.5 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+          <button
+            className="ov__btn-end"
+            onClick={() => window.electronAPI?.endCallFromOverlay()}
+          >
+            ■ End
           </button>
         </div>
       </div>
 
-      {!minimized && (
-        <div className="ov__feed">
-          {feed.length === 0 ? (
-            <div className="ov__empty">
-              <div className="ov__empty-icon">◎</div>
-              <div className="ov__empty-text">Listening to your call…</div>
-            </div>
+      {/* ── Suggestion row ── */}
+      {expanded && (
+        <div className="ov__body">
+          {latest ? (
+            <>
+              <span className="ov__body-label">{TYPE_LABEL[latest.type]}</span>
+              <span className="ov__body-text">
+                {latest.body}
+                {latest.streaming && <span className="ov__cursor">▌</span>}
+              </span>
+            </>
           ) : (
-            feed.map(s => (
-              <div key={s.id} className={`ov__card ov__card--${s.type}`}>
-                <div className="ov__card-badge">{TYPE_LABEL[s.type]}</div>
-                <div className="ov__card-script">
-                  {s.body}
-                  {s.streaming && <span className="ov__cursor">▌</span>}
-                </div>
-                {!s.streaming && s.headline && (
-                  <div className="ov__card-why">
-                    <span className="ov__card-why-label">WHY</span>
-                    {s.headline}
-                  </div>
-                )}
-              </div>
-            ))
+            <>
+              <span className="ov__body-dot" />
+              <span className="ov__body-idle">Listening to your call…</span>
+            </>
           )}
         </div>
       )}

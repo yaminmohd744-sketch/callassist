@@ -17,6 +17,11 @@ if (sentryDsn) {
 
 const isOverlay = window.location.hash === '#overlay';
 
+if (isOverlay) {
+  document.documentElement.style.background = 'transparent';
+  document.body.style.background = 'transparent';
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>

@@ -28,11 +28,11 @@ function createOverlayWindow() {
   }
 
   const { width } = screen.getPrimaryDisplay().workAreaSize;
-  const overlayWidth = 400;
+  const overlayWidth = 500;
 
   overlayWindow = new BrowserWindow({
     width: overlayWidth,
-    height: 520,
+    height: 200,
     x: Math.floor((width - overlayWidth) / 2),
     y: 16,
     frame: false,
@@ -72,6 +72,25 @@ ipcMain.on('push-overlay-data', (_, data) => {
 
 ipcMain.on('minimize-main', () => {
   if (mainWindow) mainWindow.minimize();
+});
+
+// Overlay → restore main window (user clicked Restore, no end call)
+ipcMain.on('restore-main', () => {
+  if (overlayWindow) overlayWindow.close();
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+});
+
+// Overlay → end the call and restore main window
+ipcMain.on('end-call-from-overlay', () => {
+  if (overlayWindow) overlayWindow.close();
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+    mainWindow.webContents.send('trigger-end-call');
+  }
 });
 
 function focusOrCreateWindow() {
@@ -115,6 +134,18 @@ app.on('second-instance', () => {
 });
 
 app.whenReady().then(() => {
+  // Grant microphone (and camera) permissions so getUserMedia and
+  // webkitSpeechRecognition both work without a prompt.
+  const { session } = require('electron');
+  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
+    const allowed = ['media', 'microphone', 'camera', 'audioCapture', 'videoCapture'];
+    callback(allowed.includes(permission));
+  });
+  session.defaultSession.setPermissionCheckHandler((_webContents, permission) => {
+    const allowed = ['media', 'microphone', 'camera', 'audioCapture', 'videoCapture'];
+    return allowed.includes(permission);
+  });
+
   createMainWindow();
 
   app.on('activate', () => {

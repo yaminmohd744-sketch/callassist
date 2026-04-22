@@ -28,12 +28,13 @@ async function fetchDeepgramKey(): Promise<string | null> {
 
 interface WSRResult { isFinal: boolean; 0: { transcript: string }; }
 interface WSREvent  { resultIndex: number; results: WSRResult[]; }
+interface WSRErrorEvent { error: string; message?: string; }
 interface WSR {
   continuous: boolean;
   interimResults: boolean;
   lang: string;
   onresult: ((e: WSREvent) => void) | null;
-  onerror:  (() => void) | null;
+  onerror:  ((e: WSRErrorEvent) => void) | null;
   onend:    (() => void) | null;
   start(): void;
   stop(): void;
@@ -131,10 +132,18 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
       }
     };
 
-    recognition.onerror = () => {
+    recognition.onerror = (e) => {
       if (!activeRef.current || wsrRef.current !== recognition) return;
       setIsListening(false);
-      setErrorMessage('Speech recognition error - try refreshing.');
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        setErrorMessage('Microphone access denied — allow mic in your OS settings.');
+      } else if (e.error === 'audio-capture') {
+        setErrorMessage('No microphone found — plug one in and try again.');
+      } else if (e.error === 'network') {
+        setErrorMessage('Speech service unavailable — use the text input below.');
+      } else {
+        setErrorMessage(`Speech error (${e.error}) — use the text input below.`);
+      }
     };
 
     // Browser speech stops after silence; auto-restart so it stays on.
@@ -189,8 +198,15 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
     // Fetch a short-lived Deepgram key from the Edge Function proxy.
     // Falls back to Web Speech if the proxy isn't configured or the fetch fails.
-    const deepgramKey = await fetchDeepgramKey();
-    if (!deepgramKey) {
+    const rawKey = await fetchDeepgramKey();
+
+    // WebSocket subprotocol tokens must be valid RFC 7230 tchar sequences —
+    // no spaces, angle brackets, colons, slashes, or control characters.
+    // Trim whitespace first (copy-paste or env var trailing newlines are common).
+    const deepgramKey = rawKey?.trim() ?? null;
+    const keyIsValid = !!deepgramKey && /^[!#$%&'*+\-.^_`|~\w]+$/.test(deepgramKey);
+
+    if (!keyIsValid) {
       startWebSpeechFallback();
       return;
     }
@@ -225,7 +241,17 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         '&keywords=proposal:2',
       ].join('');
 
-      const ws = new WebSocket(url, ['token', deepgramKey]);
+      // WebSocket constructor throws synchronously if the subprotocol token is
+      // rejected by the browser — catch it here and fall back to Web Speech.
+      let ws: WebSocket;
+      try {
+        ws = new WebSocket(url, ['token', deepgramKey]);
+      } catch {
+        stream.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
+        startWebSpeechFallback();
+        return;
+      }
       wsRef.current = ws;
 
       ws.onopen = () => {

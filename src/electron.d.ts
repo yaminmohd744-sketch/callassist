@@ -13,8 +13,11 @@ export interface ElectronAPI {
   closeOverlay:        () => void;
   minimizeMain:        () => void;
   pushOverlayData:     (data: OverlayData) => void;
+  restoreMain:         () => void;
+  endCallFromOverlay:  () => void;
   onSuggestionsUpdate: (callback: (data: OverlayData) => void) => () => void;
   onOverlayClosed:     (callback: () => void) => () => void;
+  onTriggerEndCall:    (callback: () => void) => () => void;
 }
 
 declare global {
