@@ -1,11 +1,14 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '../components/ui/Button';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
 import { enhancePitch } from '../lib/ai';
-import type { CallConfig } from '../types';
+import type { CallConfig, BattlecardEntry } from '../types';
 import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
+
+type StringConfigField = 'prospectName' | 'company' | 'yourPitch' | 'callGoal' | 'language';
+type StringConfigErrors = Partial<Record<StringConfigField, string>>;
 
 interface PreCallScreenProps {
   onStartCall: (config: CallConfig) => void;
@@ -24,12 +27,39 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
     language: defaultLanguage,
   });
   const t = useTranslations();
-  const [errors, setErrors] = useState<Partial<CallConfig>>({});
+  const [errors, setErrors] = useState<StringConfigErrors>({});
   const [enhancing, setEnhancing] = useState(false);
   const [enhanced, setEnhanced] = useState(false);
   const enhancingRef = useRef(false);
 
-  function handleChange(field: keyof CallConfig, value: string) {
+  // Phase 1: Transparent coaching mode
+  const [transparentMode, setTransparentMode] = useState(false);
+
+  // Phase 4: Battlecard builder
+  const [battlecardOpen, setBattlecardOpen] = useState(false);
+  const [bcDifferentiators, setBcDifferentiators] = useState(() =>
+    localStorage.getItem('callassist:bc-diff') ?? ''
+  );
+  const [bcCompetitors, setBcCompetitors] = useState(() =>
+    localStorage.getItem('callassist:bc-comp') ?? ''
+  );
+  const [bcPricing, setBcPricing] = useState(() =>
+    localStorage.getItem('callassist:bc-price') ?? ''
+  );
+
+  useEffect(() => {
+    localStorage.setItem('callassist:bc-diff', bcDifferentiators);
+    localStorage.setItem('callassist:bc-comp', bcCompetitors);
+    localStorage.setItem('callassist:bc-price', bcPricing);
+  }, [bcDifferentiators, bcCompetitors, bcPricing]);
+
+  const battlecardCount = useMemo(() => [
+    ...bcDifferentiators.split('\n').filter(l => l.trim()),
+    ...bcCompetitors.split('\n').filter(l => l.trim()),
+    ...(bcPricing.trim() ? [bcPricing.trim()] : []),
+  ].length, [bcDifferentiators, bcCompetitors, bcPricing]);
+
+  function handleChange(field: StringConfigField, value: string) {
     setForm(f => ({ ...f, [field]: value }));
     if (errors[field]) setErrors(e => ({ ...e, [field]: '' }));
     if (field === 'yourPitch') setEnhanced(false);
@@ -51,14 +81,29 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
   }
 
   function handleSubmit() {
-    const newErrors: Partial<CallConfig> = {};
+    const newErrors: StringConfigErrors = {};
     if (!form.prospectName.trim()) newErrors.prospectName = 'Required';
     if (!form.callGoal.trim())     newErrors.callGoal = 'Required';
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    onStartCall(form);
+
+    const battlecardEntries: BattlecardEntry[] = [
+      ...bcDifferentiators.split('\n').filter(l => l.trim()).map(text => ({
+        id: crypto.randomUUID(), type: 'differentiator' as const, text: text.trim(),
+      })),
+      ...bcCompetitors.split('\n').filter(l => l.trim()).map(text => ({
+        id: crypto.randomUUID(), type: 'competitor' as const, text: text.trim(),
+      })),
+      ...(bcPricing.trim() ? [{ id: crypto.randomUUID(), type: 'pricing-objection' as const, text: bcPricing.trim() }] : []),
+    ];
+
+    onStartCall({
+      ...form,
+      transparentMode,
+      battlecard: battlecardEntries.length > 0 ? { entries: battlecardEntries } : undefined,
+    });
   }
 
   return (
@@ -164,6 +209,108 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
               ))}
             </div>
           </div>
+
+          <div className="precall__field">
+            <div className="precall__label-row">
+              <label className="precall__label" htmlFor="transparent-mode">TRANSPARENT COACHING MODE</label>
+              <button
+                id="transparent-mode"
+                type="button"
+                role="switch"
+                aria-checked={transparentMode}
+                className={`precall__toggle ${transparentMode ? 'precall__toggle--on' : ''}`}
+                onClick={() => setTransparentMode(v => !v)}
+              >
+                <span className="precall__toggle-thumb" />
+              </button>
+            </div>
+            <p className="precall__field-desc">
+              Shows a visible "◈ AI-Assisted" badge during the call. Builds trust — differentiates you from hidden overlay tools.
+            </p>
+          </div>
+
+          <div className="precall__battlecard">
+            <button
+              type="button"
+              className="precall__battlecard-header"
+              onClick={() => setBattlecardOpen(v => !v)}
+              aria-expanded={battlecardOpen}
+            >
+              <span className="precall__battlecard-toggle" style={{ transform: battlecardOpen ? 'rotate(90deg)' : undefined }}>▶</span>
+              <span className="precall__label" style={{ cursor: 'pointer' }}>◈ BATTLECARD</span>
+              <span className="precall__hint" style={{ marginLeft: 'auto', cursor: 'pointer' }}>optional</span>
+              {battlecardCount > 0 && (
+                <span className="precall__battlecard-count">{battlecardCount}</span>
+              )}
+            </button>
+            {battlecardOpen && (
+              <div className="precall__battlecard-body">
+                <div className="precall__battlecard-section">
+                  <label className="precall__label">KEY DIFFERENTIATORS</label>
+                  <textarea
+                    className="precall__textarea"
+                    rows={3}
+                    placeholder={"One per line, e.g.\nFaster onboarding than competitors\nNo per-seat pricing"}
+                    value={bcDifferentiators}
+                    onChange={e => setBcDifferentiators(e.target.value)}
+                  />
+                </div>
+                <div className="precall__battlecard-section">
+                  <label className="precall__label">COMPETITORS TO ADDRESS</label>
+                  <textarea
+                    className="precall__textarea"
+                    rows={2}
+                    placeholder={"One per line, e.g.\nSalesforce\nHubSpot"}
+                    value={bcCompetitors}
+                    onChange={e => setBcCompetitors(e.target.value)}
+                  />
+                </div>
+                <div className="precall__battlecard-section">
+                  <label className="precall__label">PRICING OBJECTION ANSWER</label>
+                  <textarea
+                    className="precall__textarea"
+                    rows={2}
+                    placeholder="Your go-to response when price comes up..."
+                    value={bcPricing}
+                    onChange={e => setBcPricing(e.target.value)}
+                  />
+                </div>
+                {battlecardCount > 0 && (
+                  <button
+                    type="button"
+                    className="precall__battlecard-clear"
+                    onClick={() => { setBcDifferentiators(''); setBcCompetitors(''); setBcPricing(''); }}
+                  >
+                    Clear draft
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <details className="precall__privacy-card">
+            <summary className="precall__privacy-summary">
+              <span className="precall__privacy-icon">◉</span>
+              Privacy &amp; Data — What We Store
+            </summary>
+            <div className="precall__privacy-body">
+              <div className="precall__privacy-row precall__privacy-row--safe">
+                <span>✓</span><span>Transcript text &amp; AI suggestions stored per-session, linked to your account only</span>
+              </div>
+              <div className="precall__privacy-row precall__privacy-row--safe">
+                <span>✓</span><span>Session stats (duration, objection count, close probability) used for your Analytics</span>
+              </div>
+              <div className="precall__privacy-row precall__privacy-row--neutral">
+                <span>◎</span><span>Call config (prospect name, company, pitch) stored locally &amp; in Supabase</span>
+              </div>
+              <div className="precall__privacy-row precall__privacy-row--never">
+                <span>✕</span><span>Audio — never recorded, never transmitted. Speech-to-text runs in your browser only</span>
+              </div>
+              <div className="precall__privacy-row precall__privacy-row--never">
+                <span>✕</span><span>Your data is never sold or shared with third parties</span>
+              </div>
+            </div>
+          </details>
 
           <div className="precall__hints">
             <div className="precall__hint">

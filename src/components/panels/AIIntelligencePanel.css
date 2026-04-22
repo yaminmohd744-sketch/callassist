@@ -362,3 +362,76 @@
   flex-direction: column;
   gap: var(--space-3);
 }
+
+/* ─── Battlecard drawer ───────────────────────────────────── */
+
+.ai-panel__battlecard {
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.ai-panel__battlecard-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+.ai-panel__battlecard-toggle:hover { background: rgba(129,74,200,0.06); }
+
+.ai-panel__battlecard-count {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: rgba(129,74,200,0.18);
+  color: var(--color-accent-magenta);
+  border-radius: var(--border-radius-pill);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ai-panel__battlecard-entries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4) var(--space-3);
+}
+
+.ai-panel__battlecard-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.ai-panel__battlecard-entry-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 5px;
+}
+
+.ai-panel__battlecard-entry--differentiator .ai-panel__battlecard-entry-dot { background: var(--color-accent-green); }
+.ai-panel__battlecard-entry--competitor      .ai-panel__battlecard-entry-dot { background: #f97316; }
+.ai-panel__battlecard-entry--pricing-objection .ai-panel__battlecard-entry-dot { background: var(--color-accent-purple); }
+
+.ai-panel__battlecard-entry--differentiator .ai-panel__battlecard-entry-text { color: var(--color-text-primary); }
+.ai-panel__battlecard-entry--competitor      .ai-panel__battlecard-entry-text { color: #f97316; }
+.ai-panel__battlecard-entry--pricing-objection .ai-panel__battlecard-entry-text { color: var(--color-accent-magenta); }

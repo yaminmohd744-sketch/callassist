@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '../components/ui/Button';
 import type { CallSession } from '../types';
 import { formatDuration, formatDateLong } from '../lib/formatters';
 import { useTranslations } from '../hooks/useTranslations';
+import { computeRepScore } from '../lib/repScore';
 import './PostCallScreen.css';
 
 function downloadFile(filename: string, content: string) {
@@ -62,10 +63,26 @@ function renderSummary(text: string) {
 
 export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenProps) {
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'coaching' | 'summary' | 'transcript' | 'email'>(session.coaching ? 'coaching' : 'summary');
+  const [activeTab, setActiveTab] = useState<'coaching' | 'summary' | 'transcript' | 'email' | 'scorecard'>(session.coaching ? 'coaching' : 'summary');
+
+  // Phase 4: CRM export state
+  const [jsonCopied, setJsonCopied] = useState(false);
+  const [webhookUrl, setWebhookUrl] = useState(() => localStorage.getItem('callassist:zapier-webhook') ?? '');
+  const [webhookStatus, setWebhookStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
+  const [integrationsOpen, setIntegrationsOpen] = useState(false);
 
   const t = useTranslations();
   const slug = (session.config.prospectName || 'call').toLowerCase().replace(/\s+/g, '-');
+
+  // Phase 3: scorecard metrics
+  const repScore = useMemo(() => computeRepScore(session), [session]);
+  const talkRatio = session.talkRatio ?? 0.5;
+  const repPct = Math.round(talkRatio * 100);
+  const objHandled = session.suggestions.filter(s => s.type === 'objection-response').length;
+  const objHandlingRate = session.objectionsCount > 0
+    ? Math.round((Math.min(objHandled / session.objectionsCount, 1)) * 100)
+    : 100;
+  const buyingSignals = session.suggestions.filter(s => s.type === 'close-attempt').length;
 
   async function handleCopyEmail() {
     await navigator.clipboard.writeText(session.followUpEmail);
@@ -79,6 +96,58 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
   function handleDownloadTranscript() {
     downloadFile(`transcript-${slug}.txt`, buildTranscriptText(session));
+  }
+
+  async function handleCopyJson() {
+    const payload = {
+      prospect: session.config.prospectName,
+      company: session.config.company,
+      date: session.endedAt,
+      duration: session.durationSeconds,
+      closeProbability: session.finalCloseProbability,
+      leadScore: session.leadScore,
+      repScore,
+      talkRatioPct: repPct,
+      objectionsCount: session.objectionsCount,
+      stage: session.callStage,
+      keyObjections: session.suggestions.filter(s => s.type === 'objection-response').map(s => s.headline),
+      buyingSignals: session.suggestions.filter(s => s.type === 'close-attempt').map(s => s.headline),
+      aiSummary: session.aiSummary,
+    };
+    await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+    setJsonCopied(true);
+    setTimeout(() => setJsonCopied(false), 2000);
+  }
+
+  function handleOpenMailto() {
+    const subject = encodeURIComponent(`Follow-up: ${session.config.prospectName}${session.config.company ? ` @ ${session.config.company}` : ''}`);
+    const body = encodeURIComponent(session.followUpEmail);
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+  }
+
+  async function handleSendZapier() {
+    if (!webhookUrl.trim()) return;
+    setWebhookStatus('sending');
+    try {
+      const payload = {
+        prospect: session.config.prospectName,
+        company: session.config.company,
+        date: session.endedAt,
+        duration: session.durationSeconds,
+        closeProbability: session.finalCloseProbability,
+        leadScore: session.leadScore,
+        repScore,
+        objectionsCount: session.objectionsCount,
+        aiSummary: session.aiSummary,
+        followUpEmail: session.followUpEmail,
+      };
+      await fetch(webhookUrl.trim(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      setWebhookStatus('ok');
+      setTimeout(() => setWebhookStatus('idle'), 3000);
+    } catch {
+      setWebhookStatus('error');
+      setTimeout(() => setWebhookStatus('idle'), 3000);
+    }
   }
 
   const probLevel = session.finalCloseProbability >= 61 ? 'high' : session.finalCloseProbability >= 31 ? 'medium' : 'low';
@@ -145,6 +214,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
         <button className={`postcall__tab ${activeTab === 'summary' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('summary')}>{t.postcall.summary}</button>
         <button className={`postcall__tab ${activeTab === 'transcript' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('transcript')}>{t.postcall.transcript}</button>
         <button className={`postcall__tab ${activeTab === 'email' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('email')}>{t.postcall.followUp}</button>
+        <button className={`postcall__tab ${activeTab === 'scorecard' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('scorecard')}>SCORECARD</button>
       </div>
 
       <div className="postcall__content">
@@ -251,8 +321,129 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
               <Button variant="secondary" size="sm" onClick={handleDownloadEmail}>
                 ↓ {t.postcall.download}
               </Button>
+              <Button variant="secondary" size="sm" onClick={handleOpenMailto}>
+                ✉ Open in Email
+              </Button>
+              <Button variant="secondary" size="sm" onClick={handleCopyJson}>
+                {jsonCopied ? '✓ Copied' : '⎘ Copy JSON'}
+              </Button>
             </div>
             <pre className="postcall__pre postcall__pre--email">{session.followUpEmail}</pre>
+
+            {/* Integrations / Zapier */}
+            <div className="postcall__integrations">
+              <button className="postcall__integrations-toggle" onClick={() => setIntegrationsOpen(v => !v)}>
+                <span style={{ transform: integrationsOpen ? 'rotate(90deg)' : undefined, display: 'inline-block', transition: 'transform 0.15s' }}>▶</span>
+                Integrations (Zapier / Webhook)
+              </button>
+              {integrationsOpen && (
+                <div className="postcall__integrations-body">
+                  <p className="postcall__integrations-desc">
+                    Paste a Zapier Webhook URL to push this call summary to your CRM, Slack, or any connected app.
+                  </p>
+                  <p className="postcall__integrations-disclaimer">
+                    ⚠ Call data sent to this URL includes prospect name, company, and AI summary. Only use trusted endpoints.
+                  </p>
+                  <div className="postcall__webhook-row">
+                    <input
+                      className="postcall__webhook-input"
+                      type="url"
+                      placeholder="https://hooks.zapier.com/hooks/catch/..."
+                      value={webhookUrl}
+                      onChange={e => setWebhookUrl(e.target.value)}
+                      onBlur={e => localStorage.setItem('callassist:zapier-webhook', e.target.value)}
+                    />
+                    <button
+                      className="postcall__webhook-btn"
+                      onClick={handleSendZapier}
+                      disabled={!webhookUrl.trim() || webhookStatus === 'sending'}
+                    >
+                      {webhookStatus === 'sending' ? 'Sending…' : 'Send'}
+                    </button>
+                  </div>
+                  {webhookStatus !== 'idle' && (
+                    <p className={`postcall__webhook-status postcall__webhook-status--${webhookStatus}`}>
+                      {webhookStatus === 'ok' && '✓ Sent successfully'}
+                      {webhookStatus === 'error' && '✕ Send failed — check the URL and try again'}
+                      {webhookStatus === 'sending' && '…'}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'scorecard' && (
+          <div className="scorecard">
+            <div className="scorecard__score-block">
+              <div className={`scorecard__score-ring scorecard__score-ring--${repScore >= 70 ? 'high' : repScore >= 45 ? 'medium' : 'low'}`}
+                style={{ '--score-pct': `${repScore}%` } as React.CSSProperties}>
+                <span className="scorecard__score-num">{repScore}</span>
+                <span className="scorecard__score-label">REP SCORE</span>
+              </div>
+            </div>
+
+            <div className="scorecard__metrics">
+              <div className="scorecard__metric">
+                <div className="scorecard__metric-header">
+                  <span className="scorecard__metric-name">TALK RATIO</span>
+                  <span className={`scorecard__metric-value ${repPct > 65 ? 'scorecard__metric-value--low' : repPct > 50 ? 'scorecard__metric-value--medium' : 'scorecard__metric-value--high'}`}>
+                    You {repPct}% · Prospect {100 - repPct}%
+                  </span>
+                </div>
+                <div className="scorecard__ratio-bar">
+                  <div className="scorecard__ratio-rep" style={{ width: `${repPct}%` }} />
+                  <div className="scorecard__ratio-prospect" style={{ width: `${100 - repPct}%` }} />
+                </div>
+                <p className="scorecard__metric-hint">
+                  {repPct <= 50 ? '✓ Good — you let the prospect talk more than half the time' :
+                   repPct <= 65 ? '◎ Slightly high — aim for under 50% talk time' :
+                   '⚠ High — you\'re talking too much. Ask more questions.'}
+                </p>
+              </div>
+
+              <div className="scorecard__metric">
+                <div className="scorecard__metric-header">
+                  <span className="scorecard__metric-name">OBJECTION HANDLING RATE</span>
+                  <span className={`scorecard__metric-value ${objHandlingRate >= 70 ? 'scorecard__metric-value--high' : objHandlingRate >= 40 ? 'scorecard__metric-value--medium' : 'scorecard__metric-value--low'}`}>
+                    {objHandled}/{session.objectionsCount} handled ({objHandlingRate}%)
+                  </span>
+                </div>
+                <div className="scorecard__gauge">
+                  <div className={`scorecard__gauge-fill scorecard__gauge-fill--${objHandlingRate >= 70 ? 'high' : objHandlingRate >= 40 ? 'medium' : 'low'}`}
+                    style={{ width: `${objHandlingRate}%` }} />
+                </div>
+              </div>
+
+              <div className="scorecard__metric">
+                <div className="scorecard__metric-header">
+                  <span className="scorecard__metric-name">BUYING SIGNALS DETECTED</span>
+                  <span className={`scorecard__metric-value ${buyingSignals >= 3 ? 'scorecard__metric-value--high' : buyingSignals >= 1 ? 'scorecard__metric-value--medium' : 'scorecard__metric-value--low'}`}>
+                    {buyingSignals} signal{buyingSignals !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="scorecard__signals">
+                  {session.suggestions.filter(s => s.type === 'close-attempt').map(s => (
+                    <span key={s.id} className="scorecard__signal-pill">{s.headline}</span>
+                  ))}
+                  {buyingSignals === 0 && <span className="scorecard__no-signals">None detected this call</span>}
+                </div>
+              </div>
+
+              <div className="scorecard__metric">
+                <div className="scorecard__metric-header">
+                  <span className="scorecard__metric-name">CLOSE PROBABILITY</span>
+                  <span className={`scorecard__metric-value scorecard__metric-value--${probLevel}`}>
+                    {session.finalCloseProbability}%
+                  </span>
+                </div>
+                <div className="scorecard__gauge">
+                  <div className={`scorecard__gauge-fill scorecard__gauge-fill--${probLevel}`}
+                    style={{ width: `${session.finalCloseProbability}%` }} />
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

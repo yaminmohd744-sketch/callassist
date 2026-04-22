@@ -1,7 +1,7 @@
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { SuggestionCard } from '../cards/SuggestionCard';
-import type { AISuggestion, CallStage, ProspectTone, ToneCoaching } from '../../types';
+import type { AISuggestion, CallStage, ProspectTone, ToneCoaching, Battlecard } from '../../types';
 import { useTranslations } from '../../hooks/useTranslations';
 import './AIIntelligencePanel.css';
 
@@ -22,6 +22,7 @@ interface AIIntelligencePanelProps {
   callStage: CallStage;
   prospectTone?: ProspectTone | null;
   toneCoaching?: ToneCoaching | null;
+  battlecard?: Battlecard;
 }
 
 export function AIIntelligencePanel({
@@ -29,8 +30,10 @@ export function AIIntelligencePanel({
   callStage,
   prospectTone,
   toneCoaching,
+  battlecard,
 }: AIIntelligencePanelProps) {
   const t = useTranslations();
+  const [battlecardOpen, setBattlecardOpen] = useState(false);
 
   const STAGE_LABEL: Record<CallStage, string> = {
     opener:    t.liveCall.stageOpener,
@@ -107,6 +110,30 @@ export function AIIntelligencePanel({
           </div>
         )}
       </div>
+
+      {battlecard && battlecard.entries.length > 0 && (
+        <div className="ai-panel__battlecard">
+          <button
+            className="ai-panel__battlecard-toggle"
+            onClick={() => setBattlecardOpen(v => !v)}
+            aria-expanded={battlecardOpen}
+          >
+            <span style={{ display: 'inline-block', transform: battlecardOpen ? 'rotate(90deg)' : undefined, transition: 'transform 0.15s' }}>▶</span>
+            ◈ BATTLECARD
+            <span className="ai-panel__battlecard-count">{battlecard.entries.length}</span>
+          </button>
+          {battlecardOpen && (
+            <div className="ai-panel__battlecard-entries">
+              {battlecard.entries.map(entry => (
+                <div key={entry.id} className={`ai-panel__battlecard-entry ai-panel__battlecard-entry--${entry.type}`}>
+                  <span className="ai-panel__battlecard-entry-dot" />
+                  <span className="ai-panel__battlecard-entry-text">{entry.text}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

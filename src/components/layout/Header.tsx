@@ -8,9 +8,10 @@ interface HeaderProps {
   company: string;
   onEndCall: () => void;
   onMinimize?: () => void;
+  transparentMode?: boolean;
 }
 
-export function Header({ prospectName, company, onEndCall, onMinimize }: HeaderProps) {
+export function Header({ prospectName, company, onEndCall, onMinimize, transparentMode }: HeaderProps) {
   const t = useTranslations();
   return (
     <header className="header">
@@ -20,6 +21,7 @@ export function Header({ prospectName, company, onEndCall, onMinimize }: HeaderP
           <span className="header__prospect-name">{prospectName || t.liveCall.noProspect}</span>
           {company && <><span className="header__prospect-sep">@</span><span className="header__prospect-company">{company}</span></>}
         </div>
+        {transparentMode && <div className="header__coaching-badge">◈ AI-Assisted</div>}
       </div>
 
       <div className="header__mode-badge">● {t.liveCall.liveMode}</div>

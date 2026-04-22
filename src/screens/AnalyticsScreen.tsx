@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import type { CallSession } from '../types';
+import { computeRepScore } from '../lib/repScore';
 import './AnalyticsScreen.css';
 
 interface AnalyticsScreenProps {
@@ -230,6 +231,28 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
         .slice(-12)
         .map(s => ({ label: fmtDate(s.endedAt), pct: s.finalCloseProbability, tier: scoreTier(s.finalCloseProbability) }));
 
+  // ── Rep score per call ────────────────────────────────────────────────────
+  const repScoreBars = useMockPerf
+    ? MOCK_CALLS.map(c => ({ label: fmtDate(c.date), pct: c.score, tier: scoreTier(c.score, 70, 45) }))
+    : [...pastSessions]
+        .sort((a, b) => new Date(a.endedAt).getTime() - new Date(b.endedAt).getTime())
+        .slice(-12)
+        .map(s => {
+          const score = computeRepScore(s);
+          return { label: fmtDate(s.endedAt), pct: score, tier: scoreTier(score, 70, 45) };
+        });
+
+  const avgRepScore = useMockPerf
+    ? Math.round(avg(MOCK_CALLS.map(c => c.score)))
+    : (pastSessions.length ? Math.round(avg(pastSessions.map(s => {
+        const score = computeRepScore(s);
+        return score;
+      }))) : 0);
+
+  const avgTalkRatioPct = useMockPerf
+    ? 47
+    : (pastSessions.length ? Math.round(avg(pastSessions.filter(s => s.talkRatio !== undefined).map(s => (s.talkRatio ?? 0.5) * 100))) : 50);
+
   // ── Stage breakdown ───────────────────────────────────────────────────────
   const stageCount: Record<string, number> = { opener: 0, discovery: 0, pitch: 0, close: 0 };
   if (useMockPerf) {
@@ -433,6 +456,8 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
               { val: `${avgProb}%`, label: t.analytics.avgClosePercent.toUpperCase(), cls: `analytics__stat-val--${scoreTier(avgProb)}` },
               { val: `${Math.max(...perfDetail.map(r => r.prob))}%`, label: t.analytics.bestCall.toUpperCase(), cls: 'analytics__stat-val--high' },
               { val: `${perfDetail.filter(r => r.prob >= 61).length}`, label: t.analytics.callsWon.toUpperCase(), cls: 'analytics__stat-val--high' },
+              { val: `${avgRepScore}`, label: 'AVG REP SCORE', cls: `analytics__stat-val--${scoreTier(avgRepScore, 70, 45)}` },
+              { val: `${avgTalkRatioPct}%`, label: 'AVG TALK RATIO', cls: avgTalkRatioPct <= 50 ? 'analytics__stat-val--high' : avgTalkRatioPct <= 65 ? 'analytics__stat-val--medium' : 'analytics__stat-val--low' },
             ].map((item, i) => (
               <div key={i} className="analytics__stat-card" style={an(i * 60)}>
                 <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
@@ -443,6 +468,10 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
           <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
             <div className="analytics__chart-title">CLOSE PROBABILITY OVER TIME</div>
             <LineChart chartId="prob-d" points={perfDetail.map(r => ({ label: r.date, value: r.prob, tier: r.probTier }))} maxVal={100} unit="%" style={an(320)} />
+          </div>
+          <div className="analytics__chart-card analytics__chart-card--wide" style={an(360)}>
+            <div className="analytics__chart-title">REP SCORE OVER TIME</div>
+            <LineChart chartId="repscore-d" points={repScoreBars.map(r => ({ label: r.label, value: r.pct, tier: r.tier }))} maxVal={100} unit="" style={an(400)} />
           </div>
           <div className="analytics__chart-card analytics__chart-card--wide" style={an(420)}>
             <div className="analytics__chart-title">FULL CALL LOG</div>
@@ -600,6 +629,13 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                 <span className="analytics__chart-hint">{t.analytics.viewDetails}</span>
               </div>
               <LineChart chartId="prob" points={probBars.map(b => ({ label: b.label, value: b.pct, tier: b.tier }))} maxVal={100} unit="%" style={an(320)} />
+            </div>
+
+            <div className="analytics__chart-card analytics__chart-card--wide" style={an(380)}>
+              <div className="analytics__chart-title-row">
+                <span className="analytics__chart-title">REP SCORE TREND ({repScoreBars.length} calls)</span>
+              </div>
+              <LineChart chartId="repscore" points={repScoreBars.map(b => ({ label: b.label, value: b.pct, tier: b.tier }))} maxVal={100} unit="" style={an(420)} />
             </div>
 
             <div className="analytics__chart-card analytics__chart-card--clickable" style={an(400)} onClick={() => setDetailView('stage')}>

@@ -8,6 +8,7 @@ import { PostCallScreen }   from './screens/PostCallScreen';
 import { TrainingScreen }   from './screens/TrainingScreen';
 import { AnalyticsScreen }  from './screens/AnalyticsScreen';
 import { UploadCallScreen } from './screens/UploadCallScreen';
+import { ObjectionLibraryScreen } from './screens/ObjectionLibraryScreen';
 import { AuthScreen }       from './screens/AuthScreen';
 import { OnboardingScreen } from './screens/OnboardingScreen';
 import { ThemeToggle }      from './components/ThemeToggle';
@@ -55,7 +56,7 @@ const isElectron = navigator.userAgent.includes('Electron');
 const INITIAL_THEME = (localStorage.getItem('theme') ?? 'dark') as 'dark' | 'light';
 document.documentElement.dataset.theme = INITIAL_THEME === 'light' ? 'light' : '';
 
-type Screen = 'landing' | 'auth' | 'dashboard' | 'training' | 'analytics' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
+type Screen = 'landing' | 'auth' | 'dashboard' | 'training' | 'analytics' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call' | 'objection-library';
 
 // ─── DB row ↔ CallSession helpers ────────────────────────────────────────────
 
@@ -75,6 +76,7 @@ function rowToSession(row: DbRow): CallSession {
     followUpEmail:         typeof row.follow_up_email === 'string' ? row.follow_up_email : '',
     leadScore:             typeof row.lead_score === 'number' ? row.lead_score : 0,
     notes:                 Array.isArray(row.notes) ? row.notes as string[] : [],
+    talkRatio:             typeof row.talk_ratio === 'number' ? row.talk_ratio : undefined,
     coaching:              row.coaching as CoachingWalkthrough ?? undefined,
   };
 }
@@ -94,6 +96,7 @@ function sessionToRow(s: CallSession, userId: string) {
     follow_up_email:  s.followUpEmail,
     lead_score:       s.leadScore,
     notes:            s.notes,
+    talk_ratio:       s.talkRatio ?? null,
     coaching:         s.coaching ?? null,
   };
 }
@@ -281,6 +284,7 @@ export function App() {
           onNavigate={s => setScreen(s)}
           onStartCall={() => setScreen('pre-call')}
           onUploadCall={() => setScreen('upload-call')}
+          onOpenLibrary={() => setScreen('objection-library')}
           onSignOut={() => supabase.auth.signOut()}
           appLanguage={appLanguage}
           onChangeLanguage={setAppLanguage}
@@ -356,6 +360,11 @@ export function App() {
             onBack={() => setScreen('dashboard')}
             onNewCall={() => setScreen('pre-call')}
           />
+        </ErrorBoundary>
+      )}
+      {currentScreen === 'objection-library' && (
+        <ErrorBoundary>
+          <ObjectionLibraryScreen onBack={() => setScreen('dashboard')} />
         </ErrorBoundary>
       )}
     </>

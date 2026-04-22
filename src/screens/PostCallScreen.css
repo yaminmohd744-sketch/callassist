@@ -231,6 +231,244 @@
   padding: var(--space-6);
 }
 
+/* ─── Integrations / Zapier ───────────────────────────────── */
+
+.postcall__integrations {
+  margin-top: var(--space-5);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.postcall__integrations-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-elevated);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+.postcall__integrations-toggle:hover { background: rgba(129,74,200,0.06); }
+
+.postcall__integrations-body {
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border-top: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.postcall__integrations-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.postcall__integrations-disclaimer {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+  padding: 4px 8px;
+  border-left: 2px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.06);
+  border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+  line-height: 1.4;
+}
+
+.postcall__webhook-row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.postcall__webhook-input {
+  flex: 1;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  transition: border-color var(--transition-fast);
+}
+.postcall__webhook-input:focus {
+  outline: none;
+  border-color: var(--color-accent-purple);
+}
+
+.postcall__webhook-btn {
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-5);
+  background: var(--color-accent-purple);
+  border: none;
+  border-radius: var(--border-radius-pill);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+.postcall__webhook-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.postcall__webhook-btn:not(:disabled):hover { opacity: 0.85; }
+
+.postcall__webhook-status {
+  font-size: var(--font-size-xs);
+  margin: 0;
+}
+.postcall__webhook-status--ok    { color: var(--color-accent-green); }
+.postcall__webhook-status--error { color: var(--color-accent-red); }
+.postcall__webhook-status--sending { color: var(--color-text-muted); }
+
+/* ─── Scorecard tab ───────────────────────────────────────── */
+
+.scorecard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 600px;
+}
+
+.scorecard__score-block {
+  display: flex;
+  justify-content: center;
+}
+
+.scorecard__score-ring {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--ring-color, var(--color-accent-purple)) calc(var(--score-pct, 50%) * 1),
+    var(--color-bg-elevated) 0
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 12px var(--color-bg-surface);
+}
+.scorecard__score-ring--high  { --ring-color: var(--color-accent-green); }
+.scorecard__score-ring--medium { --ring-color: #f0c040; }
+.scorecard__score-ring--low   { --ring-color: var(--color-accent-red); }
+
+.scorecard__score-num {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.scorecard__score-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.scorecard__metrics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.scorecard__metric {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.scorecard__metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.scorecard__metric-name {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--color-text-secondary);
+}
+
+.scorecard__metric-value {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+.scorecard__metric-value--high   { color: var(--color-accent-green); }
+.scorecard__metric-value--medium { color: #f0c040; }
+.scorecard__metric-value--low    { color: var(--color-accent-red); }
+
+.scorecard__gauge {
+  height: 6px;
+  background: var(--color-bg-surface);
+  border-radius: var(--border-radius-pill);
+  overflow: hidden;
+}
+
+.scorecard__gauge-fill {
+  height: 100%;
+  border-radius: var(--border-radius-pill);
+  transition: width 0.4s ease;
+}
+.scorecard__gauge-fill--high   { background: var(--color-accent-green); }
+.scorecard__gauge-fill--medium { background: #f0c040; }
+.scorecard__gauge-fill--low    { background: var(--color-accent-red); }
+
+.scorecard__ratio-bar {
+  display: flex;
+  height: 6px;
+  border-radius: var(--border-radius-pill);
+  overflow: hidden;
+}
+.scorecard__ratio-rep     { background: var(--color-accent-purple); transition: width 0.4s ease; }
+.scorecard__ratio-prospect { background: var(--color-accent-green); transition: width 0.4s ease; }
+
+.scorecard__metric-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.scorecard__signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.scorecard__signal-pill {
+  padding: 2px 10px;
+  background: rgba(57,211,83,0.1);
+  border: 1px solid rgba(57,211,83,0.25);
+  border-radius: var(--border-radius-pill);
+  font-size: var(--font-size-xs);
+  color: var(--color-accent-green);
+}
+
+.scorecard__no-signals {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
 .postcall__empty {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);

@@ -270,6 +270,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
       localStorage.setItem('callassist:nextCallTip', coaching.nextCallTip);
 
+      const repTurns = transcript.filter(e => e.speaker === 'rep').length;
+      const talkRatio = transcript.length > 0 ? repTurns / transcript.length : 0.5;
+
       const session: CallSession = {
         config,
         transcript,
@@ -283,6 +286,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         followUpEmail,
         leadScore,
         notes,
+        talkRatio,
         coaching,
       };
       onEndCall(session);
@@ -326,6 +330,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
             company={config.company}
             onEndCall={handleEndCall}
             onMinimize={handleShareScreen}
+            transparentMode={config.transparentMode}
           />
           <StatusBar
             status={callStatus}
@@ -351,6 +356,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
               callStage={callStage}
               prospectTone={prospectTone}
               toneCoaching={toneCoaching}
+              battlecard={config.battlecard}
             />
             <LeadProfilePanel
               config={config}

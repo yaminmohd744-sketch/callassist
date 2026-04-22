@@ -1,5 +1,6 @@
 import type { TranscriptEntry, AISuggestion, AIAnalysisResult, CallStage, SuggestionType, CoachingWalkthrough, CoachingKeyMoment, CoachingItem } from '../types';
 import { genId } from './id';
+import { loadCustomObjections } from './objectionLibrary';
 
 // ─── Memory ───────────────────────────────────────────────────────────────────
 
@@ -350,7 +351,14 @@ function analyzeWithKeywords(
 
   const variantIndex = currentObjectionsCount >= 1 ? 1 : 0;
 
-  for (const [keyword, def] of Object.entries(OBJECTION_MAP)) {
+  // Merge custom objections from localStorage on top of defaults (custom wins on duplicate keywords)
+  const customEntries = loadCustomObjections();
+  const mergedObjectionMap: Record<string, { label: string; responses: string[] }> = { ...OBJECTION_MAP };
+  for (const c of customEntries) {
+    mergedObjectionMap[c.keyword] = { label: c.label, responses: [c.responseFirst, c.responseRepeat || c.responseFirst] };
+  }
+
+  for (const [keyword, def] of Object.entries(mergedObjectionMap)) {
     if (text.includes(keyword)) {
       const lastTriggered = recentTriggers.get(keyword) ?? -999;
       if (now - lastTriggered > 30) {
