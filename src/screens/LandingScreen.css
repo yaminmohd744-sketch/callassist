@@ -3102,6 +3102,42 @@
 .lp__legal-section a:hover,
 .lp__legal-list a:hover { color: var(--color-accent-magenta); }
 
+.lp__privacy-summary {
+  margin-top: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  background: var(--color-bg-elevated);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.lp__privacy-summary-title {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.lp__privacy-summary-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.lp__privacy-summary-icon { flex-shrink: 0; font-weight: 700; }
+
+.lp__privacy-summary-row--safe   .lp__privacy-summary-icon { color: var(--color-accent-green); }
+.lp__privacy-summary-row--neutral .lp__privacy-summary-icon { color: var(--color-text-muted); }
+.lp__privacy-summary-row--never  .lp__privacy-summary-icon { color: var(--color-accent-red); }
+.lp__privacy-summary-row--never  { color: var(--color-text-primary); }
+
 .lp__legal-inline-link {
   background: none;
   border: none;

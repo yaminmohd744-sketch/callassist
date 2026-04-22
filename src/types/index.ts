@@ -1,23 +1,11 @@
 // ─── Configuration ───────────────────────────────────────────────────────────
 
-export interface BattlecardEntry {
-  id: string;
-  type: 'differentiator' | 'competitor' | 'pricing-objection';
-  text: string;
-}
-
-export interface Battlecard {
-  entries: BattlecardEntry[];
-}
-
 export interface CallConfig {
   prospectName: string;
   company: string;
   yourPitch: string;
   callGoal: string;
   language: string; // BCP 47 language code, e.g. 'en-US', 'es-ES'
-  transparentMode?: boolean;
-  battlecard?: Battlecard;
 }
 
 // ─── Transcript ──────────────────────────────────────────────────────────────

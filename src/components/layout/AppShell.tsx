@@ -16,7 +16,6 @@ interface AppShellProps {
   onNavigate: (screen: ShellScreen) => void;
   onStartCall: () => void;
   onUploadCall: () => void;
-  onOpenLibrary: () => void;
   onSignOut: () => void;
   appLanguage: LanguageCode;
   onChangeLanguage: (code: LanguageCode) => void;
@@ -42,7 +41,7 @@ function getInitials(name: string): string {
 }
 
 export function AppShell({
-  activeScreen, onNavigate, onStartCall, onUploadCall, onOpenLibrary, onSignOut,
+  activeScreen, onNavigate, onStartCall, onUploadCall, onSignOut,
   appLanguage, onChangeLanguage, currentLangLabel,
   userName, userEmail, theme, onToggleTheme,
   totalCallSeconds, totalCallCount, totalTrainingSessions, totalTrainingSeconds,
@@ -141,7 +140,6 @@ export function AppShell({
             )}
           </div>
 
-          <button className="app-shell__btn-ghost" onClick={onOpenLibrary}>◈ Library</button>
           <button className="app-shell__btn-ghost" onClick={onUploadCall}>{t.nav.upload}</button>
           <button className="app-shell__btn-primary" onClick={onStartCall}>{t.nav.newCall}</button>
 

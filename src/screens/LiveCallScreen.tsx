@@ -330,7 +330,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
             company={config.company}
             onEndCall={handleEndCall}
             onMinimize={handleShareScreen}
-            transparentMode={config.transparentMode}
           />
           <StatusBar
             status={callStatus}
@@ -356,7 +355,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
               callStage={callStage}
               prospectTone={prospectTone}
               toneCoaching={toneCoaching}
-              battlecard={config.battlecard}
             />
             <LeadProfilePanel
               config={config}

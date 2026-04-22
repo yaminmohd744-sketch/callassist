@@ -8,7 +8,6 @@ import { PostCallScreen }   from './screens/PostCallScreen';
 import { TrainingScreen }   from './screens/TrainingScreen';
 import { AnalyticsScreen }  from './screens/AnalyticsScreen';
 import { UploadCallScreen } from './screens/UploadCallScreen';
-import { ObjectionLibraryScreen } from './screens/ObjectionLibraryScreen';
 import { AuthScreen }       from './screens/AuthScreen';
 import { OnboardingScreen } from './screens/OnboardingScreen';
 import { ThemeToggle }      from './components/ThemeToggle';
@@ -56,7 +55,7 @@ const isElectron = navigator.userAgent.includes('Electron');
 const INITIAL_THEME = (localStorage.getItem('theme') ?? 'dark') as 'dark' | 'light';
 document.documentElement.dataset.theme = INITIAL_THEME === 'light' ? 'light' : '';
 
-type Screen = 'landing' | 'auth' | 'dashboard' | 'training' | 'analytics' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call' | 'objection-library';
+type Screen = 'landing' | 'auth' | 'dashboard' | 'training' | 'analytics' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
 
 // ─── DB row ↔ CallSession helpers ────────────────────────────────────────────
 
@@ -284,7 +283,6 @@ export function App() {
           onNavigate={s => setScreen(s)}
           onStartCall={() => setScreen('pre-call')}
           onUploadCall={() => setScreen('upload-call')}
-          onOpenLibrary={() => setScreen('objection-library')}
           onSignOut={() => supabase.auth.signOut()}
           appLanguage={appLanguage}
           onChangeLanguage={setAppLanguage}
@@ -360,11 +358,6 @@ export function App() {
             onBack={() => setScreen('dashboard')}
             onNewCall={() => setScreen('pre-call')}
           />
-        </ErrorBoundary>
-      )}
-      {currentScreen === 'objection-library' && (
-        <ErrorBoundary>
-          <ObjectionLibraryScreen onBack={() => setScreen('dashboard')} />
         </ErrorBoundary>
       )}
     </>

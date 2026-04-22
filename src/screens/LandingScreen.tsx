@@ -1426,6 +1426,30 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                 <p><strong>Usage and technical data.</strong> We automatically collect standard technical information including your IP address, browser type and version, operating system, referring URL, pages visited within the application, feature interactions, session duration, and error logs. This information is used exclusively for product improvement and security monitoring.</p>
                 <p><strong>Support communications.</strong> If you contact us for support, we retain the content of that communication and any information you choose to share to resolve your query.</p>
                 <p><strong>Cookies and local storage.</strong> We use session cookies, local storage, and similar browser technologies. See Section 11 and our Cookie Policy for full details.</p>
+
+                <div className="lp__privacy-summary">
+                  <div className="lp__privacy-summary-title">◉ At a glance — what we store per call</div>
+                  <div className="lp__privacy-summary-row lp__privacy-summary-row--safe">
+                    <span className="lp__privacy-summary-icon">✓</span>
+                    <span>Transcript text &amp; AI suggestions — stored per session, linked to your account only</span>
+                  </div>
+                  <div className="lp__privacy-summary-row lp__privacy-summary-row--safe">
+                    <span className="lp__privacy-summary-icon">✓</span>
+                    <span>Session stats (duration, objection count, close probability) — used for your Analytics</span>
+                  </div>
+                  <div className="lp__privacy-summary-row lp__privacy-summary-row--neutral">
+                    <span className="lp__privacy-summary-icon">◎</span>
+                    <span>Call config (prospect name, company, pitch) — stored locally in your browser &amp; in Supabase</span>
+                  </div>
+                  <div className="lp__privacy-summary-row lp__privacy-summary-row--never">
+                    <span className="lp__privacy-summary-icon">✕</span>
+                    <span>Audio — <strong>never</strong> recorded, never transmitted. Speech-to-text runs entirely in your browser</span>
+                  </div>
+                  <div className="lp__privacy-summary-row lp__privacy-summary-row--never">
+                    <span className="lp__privacy-summary-icon">✕</span>
+                    <span>Your data is <strong>never</strong> sold or shared with third parties for any commercial purpose</span>
+                  </div>
+                </div>
               </section>
 
               <section id="pp-3" className="lp__legal-section">
