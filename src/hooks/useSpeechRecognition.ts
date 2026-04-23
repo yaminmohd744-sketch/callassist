@@ -254,6 +254,17 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
       }
       wsRef.current = ws;
 
+      // One-shot guard: onerror, onclose, and watchdog can all fire for the same failure.
+      // Ensure only the first one triggers the fallback.
+      let didFallback = false;
+      let watchdogTimer: ReturnType<typeof setTimeout> | null = null;
+      const tryFallback = () => {
+        if (didFallback) return;
+        didFallback = true;
+        if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
+        startWebSpeechFallback();
+      };
+
       ws.onopen = () => {
         const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
           ? 'audio/webm;codecs=opus'
@@ -266,10 +277,13 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         mr.start(250);
         setIsListening(true);
         setErrorMessage(null);
+        // If no audio data arrives within 10s of connecting, assume silent failure and fall back.
+        watchdogTimer = setTimeout(() => tryFallback(), 10_000);
       };
 
       ws.onmessage = (event) => {
         if (wsRef.current !== ws) return;
+        if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
         interface DGResult {
           type: string; is_final: boolean; speech_final: boolean;
           channel: { alternatives: { transcript: string }[] };
@@ -291,17 +305,9 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         }
       };
 
-      // One-shot guard: onerror and onclose can both fire for the same failure.
-      // Ensure only the first one triggers the fallback.
-      let didFallback = false;
-      const tryFallback = () => {
-        if (didFallback) return;
-        didFallback = true;
-        startWebSpeechFallback();
-      };
-
       ws.onerror = () => {
         if (wsRef.current !== ws) return;
+        if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
         // Deepgram auth/connection failed - silently fall back to browser speech.
         wsRef.current = null;
         try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
@@ -313,6 +319,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
       ws.onclose = (e) => {
         if (wsRef.current !== ws) return;
+        if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
         // Clean up media resources before attempting fallback so they don't leak.
         try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
         mediaRecorderRef.current = null;

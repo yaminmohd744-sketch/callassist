@@ -66,7 +66,7 @@ export const TranscriptPanel = memo(function TranscriptPanel({
           </div>
         )}
 
-        {entries.map(entry => {
+        {entries.slice(-100).map(entry => {
           const isFlippable = entry.speaker !== 'system' && !!onFlipSpeaker;
           const label = entry.speaker === 'rep' ? t.liveCall.you : entry.speaker === 'prospect' ? t.liveCall.prospect : t.liveCall.system;
           return (

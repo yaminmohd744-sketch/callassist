@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { LandingScreen }    from './screens/LandingScreen';
 import { IntroScreen }      from './screens/IntroScreen';
 import { DashboardScreen }  from './screens/DashboardScreen';
 import { PreCallScreen }    from './screens/PreCallScreen';
 import { LiveCallScreen }   from './screens/LiveCallScreen';
-import { PostCallScreen }   from './screens/PostCallScreen';
+const PostCallScreen = lazy(() => import('./screens/PostCallScreen').then(m => ({ default: m.PostCallScreen })));
 import { TrainingScreen }   from './screens/TrainingScreen';
-import { AnalyticsScreen }  from './screens/AnalyticsScreen';
+const AnalyticsScreen = lazy(() => import('./screens/AnalyticsScreen').then(m => ({ default: m.AnalyticsScreen })));
 import { UploadCallScreen } from './screens/UploadCallScreen';
 import { AuthScreen }       from './screens/AuthScreen';
 import { OnboardingScreen } from './screens/OnboardingScreen';
@@ -323,7 +323,9 @@ export function App() {
           )}
           {currentScreen === 'analytics' && (
             <ErrorBoundary>
-              <AnalyticsScreen pastSessions={pastSessions} />
+              <Suspense fallback={<div className="app-loading" />}>
+                <AnalyticsScreen pastSessions={pastSessions} />
+              </Suspense>
             </ErrorBoundary>
           )}
         </AppShell>
@@ -353,11 +355,13 @@ export function App() {
       )}
       {currentScreen === 'post-call' && callSession && (
         <ErrorBoundary>
-          <PostCallScreen
-            session={callSession}
-            onBack={() => setScreen('dashboard')}
-            onNewCall={() => setScreen('pre-call')}
-          />
+          <Suspense fallback={<div className="app-loading" />}>
+            <PostCallScreen
+              session={callSession}
+              onBack={() => setScreen('dashboard')}
+              onNewCall={() => setScreen('pre-call')}
+            />
+          </Suspense>
         </ErrorBoundary>
       )}
     </>

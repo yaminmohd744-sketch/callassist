@@ -4,7 +4,7 @@ export const MOCK_SESSIONS: CallSession[] = [
   // ─── 1. Sarah Chen — strong close ──────────────────────────────────────────
   {
     config: {
-      prospectName: 'Sarah Chen',
+      prospectName: '[Demo] Sarah Chen',
       company: 'Nexus Ventures',
       yourPitch: 'AI-powered sales coaching platform that gives reps real-time objection handling, live call scoring, and automated post-call summaries.',
       callGoal: 'Book a product demo',
@@ -23,7 +23,7 @@ export const MOCK_SESSIONS: CallSession[] = [
       { id: 'm1-10', speaker: 'prospect', text: "Thursday afternoon could work. Maybe 2 or 3pm?", timestampSeconds: 178, signal: 'buying-signal' },
       { id: 'm1-11', speaker: 'rep',      text: "Thursday at 2pm works perfectly. I'll send a calendar invite with a Zoom link. Should I include anyone else from your team — your VP of Sales maybe?", timestampSeconds: 188, signal: 'neutral' },
       { id: 'm1-12', speaker: 'prospect', text: "Yeah, loop in Daniel — he's our Head of Revenue. He'll want to see this.", timestampSeconds: 208, signal: 'buying-signal' },
-      { id: 'm1-13', speaker: 'rep',      text: "Perfect. I've got Sarah Chen and Daniel from Nexus Ventures, Thursday 2pm. I'll send the invite now. Is your email sarah@nexusvc.com?", timestampSeconds: 218, signal: 'neutral' },
+      { id: 'm1-13', speaker: 'rep',      text: "Perfect. I've got Sarah Chen and Daniel from Nexus Ventures, Thursday 2pm. I'll send the invite now. Is your email demo-sarah@example.com?", timestampSeconds: 218, signal: 'neutral' },
       { id: 'm1-14', speaker: 'prospect', text: "That's the one, yes.", timestampSeconds: 232, signal: 'neutral' },
       { id: 'm1-15', speaker: 'rep',      text: "Done. Really looking forward to it, Sarah. We'll make the 30 minutes worth your time.", timestampSeconds: 238, signal: 'neutral' },
       { id: 'm1-16', speaker: 'prospect', text: "Sounds good. See you Thursday.", timestampSeconds: 246, signal: 'neutral' },
@@ -116,7 +116,7 @@ PitchPlus | alex@pitchplus.io | Book a time: cal.pitchplus.io/alex`,
   // ─── 2. Marcus Williams — multiple objections, nurture ─────────────────────
   {
     config: {
-      prospectName: 'Marcus Williams',
+      prospectName: '[Demo] Marcus Williams',
       company: 'PeakForce Solutions',
       yourPitch: 'AI-powered sales coaching platform that gives reps real-time objection handling, live call scoring, and automated post-call summaries.',
       callGoal: 'Qualify and pitch',
@@ -134,7 +134,7 @@ PitchPlus | alex@pitchplus.io | Book a time: cal.pitchplus.io/alex`,
       { id: 'm2-9',  speaker: 'rep',      text: "Seven months is actually perfect timing to start evaluating — you'd have everything ready to switch the day the contract expires without any gap. And our onboarding literally takes one afternoon. But I hear you on bandwidth. What if I sent you something short you could look at when the timing is better?", timestampSeconds: 128, signal: 'neutral' },
       { id: 'm2-10', speaker: 'prospect', text: "Yeah sure, send it over. But honestly the cost is probably going to be an issue too — we're not in a position to add spend right now.", timestampSeconds: 152, signal: 'objection' },
       { id: 'm2-11', speaker: 'rep',      text: "Understood. For what it's worth, most teams offset the cost within the first month from fewer lost deals alone. But look — seven months out, let's not talk money today. I'll send you a two-pager and a short video. If anything resonates, we can reconnect closer to your renewal. Does that work?", timestampSeconds: 168, signal: 'neutral' },
-      { id: 'm2-12', speaker: 'prospect', text: "That works. My email is marcus@peakforce.io.", timestampSeconds: 192, signal: 'neutral' },
+      { id: 'm2-12', speaker: 'prospect', text: "That works. My email is demo-marcus@example.com.", timestampSeconds: 192, signal: 'neutral' },
       { id: 'm2-13', speaker: 'rep',      text: "Got it. I'll send that today. And I'll put a reminder in my calendar to follow up in about five months so the timing lines up with your renewal evaluation. Talk soon, Marcus.", timestampSeconds: 200, signal: 'neutral' },
     ],
     suggestions: [
@@ -228,7 +228,7 @@ PitchPlus | alex@pitchplus.io`,
   // ─── 3. Priya Patel — warm inbound, easy close ─────────────────────────────
   {
     config: {
-      prospectName: 'Priya Patel',
+      prospectName: '[Demo] Priya Patel',
       company: 'CloudBridge Inc.',
       yourPitch: 'AI-powered sales coaching platform that gives reps real-time objection handling, live call scoring, and automated post-call summaries.',
       callGoal: 'Book a demo and confirm budget',
@@ -352,7 +352,7 @@ PitchPlus | alex@pitchplus.io | cal.pitchplus.io/alex`,
   // ─── 4. James O'Brien — cold lead, disengaged ──────────────────────────────
   {
     config: {
-      prospectName: "James O'Brien",
+      prospectName: "[Demo] James O'Brien",
       company: 'Ironclad Sales Co.',
       yourPitch: 'AI-powered sales coaching platform that gives reps real-time objection handling, live call scoring, and automated post-call summaries.',
       callGoal: 'Re-engage cold lead and book a call',
@@ -446,7 +446,7 @@ PitchPlus | alex@pitchplus.io`,
   // ─── 5. Amara Osei — strong discovery, VP approval needed ──────────────────
   {
     config: {
-      prospectName: 'Amara Osei',
+      prospectName: '[Demo] Amara Osei',
       company: 'Meridian Growth',
       yourPitch: 'AI-powered sales coaching platform that gives reps real-time objection handling, live call scoring, and automated post-call summaries.',
       callGoal: 'Pitch and close, or get to next stage',
@@ -468,7 +468,7 @@ PitchPlus | alex@pitchplus.io`,
       { id: 'm5-13', speaker: 'rep',      text: "That makes complete sense. What's the best way to get him involved — would it make sense for me to put together something you could share with him first, or would it be better to get him on a call together?", timestampSeconds: 208, signal: 'neutral' },
       { id: 'm5-14', speaker: 'prospect', text: "Probably a call together. He'll want to ask his own questions. Let me check his calendar and I'll get back to you with some times.", timestampSeconds: 224, signal: 'buying-signal' },
       { id: 'm5-15', speaker: 'rep',      text: "Perfect. I'll send you a summary of what we covered today and a one-pager you can forward to him ahead of the call — that way he has context going in. What's a good email for you?", timestampSeconds: 238, signal: 'neutral' },
-      { id: 'm5-16', speaker: 'prospect', text: "amara@meridiangrowth.com. And honestly this is the most relevant call I've had about this problem in months — I'll make sure he makes time.", timestampSeconds: 254, signal: 'buying-signal' },
+      { id: 'm5-16', speaker: 'prospect', text: "demo-amara@example.com. And honestly this is the most relevant call I've had about this problem in months — I'll make sure he makes time.", timestampSeconds: 254, signal: 'buying-signal' },
       { id: 'm5-17', speaker: 'rep',      text: "That means a lot. I'll send that over within the hour. Looking forward to the three-way call, Amara.", timestampSeconds: 268, signal: 'neutral' },
     ],
     suggestions: [

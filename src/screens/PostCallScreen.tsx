@@ -6,6 +6,15 @@ import { useTranslations } from '../hooks/useTranslations';
 import { computeRepScore } from '../lib/repScore';
 import './PostCallScreen.css';
 
+function isValidWebhookUrl(url: string): boolean {
+  try {
+    const u = new URL(url.trim());
+    return u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 function downloadFile(filename: string, content: string) {
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -69,6 +78,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
   const [jsonCopied, setJsonCopied] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState(() => localStorage.getItem('callassist:zapier-webhook') ?? '');
   const [webhookStatus, setWebhookStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
+  const [webhookUrlError, setWebhookUrlError] = useState<string | null>(null);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
 
   const t = useTranslations();
@@ -127,6 +137,11 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
   async function handleSendZapier() {
     if (!webhookUrl.trim()) return;
+    if (!isValidWebhookUrl(webhookUrl)) {
+      setWebhookStatus('error');
+      setTimeout(() => setWebhookStatus('idle'), 3000);
+      return;
+    }
     setWebhookStatus('sending');
     try {
       const payload = {
@@ -207,19 +222,54 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
         </div>
       </div>
 
-      <div className="postcall__tabs">
+      <div className="postcall__tabs" role="tablist">
         {session.coaching && (
-          <button className={`postcall__tab ${activeTab === 'coaching' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('coaching')}>COACHING</button>
+          <button
+            role="tab"
+            aria-selected={activeTab === 'coaching'}
+            id="postcall-tab-coaching"
+            aria-controls="postcall-panel-coaching"
+            className={`postcall__tab ${activeTab === 'coaching' ? 'postcall__tab--active' : ''}`}
+            onClick={() => setActiveTab('coaching')}
+          >COACHING</button>
         )}
-        <button className={`postcall__tab ${activeTab === 'summary' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('summary')}>{t.postcall.summary}</button>
-        <button className={`postcall__tab ${activeTab === 'transcript' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('transcript')}>{t.postcall.transcript}</button>
-        <button className={`postcall__tab ${activeTab === 'email' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('email')}>{t.postcall.followUp}</button>
-        <button className={`postcall__tab ${activeTab === 'scorecard' ? 'postcall__tab--active' : ''}`} onClick={() => setActiveTab('scorecard')}>SCORECARD</button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 'summary'}
+          id="postcall-tab-summary"
+          aria-controls="postcall-panel-summary"
+          className={`postcall__tab ${activeTab === 'summary' ? 'postcall__tab--active' : ''}`}
+          onClick={() => setActiveTab('summary')}
+        >{t.postcall.summary}</button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 'transcript'}
+          id="postcall-tab-transcript"
+          aria-controls="postcall-panel-transcript"
+          className={`postcall__tab ${activeTab === 'transcript' ? 'postcall__tab--active' : ''}`}
+          onClick={() => setActiveTab('transcript')}
+        >{t.postcall.transcript}</button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 'email'}
+          id="postcall-tab-email"
+          aria-controls="postcall-panel-email"
+          className={`postcall__tab ${activeTab === 'email' ? 'postcall__tab--active' : ''}`}
+          onClick={() => setActiveTab('email')}
+        >{t.postcall.followUp}</button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 'scorecard'}
+          id="postcall-tab-scorecard"
+          aria-controls="postcall-panel-scorecard"
+          className={`postcall__tab ${activeTab === 'scorecard' ? 'postcall__tab--active' : ''}`}
+          onClick={() => setActiveTab('scorecard')}
+        >SCORECARD</button>
       </div>
 
       <div className="postcall__content">
         {activeTab === 'coaching' && session.coaching && (
-          <div className="coaching">
+          <div className="coaching" role="tabpanel" id="postcall-panel-coaching" aria-labelledby="postcall-tab-coaching" tabIndex={0}>
             <div className="coaching__verdict">
               <span className="coaching__verdict-icon">{session.finalCloseProbability >= 55 ? '◆' : session.finalCloseProbability >= 35 ? '◇' : '△'}</span>
               <span className="coaching__verdict-text">{session.coaching.overallVerdict}</span>
@@ -278,13 +328,13 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
         )}
 
         {activeTab === 'summary' && (
-          <div className="postcall__summary">
+          <div className="postcall__summary" role="tabpanel" id="postcall-panel-summary" aria-labelledby="postcall-tab-summary" tabIndex={0}>
             {renderSummary(session.aiSummary)}
           </div>
         )}
 
         {activeTab === 'transcript' && (
-          <div className="postcall__transcript-section">
+          <div className="postcall__transcript-section" role="tabpanel" id="postcall-panel-transcript" aria-labelledby="postcall-tab-transcript" tabIndex={0}>
             <div className="postcall__tab-actions">
               <Button variant="secondary" size="sm" onClick={handleDownloadTranscript}>
                 ↓ {t.postcall.download}
@@ -313,7 +363,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
         )}
 
         {activeTab === 'email' && (
-          <div className="postcall__email-section">
+          <div className="postcall__email-section" role="tabpanel" id="postcall-panel-email" aria-labelledby="postcall-tab-email" tabIndex={0}>
             <div className="postcall__tab-actions">
               <Button variant="secondary" size="sm" onClick={handleCopyEmail}>
                 {copied ? `✓ ${t.postcall.copyEmail}` : `⎘ ${t.postcall.copyEmail}`}
@@ -344,14 +394,26 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
                   <p className="postcall__integrations-disclaimer">
                     ⚠ Call data sent to this URL includes prospect name, company, and AI summary. Only use trusted endpoints.
                   </p>
+                  {webhookUrlError && (
+                    <p className="postcall__webhook-status postcall__webhook-status--error">{webhookUrlError}</p>
+                  )}
                   <div className="postcall__webhook-row">
                     <input
                       className="postcall__webhook-input"
                       type="url"
                       placeholder="https://hooks.zapier.com/hooks/catch/..."
                       value={webhookUrl}
-                      onChange={e => setWebhookUrl(e.target.value)}
-                      onBlur={e => localStorage.setItem('callassist:zapier-webhook', e.target.value)}
+                      onChange={e => { setWebhookUrl(e.target.value); setWebhookUrlError(null); }}
+                      onBlur={e => {
+                        const val = e.target.value.trim();
+                        if (!val) { setWebhookUrlError(null); return; }
+                        if (!isValidWebhookUrl(val)) {
+                          setWebhookUrlError('Must be a valid https:// URL');
+                        } else {
+                          setWebhookUrlError(null);
+                          try { localStorage.setItem('callassist:zapier-webhook', val); } catch { /* storage full */ }
+                        }
+                      }}
                     />
                     <button
                       className="postcall__webhook-btn"
@@ -375,7 +437,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
         )}
 
         {activeTab === 'scorecard' && (
-          <div className="scorecard">
+          <div className="scorecard" role="tabpanel" id="postcall-panel-scorecard" aria-labelledby="postcall-tab-scorecard" tabIndex={0}>
             <div className="scorecard__score-block">
               <div className={`scorecard__score-ring scorecard__score-ring--${repScore >= 70 ? 'high' : repScore >= 45 ? 'medium' : 'low'}`}
                 style={{ '--score-pct': `${repScore}%` } as React.CSSProperties}>
