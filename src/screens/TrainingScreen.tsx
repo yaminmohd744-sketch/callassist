@@ -425,26 +425,38 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
             </div>
           </div>
           <div className="training__scenarios">
-            {scenarioRows.map((row, rowIdx) => (
-              <div key={rowIdx} className="training__scenario-row">
-                {row.map((s, i) => {
-                  const globalIdx = scenarioRows.slice(0, rowIdx).reduce((acc, r) => acc + r.length, 0) + i;
-                  return (
-                    <button
-                      key={s.id}
-                      className={`training__scenario-card training__scenario-card--${s.id}${limitReached ? ' training__scenario-card--locked' : ''}`}
-                      style={{ animationDelay: `${globalIdx * 0.18}s` }}
-                      onClick={() => { if (limitReached) return; startScenario(s.id, language); setContextInput(''); setSelectedSub(null); setCustomDesc(''); setSelectedDifficulty('medium'); }}
-                      disabled={state.isLoading || limitReached}
-                    >
-                      <div className="training__scenario-icon">{s.icon}</div>
-                      <div className="training__scenario-label">{s.label}</div>
-                      <div className="training__scenario-desc">{s.description}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
+            {(() => {
+              const practicedCounts: Record<string, number> = {};
+              history.forEach(h => {
+                const prefixMap: Record<string, string> = { po: 'price-objection', ni: 'not-interested', tio: 'think-it-over', smi: 'send-me-info', co: 'cold-opener', di: 'discovery', cl: 'closing', r: 'random' };
+                const base = h.scenarioId.replace(/-easy|-medium|-hard$/, '').replace(/^(po|ni|tio|smi|co|di|cl|r)-.*/, (_, p: string) => prefixMap[p] ?? p);
+                practicedCounts[base] = (practicedCounts[base] ?? 0) + 1;
+              });
+              return scenarioRows.map((row, rowIdx) => (
+                <div key={rowIdx} className="training__scenario-row">
+                  {row.map((s, i) => {
+                    const globalIdx = scenarioRows.slice(0, rowIdx).reduce((acc, r) => acc + r.length, 0) + i;
+                    const count = practicedCounts[s.id] ?? 0;
+                    return (
+                      <button
+                        key={s.id}
+                        className={`training__scenario-card training__scenario-card--${s.id}${limitReached ? ' training__scenario-card--locked' : ''}`}
+                        style={{ animationDelay: `${globalIdx * 0.18}s` }}
+                        onClick={() => { if (limitReached) return; startScenario(s.id, language); setContextInput(''); setSelectedSub(null); setCustomDesc(''); setSelectedDifficulty('medium'); }}
+                        disabled={state.isLoading || limitReached}
+                      >
+                        <div className="training__scenario-icon">{s.icon}</div>
+                        <div className="training__scenario-label">{s.label}</div>
+                        <div className="training__scenario-desc">{s.description}</div>
+                        {count > 0 && (
+                          <div className="training__scenario-practiced">{count}× practiced</div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ));
+            })()}
           </div>
           {state.isLoading && <div className="training__loading">{t.common.loading}</div>}
 

@@ -247,6 +247,15 @@
   color: var(--color-text-secondary);
 }
 
+.training__scenario-practiced {
+  margin-top: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-accent-purple);
+  opacity: 0.8;
+}
+
 .training__loading {
   margin-top: var(--space-6);
   font-size: var(--font-size-sm);
