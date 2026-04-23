@@ -117,6 +117,8 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
   const [language, setLanguage] = useState(appLanguage);
   const [showHistory, setShowHistory] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
+  const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
+  const [insightModalEntry, setInsightModalEntry] = useState<TrainingHistoryEntry | null>(null);
   const [history, setHistory] = useState<TrainingHistoryEntry[]>(() => getTrainingHistory());
   const [monthlyCount, setMonthlyCount] = useState(() => getMonthlySessionCount());
   const userTier: UserTier = 'pro';
@@ -148,6 +150,10 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
         headline: state.summary.headline,
         exchanges: state.messages.filter(m => m.role === 'rep').length,
         date: new Date().toISOString(),
+        assessment: state.summary.assessment,
+        strengths: state.summary.strengths,
+        improvements: state.summary.improvements,
+        keyTakeaway: state.summary.keyTakeaway,
       };
       saveTrainingSession(entry);
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -176,6 +182,78 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
   }
 
   const repMessages = state.messages.filter(m => m.role === 'rep');
+
+  // ── Shared history item ───────────────────────────────────────────────────────
+  function renderHistoryItem(h: TrainingHistoryEntry) {
+    const isExpanded = expandedHistoryId === h.id;
+    const scoreColor = h.overallScore !== null
+      ? h.overallScore >= 8 ? 'var(--color-accent-green)'
+        : h.overallScore >= 6 ? 'var(--color-accent-yellow)'
+        : 'var(--color-accent-red)'
+      : 'var(--color-text-muted)';
+    const scorePct = h.overallScore !== null ? (h.overallScore / 10) * 100 : 0;
+
+    return (
+      <div
+        key={h.id}
+        className={`training__history-item training__history-item--clickable${isExpanded ? ' training__history-item--expanded' : ''}`}
+        onClick={() => setExpandedHistoryId(isExpanded ? null : h.id)}
+      >
+        <div className="training__history-row">
+          <div className="training__history-left">
+            <span className="training__history-scenario">{h.scenarioLabel}</span>
+            <span className={`training__diff-badge training__diff-badge--${h.difficulty}`}>
+              {h.difficulty.toUpperCase()}
+            </span>
+          </div>
+          <div className="training__history-center">
+            <span className="training__history-headline">{h.headline}</span>
+            <span className="training__history-meta">{h.exchanges} exchange{h.exchanges !== 1 ? 's' : ''} · {new Date(h.date).toLocaleDateString()}</span>
+          </div>
+          <div className="training__history-right">
+            {h.overallScore !== null && (
+              <div className="training__history-score" style={{ color: scoreColor }}>
+                {h.overallScore.toFixed(1)}
+              </div>
+            )}
+            <span className="training__history-expand-caret">{isExpanded ? '▴' : '▾'}</span>
+          </div>
+        </div>
+
+        {isExpanded && (
+          <div className="training__history-mini">
+            <div className="training__history-mini-stats">
+              <div className="training__history-mini-stat">
+                <span className="training__history-mini-stat-label">SCORE</span>
+                <div className="training__history-mini-bar-track">
+                  <div className="training__history-mini-bar-fill" style={{ width: `${scorePct}%`, background: scoreColor }} />
+                </div>
+                <span className="training__history-mini-stat-val" style={{ color: scoreColor }}>
+                  {h.overallScore !== null ? `${h.overallScore.toFixed(1)}/10` : '—'}
+                </span>
+              </div>
+              <div className="training__history-mini-stat">
+                <span className="training__history-mini-stat-label">EXCHANGES</span>
+                <div className="training__history-mini-bar-track">
+                  <div className="training__history-mini-bar-fill" style={{ width: `${Math.min((h.exchanges / 12) * 100, 100)}%`, background: 'var(--color-accent-purple)' }} />
+                </div>
+                <span className="training__history-mini-stat-val" style={{ color: 'var(--color-accent-purple)' }}>{h.exchanges}</span>
+              </div>
+              <div className="training__history-mini-date">
+                {new Date(h.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+              </div>
+            </div>
+            <button
+              className="training__history-insight-btn"
+              onClick={e => { e.stopPropagation(); setInsightModalEntry(h); }}
+            >
+              View Full Insight →
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   // ── Render practice phase content ────────────────────────────────────────────
   function renderPracticeContent() {
@@ -472,29 +550,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
               </button>
               {showHistory && (
                 <div className="training__history-list">
-                  {history.map((h) => (
-                    <div key={h.id} className="training__history-item">
-                      <div className="training__history-left">
-                        <span className="training__history-scenario">{h.scenarioLabel}</span>
-                        <span className={`training__diff-badge training__diff-badge--${h.difficulty}`}>
-                          {h.difficulty.toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="training__history-center">
-                        <span className="training__history-headline">{h.headline}</span>
-                        <span className="training__history-meta">{h.exchanges} exchange{h.exchanges !== 1 ? 's' : ''} · {new Date(h.date).toLocaleDateString()}</span>
-                      </div>
-                      {h.overallScore !== null && (
-                        <div className="training__history-score" style={{
-                          color: h.overallScore >= 8 ? 'var(--color-accent-green)'
-                            : h.overallScore >= 6 ? 'var(--color-accent-yellow)'
-                            : 'var(--color-accent-red)',
-                        }}>
-                          {h.overallScore.toFixed(1)}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                  {history.map(h => renderHistoryItem(h))}
                 </div>
               )}
             </div>
@@ -595,6 +651,86 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
         </div>
 
       </div>
+
+      {insightModalEntry && (() => {
+        const h = insightModalEntry;
+        const scoreColor = h.overallScore !== null
+          ? h.overallScore >= 8 ? 'var(--color-accent-green)'
+            : h.overallScore >= 6 ? 'var(--color-accent-yellow)'
+            : 'var(--color-accent-red)'
+          : 'var(--color-text-muted)';
+        const hasDetails = h.assessment || (h.strengths && h.strengths.length > 0) || (h.improvements && h.improvements.length > 0) || h.keyTakeaway;
+        return (
+          <div className="insight-modal__backdrop" onClick={() => setInsightModalEntry(null)}>
+            <div className="insight-modal" onClick={e => e.stopPropagation()}>
+              <div className="insight-modal__header">
+                <div className="insight-modal__header-left">
+                  <div className="insight-modal__scenario">{h.scenarioLabel}</div>
+                  <div className="insight-modal__badges">
+                    <span className={`training__diff-badge training__diff-badge--${h.difficulty}`}>{h.difficulty.toUpperCase()}</span>
+                    <span className="insight-modal__date">
+                      {new Date(h.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+                <button className="insight-modal__close" onClick={() => setInsightModalEntry(null)}>✕</button>
+              </div>
+              <div className="insight-modal__body">
+                <div className="insight-modal__score-row">
+                  {h.overallScore !== null && (
+                    <div className="insight-modal__score-block">
+                      <div className="insight-modal__score-val" style={{ color: scoreColor }}>{h.overallScore.toFixed(1)}</div>
+                      <div className="insight-modal__score-label">/ 10</div>
+                    </div>
+                  )}
+                  <div className="insight-modal__score-meta">
+                    <div className="insight-modal__score-bar-track">
+                      <div className="insight-modal__score-bar-fill" style={{ width: `${((h.overallScore ?? 0) / 10) * 100}%`, background: scoreColor }} />
+                    </div>
+                    <div className="insight-modal__exchanges">{h.exchanges} exchange{h.exchanges !== 1 ? 's' : ''}</div>
+                  </div>
+                </div>
+
+                <p className="insight-modal__headline">"{h.headline}"</p>
+
+                {!hasDetails ? (
+                  <div className="insight-modal__no-details">
+                    Detailed insights are saved for sessions completed going forward.
+                  </div>
+                ) : (
+                  <>
+                    {h.assessment && (
+                      <p className="insight-modal__assessment">{h.assessment}</p>
+                    )}
+                    {((h.strengths && h.strengths.length > 0) || (h.improvements && h.improvements.length > 0)) && (
+                      <div className="insight-modal__cols">
+                        {h.strengths && h.strengths.length > 0 && (
+                          <div className="insight-modal__col insight-modal__col--pros">
+                            <div className="insight-modal__col-title">Strengths</div>
+                            <ul>{h.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                          </div>
+                        )}
+                        {h.improvements && h.improvements.length > 0 && (
+                          <div className="insight-modal__col insight-modal__col--cons">
+                            <div className="insight-modal__col-title">Areas to Improve</div>
+                            <ul>{h.improvements.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {h.keyTakeaway && (
+                      <div className="insight-modal__takeaway">
+                        <div className="insight-modal__takeaway-label">Key Takeaway</div>
+                        <div className="insight-modal__takeaway-text">{h.keyTakeaway}</div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {showProgress && (() => {
         const scored = history.filter(h => h.overallScore !== null);
@@ -724,29 +860,7 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
                   <div className="progress-overlay__history">
                     <div className="training__stats-chart-title" style={{ marginBottom: 'var(--space-3)' }}>SESSION HISTORY</div>
                     <div className="training__history-list">
-                      {history.map(h => (
-                        <div key={h.id} className="training__history-item">
-                          <div className="training__history-left">
-                            <span className="training__history-scenario">{h.scenarioLabel}</span>
-                            <span className={`training__diff-badge training__diff-badge--${h.difficulty}`}>
-                              {h.difficulty.toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="training__history-center">
-                            <span className="training__history-headline">{h.headline}</span>
-                            <span className="training__history-meta">{h.exchanges} exchange{h.exchanges !== 1 ? 's' : ''} · {new Date(h.date).toLocaleDateString()}</span>
-                          </div>
-                          {h.overallScore !== null && (
-                            <div className="training__history-score" style={{
-                              color: h.overallScore >= 8 ? 'var(--color-accent-green)'
-                                : h.overallScore >= 6 ? 'var(--color-accent-yellow)'
-                                : 'var(--color-accent-red)',
-                            }}>
-                              {h.overallScore.toFixed(1)}
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                      {history.map(h => renderHistoryItem(h))}
                     </div>
                   </div>
                 </>

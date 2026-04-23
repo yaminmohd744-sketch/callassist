@@ -7,6 +7,10 @@ export interface TrainingHistoryEntry {
   headline: string;
   exchanges: number;
   date: string;
+  assessment?: string;
+  strengths?: string[];
+  improvements?: string[];
+  keyTakeaway?: string;
 }
 
 export const MOCK_TRAINING_HISTORY: TrainingHistoryEntry[] = [

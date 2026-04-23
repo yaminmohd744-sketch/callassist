@@ -128,7 +128,10 @@
       "Bash(ELECTRON_RUN_AS_NODE=\"\" npm run electron:dev)",
       "Bash(xargs -I{} taskkill /PID {} /F)",
       "Bash(taskkill /PID 21804 /F)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(findstr :5173)",
+      "Bash(taskkill /PID 17276 /F)",
+      "PowerShell(Stop-Process -Id 17276 -Force)"
     ]
   }
 }
