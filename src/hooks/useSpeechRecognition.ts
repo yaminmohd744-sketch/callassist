@@ -1,18 +1,15 @@
 import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { getDeepgramCode } from '../lib/languages';
-import { supabase } from '../lib/supabase';
-
-const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+import { FUNCTIONS_BASE, ANON_KEY, getAuthToken } from '../lib/api';
 
 async function fetchDeepgramKey(): Promise<string | null> {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    const authToken = session?.access_token ?? import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+    const authToken = await getAuthToken();
     const res = await fetch(`${FUNCTIONS_BASE}/deepgram-token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+        'apikey': ANON_KEY,
         'Authorization': `Bearer ${authToken}`,
       },
     });
@@ -350,7 +347,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   return {
     isListening,
     interimText,
-    isSupported: true,
+    isSupported: getWebSpeech() !== null,
     errorMessage,
     startListening,
     stopListening,

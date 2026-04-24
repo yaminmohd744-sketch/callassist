@@ -1,21 +1,14 @@
 import { useState } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { generateSessionSummary } from '../lib/ai';
-import { OBJECTION_KEYWORDS, BUYING_KEYWORDS } from '../lib/keywords';
-import type { CallConfig, CallSession, TranscriptEntry, TranscriptSignal } from '../types';
+import { classifySignal } from '../lib/keywords';
+import type { CallConfig, CallSession, TranscriptEntry } from '../types';
 import { genId } from '../lib/id';
 import './UploadCallScreen.css';
 
 interface UploadCallScreenProps {
   onEndCall: (session: CallSession) => void;
   onBack: () => void;
-}
-
-function classifySignal(text: string): TranscriptSignal {
-  const lower = text.toLowerCase();
-  if (OBJECTION_KEYWORDS.some(k => lower.includes(k))) return 'objection';
-  if (BUYING_KEYWORDS.some(k => lower.includes(k))) return 'buying-signal';
-  return 'neutral';
 }
 
 interface ParseResult {

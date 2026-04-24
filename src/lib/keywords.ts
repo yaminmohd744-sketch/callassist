@@ -79,6 +79,15 @@ export const REP_PHRASES = [
   "i'm calling from", 'calling from',
 ];
 
+// ─── Signal classification ────────────────────────────────────────────────────
+import type { TranscriptSignal } from '../types';
+export function classifySignal(text: string): TranscriptSignal {
+  const lower = text.toLowerCase();
+  if (OBJECTION_KEYWORDS.some(k => lower.includes(k))) return 'objection';
+  if (BUYING_KEYWORDS.some(k => lower.includes(k))) return 'buying-signal';
+  return 'neutral';
+}
+
 // Short filler/reaction words that signal the prospect responding briefly
 // after the rep has spoken. Only checked when previous speaker was rep and
 // the utterance is ≤10 words.

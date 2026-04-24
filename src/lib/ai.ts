@@ -8,27 +8,9 @@ import {
   type Memory,
 } from './mockAI';
 import type { TranscriptEntry, CallStage, CallConfig, AISuggestion, AIAnalysisResult, TranscriptSignal, CoachingWalkthrough } from '../types';
-import { supabase } from './supabase';
+import { FUNCTIONS_BASE, ANON_KEY, getAuthToken, fetchWithTimeout } from './api';
 
 export { detectStage, STAGE_TIPS, getQuickActionSuggestion, type Memory };
-
-const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
-const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
-async function getAuthToken(): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token ?? ANON_KEY;
-}
-
-const FETCH_TIMEOUT_MS = 30_000;
-
-function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = FETCH_TIMEOUT_MS): Promise<Response> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  // If caller passed an external signal, propagate its abort into our controller
-  (init.signal as AbortSignal | undefined)?.addEventListener('abort', () => controller.abort(), { once: true });
-  return fetch(url, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
-}
 
 async function callFunction(name: string, body: unknown): Promise<unknown> {
   const authToken = await getAuthToken();
@@ -78,7 +60,7 @@ export async function analyzeTranscript(
     } else {
       externalSignal?.addEventListener('abort', () => streamController.abort(), { once: true });
     }
-    const streamTimer = setTimeout(() => streamController.abort(), FETCH_TIMEOUT_MS);
+    const streamTimer = setTimeout(() => streamController.abort(), 30_000);
     const authToken = await getAuthToken();
     const res = await fetch(`${FUNCTIONS_BASE}/analyze-transcript`, {
       method: 'POST',

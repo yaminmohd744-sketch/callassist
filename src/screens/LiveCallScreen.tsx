@@ -10,17 +10,10 @@ import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useAICoach } from '../hooks/useAICoach';
 import { useAudioTone } from '../hooks/useAudioTone';
 import { generateSessionSummary, classifySignalAI } from '../lib/ai';
-import { OBJECTION_KEYWORDS, BUYING_KEYWORDS, PROSPECT_PHRASES, REP_PHRASES, PROSPECT_REACTIONS } from '../lib/keywords';
-import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSignal, TranscriptSpeaker } from '../types';
+import { classifySignal, PROSPECT_PHRASES, REP_PHRASES, PROSPECT_REACTIONS } from '../lib/keywords';
+import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSpeaker } from '../types';
 import { genId } from '../lib/id';
 import './LiveCallScreen.css';
-
-function classifySignal(text: string): TranscriptSignal {
-  const lower = text.toLowerCase();
-  if (OBJECTION_KEYWORDS.some(k => lower.includes(k))) return 'objection';
-  if (BUYING_KEYWORDS.some(k => lower.includes(k))) return 'buying-signal';
-  return 'neutral';
-}
 
 // Classify who is speaking based on content + conversational context.
 // Prospect: asks about price/product, raises objections, reacts to the rep's pitch.
@@ -82,6 +75,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
   const bubbleRef = useRef<HTMLDivElement>(null);
   const dragOffset = useRef<{ x: number; y: number } | null>(null);
+  const flipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleBubbleDragStart = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
     if (!bubbleRef.current) return;
@@ -230,11 +224,13 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         return { ...e, speaker: flipped, signal: flipped === 'prospect' ? classifySignal(e.text) : 'neutral' as const };
       });
       transcriptRef.current = updated;
-      // Re-run AI for the flipped entry if it became a prospect entry
       const flippedEntry = updated.find(e => e.id === id);
       if (flippedEntry?.speaker === 'prospect') {
-        processEntry(flippedEntry, updated, flippedEntry.timestampSeconds, config);
-        applySignal(flippedEntry.id, flippedEntry.text);
+        if (flipDebounceRef.current) clearTimeout(flipDebounceRef.current);
+        flipDebounceRef.current = setTimeout(() => {
+          processEntry(flippedEntry, updated, flippedEntry.timestampSeconds, config);
+          applySignal(flippedEntry.id, flippedEntry.text);
+        }, 400);
       }
       return updated;
     });
@@ -290,10 +286,23 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         coaching,
       };
       onEndCall(session);
+    } catch {
+      const repTurns = transcript.filter(e => e.speaker === 'rep').length;
+      onEndCall({
+        config, transcript, suggestions,
+        durationSeconds: elapsedSeconds,
+        finalCloseProbability: closeProbability,
+        objectionsCount, callStage,
+        endedAt: new Date().toISOString(),
+        aiSummary: '', followUpEmail: '', leadScore: 0,
+        notes,
+        talkRatio: transcript.length > 0 ? repTurns / transcript.length : 0.5,
+        coaching: undefined,
+      });
     } finally {
       setIsSummarising(false);
     }
-  }, [stopListening, stopTimer, config, transcript, suggestions, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);
+  }, [stopListening, stopToneCapture, stopTimer, config, transcript, suggestions, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);
 
   // Keep a stable ref so the overlay's trigger-end-call listener always calls the latest version.
   const handleEndCallRef = useRef(handleEndCall);

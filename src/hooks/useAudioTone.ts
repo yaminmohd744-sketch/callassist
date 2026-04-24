@@ -1,15 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import * as Sentry from '@sentry/react';
 import type { ProspectTone, ToneCoaching } from '../types';
-import { supabase } from '../lib/supabase';
-
-const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
-const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
-async function getAuthToken(): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token ?? ANON_KEY;
-}
+import { FUNCTIONS_BASE, ANON_KEY, getAuthToken } from '../lib/api';
 
 // Chunk duration in ms — low latency as requested
 const CHUNK_MS = 4000;
@@ -55,10 +47,10 @@ export function useAudioTone(config: AudioToneConfig): AudioToneState {
       // Convert blob to base64
       const arrayBuffer = await blob.arrayBuffer();
       const bytes = new Uint8Array(arrayBuffer);
+      const CHUNK = 8192;
       let binary = '';
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
+      for (let i = 0; i < bytes.length; i += CHUNK)
+        binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
       const base64 = btoa(binary);
 
       const authToken = await getAuthToken();

@@ -14,27 +14,31 @@ type Tier = 'high' | 'medium' | 'low';
 
 // ── Mock datasets ─────────────────────────────────────────────────────────────
 
+function daysAgo(n: number): string {
+  return new Date(Date.now() - n * 86_400_000).toISOString();
+}
+
 const MOCK_CALLS = [
-  { date: '2026-03-01T09:22:00Z', prob: 35, score: 58, dur: 4 * 60 + 22, stage: 'discovery', objections: 2 },
-  { date: '2026-03-03T14:10:00Z', prob: 52, score: 64, dur: 7 * 60 + 15, stage: 'pitch',     objections: 1 },
-  { date: '2026-03-05T11:44:00Z', prob: 41, score: 55, dur: 5 * 60 + 44, stage: 'discovery', objections: 3 },
-  { date: '2026-03-07T15:33:00Z', prob: 67, score: 72, dur: 9 * 60 + 33, stage: 'close',     objections: 1 },
-  { date: '2026-03-10T10:12:00Z', prob: 29, score: 48, dur: 3 * 60 + 12, stage: 'opener',    objections: 4 },
-  { date: '2026-03-12T13:05:00Z', prob: 58, score: 69, dur: 8 * 60 + 5,  stage: 'pitch',     objections: 2 },
-  { date: '2026-03-14T16:22:00Z', prob: 74, score: 78, dur: 11 * 60 + 22, stage: 'close',    objections: 1 },
-  { date: '2026-03-17T09:48:00Z', prob: 63, score: 71, dur: 9 * 60 + 48, stage: 'pitch',     objections: 2 },
-  { date: '2026-03-19T14:17:00Z', prob: 81, score: 85, dur: 13 * 60 + 17, stage: 'close',    objections: 0 },
-  { date: '2026-03-22T11:56:00Z', prob: 55, score: 67, dur: 7 * 60 + 56, stage: 'discovery', objections: 2 },
-  { date: '2026-03-26T15:08:00Z', prob: 78, score: 82, dur: 12 * 60 + 8,  stage: 'close',    objections: 1 },
-  { date: '2026-03-29T10:33:00Z', prob: 86, score: 89, dur: 14 * 60 + 33, stage: 'close',    objections: 0 },
+  { date: daysAgo(28), prob: 35, score: 58, dur: 4 * 60 + 22, stage: 'discovery', objections: 2 },
+  { date: daysAgo(26), prob: 52, score: 64, dur: 7 * 60 + 15, stage: 'pitch',     objections: 1 },
+  { date: daysAgo(24), prob: 41, score: 55, dur: 5 * 60 + 44, stage: 'discovery', objections: 3 },
+  { date: daysAgo(22), prob: 67, score: 72, dur: 9 * 60 + 33, stage: 'close',     objections: 1 },
+  { date: daysAgo(19), prob: 29, score: 48, dur: 3 * 60 + 12, stage: 'opener',    objections: 4 },
+  { date: daysAgo(17), prob: 58, score: 69, dur: 8 * 60 + 5,  stage: 'pitch',     objections: 2 },
+  { date: daysAgo(15), prob: 74, score: 78, dur: 11 * 60 + 22, stage: 'close',    objections: 1 },
+  { date: daysAgo(12), prob: 63, score: 71, dur: 9 * 60 + 48, stage: 'pitch',     objections: 2 },
+  { date: daysAgo(10), prob: 81, score: 85, dur: 13 * 60 + 17, stage: 'close',    objections: 0 },
+  { date: daysAgo(7),  prob: 55, score: 67, dur: 7 * 60 + 56, stage: 'discovery', objections: 2 },
+  { date: daysAgo(3),  prob: 78, score: 82, dur: 12 * 60 + 8,  stage: 'close',    objections: 1 },
+  { date: daysAgo(0),  prob: 86, score: 89, dur: 14 * 60 + 33, stage: 'close',    objections: 0 },
 ];
 
 const MOCK_TEAM = [
-  { name: 'Alex Chen',  calls: 47, avgProb: 72, trainScore: 8.4, streak: 12, isYou: false },
-  { name: 'Sarah Kim',  calls: 38, avgProb: 68, trainScore: 7.9, streak: 8,  isYou: false },
-  { name: 'You',        calls: 12, avgProb: 66, trainScore: 7.8, streak: 5,  isYou: true  },
-  { name: 'Marcus J.',  calls: 29, avgProb: 61, trainScore: 7.1, streak: 3,  isYou: false },
-  { name: 'Priya P.',   calls: 22, avgProb: 54, trainScore: 6.8, streak: 2,  isYou: false },
+  { name: '[Demo] Alex Chen',  calls: 47, avgProb: 72, trainScore: 8.4, streak: 12, isYou: false },
+  { name: '[Demo] Sarah Kim',  calls: 38, avgProb: 68, trainScore: 7.9, streak: 8,  isYou: false },
+  { name: 'You',               calls: 12, avgProb: 66, trainScore: 7.8, streak: 5,  isYou: true  },
+  { name: '[Demo] Marcus J.',  calls: 29, avgProb: 61, trainScore: 7.1, streak: 3,  isYou: false },
+  { name: '[Demo] Priya P.',   calls: 22, avgProb: 54, trainScore: 6.8, streak: 2,  isYou: false },
 ];
 
 
