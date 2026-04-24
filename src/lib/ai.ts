@@ -79,6 +79,7 @@ export async function analyzeTranscript(
         config,
         lastLabel: memory?.lastLabel ?? null,
         language: config?.language ?? 'en-US',
+        currentPhaseLabel: memory?.phaseLabel ?? null,
       }),
       signal: streamController.signal,
     });
@@ -159,6 +160,12 @@ export async function analyzeTranscript(
 
     if (typeof data !== 'object' || data === null) throw new Error('Malformed AI response structure');
 
+    const VALID_STAGES: CallStage[] = ['opener', 'discovery', 'pitch', 'close'];
+    const aiDetectedStage = VALID_STAGES.includes(data.detectedStage as CallStage)
+      ? data.detectedStage as CallStage
+      : detectStage(elapsedSeconds);
+    const aiPhaseLabel = typeof data.phaseLabel === 'string' ? data.phaseLabel : undefined;
+
     if (!data.shouldShow) {
       // Remove any streaming placeholder we showed
       if (streamingShown && onStream) {
@@ -175,8 +182,9 @@ export async function analyzeTranscript(
       return {
         suggestions: [],
         updatedProbability: currentProbability,
-        updatedStage: detectStage(elapsedSeconds),
+        updatedStage: aiDetectedStage,
         updatedObjectionsCount: currentObjectionsCount,
+        phaseLabel: aiPhaseLabel,
       };
     }
 
@@ -196,8 +204,9 @@ export async function analyzeTranscript(
     return {
       suggestions: [suggestion],
       updatedProbability: clamp(currentProbability + ((data.probabilityDelta as number) ?? 0), 5, 95),
-      updatedStage: detectStage(elapsedSeconds),
+      updatedStage: aiDetectedStage,
       updatedObjectionsCount: currentObjectionsCount + ((data.objectionsCountDelta as number) ?? 0),
+      phaseLabel: aiPhaseLabel,
     };
   } catch (err) {
     console.error('[CallAssist] AI call failed, using fallback:', err instanceof Error ? err.message : err);

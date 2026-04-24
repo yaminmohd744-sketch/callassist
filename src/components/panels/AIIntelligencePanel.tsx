@@ -20,6 +20,7 @@ const TONE_COLOR: Record<ProspectTone, string> = {
 interface AIIntelligencePanelProps {
   suggestions: AISuggestion[];
   callStage: CallStage;
+  phaseLabel?: string;
   prospectTone?: ProspectTone | null;
   toneCoaching?: ToneCoaching | null;
 }
@@ -27,6 +28,7 @@ interface AIIntelligencePanelProps {
 export function AIIntelligencePanel({
   suggestions,
   callStage,
+  phaseLabel,
   prospectTone,
   toneCoaching,
 }: AIIntelligencePanelProps) {
@@ -80,7 +82,7 @@ export function AIIntelligencePanel({
             </div>
           )}
           <div className={`ai-panel__stage ai-panel__stage--${callStage}`}>
-            {STAGE_LABEL[callStage]}
+            {phaseLabel || STAGE_LABEL[callStage]}
           </div>
         </div>
       </div>

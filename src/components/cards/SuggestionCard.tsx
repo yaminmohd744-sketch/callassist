@@ -35,7 +35,10 @@ export function SuggestionCard({ suggestion }: SuggestionCardProps) {
         return (
           <>
             <div className="suggestion-card__script">
-              {script}
+              {!isStreaming && <span className="suggestion-card__say-label">SAY</span>}
+              <span className="suggestion-card__say-text">
+                {!isStreaming && '“'}{script}{!isStreaming && '”'}
+              </span>
               {isStreaming && <span className="suggestion-card__cursor" aria-hidden="true">▌</span>}
             </div>
             {!isStreaming && note && (

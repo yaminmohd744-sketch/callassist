@@ -22,6 +22,7 @@ const initialMemory: Memory = {
 
 export function useAICoach() {
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
+  const [phaseLabel, setPhaseLabel] = useState<string>('');
   const stateRef = useRef<AICoachState>({ ...initialState });
   const [coachState, setCoachState] = useState<AICoachState>({ ...initialState });
   const recentTriggersRef = useRef<Map<string, number>>(new Map());
@@ -84,6 +85,7 @@ export function useAICoach() {
     };
 
     updateState(nextState);
+    if (result.phaseLabel) setPhaseLabel(result.phaseLabel);
 
     if (result.suggestions.length > 0) {
       const primary = result.suggestions[0];
@@ -93,12 +95,18 @@ export function useAICoach() {
           ? primary.headline
           : memoryRef.current.lastObjectionType,
         closeAttempted: memoryRef.current.closeAttempted || primary.type === 'close-attempt',
+        phaseLabel: result.phaseLabel ?? memoryRef.current.phaseLabel,
       };
       // Keyword-fallback path - suggestion not already in state via onStream.
       setSuggestions(prev => {
         if (prev.some(s => s.id === primary.id)) return prev;
         return [primary, ...prev];
       });
+    } else {
+      memoryRef.current = {
+        ...memoryRef.current,
+        phaseLabel: result.phaseLabel ?? memoryRef.current.phaseLabel,
+      };
     }
   }, [updateState]);
 
@@ -122,6 +130,7 @@ export function useAICoach() {
 
   return {
     suggestions,
+    phaseLabel,
     closeProbability: coachState.closeProbability,
     callStage: coachState.callStage,
     objectionsCount: coachState.objectionsCount,

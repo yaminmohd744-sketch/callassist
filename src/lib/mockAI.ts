@@ -7,6 +7,7 @@ export interface Memory {
   lastLabel: string | null;
   lastObjectionType: string | null;
   closeAttempted: boolean;
+  phaseLabel?: string | null;
 }
 
 const LABEL_COOLDOWN    = 75; // seconds before the same neutral-preset label can repeat

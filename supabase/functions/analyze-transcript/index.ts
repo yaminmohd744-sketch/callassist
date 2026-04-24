@@ -26,7 +26,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { entry, transcript, stage, elapsedSeconds, probability, objectionsCount, config, lastLabel, language } =
+    const { entry, transcript, stage, elapsedSeconds, probability, objectionsCount, config, lastLabel, language, currentPhaseLabel } =
       await req.json();
 
     const langNote = language && language !== "en-US"
@@ -51,11 +51,9 @@ Your core principles:
 Context:
 - Selling: ${config?.yourPitch || "their product"}
 - Goal: ${config?.callGoal || "move the conversation forward"}
-${config?.prospectTitle ? `- Prospect role: ${config.prospectTitle}\n` : ''}- Stage: ${stage} | ${Math.floor(elapsedSeconds / 60)}min elapsed | Close probability: ${probability}%
-${config?.callType ? `- Call type: ${config.callType}\n` : ''}- Objections so far: ${objectionsCount}
+${config?.prospectTitle ? `- Prospect role: ${config.prospectTitle}\n` : ''}${config?.callType ? `- Call type: ${config.callType}\n` : ''}- ${Math.floor(elapsedSeconds / 60)}min elapsed | Close probability: ${probability}% | Objections: ${objectionsCount}
 - Last suggestion: ${lastLabel ?? "none"} — suggest something meaningfully different${langNote}
-${config?.priorContext ? `- Rep's prior context: ${config.priorContext}` : ''}
-
+${config?.priorContext ? `- Prior context: ${config.priorContext}\n` : ''}${currentPhaseLabel ? `- Current detected phase: ${currentPhaseLabel}\n` : ''}
 Recent conversation:
 ${recentEntries}
 
@@ -80,15 +78,22 @@ e.g. "Sounds like this solves X — want to walk through getting you started?"
 
 SILENCE — if the rep just asked something important, tell them to pause and let the prospect fill it.
 
+CALL PHASE: Based on the conversation content (not elapsed time), detect:
+1. "detectedStage": which of these 4 formal stages best fits right now: "opener", "discovery", "pitch", "close"
+2. "phaseLabel": a 3-6 word human-readable label for what's specifically happening (e.g. "Handling price objection", "Building initial rapport", "Prospect exploring the product", "Going for verbal commitment", "Cold intro", "Addressing timeline concern"). Be specific — not just "discovery" but what KIND of moment this is.
+Always return both fields, even when shouldShow is false.
+
 Respond ONLY with valid JSON (no markdown):
-{"shouldShow": boolean, "type": "tip"|"objection-response"|"close-attempt"|"discovery", "headline": string, "body": string, "probabilityDelta": number, "objectionsCountDelta": number}
+{"shouldShow": boolean, "type": "tip"|"objection-response"|"close-attempt"|"discovery", "headline": string, "body": string, "probabilityDelta": number, "objectionsCountDelta": number, "detectedStage": "opener"|"discovery"|"pitch"|"close", "phaseLabel": string}
 
 - "shouldShow": false for routine filler with no real coaching opportunity — default to false when in doubt
 - "type": "objection-response" for objections, "close-attempt" for buying signals, "discovery" for going deeper, "tip" for everything else
 - "headline": 2-4 words, sharp and tactical (e.g. "Ask Why Now", "Let Silence Work", "Reframe the Cost")
-- "body": exact words or action for the rep — under 50 words, first person, natural. Give the specific line when possible.
+- "body": Open with the EXACT VERBATIM LINE to say — ≤15 words, natural first-person speech, as if whispering it in their ear. No filler, no "you could say". Just the line. Then a double newline, then ONE sentence explaining the tactical reason this works. Example: "I hear you — what would need to change for this to make sense?\n\nTurns their objection into a solvable condition rather than a hard no."
 - "probabilityDelta": integer -10 to +10
-- "objectionsCountDelta": 0 or 1`;
+- "objectionsCountDelta": 0 or 1
+- "detectedStage": one of "opener", "discovery", "pitch", "close"
+- "phaseLabel": 3-6 word specific description of what's happening right now`;
 
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -104,7 +109,7 @@ Respond ONLY with valid JSON (no markdown):
           { role: "user", content: "Give your coaching suggestion." },
         ],
         stream: true,
-        max_tokens: 150,
+        max_tokens: 220,
         temperature: 0.55,
       }),
     });

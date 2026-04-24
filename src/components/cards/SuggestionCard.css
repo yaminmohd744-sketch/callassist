@@ -38,11 +38,25 @@
 
 /* The main "say this" text - large and prominent */
 .suggestion-card__script {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.suggestion-card__say-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-accent-purple);
+  opacity: 0.8;
+}
+
+.suggestion-card__say-text {
   font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.45;
-  margin-bottom: var(--space-3);
 }
 
 /* Small note below the script - coaching context, not what to say */

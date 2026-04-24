@@ -125,7 +125,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       });
     }).catch(() => { /* aborted — ignore */ });
   }, [config.language]);
-  const { suggestions, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion, reset: resetCoach } = useAICoach();
+  const { suggestions, phaseLabel, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion, reset: resetCoach } = useAICoach();
   const {
     tone: prospectTone,
     coaching: toneCoaching,
@@ -410,6 +410,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
             <AIIntelligencePanel
               suggestions={suggestions}
               callStage={callStage}
+              phaseLabel={phaseLabel}
               prospectTone={prospectTone}
               toneCoaching={toneCoaching}
             />
