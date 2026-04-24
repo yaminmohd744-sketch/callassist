@@ -7,23 +7,49 @@ import type { CallConfig } from '../types';
 import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
 
-type StringConfigField = 'prospectName' | 'company' | 'yourPitch' | 'callGoal' | 'language';
+type StringConfigField = 'prospectName' | 'company' | 'prospectTitle' | 'yourPitch' | 'callGoal' | 'callType' | 'priorContext' | 'language';
 type StringConfigErrors = Partial<Record<StringConfigField, string>>;
 
 interface PreCallScreenProps {
   onStartCall: (config: CallConfig) => void;
   onBack: () => void;
   defaultLanguage?: LanguageCode;
+  defaultCompany?: string;
+  defaultPitch?: string;
 }
 
-export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }: PreCallScreenProps) {
+const CALL_TYPES = [
+  { value: 'cold',        label: 'Cold call'       },
+  { value: 'warm',        label: 'Warm follow-up'  },
+  { value: 'referral',    label: 'Referral'         },
+  { value: 'discovery',   label: 'Discovery'        },
+  { value: 'demo',        label: 'Demo'             },
+  { value: 'negotiation', label: 'Negotiation'      },
+  { value: 'close',       label: 'Closing call'     },
+];
+
+const GOAL_PLACEHOLDERS: Record<string, string> = {
+  cold:        'e.g. Get them to agree to a 20-minute discovery call',
+  warm:        'e.g. Follow up on the proposal and confirm next steps',
+  referral:    'e.g. Introduce yourself and schedule a demo',
+  discovery:   'e.g. Uncover budget, timeline, and key pain points',
+  demo:        'e.g. Show the dashboard, address their data security concern',
+  negotiation: 'e.g. Agree on pricing, handle the contract length objection',
+  close:       'e.g. Get a verbal yes and confirm the start date',
+  default:     'e.g. What do you want to walk away with from this call?',
+};
+
+export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', defaultCompany = '', defaultPitch = '' }: PreCallScreenProps) {
   const [prevTip] = useState<string | null>(() => localStorage.getItem('callassist:nextCallTip'));
   const [tipDismissed, setTipDismissed] = useState(false);
   const [form, setForm] = useState<CallConfig>({
     prospectName: '',
-    company: '',
-    yourPitch: '',
+    company: defaultCompany,
+    prospectTitle: '',
+    callType: '',
     callGoal: '',
+    priorContext: '',
+    yourPitch: defaultPitch,
     language: defaultLanguage,
   });
   const t = useTranslations();
@@ -36,6 +62,10 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
     setForm(f => ({ ...f, [field]: value }));
     if (errors[field]) setErrors(e => ({ ...e, [field]: '' }));
     if (field === 'yourPitch') setEnhanced(false);
+  }
+
+  function handleCallType(value: string) {
+    setForm(f => ({ ...f, callType: f.callType === value ? '' : value }));
   }
 
   async function handleEnhancePitch() {
@@ -61,9 +91,10 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
       setErrors(newErrors);
       return;
     }
-
     onStartCall(form);
   }
+
+  const goalPlaceholder = GOAL_PLACEHOLDERS[form.callType ?? ''] ?? GOAL_PLACEHOLDERS.default;
 
   return (
     <div className="precall">
@@ -84,9 +115,13 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
         )}
 
         <h2 className="precall__title">{t.precall.title}</h2>
-        <p className="precall__desc">Give the AI context before your call starts. The more detail, the better the coaching.</p>
+        <p className="precall__desc">Give the AI context before your call. The more specific you are, the sharper the coaching.</p>
 
         <div className="precall__form">
+
+          {/* ── Who are you calling? ── */}
+          <div className="precall__section-label">Who are you calling?</div>
+
           <div className="precall__row">
             <div className={`precall__field ${errors.prospectName ? 'precall__field--error' : ''}`}>
               <label className="precall__label">{t.precall.prospectName} <span className="precall__required">*</span></label>
@@ -95,20 +130,48 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
                 placeholder={t.precall.prospectNamePlaceholder}
                 value={form.prospectName}
                 onChange={e => handleChange('prospectName', e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                autoFocus
               />
               {errors.prospectName && <span className="precall__error">{errors.prospectName}</span>}
             </div>
 
             <div className="precall__field">
-              <label className="precall__label">{t.precall.company}</label>
+              <label className="precall__label">Their Title / Role</label>
               <input
                 className="precall__input"
-                placeholder={t.precall.companyPlaceholder}
-                value={form.company}
-                onChange={e => handleChange('company', e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                placeholder="e.g. VP of Sales, CFO, Head of Marketing"
+                value={form.prospectTitle ?? ''}
+                onChange={e => handleChange('prospectTitle', e.target.value)}
               />
+            </div>
+          </div>
+
+          <div className="precall__field">
+            <label className="precall__label">{t.precall.company}</label>
+            <input
+              className="precall__input"
+              placeholder={t.precall.companyPlaceholder}
+              value={form.company}
+              onChange={e => handleChange('company', e.target.value)}
+            />
+          </div>
+
+          {/* ── About this call ── */}
+          <div className="precall__section-label">About this call</div>
+
+          <div className="precall__field">
+            <label className="precall__label">Call Type</label>
+            <div className="precall__chips">
+              {CALL_TYPES.map(ct => (
+                <button
+                  key={ct.value}
+                  type="button"
+                  className={`precall__chip${form.callType === ct.value ? ' precall__chip--active' : ''}`}
+                  onClick={() => handleCallType(ct.value)}
+                >
+                  {ct.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -116,13 +179,33 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
             <label className="precall__label">{t.precall.callGoal} <span className="precall__required">*</span></label>
             <input
               className="precall__input"
-              placeholder={t.precall.callGoalPlaceholder}
+              placeholder={goalPlaceholder}
               value={form.callGoal}
               onChange={e => handleChange('callGoal', e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
             />
             {errors.callGoal && <span className="precall__error">{errors.callGoal}</span>}
           </div>
+
+          {/* ── Context (optional) ── */}
+          <div className="precall__section-label">
+            Context
+            <span className="precall__section-optional">optional but powerful</span>
+          </div>
+
+          <div className="precall__field">
+            <label className="precall__label">What do you know about them?</label>
+            <textarea
+              className="precall__textarea"
+              placeholder="Pain points, research from LinkedIn, what they mentioned last time, objections you're expecting, trigger events (funding round, new hire, etc.)…"
+              value={form.priorContext ?? ''}
+              onChange={e => handleChange('priorContext', e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          {/* ── Your pitch ── */}
+          <div className="precall__section-label">Your pitch</div>
 
           <div className="precall__field">
             <div className="precall__label-row">
@@ -139,7 +222,7 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
                 ) : enhanced ? (
                   '✓ Enhanced'
                 ) : (
-                  '◈ Generate'
+                  '◈ Enhance'
                 )}
               </button>
             </div>
@@ -148,10 +231,11 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
               placeholder={t.precall.yourPitchPlaceholder}
               value={form.yourPitch}
               onChange={e => handleChange('yourPitch', e.target.value)}
-              rows={4}
+              rows={3}
             />
           </div>
 
+          {/* ── Language ── */}
           <div className="precall__field">
             <label className="precall__label">{t.precall.language}</label>
             <div className="precall__lang-grid">
@@ -166,17 +250,6 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US' }
                   <span>{l.label}</span>
                 </button>
               ))}
-            </div>
-          </div>
-
-          <div className="precall__hints">
-            <div className="precall__hint">
-              <span className="precall__hint-icon">◎</span>
-              The AI uses your pitch and goal to generate personalized objection responses
-            </div>
-            <div className="precall__hint">
-              <span className="precall__hint-icon">◎</span>
-              Voice recognition works best in Chrome - or use manual text input
             </div>
           </div>
 

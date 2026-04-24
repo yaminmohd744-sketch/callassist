@@ -293,3 +293,44 @@
   color: var(--color-text-secondary);
   letter-spacing: 0.04em;
 }
+
+/* ─── Crash recovery banner ───────────────────────────────── */
+
+.live-call__recovery-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: rgba(129, 74, 200, 0.12);
+  border-bottom: 1px solid rgba(129, 74, 200, 0.3);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  z-index: 20;
+}
+
+.live-call__recovery-banner span {
+  flex: 1;
+}
+
+.live-call__recovery-btn {
+  padding: 4px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity 0.15s;
+}
+.live-call__recovery-btn:hover { opacity: 0.8; }
+
+.live-call__recovery-btn--restore {
+  background: rgba(129, 74, 200, 0.25);
+  border-color: rgba(129, 74, 200, 0.5);
+  color: #df7afe;
+}
+
+.live-call__recovery-btn--dismiss {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-muted);
+}

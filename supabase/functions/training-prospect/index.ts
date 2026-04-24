@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { LANG_NAMES } from "../_shared/lang.ts";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
 
@@ -28,11 +29,6 @@ Deno.serve(async (req: Request) => {
   try {
     const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, userResponse, language } = await req.json();
 
-    const LANG_NAMES: Record<string, string> = {
-      'es-ES': 'Spanish', 'fr-FR': 'French', 'pt-BR': 'Portuguese',
-      'de-DE': 'German',  'it-IT': 'Italian', 'nl-NL': 'Dutch',
-      'zh-CN': 'Mandarin Chinese', 'ja-JP': 'Japanese', 'ar-SA': 'Arabic',
-    };
     const langName = language && language !== 'en-US' ? LANG_NAMES[language] ?? language : null;
     const langPrefix = langName
       ? `LANGUAGE REQUIREMENT: You must write ALL output exclusively in ${langName}. Every word of every field in your JSON response must be in ${langName}. Do not use English.\n\n`
@@ -71,8 +67,6 @@ Read the full conversation so far. If the rep has been handling your objections 
 
 If the rep is struggling — not addressing your concern, being generic, or losing control — stay resistant and give them a harder version of the same block.
 
-The sales rep just said: "${userResponse}"
-
 Stay in character. Respond naturally as this prospect would. Keep your response short (1-3 sentences max).
 
 Also output a "tone" field — the single word that best describes your current emotional tone as this prospect.
@@ -81,7 +75,7 @@ Choose from: Skeptical, Curious, Defensive, Warm, Disengaged, Frustrated, Excite
 Respond ONLY with valid JSON:
 { "prospectResponse": string, "prospectTone": string }${difficultyNote}`;
 
-    const conversationHistory = (messages as Array<{ role: string; text: string }>).map((m) => ({
+    const conversationHistory = (messages as Array<{ role: string; text: string }>).slice(-10).map((m) => ({
       role: m.role === 'rep' ? 'user' : 'assistant',
       content: m.text,
     }));
@@ -94,6 +88,7 @@ Respond ONLY with valid JSON:
           { role: 'user', content: `${userResponse}${langReminder}` },
         ];
 
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -114,6 +109,7 @@ Respond ONLY with valid JSON:
 
     const data = await response.json();
     if (data.error) throw new Error(`OpenAI error: ${data.error.message}`);
+    if (!data.choices?.length) throw new Error(`OpenAI returned no choices: ${JSON.stringify(data)}`);
     const result = JSON.parse(data.choices[0].message.content);
 
     return new Response(JSON.stringify(result), {

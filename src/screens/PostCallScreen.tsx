@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '../components/ui/Button';
-import type { CallSession } from '../types';
+import type { CallSession, CallOutcome } from '../types';
+import { loadRecording } from '../hooks/useCallRecorder';
 import { formatDuration, formatDateLong } from '../lib/formatters';
 import { useTranslations } from '../hooks/useTranslations';
 import { computeRepScore } from '../lib/repScore';
@@ -52,6 +53,7 @@ interface PostCallScreenProps {
   session: CallSession;
   onBack: () => void;
   onNewCall: () => void;
+  onUpdateOutcome?: (outcome: CallOutcome) => void;
 }
 
 function renderSummary(text: string) {
@@ -70,9 +72,15 @@ function renderSummary(text: string) {
   });
 }
 
-export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenProps) {
+export function PostCallScreen({ session, onBack, onNewCall, onUpdateOutcome }: PostCallScreenProps) {
+  const [outcome, setOutcome] = useState<CallOutcome>(session.outcome ?? null);
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'coaching' | 'summary' | 'transcript' | 'email' | 'scorecard'>(session.coaching ? 'coaching' : 'summary');
+  const [activeTab, setActiveTab] = useState<'coaching' | 'summary' | 'transcript' | 'email' | 'scorecard' | 'replay'>(session.coaching ? 'coaching' : 'summary');
+  const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
+  const [replayCurrentTime, setReplayCurrentTime] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [emailDraft, setEmailDraft] = useState(session.followUpEmail);
+  const emailEdited = emailDraft !== session.followUpEmail;
 
   // Phase 4: CRM export state
   const [jsonCopied, setJsonCopied] = useState(false);
@@ -94,14 +102,29 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
     : 100;
   const buyingSignals = session.suggestions.filter(s => s.type === 'close-attempt').length;
 
+  useEffect(() => {
+    if (activeTab !== 'replay' || !session.recordingKey || recordingUrl) return;
+    loadRecording(session.recordingKey).then(blob => {
+      if (blob) setRecordingUrl(URL.createObjectURL(blob));
+    }).catch(() => {});
+    return () => { if (recordingUrl) URL.revokeObjectURL(recordingUrl); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, session.recordingKey]);
+
+  function handleOutcome(o: CallOutcome) {
+    const next = outcome === o ? null : o;
+    setOutcome(next);
+    onUpdateOutcome?.(next);
+  }
+
   async function handleCopyEmail() {
-    await navigator.clipboard.writeText(session.followUpEmail);
+    await navigator.clipboard.writeText(emailDraft);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
 
   function handleDownloadEmail() {
-    downloadFile(`followup-${slug}.txt`, session.followUpEmail);
+    downloadFile(`followup-${slug}.txt`, emailDraft);
   }
 
   function handleDownloadTranscript() {
@@ -131,7 +154,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
   function handleOpenMailto() {
     const subject = encodeURIComponent(`Follow-up: ${session.config.prospectName}${session.config.company ? ` @ ${session.config.company}` : ''}`);
-    const body = encodeURIComponent(session.followUpEmail);
+    const body = encodeURIComponent(emailDraft);
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
   }
 
@@ -154,7 +177,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
         repScore,
         objectionsCount: session.objectionsCount,
         aiSummary: session.aiSummary,
-        followUpEmail: session.followUpEmail,
+        followUpEmail: emailDraft,
       };
       await fetch(webhookUrl.trim(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       setWebhookStatus('ok');
@@ -187,6 +210,22 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
             ▶ {t.postcall.newCall}
           </Button>
         </div>
+      </div>
+
+      <div className="postcall__outcome-row">
+        <span className="postcall__outcome-label">Did this convert?</span>
+        <button
+          className={`postcall__outcome-btn postcall__outcome-btn--won${outcome === 'converted' ? ' postcall__outcome-btn--active' : ''}`}
+          onClick={() => handleOutcome('converted')}
+        >✓ Converted</button>
+        <button
+          className={`postcall__outcome-btn postcall__outcome-btn--pipeline${outcome === 'pipeline' ? ' postcall__outcome-btn--active' : ''}`}
+          onClick={() => handleOutcome('pipeline')}
+        >◷ Pipeline</button>
+        <button
+          className={`postcall__outcome-btn postcall__outcome-btn--lost${outcome === 'no-deal' ? ' postcall__outcome-btn--active' : ''}`}
+          onClick={() => handleOutcome('no-deal')}
+        >✗ No Deal</button>
       </div>
 
       <div className="postcall__stats-row">
@@ -257,6 +296,16 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
           className={`postcall__tab ${activeTab === 'email' ? 'postcall__tab--active' : ''}`}
           onClick={() => setActiveTab('email')}
         >{t.postcall.followUp}</button>
+        {session.recordingKey && (
+          <button
+            role="tab"
+            aria-selected={activeTab === 'replay'}
+            id="postcall-tab-replay"
+            aria-controls="postcall-panel-replay"
+            className={`postcall__tab ${activeTab === 'replay' ? 'postcall__tab--active' : ''}`}
+            onClick={() => setActiveTab('replay')}
+          >▶ REPLAY</button>
+        )}
         <button
           role="tab"
           aria-selected={activeTab === 'scorecard'}
@@ -377,8 +426,21 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
               <Button variant="secondary" size="sm" onClick={handleCopyJson}>
                 {jsonCopied ? '✓ Copied' : '⎘ Copy JSON'}
               </Button>
+              {emailEdited && (
+                <Button variant="secondary" size="sm" onClick={() => setEmailDraft(session.followUpEmail)}>
+                  ↺ Reset to AI version
+                </Button>
+              )}
             </div>
-            <pre className="postcall__pre postcall__pre--email">{session.followUpEmail}</pre>
+            {emailEdited && (
+              <div className="postcall__email-edited-badge">✎ Edited — copy or download to save your changes</div>
+            )}
+            <textarea
+              className="postcall__email-editor"
+              value={emailDraft}
+              onChange={e => setEmailDraft(e.target.value)}
+              spellCheck={false}
+            />
 
             {/* Integrations / Zapier */}
             <div className="postcall__integrations">
@@ -506,6 +568,46 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'replay' && (
+          <div className="postcall__replay" role="tabpanel" id="postcall-panel-replay" aria-labelledby="postcall-tab-replay" tabIndex={0}>
+            {!recordingUrl ? (
+              <div className="postcall__replay-loading">
+                <div className="postcall__replay-loading-icon">▶</div>
+                <div>Loading recording…</div>
+              </div>
+            ) : (
+              <>
+                <audio
+                  ref={audioRef}
+                  src={recordingUrl}
+                  controls
+                  className="postcall__replay-audio"
+                  onTimeUpdate={e => setReplayCurrentTime((e.target as HTMLAudioElement).currentTime)}
+                />
+                <div className="postcall__replay-timeline">
+                  {session.transcript.map((entry, i) => {
+                    const isActive = replayCurrentTime >= entry.timestampSeconds &&
+                      (i === session.transcript.length - 1 || replayCurrentTime < session.transcript[i + 1].timestampSeconds);
+                    const mins = String(Math.floor(entry.timestampSeconds / 60)).padStart(2, '0');
+                    const secs = String(entry.timestampSeconds % 60).padStart(2, '0');
+                    return (
+                      <div
+                        key={entry.id}
+                        className={`postcall__replay-entry postcall__replay-entry--${entry.speaker}${isActive ? ' postcall__replay-entry--active' : ''}`}
+                        onClick={() => { if (audioRef.current) audioRef.current.currentTime = entry.timestampSeconds; }}
+                      >
+                        <span className="postcall__replay-ts">{mins}:{secs}</span>
+                        <span className="postcall__replay-speaker">{entry.speaker === 'rep' ? 'YOU' : 'PROSPECT'}</span>
+                        <span className="postcall__replay-text">{entry.text}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

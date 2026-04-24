@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const HUBSPOT_BASE = "https://api.hubapi.com";
 
@@ -26,6 +27,18 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  const jwt = req.headers.get("Authorization")?.replace("Bearer ", "") ?? "";
+  const { data: { user } } = await createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  ).auth.getUser(jwt);
+  if (!user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
   try {
     const { hubspotToken, session } = await req.json();
     if (!hubspotToken) throw new Error("No HubSpot token provided");
@@ -39,12 +52,12 @@ Deno.serve(async (req: Request) => {
 
     const searchResult = await hs(hubspotToken, "POST", "/crm/v3/objects/contacts/search", {
       filterGroups: [{
-        filters: [{
-          propertyName: "firstname",
-          operator: "EQ",
-          value: firstName,
-        }],
+        filters: [
+          { propertyName: "firstname", operator: "EQ", value: firstName },
+          { propertyName: "company",   operator: "EQ", value: config.company ?? "" },
+        ],
       }],
+      properties: ["firstname", "company"],
       limit: 1,
     });
 
@@ -66,6 +79,7 @@ Deno.serve(async (req: Request) => {
       properties: {
         dealname: `${config.prospectName} — ${config.callGoal}`,
         pipeline: "default",
+        // These are HubSpot default pipeline stage IDs. Update to match your pipeline if customized.
         dealstage: (finalCloseProbability as number) >= 60 ? "presentationscheduled" : "appointmentscheduled",
       },
       associations: [{

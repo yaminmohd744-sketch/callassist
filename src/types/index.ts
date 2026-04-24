@@ -6,6 +6,10 @@ export interface CallConfig {
   yourPitch: string;
   callGoal: string;
   language: string; // BCP 47 language code, e.g. 'en-US', 'es-ES'
+  // Optional enrichment fields — set during pre-call setup
+  prospectTitle?: string;  // their job title / role
+  callType?: string;       // 'cold' | 'warm' | 'referral' | 'discovery' | 'demo' | 'negotiation' | 'close'
+  priorContext?: string;   // research, previous interactions, expected objections
 }
 
 // ─── Transcript ──────────────────────────────────────────────────────────────
@@ -136,6 +140,8 @@ export interface CoachingWalkthrough {
 
 // ─── Session ─────────────────────────────────────────────────────────────────
 
+export type CallOutcome = 'converted' | 'pipeline' | 'no-deal' | null;
+
 export interface CallSession {
   config: CallConfig;
   transcript: TranscriptEntry[];
@@ -151,4 +157,6 @@ export interface CallSession {
   notes: string[];
   talkRatio?: number;
   coaching?: CoachingWalkthrough;
+  outcome?: CallOutcome;
+  recordingKey?: string;
 }

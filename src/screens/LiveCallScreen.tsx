@@ -13,6 +13,8 @@ import { generateSessionSummary, classifySignalAI } from '../lib/ai';
 import { classifySignal, PROSPECT_PHRASES, REP_PHRASES, PROSPECT_REACTIONS } from '../lib/keywords';
 import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSpeaker } from '../types';
 import { genId } from '../lib/id';
+import { saveDraft, loadDraft, clearDraft } from '../lib/callDraft';
+import { useCallRecorder } from '../hooks/useCallRecorder';
 import './LiveCallScreen.css';
 
 // Classify who is speaking based on content + conversational context.
@@ -72,6 +74,10 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [manualSpeaker, setManualSpeaker] = useState<'rep' | 'prospect'>('prospect');
   const [isSummarising, setIsSummarising] = useState(false);
   const [minimized, setMinimized] = useState(false);
+  const [draftRecovery, setDraftRecovery] = useState<{ transcript: TranscriptEntry[]; startedAt: string } | null>(null);
+  const startedAtRef = useRef(new Date().toISOString());
+  const recordingKeyRef = useRef(startedAtRef.current);
+  const { startRecording, stopRecording, isSupported: recordingSupported } = useCallRecorder();
 
   const bubbleRef = useRef<HTMLDivElement>(null);
   const dragOffset = useRef<{ x: number; y: number } | null>(null);
@@ -161,6 +167,30 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Check for a crash-recovery draft on mount
+  useEffect(() => {
+    loadDraft().then(draft => {
+      if (!draft || draft.transcript.length === 0) return;
+      setDraftRecovery({ transcript: draft.transcript, startedAt: draft.startedAt });
+    }).catch(() => { /* IndexedDB unavailable — silent */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-save draft to IndexedDB every 10 seconds during an active call
+  useEffect(() => {
+    if (callStatus !== 'active') return;
+    const id = setInterval(() => {
+      saveDraft({
+        config,
+        transcript: transcriptRef.current,
+        suggestions,
+        startedAt: startedAtRef.current,
+        savedAt: new Date().toISOString(),
+      }).catch(() => { /* silent */ });
+    }, 10_000);
+    return () => clearInterval(id);
+  }, [callStatus, config, suggestions]);
+
   // Push live call data to the Electron overlay window whenever it changes.
   useEffect(() => {
     if (!window.electronAPI) return;
@@ -190,6 +220,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     startTimer();
     startListening();
     startToneCapture();
+    if (recordingSupported) startRecording();
     return () => { stopToneCapture(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -253,6 +284,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     stopListening();
     stopToneCapture();
     stopTimer();
+    await stopRecording(recordingKeyRef.current);
     window.electronAPI?.closeOverlay();
     setIsSummarising(true);
     try {
@@ -265,6 +297,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       );
 
       localStorage.setItem('callassist:nextCallTip', coaching.nextCallTip);
+      clearDraft().catch(() => { /* silent */ });
 
       const repTurns = transcript.filter(e => e.speaker === 'rep').length;
       const talkRatio = transcript.length > 0 ? repTurns / transcript.length : 0.5;
@@ -284,6 +317,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         notes,
         talkRatio,
         coaching,
+        recordingKey: recordingSupported ? recordingKeyRef.current : undefined,
       };
       onEndCall(session);
     } catch {
@@ -332,6 +366,20 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
   return (
     <div className="live-call">
+      {draftRecovery && (
+        <div className="live-call__recovery-banner">
+          <span>↺ Unsaved transcript found from {new Date(draftRecovery.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} — restore it?</span>
+          <button className="live-call__recovery-btn live-call__recovery-btn--restore" onClick={() => {
+            setTranscript(draftRecovery.transcript);
+            transcriptRef.current = draftRecovery.transcript;
+            setDraftRecovery(null);
+          }}>Restore</button>
+          <button className="live-call__recovery-btn live-call__recovery-btn--dismiss" onClick={() => {
+            clearDraft().catch(() => {});
+            setDraftRecovery(null);
+          }}>Dismiss</button>
+        </div>
+      )}
       {!minimized && (
         <>
           <Header

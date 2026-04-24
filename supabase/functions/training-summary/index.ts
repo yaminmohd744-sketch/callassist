@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { LANG_NAMES } from "../_shared/lang.ts";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
 
@@ -28,11 +29,6 @@ Deno.serve(async (req: Request) => {
   try {
     const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, overallScore, exitTrigger, language } = await req.json();
 
-    const LANG_NAMES: Record<string, string> = {
-      'es-ES': 'Spanish', 'fr-FR': 'French', 'pt-BR': 'Portuguese',
-      'de-DE': 'German',  'it-IT': 'Italian', 'nl-NL': 'Dutch',
-      'zh-CN': 'Mandarin Chinese', 'ja-JP': 'Japanese', 'ar-SA': 'Arabic',
-    };
     const langName = (language && language !== 'en-US') ? (LANG_NAMES[language] ?? language) : null;
     const langPrefix = langName
       ? `LANGUAGE REQUIREMENT: You must write ALL output exclusively in ${langName}. Every word of every field in your JSON response must be in ${langName}. Do not use English.\n\n`
@@ -43,6 +39,7 @@ Deno.serve(async (req: Request) => {
       role: string;
       text: string;
     }>)
+      .slice(-10)
       .map((m) => `${m.role === 'rep' ? 'REP' : 'PROSPECT'}: "${m.text}"`)
       .join('\n');
 
@@ -96,6 +93,7 @@ Respond ONLY with valid JSON:
 - "improvements": 1-2 concrete, actionable improvements tied to actual moments in this session. What should they do differently? Be specific — not "be more confident" but "when the prospect said X, you should have Y."
 - "keyTakeaway": One crisp sentence — the single most useful thing to take from this session.`;
 
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
     const langReminder = langName ? ` Respond entirely in ${langName}.` : '';
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -114,6 +112,7 @@ Respond ONLY with valid JSON:
 
     const data = await response.json();
     if (data.error) throw new Error(`OpenAI error: ${data.error.message}`);
+    if (!data.choices?.length) throw new Error(`OpenAI returned no choices: ${JSON.stringify(data)}`);
     const result = JSON.parse(data.choices[0].message.content);
 
     return new Response(JSON.stringify(result), {

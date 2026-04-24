@@ -129,22 +129,54 @@
 }
 
 .training__session-quota {
-  display: inline-block;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
   margin-top: var(--space-3);
-  padding: 4px 12px;
+  padding: 8px 14px;
   font-size: var(--font-size-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
-  border-radius: 4px;
+  border-radius: 6px;
   background: rgba(129, 74, 200, 0.1);
   border: 1px solid rgba(129, 74, 200, 0.3);
   color: var(--color-text-secondary);
+  min-width: 220px;
+}
+
+.training__session-quota--warning {
+  background: rgba(240, 224, 64, 0.08);
+  border-color: rgba(240, 224, 64, 0.35);
+  color: var(--color-accent-yellow);
 }
 
 .training__session-quota--exhausted {
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.4);
   color: var(--color-accent-red);
+}
+
+.training__session-quota-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.training__session-quota-fill {
+  height: 100%;
+  background: var(--color-accent-purple);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.training__session-quota--warning .training__session-quota-fill {
+  background: var(--color-accent-yellow);
+}
+
+.training__session-quota--exhausted .training__session-quota-fill {
+  background: var(--color-accent-red);
+  width: 100% !important;
 }
 
 .training__scenario-card--locked {

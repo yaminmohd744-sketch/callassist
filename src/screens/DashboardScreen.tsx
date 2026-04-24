@@ -8,6 +8,43 @@ import { formatDuration, formatDateShort, formatDateFull } from '../lib/formatte
 import { useTranslations } from '../hooks/useTranslations';
 import './DashboardScreen.css';
 
+function escapeCsvField(val: string | number): string {
+  const s = String(val ?? '');
+  return s.includes(',') || s.includes('"') || s.includes('\n')
+    ? `"${s.replace(/"/g, '""')}"`
+    : s;
+}
+
+function buildSessionsCSV(sessions: CallSession[]): string {
+  const headers = ['Date', 'Prospect', 'Company', 'Duration', 'Close%', 'Lead Score', 'Objections', 'Stage', 'Call Type', 'Outcome'];
+  const rows = sessions
+    .slice()
+    .sort((a, b) => new Date(b.endedAt).getTime() - new Date(a.endedAt).getTime())
+    .map(s => [
+      new Date(s.endedAt).toLocaleDateString(),
+      s.config.prospectName || '',
+      s.config.company || '',
+      formatDuration(s.durationSeconds),
+      s.finalCloseProbability,
+      s.leadScore,
+      s.objectionsCount,
+      s.callStage || '',
+      s.config.callType || '',
+      (s as CallSession & { outcome?: string }).outcome || '',
+    ].map(escapeCsvField));
+  return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+}
+
+function downloadCSV(filename: string, content: string) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 interface DateGroup {
   label: string;
   sessions: CallSession[];
@@ -344,6 +381,15 @@ export function DashboardScreen({
               <h1 className="dashboard__title">CALL HISTORY</h1>
               <p className="dashboard__subtitle">Every call you've made — click any entry to review the coaching breakdown.</p>
             </div>
+            {pastSessions.length > 0 && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => downloadCSV(`pitch-plus-calls-${new Date().toISOString().slice(0, 10)}.csv`, buildSessionsCSV(pastSessions))}
+              >
+                ↓ Export CSV
+              </Button>
+            )}
           </div>
 
           {pastSessions.length === 0 ? (
@@ -394,6 +440,12 @@ export function DashboardScreen({
                               <span className="history__meta-dur">{formatDuration(session.durationSeconds)}</span>
                               <span className="history__meta-dot">·</span>
                               <span className={`history__meta-stage history__meta-stage--${session.callStage}`}>{session.callStage.toUpperCase()}</span>
+                              {session.outcome && (
+                                <><span className="history__meta-dot">·</span>
+                                <span className={`history__meta-outcome history__meta-outcome--${session.outcome}`}>
+                                  {session.outcome === 'converted' ? '✓ Converted' : session.outcome === 'pipeline' ? '◷ Pipeline' : '✗ No Deal'}
+                                </span></>
+                              )}
                             </div>
                           </div>
 

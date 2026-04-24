@@ -40,6 +40,13 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (audio.length > 2_000_000) {
+      return new Response(JSON.stringify({ error: "Audio clip too large (max ~10s)" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
     // Derive a clean format string for the OpenAI API
     // mimeType examples: "audio/webm;codecs=opus", "audio/webm", "audio/ogg"
     const rawMime = (mimeType ?? "audio/webm").split(";")[0].trim();
@@ -79,6 +86,7 @@ Respond ONLY with valid JSON:
   "say": string
 }`;
 
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
     // Call GPT-4o audio-preview with the actual audio
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

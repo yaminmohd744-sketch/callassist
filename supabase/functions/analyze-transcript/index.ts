@@ -34,7 +34,8 @@ Deno.serve(async (req: Request) => {
       : "";
 
     // Only last 3 exchanges for speed — enough context without bloat
-    const recentEntries = (transcript as Array<{ speaker: string; text: string }>)
+    const safeTranscript = Array.isArray(transcript) ? transcript : [];
+    const recentEntries = (safeTranscript as Array<{ speaker: string; text: string }>)
       .slice(-3)
       .map((e) => `${e.speaker === "rep" ? "REP" : "PROSPECT"}: ${e.text}`)
       .join("\n");
@@ -50,9 +51,10 @@ Your core principles:
 Context:
 - Selling: ${config?.yourPitch || "their product"}
 - Goal: ${config?.callGoal || "move the conversation forward"}
-- Stage: ${stage} | ${Math.floor(elapsedSeconds / 60)}min elapsed | Close probability: ${probability}%
-- Objections so far: ${objectionsCount}
+${config?.prospectTitle ? `- Prospect role: ${config.prospectTitle}\n` : ''}- Stage: ${stage} | ${Math.floor(elapsedSeconds / 60)}min elapsed | Close probability: ${probability}%
+${config?.callType ? `- Call type: ${config.callType}\n` : ''}- Objections so far: ${objectionsCount}
 - Last suggestion: ${lastLabel ?? "none"} — suggest something meaningfully different${langNote}
+${config?.priorContext ? `- Rep's prior context: ${config.priorContext}` : ''}
 
 Recent conversation:
 ${recentEntries}
@@ -88,6 +90,7 @@ Respond ONLY with valid JSON (no markdown):
 - "probabilityDelta": integer -10 to +10
 - "objectionsCountDelta": 0 or 1`;
 
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {

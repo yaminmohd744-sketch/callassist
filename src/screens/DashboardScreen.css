@@ -718,6 +718,26 @@
 .history__meta-stage--discovery { color: #f5a623; }
 .history__meta-stage--opener    { color: var(--color-text-muted); }
 
+.history__meta-outcome {
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.history__meta-outcome--converted {
+  background: rgba(57, 211, 83, 0.12);
+  color: var(--color-accent-green);
+}
+.history__meta-outcome--pipeline {
+  background: rgba(129, 74, 200, 0.12);
+  color: var(--color-accent-magenta);
+}
+.history__meta-outcome--no-deal {
+  background: rgba(255, 68, 68, 0.1);
+  color: var(--color-accent-red);
+}
+
 .history__card-scores {
   display: flex;
   flex-direction: column;

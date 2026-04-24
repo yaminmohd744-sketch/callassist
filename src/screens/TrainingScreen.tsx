@@ -478,13 +478,23 @@ export function TrainingScreen({ onBack, appLanguage = 'en-US' }: TrainingScreen
           <div className="training__selection-header">
             <h1 className="training__selection-title">{t.training.title}</h1>
             <p className="training__selection-sub">{t.training.subtitle}</p>
-            {scenarioLimit !== null && (
-              <div className={`training__session-quota${limitReached ? ' training__session-quota--exhausted' : ''}`}>
-                {limitReached
-                  ? t.training.quotaExhausted(scenarioLimit)
-                  : t.training.quota(monthlyCount, scenarioLimit)}
-              </div>
-            )}
+            {scenarioLimit !== null && (() => {
+              const remaining = scenarioLimit - monthlyCount;
+              const pct = Math.min((monthlyCount / scenarioLimit) * 100, 100);
+              const modifier = limitReached ? ' training__session-quota--exhausted' : remaining <= 2 ? ' training__session-quota--warning' : '';
+              return (
+                <div className={`training__session-quota${modifier}`}>
+                  <span className="training__session-quota-text">
+                    {limitReached
+                      ? t.training.quotaExhausted(scenarioLimit)
+                      : t.training.quota(monthlyCount, scenarioLimit)}
+                  </span>
+                  <div className="training__session-quota-bar">
+                    <div className="training__session-quota-fill" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           {state.error && <div className="training__error">{state.error}</div>}
           <div className="training__lang-row">

@@ -33,7 +33,7 @@ Deno.serve(async (req: Request) => {
       : '';
 
     const buyingSignals = (suggestions as Array<{ type: string }>).filter(
-      (s) => s.type === "closing-prompt"
+      (s) => s.type === "close-attempt"
     ).length;
 
     const formattedTranscript = (transcript as Array<{ speaker: string; text: string; timestampSeconds: number }>)
@@ -55,9 +55,10 @@ Schema: { "aiSummary": string, "followUpEmail": string, "leadScore": number }
 - "leadScore": Integer 0-100. Weight: close probability (50%), buying signals (25%), minus objections (25%).${langNote}`;
 
     const userMessage = `Call details:
-Prospect: ${config.prospectName} at ${config.company}
-Rep's pitch: ${config.yourPitch}
+Prospect: ${config.prospectName}${config.prospectTitle ? `, ${config.prospectTitle}` : ''} at ${config.company}
+${config.callType ? `Call type: ${config.callType}\n` : ''}Rep's pitch: ${config.yourPitch}
 Call goal: ${config.callGoal}
+${config.priorContext ? `\nPrior context & research:\n${config.priorContext}\n` : ''}
 
 Metrics:
 - Final close probability: ${closeProbability}%
@@ -70,6 +71,7 @@ ${formattedTranscript || "(no transcript captured)"}
 AI suggestions triggered (${(suggestions as unknown[]).length} total):
 ${formattedSuggestions || "(none)"}`;
 
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -92,6 +94,7 @@ ${formattedSuggestions || "(none)"}`;
     if (data.error) {
       throw new Error(`OpenAI error: ${data.error.message ?? JSON.stringify(data.error)}`);
     }
+    if (!data.choices?.length) throw new Error(`OpenAI returned no choices: ${JSON.stringify(data)}`);
     const result = JSON.parse(data.choices[0].message.content);
 
     return new Response(JSON.stringify(result), {

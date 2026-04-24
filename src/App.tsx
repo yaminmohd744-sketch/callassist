@@ -21,7 +21,18 @@ import './screens/AuthScreen.css';
 import { supabase }         from './lib/supabase';
 import { MOCK_SESSIONS }    from './lib/mockSessions';
 import { getTrainingHistory } from './lib/trainingHistory';
-import type { CallConfig, CallSession, CallStage, TranscriptEntry, AISuggestion, CoachingWalkthrough } from './types';
+import type { CallConfig, CallSession, CallStage, CallOutcome, TranscriptEntry, AISuggestion, CoachingWalkthrough } from './types';
+
+const OUTCOMES_KEY = 'callassist:outcomes';
+function loadOutcomes(): Record<string, CallOutcome> {
+  try { return JSON.parse(localStorage.getItem(OUTCOMES_KEY) ?? '{}'); } catch { return {}; }
+}
+function saveOutcomes(map: Record<string, CallOutcome>) {
+  try { localStorage.setItem(OUTCOMES_KEY, JSON.stringify(map)); } catch { /* quota */ }
+}
+function mergeOutcomes(sessions: CallSession[], map: Record<string, CallOutcome>): CallSession[] {
+  return sessions.map(s => map[s.endedAt] !== undefined ? { ...s, outcome: map[s.endedAt] } : s);
+}
 
 const PROFILE_PIC_KEY = 'pp-profile-pic';
 // Estimated seconds per training exchange (~90s avg per rep turn)
@@ -125,6 +136,7 @@ export function App() {
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
+  const [outcomeMap, setOutcomeMap] = useState<Record<string, CallOutcome>>(loadOutcomes);
   const [showTransition, setShowTransition] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const transitionShown = useRef(false);
@@ -179,7 +191,8 @@ export function App() {
       .then(({ data, error }) => {
         if (error) { console.error('[CallAssist] Failed to load sessions:', error.message); return; }
         const real = data ? data.map(rowToSession) : [];
-        setPastSessions(real.length > 0 ? real : MOCK_SESSIONS);
+        const merged = mergeOutcomes(real.length > 0 ? real : MOCK_SESSIONS, loadOutcomes());
+        setPastSessions(merged);
       });
   }, [user]);
 
@@ -206,6 +219,14 @@ export function App() {
   function handleViewSession(session: CallSession) {
     setCallSession(session);
     setScreen('post-call');
+  }
+
+  function handleUpdateOutcome(endedAt: string, outcome: CallOutcome) {
+    const next = { ...outcomeMap, [endedAt]: outcome };
+    setOutcomeMap(next);
+    saveOutcomes(next);
+    setPastSessions(prev => mergeOutcomes(prev, next));
+    setCallSession(prev => prev && prev.endedAt === endedAt ? { ...prev, outcome } : prev);
   }
 
   async function handleDeleteSession(endedAt: string) {
@@ -341,6 +362,8 @@ export function App() {
             onStartCall={handleStartCall}
             onBack={() => setScreen('dashboard')}
             defaultLanguage={appLanguage}
+            defaultCompany={onboardingData.companyName ?? ''}
+            defaultPitch={onboardingData.productDescription ?? ''}
           />
         </ErrorBoundary>
       )}
@@ -364,6 +387,7 @@ export function App() {
               session={callSession}
               onBack={() => setScreen('dashboard')}
               onNewCall={() => setScreen('pre-call')}
+              onUpdateOutcome={(outcome) => handleUpdateOutcome(callSession.endedAt, outcome)}
             />
           </Suspense>
         </ErrorBoundary>

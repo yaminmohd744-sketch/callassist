@@ -48,6 +48,7 @@ Goal of this call: ${callGoal || "(not specified)"}
 
 Expand this into a clear pitch description the AI coaching system can use.`;
 
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -55,7 +56,7 @@ Expand this into a clear pitch description the AI coaching system can use.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userMessage },
@@ -69,6 +70,7 @@ Expand this into a clear pitch description the AI coaching system can use.`;
     if (data.error) {
       throw new Error(`OpenAI error: ${data.error.message ?? JSON.stringify(data.error)}`);
     }
+    if (!data.choices?.length) throw new Error(`OpenAI returned no choices: ${JSON.stringify(data)}`);
 
     const enhancedPitch = data.choices[0].message.content.trim();
 

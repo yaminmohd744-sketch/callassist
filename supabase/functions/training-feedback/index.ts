@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { LANG_NAMES } from "../_shared/lang.ts";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
 
@@ -28,17 +29,13 @@ Deno.serve(async (req: Request) => {
   try {
     const { scenario, scenarioDescription, saleContext, subScenarioContext, difficulty, messages, userResponse, previousFeedback, language } = await req.json();
 
-    const LANG_NAMES: Record<string, string> = {
-      'es-ES': 'Spanish', 'fr-FR': 'French', 'pt-BR': 'Portuguese',
-      'de-DE': 'German',  'it-IT': 'Italian', 'nl-NL': 'Dutch',
-      'zh-CN': 'Mandarin Chinese', 'ja-JP': 'Japanese', 'ar-SA': 'Arabic',
-    };
     const langName = language && language !== 'en-US' ? LANG_NAMES[language] ?? language : null;
     const langPrefix = langName
       ? `LANGUAGE REQUIREMENT: You must write ALL output exclusively in ${langName}. Every word of every field in your JSON response must be in ${langName}. Do not use English.\n\n`
       : '';
 
     const conversationSoFar = (messages as Array<{ role: string; text: string }>)
+      .slice(-10)
       .map((m) => `${m.role === 'rep' ? 'REP' : 'PROSPECT'}: ${m.text}`)
       .join("\n");
 
@@ -72,9 +69,7 @@ Prospect persona: ${scenarioDescription}${saleNote}${subNote}
 Conversation so far:
 ${conversationSoFar}
 
-REP JUST SAID: "${userResponse}"
-
-Evaluate this response as a sales trainer. Be honest - not harsh, not soft. Give real feedback that makes them better. Reference the specific product/deal and scenario when relevant.${prevFeedbackNote}
+Evaluate the rep's latest response (shown at the end of the conversation above) as a sales trainer. Be honest - not harsh, not soft. Give real feedback that makes them better. Reference the specific product/deal and scenario when relevant.${prevFeedbackNote}
 
 Also include a "toneCoach" field analyzing the prospect's emotional tone in their latest message and giving the rep one sharp coaching cue.
 
@@ -101,6 +96,7 @@ Respond ONLY with valid JSON:
 - "toneCoach.move": What the rep should DO tactically right now — 1 sentence, specific and actionable. Sound like an elite closer whispering in the rep's ear.
 - "toneCoach.say": The exact words the rep should say next — natural, first-person, under 20 words${difficultyNote}`;
 
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
     const langReminder = langName ? ` Respond entirely in ${langName}.` : '';
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -119,6 +115,7 @@ Respond ONLY with valid JSON:
 
     const data = await response.json();
     if (data.error) throw new Error(`OpenAI error: ${data.error.message}`);
+    if (!data.choices?.length) throw new Error(`OpenAI returned no choices: ${JSON.stringify(data)}`);
     const result = JSON.parse(data.choices[0].message.content);
 
     return new Response(JSON.stringify(result), {
