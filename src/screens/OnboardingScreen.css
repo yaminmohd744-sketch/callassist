@@ -168,6 +168,119 @@
   background: rgba(129, 74, 200, 0.08);
 }
 
+/* ── "Who are you selling for" picker ── */
+.ob__who-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ob__who-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+.ob__who-card:hover {
+  border-color: rgba(129, 74, 200, 0.4);
+  background: rgba(129, 74, 200, 0.08);
+  transform: translateY(-2px);
+}
+.ob__who-card--active {
+  border-color: #814ac8;
+  background: rgba(129, 74, 200, 0.15);
+}
+.ob__who-emoji {
+  font-size: 28px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.ob__who-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ob__who-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+.ob__who-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.4;
+}
+.ob__who-card--active .ob__who-sub { color: rgba(255, 255, 255, 0.65); }
+
+/* ── Industry / category chips ── */
+.ob__cat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.ob__cat-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 100ms ease;
+}
+.ob__cat-chip:hover {
+  border-color: rgba(129, 74, 200, 0.4);
+  background: rgba(129, 74, 200, 0.08);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.ob__cat-chip--active {
+  border-color: #814ac8;
+  background: rgba(129, 74, 200, 0.15);
+  color: #fff;
+}
+.ob__cat-emoji {
+  font-size: 15px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Textarea variant of input */
+.ob__textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.55;
+}
+
+/* Hint text below an input */
+.ob__hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+  padding-left: 2px;
+}
+
+/* Wrap long values in the ready summary */
+.ob__ready-row-val--wrap {
+  max-width: 220px;
+  text-align: right;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.4;
+}
+
 /* ── Experience grid ── */
 .ob__exp-grid {
   display: grid;
@@ -409,7 +522,9 @@
 /* Responsive */
 @media (max-width: 640px) {
   .ob__card      { padding: 32px 24px; }
-.ob__exp-grid  { grid-template-columns: 1fr; }
+  .ob__exp-grid  { grid-template-columns: 1fr; }
+  .ob__cat-grid  { grid-template-columns: 1fr; }
   .ob__lang-grid { grid-template-columns: repeat(3, 1fr); }
   .ob__h1        { font-size: 22px; }
+  .ob__ready-row-val--wrap { max-width: 160px; }
 }

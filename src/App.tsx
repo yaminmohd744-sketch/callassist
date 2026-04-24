@@ -30,18 +30,22 @@ const SECONDS_PER_EXCHANGE = 90;
 interface OnboardingData {
   name?: string;
   language?: string;
-  role?: string;
-  product?: string;
+  sellingFor?: string;
+  industry?: string;
+  companyName?: string;
+  productDescription?: string;
 }
 
 function getOnboardingData(): OnboardingData {
   try {
     const raw = JSON.parse(localStorage.getItem('pp-onboarding') || '{}') as Record<string, unknown>;
     return {
-      name:     typeof raw.name     === 'string' ? raw.name     : undefined,
-      language: typeof raw.language === 'string' ? raw.language : undefined,
-      role:     typeof raw.role     === 'string' ? raw.role     : undefined,
-      product:  typeof raw.product  === 'string' ? raw.product  : undefined,
+      name:               typeof raw.name               === 'string' ? raw.name               : undefined,
+      language:           typeof raw.language           === 'string' ? raw.language           : undefined,
+      sellingFor:         typeof raw.sellingFor         === 'string' ? raw.sellingFor         : undefined,
+      industry:           typeof raw.industry           === 'string' ? raw.industry           : undefined,
+      companyName:        typeof raw.companyName        === 'string' ? raw.companyName        : undefined,
+      productDescription: typeof raw.productDescription === 'string' ? raw.productDescription : undefined,
     };
   } catch {
     return {};

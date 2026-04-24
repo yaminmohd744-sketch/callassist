@@ -9,24 +9,54 @@ interface OnboardingScreenProps {
 
 export interface OnboardingData {
   name: string;
-  experience: string;
+  sellingFor: 'self' | 'company';
+  industry: string;
+  companyName: string;
+  productDescription: string;
   language: LanguageCode;
 }
 
-const EXPERIENCE_OPTIONS = [
-  { value: 'under-6m',  label: 'Under 6 months',     sub: "I'm just getting started" },
-  { value: '6m-1y',     label: '6 months – 1 year',   sub: 'Building my foundations'  },
-  { value: '1y-3y',     label: '1 – 3 years',         sub: 'Getting comfortable'       },
-  { value: '3y-5y',     label: '3 – 5 years',         sub: 'Confident rep'             },
-  { value: '5y-plus',   label: '5+ years',             sub: 'Seasoned professional'     },
-  { value: 'manager',   label: 'Sales manager',        sub: 'I lead a team'            },
+// ── Category options ──────────────────────────────────────────────────────────
+
+interface Category { value: string; emoji: string; label: string; }
+
+const SELF_CATEGORIES: Category[] = [
+  { value: 'consulting',   emoji: '🧠', label: 'Consulting / Coaching'     },
+  { value: 'creative',     emoji: '🎨', label: 'Creative Services'          },
+  { value: 'tech-services',emoji: '💻', label: 'Tech / Dev Services'        },
+  { value: 'real-estate',  emoji: '🏠', label: 'Real Estate'                },
+  { value: 'finance',      emoji: '💰', label: 'Finance / Insurance'        },
+  { value: 'physical',     emoji: '📦', label: 'Physical Products'          },
+  { value: 'digital-saas', emoji: '🚀', label: 'Digital Products / SaaS'   },
+  { value: 'recruiting',   emoji: '🤝', label: 'Recruiting / Staffing'      },
+  { value: 'health',       emoji: '🏃', label: 'Health & Wellness'          },
+  { value: 'events',       emoji: '🎤', label: 'Events / Speaking'          },
+  { value: 'legal',        emoji: '⚖️', label: 'Legal / Compliance'         },
+  { value: 'other',        emoji: '✏️', label: 'Something else…'            },
+];
+
+const COMPANY_CATEGORIES: Category[] = [
+  { value: 'saas',          emoji: '💻', label: 'SaaS / Software'           },
+  { value: 'agency',        emoji: '🏢', label: 'Agency / Services'         },
+  { value: 'finance',       emoji: '💰', label: 'Financial Services'        },
+  { value: 'healthcare',    emoji: '🏥', label: 'Healthcare / MedTech'      },
+  { value: 'real-estate',   emoji: '🏠', label: 'Real Estate'               },
+  { value: 'ecommerce',     emoji: '🛒', label: 'E-commerce / Retail'       },
+  { value: 'manufacturing', emoji: '🏭', label: 'Manufacturing / Hardware'  },
+  { value: 'media',         emoji: '📡', label: 'Media / Advertising'       },
+  { value: 'logistics',     emoji: '🚚', label: 'Logistics / Supply Chain'  },
+  { value: 'education',     emoji: '📚', label: 'EdTech / Education'        },
+  { value: 'legal',         emoji: '⚖️', label: 'Legal / Compliance'        },
+  { value: 'other',         emoji: '✏️', label: 'Something else…'           },
 ];
 
 const STEPS = [
-  { title: 'Welcome to Pitch Plus'          },
-  { title: 'How deep into sales are you?'   },
-  { title: 'What language do you sell in?'  },
-  { title: "You're ready to close."         },
+  { title: 'Welcome to Pitch Plus'         },
+  { title: 'Who are you selling for?'      },
+  { title: 'What do you sell?'             },
+  { title: 'Tell us about it'              },
+  { title: 'What language do you sell in?' },
+  { title: "You're ready to close."        },
 ];
 
 function flagUrl(code: LanguageCode) {
@@ -34,17 +64,29 @@ function flagUrl(code: LanguageCode) {
 }
 
 export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
-  const [step, setStep]             = useState(0);
-  const [name, setName]             = useState('');
-  const [experience, setExperience] = useState('');
-  const [language, setLanguage]     = useState<LanguageCode>('en-US');
+  const [step, setStep]                   = useState(0);
+  const [name, setName]                   = useState('');
+  const [sellingFor, setSellingFor]       = useState<'self' | 'company' | ''>('');
+  const [industry, setIndustry]           = useState('');
+  const [industryOther, setIndustryOther] = useState('');
+  const [companyName, setCompanyName]     = useState('');
+  const [productDescription, setProductDescription] = useState('');
+  const [language, setLanguage]           = useState<LanguageCode>('en-US');
 
   const total    = STEPS.length;
   const progress = (step / (total - 1)) * 100;
 
+  const categories = sellingFor === 'company' ? COMPANY_CATEGORIES : SELF_CATEGORIES;
+
+  const effectiveIndustry = industry === 'other'
+    ? industryOther.trim()
+    : (categories.find(c => c.value === industry)?.label ?? '');
+
   const canNext = (() => {
     if (step === 0) return name.trim().length > 0;
-    if (step === 1) return experience !== '';
+    if (step === 1) return sellingFor !== '';
+    if (step === 2) return industry !== '' && (industry !== 'other' || industryOther.trim().length > 0);
+    if (step === 3) return productDescription.trim().length > 0;
     return true;
   })();
 
@@ -52,7 +94,14 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
   function back() { setStep(s => Math.max(s - 1, 0)); }
 
   function finish() {
-    onDone({ name, experience, language });
+    onDone({
+      name,
+      sellingFor: sellingFor as 'self' | 'company',
+      industry: effectiveIndustry,
+      companyName,
+      productDescription,
+      language,
+    });
   }
 
   const selectedLang = SUPPORTED_LANGUAGES.find(l => l.code === language) ?? SUPPORTED_LANGUAGES[0];
@@ -62,13 +111,11 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
       <div className="ob__orb ob__orb-a" />
       <div className="ob__orb ob__orb-b" />
 
-      {/* Progress */}
       <div className="ob__progress-bar">
         <div className="ob__progress-fill" style={{ width: `${progress}%` }} />
       </div>
       <div className="ob__step-counter">{step + 1} / {total}</div>
 
-      {/* Card */}
       <div className="ob__card" key={step}>
 
         {/* ── Step 0: Name ── */}
@@ -78,7 +125,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
               PITCH<span className="ob__logo-plus">PLUS</span><span className="ob__logo-sym">+</span>
             </div>
             <h1 className="ob__h1">Welcome aboard.</h1>
-            <p className="ob__sub">Let's personalise your experience. Takes 60 seconds.</p>
+            <p className="ob__sub">Let's get to know you so your AI coach can actually help. Takes 60 seconds.</p>
             <div className="ob__field">
               <label className="ob__label">What's your first name?</label>
               <input
@@ -94,33 +141,116 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 1: Experience ── */}
+        {/* ── Step 1: Self vs Company ── */}
         {step === 1 && (
           <div className="ob__slide">
-            <h1 className="ob__h1">How deep into sales are you, <span className="ob__name">{name}</span>?</h1>
-            <p className="ob__sub">We'll calibrate the coaching difficulty and training scenarios to match where you are.</p>
-            <div className="ob__exp-grid">
-              {EXPERIENCE_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  className={`ob__exp-card${experience === opt.value ? ' ob__exp-card--active' : ''}`}
-                  onClick={() => setExperience(opt.value)}
-                >
-                  <span className="ob__exp-label">{opt.label}</span>
-                  <span className="ob__exp-sub">{opt.sub}</span>
-                </button>
-              ))}
+            <h1 className="ob__h1">Who are you selling for, <span className="ob__name">{name}</span>?</h1>
+            <p className="ob__sub">This helps us frame your coaching and scenarios correctly.</p>
+            <div className="ob__who-grid">
+              <button
+                className={`ob__who-card${sellingFor === 'self' ? ' ob__who-card--active' : ''}`}
+                onClick={() => setSellingFor('self')}
+              >
+                <span className="ob__who-emoji">🙋</span>
+                <div className="ob__who-text">
+                  <span className="ob__who-label">For myself</span>
+                  <span className="ob__who-sub">I'm a freelancer, consultant, founder, or solopreneur</span>
+                </div>
+              </button>
+              <button
+                className={`ob__who-card${sellingFor === 'company' ? ' ob__who-card--active' : ''}`}
+                onClick={() => setSellingFor('company')}
+              >
+                <span className="ob__who-emoji">🏢</span>
+                <div className="ob__who-text">
+                  <span className="ob__who-label">For a company</span>
+                  <span className="ob__who-sub">I'm on a sales team or represent an employer</span>
+                </div>
+              </button>
             </div>
           </div>
         )}
 
-        {/* ── Step 2: Language ── */}
+        {/* ── Step 2: Industry / Category ── */}
         {step === 2 && (
+          <div className="ob__slide">
+            <h1 className="ob__h1">
+              {sellingFor === 'company' ? 'What does your company sell?' : 'What do you offer?'}
+            </h1>
+            <p className="ob__sub">Pick the closest fit — your AI coach will tailor its advice to your space.</p>
+            <div className="ob__cat-grid">
+              {categories.map(cat => (
+                <button
+                  key={cat.value}
+                  className={`ob__cat-chip${industry === cat.value ? ' ob__cat-chip--active' : ''}`}
+                  onClick={() => setIndustry(cat.value)}
+                >
+                  <span className="ob__cat-emoji">{cat.emoji}</span>
+                  <span>{cat.label}</span>
+                </button>
+              ))}
+            </div>
+            {industry === 'other' && (
+              <div className="ob__field ob__field--mt">
+                <label className="ob__label">Describe what you sell</label>
+                <input
+                  className="ob__input"
+                  type="text"
+                  placeholder="e.g. Cybersecurity auditing for SMBs"
+                  value={industryOther}
+                  onChange={e => setIndustryOther(e.target.value)}
+                  autoFocus
+                  onKeyDown={e => e.key === 'Enter' && canNext && next()}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Step 3: Details ── */}
+        {step === 3 && (
+          <div className="ob__slide">
+            <h1 className="ob__h1">Tell us about it.</h1>
+            <p className="ob__sub">
+              The more specific you are, the more your AI coach can customise objection handling, pitches, and training to your actual deal.
+            </p>
+            <div className="ob__field">
+              <label className="ob__label">
+                {sellingFor === 'self' ? 'Your name or business name' : 'Company name'}
+              </label>
+              <input
+                className="ob__input"
+                type="text"
+                placeholder={sellingFor === 'self' ? 'e.g. Yamin Consulting' : 'e.g. Acme Inc.'}
+                value={companyName}
+                onChange={e => setCompanyName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="ob__field ob__field--mt">
+              <label className="ob__label">What exactly do you sell?</label>
+              <textarea
+                className="ob__input ob__textarea"
+                placeholder={
+                  sellingFor === 'self'
+                    ? 'e.g. Brand strategy and identity design for early-stage startups'
+                    : 'e.g. AI-powered CRM that helps sales teams close 30% faster'
+                }
+                value={productDescription}
+                onChange={e => setProductDescription(e.target.value)}
+                rows={3}
+              />
+              <p className="ob__hint">Be specific — this goes straight into your AI coach's context.</p>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 4: Language ── */}
+        {step === 4 && (
           <div className="ob__slide">
             <h1 className="ob__h1">What language do you sell in?</h1>
             <p className="ob__sub">
-              This sets the <strong>app's default language</strong> — coaching, training, and the interface.
-              You can always change it inside the app or pick a different language for individual calls.
+              Sets the <strong>app's default language</strong> — coaching, training, and the interface. You can change it per call too.
             </p>
             <div className="ob__lang-grid">
               {SUPPORTED_LANGUAGES.map(l => (
@@ -142,32 +272,38 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 3: Ready ── */}
-        {step === 3 && (
+        {/* ── Step 5: Ready ── */}
+        {step === 5 && (
           <div className="ob__slide ob__slide--center">
             <div className="ob__ready-icon">✦</div>
             <h1 className="ob__h1">
               You're all set, <span className="ob__name">{name}</span>.
             </h1>
             <p className="ob__sub">
-              Your coaching is calibrated, your app language is set to{' '}
-              <strong>
-                <img
-                  className="ob__ready-flag"
-                  src={flagUrl(selectedLang.code)}
-                  alt={selectedLang.label}
-                />{' '}
-                {selectedLang.label}
-              </strong>,
-              and your first training scenario is ready.
+              Your AI coach knows your space. Here's what it's working with:
             </p>
             <div className="ob__ready-summary">
               <div className="ob__ready-row">
-                <span className="ob__ready-row-icon">⏱</span>
-                <span className="ob__ready-row-label">Experience</span>
-                <span className="ob__ready-row-val">
-                  {EXPERIENCE_OPTIONS.find(e => e.value === experience)?.label}
-                </span>
+                <span className="ob__ready-row-icon">{sellingFor === 'self' ? '🙋' : '🏢'}</span>
+                <span className="ob__ready-row-label">Selling for</span>
+                <span className="ob__ready-row-val">{sellingFor === 'self' ? 'Myself' : 'A company'}</span>
+              </div>
+              <div className="ob__ready-row">
+                <span className="ob__ready-row-icon">🎯</span>
+                <span className="ob__ready-row-label">Industry</span>
+                <span className="ob__ready-row-val">{effectiveIndustry}</span>
+              </div>
+              {companyName && (
+                <div className="ob__ready-row">
+                  <span className="ob__ready-row-icon">🏷</span>
+                  <span className="ob__ready-row-label">{sellingFor === 'self' ? 'Business' : 'Company'}</span>
+                  <span className="ob__ready-row-val">{companyName}</span>
+                </div>
+              )}
+              <div className="ob__ready-row">
+                <span className="ob__ready-row-icon">💬</span>
+                <span className="ob__ready-row-label">What you sell</span>
+                <span className="ob__ready-row-val ob__ready-row-val--wrap">{productDescription}</span>
               </div>
               <div className="ob__ready-row">
                 <img
@@ -177,22 +313,6 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
                 />
                 <span className="ob__ready-row-label">Language</span>
                 <span className="ob__ready-row-val">{selectedLang.label}</span>
-              </div>
-            </div>
-            <div className="ob__ready-tips">
-              <div className="ob__ready-tip">
-                <span className="ob__ready-tip-icon">▶</span>
-                <div>
-                  <strong>Start a live call</strong>
-                  <p>Hit "New Call" to get real-time coaching on your next prospect call.</p>
-                </div>
-              </div>
-              <div className="ob__ready-tip">
-                <span className="ob__ready-tip-icon">◈</span>
-                <div>
-                  <strong>Try training first</strong>
-                  <p>Practice against an AI prospect — no pressure, full feedback.</p>
-                </div>
               </div>
             </div>
           </div>
