@@ -51,6 +51,8 @@ export async function analyzeTranscript(
   onStream?: StreamCallback,
   externalSignal?: AbortSignal
 ): Promise<AIAnalysisResult> {
+  let suggestionId = '';
+  let streamingShown = false;
   try {
     const streamController = new AbortController();
     // Propagate caller's abort signal — check already-aborted state first to avoid the race
@@ -87,9 +89,9 @@ export async function analyzeTranscript(
 
     if (!res.ok || !res.body) throw new Error(`analyze-transcript returned ${res.status}`);
 
-    const suggestionId = genId();
+    suggestionId = genId();
     let accumulated = '';
-    let streamingShown = false;
+    streamingShown = false;
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -209,6 +211,9 @@ export async function analyzeTranscript(
       phaseLabel: aiPhaseLabel,
     };
   } catch (err) {
+    if (streamingShown && onStream && suggestionId) {
+      onStream({ id: suggestionId, type: 'tip', headline: '', body: '', triggeredBy: newEntry.text, timestampSeconds: elapsedSeconds, streaming: false });
+    }
     console.error('[CallAssist] AI call failed, using fallback:', err instanceof Error ? err.message : err);
     Sentry.captureException(err, { tags: { section: 'analyze-transcript' } });
     const fallback = await mockAnalyzeTranscript(

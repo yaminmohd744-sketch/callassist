@@ -285,7 +285,8 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
           type: string; is_final: boolean; speech_final: boolean;
           channel: { alternatives: { transcript: string }[] };
         }
-        const data = JSON.parse(event.data as string) as DGResult;
+        let data: DGResult;
+        try { data = JSON.parse(event.data as string) as DGResult; } catch { return; }
         if (data.type !== 'Results') return;
         const transcript = data.channel?.alternatives?.[0]?.transcript;
         if (!transcript) return;

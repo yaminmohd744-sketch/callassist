@@ -321,6 +321,7 @@ export interface T {
     listeningStatus: string;
     micStarting: string;
     typeProspect: string;
+    typeRep?: string;
     leadProfile: string;
     name: string;
     company: string;
@@ -655,7 +656,7 @@ const en: T = {
     startCall: 'Start Call',
   },
   liveCall: {
-    endCall: 'End Call', mute: 'Mute', unmute: 'Unmute', aiSuggestions: 'AI Suggestions', transcript: 'Transcript', closeProbability: 'Close Probability', stage: 'Stage', note: 'Note', addNote: 'Add note...', listening: 'Listening...', liveMode: 'LIVE MODE', noProspect: 'No prospect', active: 'ACTIVE', standby: 'STANDBY', objections: 'OBJECTIONS', closeProb: 'CLOSE PROB', aiFeed: 'AI INTELLIGENCE FEED', coaching: 'COACHING', readyToAssist: 'Ready to Assist', readyDesc: 'Click Listen in the transcript panel to start your mic. I\'ll detect objections, buying signals, and coach you in real-time.', transcriptFeed: 'TRANSCRIPT FEED', live: 'LIVE', you: 'YOU', prospect: 'PROSPECT', system: 'SYSTEM', listeningStatus: 'Listening — speakers are detected automatically.', micStarting: 'Mic starting... or type prospect dialogue below.', typeProspect: 'Type what the prospect said...', leadProfile: 'LEAD PROFILE', name: 'Name', company: 'Company', goal: 'Goal', pitch: 'Pitch', callStats: 'CALL STATS', quickActions: 'QUICK ACTIONS', callNotes: 'CALL NOTES', noLeadData: 'No lead data extracted yet. Start a conversation to build the profile.', summarizeCall: 'Summarize call', generateEmail: 'Generate follow-up email', exportLead: 'Export lead data', scoreLead: 'Score this lead', stageOpener: 'OPENER', stageDiscovery: 'DISCOVERY', stagePitch: 'PITCH', stageClose: 'CLOSE',
+    endCall: 'End Call', mute: 'Mute', unmute: 'Unmute', aiSuggestions: 'AI Suggestions', transcript: 'Transcript', closeProbability: 'Close Probability', stage: 'Stage', note: 'Note', addNote: 'Add note...', listening: 'Listening...', liveMode: 'LIVE MODE', noProspect: 'No prospect', active: 'ACTIVE', standby: 'STANDBY', objections: 'OBJECTIONS', closeProb: 'CLOSE PROB', aiFeed: 'AI INTELLIGENCE FEED', coaching: 'COACHING', readyToAssist: 'Ready to Assist', readyDesc: 'Click Listen in the transcript panel to start your mic. I\'ll detect objections, buying signals, and coach you in real-time.', transcriptFeed: 'TRANSCRIPT FEED', live: 'LIVE', you: 'YOU', prospect: 'PROSPECT', system: 'SYSTEM', listeningStatus: 'Listening — speakers are detected automatically.', micStarting: 'Mic starting... or type prospect dialogue below.', typeProspect: 'Type what the prospect said...', typeRep: 'Type your response...', leadProfile: 'LEAD PROFILE', name: 'Name', company: 'Company', goal: 'Goal', pitch: 'Pitch', callStats: 'CALL STATS', quickActions: 'QUICK ACTIONS', callNotes: 'CALL NOTES', noLeadData: 'No lead data extracted yet. Start a conversation to build the profile.', summarizeCall: 'Summarize call', generateEmail: 'Generate follow-up email', exportLead: 'Export lead data', scoreLead: 'Score this lead', stageOpener: 'OPENER', stageDiscovery: 'DISCOVERY', stagePitch: 'PITCH', stageClose: 'CLOSE',
   },
   postcall: {
     title: 'Call Review',

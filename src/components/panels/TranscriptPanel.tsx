@@ -119,7 +119,7 @@ export const TranscriptPanel = memo(function TranscriptPanel({
         )}
         <input
           className="transcript-panel__text"
-          placeholder={manualSpeaker === 'prospect' ? t.liveCall.typeProspect : t.liveCall.typeProspect}
+          placeholder={manualSpeaker === 'prospect' ? t.liveCall.typeProspect : (t.liveCall.typeRep ?? 'Type your response...')}
           value={manualInput}
           onChange={e => onManualInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
