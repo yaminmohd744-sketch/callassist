@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
+import { useAppLanguage } from '../hooks/useAppLanguage';
 import type { CallSession } from '../types';
 import { computeRepScore } from '../lib/repScore';
 import './AnalyticsScreen.css';
@@ -173,6 +174,7 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
 
 export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   const t = useTranslations();
+  const { appLanguage } = useAppLanguage();
   const [tab, setTab] = useState<AnalyticsTab>('performance');
   const [detailView, setDetailView] = useState<string | null>(null);
   const [teamCode, setTeamCode] = useState('');
@@ -188,7 +190,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
   async function copyTeamCode() {
     await navigator.clipboard.writeText(teamCode);
-    setTeamMsg('Code copied!');
+    setTeamMsg(t.analytics.codeCopied);
     setTimeout(() => setTeamMsg(''), 2000);
   }
 
@@ -196,7 +198,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
     const code = Math.random().toString(36).slice(2, 8).toUpperCase();
     localStorage.setItem('callassist_team_code', code);
     setTeamCode(code);
-    setTeamMsg('Team code created. Share it with your reps.');
+    setTeamMsg(t.analytics.teamCodeCreated);
   }
 
   function handleJoinTeam() {
@@ -205,8 +207,30 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
     localStorage.setItem('callassist_joined_team', code);
     setJoinedTeam(code);
     setJoinCode('');
-    setTeamMsg(`Joined team ${code}.`);
+    setTeamMsg(t.analytics.joinedTeamMsg(code));
   }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function fmtDur(s: number) { return `${Math.floor(s / 60)}m ${s % 60}s`; }
+  function fmtDate(iso: string) {
+    return new Date(iso).toLocaleDateString(appLanguage, { month: 'short', day: 'numeric' });
+  }
+  function an(delay: number) { return { '--an-delay': `${delay}ms` } as React.CSSProperties; }
+
+  function translateStage(stage: string) {
+    const map: Record<string, string> = {
+      opener: t.liveCall.stageOpener,
+      discovery: t.liveCall.stageDiscovery,
+      pitch: t.liveCall.stagePitch,
+      close: t.liveCall.stageClose,
+    };
+    return map[stage] ?? stage.toUpperCase();
+  }
+
+  // Localized short day names (Sun=0 … Sat=6), Jan 7 2024 is Sunday
+  const DAY_NAMES = Array.from({ length: 7 }, (_, i) =>
+    new Date(2024, 0, 7 + i).toLocaleDateString(appLanguage, { weekday: 'short' })
+  );
 
   // ── Data sources (real or mock) ───────────────────────────────────────────
   const useMockPerf = pastSessions.length === 0;
@@ -244,10 +268,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
   const avgRepScore = useMockPerf
     ? Math.round(avg(MOCK_CALLS.map(c => c.score)))
-    : (pastSessions.length ? Math.round(avg(pastSessions.map(s => {
-        const score = computeRepScore(s);
-        return score;
-      }))) : 0);
+    : (pastSessions.length ? Math.round(avg(pastSessions.map(s => computeRepScore(s)))) : 0);
 
   const avgTalkRatioPct = useMockPerf
     ? 47
@@ -274,13 +295,6 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
       call: useMockPerf ? mockCallDates.has(ds) : pastSessions.some(s => s.endedAt.startsWith(ds)),
     };
   });
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
-  function fmtDur(s: number) { return `${Math.floor(s / 60)}m ${s % 60}s`; }
-  function fmtDate(iso: string) {
-    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
-  function an(delay: number) { return { '--an-delay': `${delay}ms` } as React.CSSProperties; }
 
   // ── Detail panel data ──────────────────────────────────────────────────────
   const perfDetail = useMockPerf
@@ -319,11 +333,11 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   const objInsights: ObjInsight[] = (() => {
     const cats: Record<string, { count: number; techniques: string[]; won: number }> = {};
     const classify = (text: string) => {
-      const t = text.toLowerCase();
-      if (t.match(/expens|cost|price|budget|afford|money/))          return 'Price / budget concern';
-      if (t.match(/time|now|busy|bandwidth|later|month|quarter|contract|soon/)) return 'Not the right time';
-      if (t.match(/vendor|already|another|current|using|signed|compet/))        return 'Already have a vendor';
-      if (t.match(/interest|relevant|need|work for us/))              return 'Not interested';
+      const tx = text.toLowerCase();
+      if (tx.match(/expens|cost|price|budget|afford|money/))          return t.analytics.objPriceBudget;
+      if (tx.match(/time|now|busy|bandwidth|later|month|quarter|contract|soon/)) return t.analytics.objNotRightTime;
+      if (tx.match(/vendor|already|another|current|using|signed|compet/))        return t.analytics.objAlreadyVendor;
+      if (tx.match(/interest|relevant|need|work for us/))              return t.analytics.objNotInterested;
       return null;
     };
     for (const session of pastSessions) {
@@ -365,11 +379,11 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
     const avgOtherP = otherS.length ? Math.round(avg(otherS.map(s => s.finalCloseProbability))) : 0;
     const out: { icon: string; stat: string; label: string }[] = [];
     if (Math.abs(avgTopDur - avgBotDur) > 60)
-      out.push({ icon: '⏱', stat: fmtDur(avgTopDur), label: `avg duration on your top-performing calls vs ${fmtDur(avgBotDur)} on lower-performing ones` });
+      out.push({ icon: '⏱', stat: fmtDur(avgTopDur), label: t.analytics.winPatternDuration(fmtDur(avgBotDur)) });
     if (avgBotObj > avgTopObj + 0.3)
-      out.push({ icon: '◎', stat: `${avgTopObj.toFixed(1)} obj`, label: `avg objections on winning calls vs ${avgBotObj.toFixed(1)} on losing ones — handling early matters` });
+      out.push({ icon: '◎', stat: `${avgTopObj.toFixed(1)} obj`, label: t.analytics.winPatternObjections(avgBotObj.toFixed(1)) });
     if (closeS.length > 0 && avgCloseP > avgOtherP + 5)
-      out.push({ icon: '◈', stat: `${avgCloseP}%`, label: `avg close probability on calls that reached Close stage vs ${avgOtherP}% on earlier-stage calls` });
+      out.push({ icon: '◈', stat: `${avgCloseP}%`, label: t.analytics.winPatternCloseStage(avgOtherP) });
     return out.slice(0, 3);
   })();
 
@@ -382,7 +396,6 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   }));
 
   // ── Insight 4: Best call time (by day of week) ────────────────────────────
-  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const callsByDay = (() => {
     const src = useMockPerf
       ? MOCK_CALLS.map(c => ({ date: c.date, prob: c.prob }))
@@ -406,9 +419,9 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
       ? MOCK_CALLS.map(c => ({ objections: c.objections, prob: c.prob }))
       : pastSessions.map(s => ({ objections: s.objectionsCount, prob: s.finalCloseProbability }));
     return [
-      { label: '0 objections', fn: (o: number) => o === 0 },
-      { label: '1 objection',  fn: (o: number) => o === 1 },
-      { label: '2+ objections', fn: (o: number) => o >= 2 },
+      { label: t.analytics.objZero,    fn: (o: number) => o === 0 },
+      { label: t.analytics.objOne,     fn: (o: number) => o === 1 },
+      { label: t.analytics.objTwoPlus, fn: (o: number) => o >= 2 },
     ].map(g => {
       const m = src.filter(s => g.fn(s.objections));
       const ap = m.length ? Math.round(avg(m.map(s => s.prob))) : null;
@@ -447,8 +460,8 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
       {detailView === 'prob' && (
         <div className="analytics__detail-view">
           <div className="analytics__detail-view-header">
-            <h2 className="analytics__detail-view-title">Close Probability</h2>
-            <p className="analytics__detail-view-sub">Win-rate trend across every recorded call</p>
+            <h2 className="analytics__detail-view-title">{t.analytics.closeProbDetail}</h2>
+            <p className="analytics__detail-view-sub">{t.analytics.closeProbDetailSub}</p>
           </div>
           <div className="analytics__stats">
             {[
@@ -456,8 +469,8 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
               { val: `${avgProb}%`, label: t.analytics.avgClosePercent.toUpperCase(), cls: `analytics__stat-val--${scoreTier(avgProb)}` },
               { val: `${Math.max(...perfDetail.map(r => r.prob))}%`, label: t.analytics.bestCall.toUpperCase(), cls: 'analytics__stat-val--high' },
               { val: `${perfDetail.filter(r => r.prob >= 61).length}`, label: t.analytics.callsWon.toUpperCase(), cls: 'analytics__stat-val--high' },
-              { val: `${avgRepScore}`, label: 'AVG REP SCORE', cls: `analytics__stat-val--${scoreTier(avgRepScore, 70, 45)}` },
-              { val: `${avgTalkRatioPct}%`, label: 'AVG TALK RATIO', cls: avgTalkRatioPct <= 50 ? 'analytics__stat-val--high' : avgTalkRatioPct <= 65 ? 'analytics__stat-val--medium' : 'analytics__stat-val--low' },
+              { val: `${avgRepScore}`, label: t.analytics.avgRepScore.toUpperCase(), cls: `analytics__stat-val--${scoreTier(avgRepScore, 70, 45)}` },
+              { val: `${avgTalkRatioPct}%`, label: t.analytics.avgTalkRatio.toUpperCase(), cls: avgTalkRatioPct <= 50 ? 'analytics__stat-val--high' : avgTalkRatioPct <= 65 ? 'analytics__stat-val--medium' : 'analytics__stat-val--low' },
             ].map((item, i) => (
               <div key={i} className="analytics__stat-card" style={an(i * 60)}>
                 <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
@@ -466,25 +479,25 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
             ))}
           </div>
           <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
-            <div className="analytics__chart-title">CLOSE PROBABILITY OVER TIME</div>
+            <div className="analytics__chart-title">{t.analytics.closeProbOverTime.toUpperCase()}</div>
             <LineChart chartId="prob-d" points={perfDetail.map(r => ({ label: r.date, value: r.prob, tier: r.probTier }))} maxVal={100} unit="%" style={an(320)} />
           </div>
           <div className="analytics__chart-card analytics__chart-card--wide" style={an(360)}>
-            <div className="analytics__chart-title">REP SCORE OVER TIME</div>
+            <div className="analytics__chart-title">{t.analytics.repScoreTrend(repScoreBars.length).toUpperCase()}</div>
             <LineChart chartId="repscore-d" points={repScoreBars.map(r => ({ label: r.label, value: r.pct, tier: r.tier }))} maxVal={100} unit="" style={an(400)} />
           </div>
           <div className="analytics__chart-card analytics__chart-card--wide" style={an(420)}>
-            <div className="analytics__chart-title">FULL CALL LOG</div>
+            <div className="analytics__chart-title">{t.analytics.fullCallLog.toUpperCase()}</div>
             <div className="analytics__detail-scroll">
               <table className="analytics__detail-table">
-                <thead><tr><th>DATE</th><th>DURATION</th><th>CLOSE %</th><th>LEAD SCORE</th><th>STAGE</th>{useMockPerf && <th>OBJECTIONS</th>}</tr></thead>
+                <thead><tr><th>{t.analytics.colDate.toUpperCase()}</th><th>{t.analytics.colDuration.toUpperCase()}</th><th>{t.analytics.colClosePercent.toUpperCase()}</th><th>{t.analytics.colLeadScore.toUpperCase()}</th><th>{t.analytics.colStage.toUpperCase()}</th>{useMockPerf && <th>{t.analytics.colObjections.toUpperCase()}</th>}</tr></thead>
                 <tbody>
                   {perfDetail.map((r, i) => (
                     <tr key={i}>
                       <td>{r.date}</td><td>{r.dur}</td>
                       <td className={`analytics__detail-val--${r.probTier}`}>{r.prob}%</td>
                       <td className={`analytics__detail-val--${r.scoreTier_}`}>{r.score}</td>
-                      <td className="analytics__detail-stage">{r.stage.toUpperCase()}</td>
+                      <td className="analytics__detail-stage">{translateStage(r.stage)}</td>
                       {useMockPerf && <td className={r.objections && r.objections > 2 ? 'analytics__detail-val--low' : ''}>{r.objections}</td>}
                     </tr>
                   ))}
@@ -498,8 +511,8 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
       {detailView === 'stage' && (
         <div className="analytics__detail-view">
           <div className="analytics__detail-view-header">
-            <h2 className="analytics__detail-view-title">Calls by Stage</h2>
-            <p className="analytics__detail-view-sub">Where your calls are ending — and how they perform at each stage</p>
+            <h2 className="analytics__detail-view-title">{t.analytics.callsByStageDetail}</h2>
+            <p className="analytics__detail-view-sub">{t.analytics.callsByStageDetailSub}</p>
           </div>
           <div className="analytics__stats">
             {(() => {
@@ -507,7 +520,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
               const bestS = stageDetail.reduce((a, b) => b.avgProb > a.avgProb ? b : a, stageDetail[0] ?? { stage: '—', count: 0, avgProb: 0, avgDur: 0, probTier: 'low' as Tier });
               return [
                 { val: `${stageDetail.length}`, label: t.analytics.activeStages.toUpperCase(), cls: '' },
-                { val: topS.stage.toUpperCase(), label: t.analytics.mostCalls.toUpperCase(), cls: '' },
+                { val: translateStage(topS.stage), label: t.analytics.mostCalls.toUpperCase(), cls: '' },
                 { val: `${bestS.avgProb}%`, label: t.analytics.bestStageAvg.toUpperCase(), cls: `analytics__stat-val--${bestS.probTier}` },
                 { val: fmtDur(avgDurSec), label: t.analytics.avgDuration.toUpperCase(), cls: '' },
               ].map((item, i) => (
@@ -519,11 +532,11 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
             })()}
           </div>
           <div className="analytics__chart-card" style={an(280)}>
-            <div className="analytics__chart-title">CALL VOLUME BY STAGE</div>
+            <div className="analytics__chart-title">{t.analytics.callVolumeByStage.toUpperCase()}</div>
             <div className="analytics__bars">
               {(Object.entries(stageCount) as [string, number][]).map(([stage, count], i) => (
                 <div key={stage} className="analytics__bar-row">
-                  <div className="analytics__bar-label">{stage.toUpperCase()}</div>
+                  <div className="analytics__bar-label">{translateStage(stage)}</div>
                   <div className="analytics__bar-track"><div className={`analytics__bar analytics__bar--stage-${stage}`} style={{ width: `${(count / maxStage) * 100}%`, ...an(320 + i * 60) }} /></div>
                   <div className="analytics__bar-val">{count}</div>
                 </div>
@@ -531,14 +544,14 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
             </div>
           </div>
           <div className="analytics__chart-card analytics__chart-card--wide" style={an(400)}>
-            <div className="analytics__chart-title">PER-STAGE BREAKDOWN</div>
+            <div className="analytics__chart-title">{t.analytics.perStageBreakdown.toUpperCase()}</div>
             <div className="analytics__detail-scroll">
               <table className="analytics__detail-table">
-                <thead><tr><th>STAGE</th><th>CALLS</th><th>AVG CLOSE %</th><th>AVG DURATION</th></tr></thead>
+                <thead><tr><th>{t.analytics.colStage.toUpperCase()}</th><th>{t.analytics.colCalls.toUpperCase()}</th><th>{t.analytics.colAvgClosePercent.toUpperCase()}</th><th>{t.analytics.colAvgDuration.toUpperCase()}</th></tr></thead>
                 <tbody>
                   {stageDetail.map((r, i) => (
                     <tr key={i}>
-                      <td className="analytics__detail-stage">{r.stage.toUpperCase()}</td>
+                      <td className="analytics__detail-stage">{translateStage(r.stage)}</td>
                       <td>{r.count}</td>
                       <td className={`analytics__detail-val--${r.probTier}`}>{r.avgProb}%</td>
                       <td>{fmtDur(r.avgDur)}</td>
@@ -554,15 +567,15 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
       {detailView === 'activity' && (
         <div className="analytics__detail-view">
           <div className="analytics__detail-view-header">
-            <h2 className="analytics__detail-view-title">Activity Log</h2>
-            <p className="analytics__detail-view-sub">Daily call activity over the last 28 days</p>
+            <h2 className="analytics__detail-view-title">{t.analytics.activityLogDetail}</h2>
+            <p className="analytics__detail-view-sub">{t.analytics.activityLogDetailSub}</p>
           </div>
           <div className="analytics__stats">
             {(() => {
               const callDays = activityDays.filter(d => d.call).length;
               return [
-                { val: `${callDays}`, label: 'ACTIVE DAYS', cls: callDays > 15 ? 'analytics__stat-val--high' : '' },
-                { val: `${28 - callDays}`, label: 'DAYS OFF', cls: '' },
+                { val: `${callDays}`, label: t.analytics.activeDays.toUpperCase(), cls: callDays > 15 ? 'analytics__stat-val--high' : '' },
+                { val: `${28 - callDays}`, label: t.analytics.daysOff.toUpperCase(), cls: '' },
               ].map((item, i) => (
                 <div key={i} className="analytics__stat-card" style={an(i * 60)}>
                   <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
@@ -572,7 +585,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
             })()}
           </div>
           <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
-            <div className="analytics__chart-title">28-DAY GRID</div>
+            <div className="analytics__chart-title">{t.analytics.dayGrid28.toUpperCase()}</div>
             <div className="analytics__activity-grid analytics__activity-grid--large">
               {activityDays.map((d, i) => (
                 <div key={i} className={`analytics__activity-cell ${d.call ? 'analytics__activity-cell--call' : ''}`} style={an(300 + i * 12)} title={d.date}>
@@ -581,18 +594,18 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
               ))}
             </div>
             <div className="analytics__activity-legend" style={{ marginTop: '12px' }}>
-              <span className="analytics__activity-dot analytics__activity-dot--call" />Call day
+              <span className="analytics__activity-dot analytics__activity-dot--call" />{t.analytics.callDay}
             </div>
           </div>
           <div className="analytics__chart-card analytics__chart-card--wide" style={an(420)}>
-            <div className="analytics__chart-title">DAILY BREAKDOWN</div>
+            <div className="analytics__chart-title">{t.analytics.dailyBreakdown.toUpperCase()}</div>
             <div className="analytics__detail-scroll">
               <table className="analytics__detail-table">
-                <thead><tr><th>DATE</th><th>CALL</th></tr></thead>
+                <thead><tr><th>{t.analytics.colDate.toUpperCase()}</th><th>{t.analytics.call.toUpperCase()}</th></tr></thead>
                 <tbody>
                   {[...activityDays].reverse().filter(d => d.call).map((d, i) => (
                     <tr key={i}>
-                      <td>{new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' })}</td>
+                      <td>{new Date(d.date).toLocaleDateString(appLanguage, { month: 'short', day: 'numeric', weekday: 'short' })}</td>
                       <td><span className="analytics__detail-val--high">✓</span></td>
                     </tr>
                   ))}
@@ -633,7 +646,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
             <div className="analytics__chart-card analytics__chart-card--wide" style={an(380)}>
               <div className="analytics__chart-title-row">
-                <span className="analytics__chart-title">REP SCORE TREND ({repScoreBars.length} calls)</span>
+                <span className="analytics__chart-title">{t.analytics.repScoreTrend(repScoreBars.length).toUpperCase()}</span>
               </div>
               <LineChart chartId="repscore" points={repScoreBars.map(b => ({ label: b.label, value: b.pct, tier: b.tier }))} maxVal={100} unit="" style={an(420)} />
             </div>
@@ -646,7 +659,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
               <div className="analytics__bars">
                 {(Object.entries(stageCount) as [string, number][]).map(([stage, count], i) => (
                   <div key={stage} className="analytics__bar-row">
-                    <div className="analytics__bar-label">{stage.toUpperCase()}</div>
+                    <div className="analytics__bar-label">{translateStage(stage)}</div>
                     <div className="analytics__bar-track">
                       <div className={`analytics__bar analytics__bar--stage-${stage}`} style={{ width: `${(count / maxStage) * 100}%`, ...an(440 + i * 60) }} />
                     </div>
@@ -691,12 +704,12 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
           {/* 1. Top Objections */}
           <div className="analytics__insight-card" style={an(80)}>
-            <div className="analytics__chart-title">TOP OBJECTIONS &amp; TECHNIQUES</div>
+            <div className="analytics__chart-title">{t.analytics.topObjections.toUpperCase()}</div>
             <div className="analytics__obj-list">
               {(objInsights.length > 0 ? objInsights : [
-                { label: 'Price / budget concern',   count: 4, technique: 'Anchor to ROI — tie cost to the value saved or problem avoided', successRate: 62 },
-                { label: 'Not the right time',        count: 3, technique: 'Future-pace the delay cost — show what waiting costs them',       successRate: 48 },
-                { label: 'Already have a vendor',     count: 2, technique: 'Contrast positioning — isolate the one thing you do better',      successRate: 35 },
+                { label: t.analytics.objPriceBudget,   count: 4, technique: t.analytics.techAnchorROI, successRate: 62 },
+                { label: t.analytics.objNotRightTime,  count: 3, technique: t.analytics.techFuturePace, successRate: 48 },
+                { label: t.analytics.objAlreadyVendor, count: 2, technique: t.analytics.techContrast,   successRate: 35 },
               ] as typeof objInsights).map((o, i) => (
                 <div key={i} className="analytics__obj-item">
                   <div className="analytics__obj-top">
@@ -709,7 +722,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                     <div className="analytics__obj-bar-track">
                       <div className="analytics__obj-bar" style={{ width: `${o.successRate}%` }} />
                     </div>
-                    <span className="analytics__obj-rate-val">{o.successRate}% success when handled</span>
+                    <span className="analytics__obj-rate-val">{t.analytics.successWhenHandled(o.successRate)}</span>
                   </div>
                 </div>
               ))}
@@ -718,12 +731,12 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
           {/* 2. Winning Patterns */}
           <div className="analytics__insight-card" style={an(160)}>
-            <div className="analytics__chart-title">WINNING PATTERNS</div>
+            <div className="analytics__chart-title">{t.analytics.winningPatterns.toUpperCase()}</div>
             <div className="analytics__patterns-list">
               {(winningPatterns.length > 0 ? winningPatterns : [
-                { icon: '⏱', stat: '11m 2s', label: 'avg duration on your top-performing calls vs 5m 8s on lower-performing ones' },
-                { icon: '◎', stat: '0.8 obj', label: 'avg objections on winning calls vs 2.3 on losing ones — handling objections early matters' },
-                { icon: '◈', stat: '76%', label: 'avg close probability on calls that reached Close stage vs 41% on earlier-stage calls' },
+                { icon: '⏱', stat: '11m 2s', label: t.analytics.winPatternDuration('5m 8s') },
+                { icon: '◎', stat: '0.8 obj', label: t.analytics.winPatternObjections('2.3') },
+                { icon: '◈', stat: '76%',     label: t.analytics.winPatternCloseStage(41) },
               ]).map((p, i) => (
                 <div key={i} className="analytics__pattern-item">
                   <span className="analytics__pattern-icon">{p.icon}</span>
@@ -738,11 +751,11 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
           {/* 3. Stage distribution */}
           <div className="analytics__insight-card" style={an(240)}>
-            <div className="analytics__chart-title">STAGE DISTRIBUTION</div>
+            <div className="analytics__chart-title">{t.analytics.stageDistribution.toUpperCase()}</div>
             <div className="analytics__stage-dist">
               {stagePcts.map((s, i) => (
                 <div key={i} className="analytics__stage-dist-row">
-                  <span className="analytics__stage-dist-label">{s.stage.toUpperCase()}</span>
+                  <span className="analytics__stage-dist-label">{translateStage(s.stage)}</span>
                   <div className="analytics__stage-dist-track">
                     <div className={`analytics__stage-dist-bar analytics__bar--stage-${s.stage}`} style={{ width: `${Math.max(s.pct, 2)}%`, ...an(260 + i * 50) }} />
                   </div>
@@ -755,11 +768,11 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
           {/* 4. Best call time */}
           <div className="analytics__insight-card" style={an(320)}>
-            <div className="analytics__chart-title">BEST DAY TO CALL</div>
+            <div className="analytics__chart-title">{t.analytics.bestDayToCall.toUpperCase()}</div>
             {bestDay && (
               <div className="analytics__bestday">
                 <span className="analytics__bestday-name">{bestDay.name}</span>
-                <span className="analytics__bestday-stat">{bestDay.avgProb}% avg close probability</span>
+                <span className="analytics__bestday-stat">{bestDay.avgProb}% {t.analytics.avgCloseProbLabel}</span>
               </div>
             )}
             <div className="analytics__day-bars">
@@ -777,18 +790,18 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
           {/* 5. Objection-to-close rate */}
           <div className="analytics__insight-card" style={an(400)}>
-            <div className="analytics__chart-title">OBJECTION-TO-CLOSE RATE</div>
-            <p className="analytics__insight-desc">How your close probability shifts based on how many objections came up on a call.</p>
+            <div className="analytics__chart-title">{t.analytics.objectionToCloseRate.toUpperCase()}</div>
+            <p className="analytics__insight-desc">{t.analytics.objectionCloseRateDesc}</p>
             <div className="analytics__obj-close-list">
               {(objCloseGroups.length > 0 ? objCloseGroups : [
-                { label: '0 objections',  count: 3, avgClose: 81, tier: 'high'   as const },
-                { label: '1 objection',   count: 5, avgClose: 57, tier: 'medium' as const },
-                { label: '2+ objections', count: 4, avgClose: 33, tier: 'low'    as const },
+                { label: t.analytics.objZero,    count: 3, avgClose: 81, tier: 'high'   as const },
+                { label: t.analytics.objOne,     count: 5, avgClose: 57, tier: 'medium' as const },
+                { label: t.analytics.objTwoPlus, count: 4, avgClose: 33, tier: 'low'    as const },
               ]).map((g, i) => (
                 <div key={i} className="analytics__obj-close-item">
                   <div className="analytics__obj-close-top">
                     <span className="analytics__obj-close-label">{g.label}</span>
-                    <span className="analytics__obj-close-count">{g.count} calls</span>
+                    <span className="analytics__obj-close-count">{g.count} {t.analytics.callsUnit}</span>
                   </div>
                   <div className="analytics__obj-close-bar-row">
                     <div className="analytics__obj-close-track">
@@ -810,17 +823,17 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
           <div className="analytics__chart-card" style={an(0)}>
             <div className="analytics__chart-title-row">
-              <span className="analytics__chart-title">TEAM LEADERBOARD — THIS MONTH</span>
+              <span className="analytics__chart-title">{t.analytics.teamLeaderboard.toUpperCase()}</span>
               <span className="analytics__demo-inline">DEMO</span>
             </div>
             <div className="analytics__leaderboard">
               <div className="analytics__lb-header">
                 <span className="analytics__lb-cell analytics__lb-cell--rank">#</span>
-                <span className="analytics__lb-cell analytics__lb-cell--name">REP</span>
-                <span className="analytics__lb-cell analytics__lb-cell--num">CALLS</span>
-                <span className="analytics__lb-cell analytics__lb-cell--num">CLOSE %</span>
-                <span className="analytics__lb-cell analytics__lb-cell--num">TRAINING</span>
-                <span className="analytics__lb-cell analytics__lb-cell--num">STREAK</span>
+                <span className="analytics__lb-cell analytics__lb-cell--name">{t.analytics.colRep.toUpperCase()}</span>
+                <span className="analytics__lb-cell analytics__lb-cell--num">{t.analytics.colCalls.toUpperCase()}</span>
+                <span className="analytics__lb-cell analytics__lb-cell--num">{t.analytics.colClosePercent.toUpperCase()}</span>
+                <span className="analytics__lb-cell analytics__lb-cell--num">{t.analytics.colTraining.toUpperCase()}</span>
+                <span className="analytics__lb-cell analytics__lb-cell--num">{t.analytics.colStreak.toUpperCase()}</span>
               </div>
               {MOCK_TEAM.map((rep, i) => (
                 <div
@@ -850,37 +863,33 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
           <div className="analytics__team-grid">
             <div className="analytics__team-card" style={an(500)}>
-              <div className="analytics__chart-title">MANAGER — CREATE TEAM</div>
-              <p className="analytics__team-desc">
-                Generate a team code and share it with your reps to connect everyone's stats.
-              </p>
+              <div className="analytics__chart-title">{t.analytics.managerCreateTeam.toUpperCase()}</div>
+              <p className="analytics__team-desc">{t.analytics.teamCodeDesc}</p>
               {teamCode ? (
                 <div className="analytics__team-code-block">
                   <div className="analytics__team-code">{teamCode}</div>
-                  <button className="analytics__team-btn" onClick={copyTeamCode}>⎘ Copy</button>
+                  <button className="analytics__team-btn" onClick={copyTeamCode}>{t.analytics.copyBtn}</button>
                 </div>
               ) : (
                 <button className="analytics__team-btn analytics__team-btn--primary" onClick={generateTeamCode}>
-                  Generate Team Code
+                  {t.analytics.generateTeamCode}
                 </button>
               )}
               {teamMsg && <div className="analytics__team-msg">{teamMsg}</div>}
             </div>
 
             <div className="analytics__team-card" style={an(580)}>
-              <div className="analytics__chart-title">REP — JOIN A TEAM</div>
-              <p className="analytics__team-desc">
-                Enter the code your manager shared to join their team and appear in the leaderboard.
-              </p>
+              <div className="analytics__chart-title">{t.analytics.repJoinTeam.toUpperCase()}</div>
+              <p className="analytics__team-desc">{t.analytics.teamJoinDesc}</p>
               {joinedTeam && (
                 <div className="analytics__team-joined">
-                  Currently in team: <strong>{joinedTeam}</strong>
+                  {t.analytics.currentlyInTeam}<strong>{joinedTeam}</strong>
                 </div>
               )}
               <div className="analytics__team-join-row">
                 <input
                   className="analytics__team-input"
-                  placeholder="Team code (e.g. ABC123)"
+                  placeholder={t.analytics.teamCodePlaceholder}
                   value={joinCode}
                   onChange={e => setJoinCode(e.target.value.toUpperCase())}
                   maxLength={8}
@@ -890,7 +899,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                   onClick={handleJoinTeam}
                   disabled={!joinCode.trim()}
                 >
-                  Join
+                  {t.analytics.joinBtn}
                 </button>
               </div>
             </div>

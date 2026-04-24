@@ -19,6 +19,30 @@ const DEMO_FRAMES = [
   { type: 'status',   text: 'Close probability: 81%  ↑  Stage: CLOSE' },
 ];
 
+const DEMO_SCENES = [
+  {
+    badge: 'OBJECTION DETECTED',
+    badgeType: 'red',
+    prospect: '"We already have a tool for that..."',
+    suggestion: 'What do you love most about it? And what\'s the one thing you wish it did better?',
+    prob: 68,
+  },
+  {
+    badge: 'BUYING SIGNAL',
+    badgeType: 'green',
+    prospect: '"Honestly, the reporting could be better..."',
+    suggestion: 'Pain confirmed — "So if I showed you exactly how we fix that, would you be open to a 20-min demo this week?"',
+    prob: 81,
+  },
+  {
+    badge: 'CLOSE PROMPT',
+    badgeType: 'purple',
+    prospect: '"That actually sounds really interesting..."',
+    suggestion: 'Trial close — "Based on what we\'ve covered, does this solve the problem you described at the start?"',
+    prob: 89,
+  },
+];
+
 const FEATURES = [
   {
     icon: '✦',
@@ -351,12 +375,21 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   const [billingCycle, setBillingCycle]         = useState<'monthly' | 'yearly'>('monthly');
   const [langIdx, setLangIdx]                   = useState(0);
   const [navCtaVisible, setNavCtaVisible]       = useState(false);
+  const [demoSceneIdx, setDemoSceneIdx]         = useState(0);
+  const [demoShowAI, setDemoShowAI]             = useState(false);
 
   useEffect(() => {
     if (visibleFrames >= DEMO_FRAMES.length) return;
     const t = setTimeout(() => setVisibleFrames(v => v + 1), 1400);
     return () => clearTimeout(t);
   }, [visibleFrames]);
+
+  useEffect(() => {
+    setDemoShowAI(false);
+    const t1 = setTimeout(() => setDemoShowAI(true), 1400);
+    const t2 = setTimeout(() => setDemoSceneIdx(i => (i + 1) % DEMO_SCENES.length), 4200);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [demoSceneIdx]);
 
   useEffect(() => {
     if (activeSection !== 'features') return;
@@ -1994,18 +2027,79 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         <div className="lp__trust-item">✓ 10 languages supported</div>
       </div>
 
-      {/* ── Features ── */}
-      <section id="features" className="lp__section">
-        <div className="lp__section-label reveal">FEATURES</div>
-        <h2 className="lp__section-h2 reveal" data-delay="0.1">Everything you need to close more deals</h2>
-        <div className="lp__features-grid">
-          {FEATURES.map((f, i) => (
-            <div key={i} className="lp__feature-card reveal" data-delay={String(i * 0.08)}>
-              <div className="lp__feature-icon">{f.icon}</div>
-              <div className="lp__feature-title">{f.title}</div>
-              <div className="lp__feature-desc">{f.desc}</div>
+      {/* ── Live Demo ── */}
+      <section id="features" className="lp__section lp__section--demo-scene">
+        <div className="lp__section-label reveal">SEE IT IN ACTION</div>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">The AI that works <em>during</em> the call</h2>
+        <p className="lp__section-sub reveal" data-delay="0.18">
+          The moment your prospect speaks, Pitch Plus detects objections and buying signals — and surfaces exactly what to say before the silence gets awkward.
+        </p>
+
+        <div className="lp__mcall reveal" data-delay="0.28">
+          {/* Window chrome */}
+          <div className="lp__mcall-chrome">
+            <div className="lp__mcall-dots">
+              <span className="lp__mcall-dot lp__mcall-dot--r" />
+              <span className="lp__mcall-dot lp__mcall-dot--y" />
+              <span className="lp__mcall-dot lp__mcall-dot--g" />
             </div>
-          ))}
+            <span className="lp__mcall-chrome-title">Zoom · Q4 Discovery Call</span>
+            <span className="lp__mcall-chrome-timer">04:32</span>
+          </div>
+
+          {/* Video tiles + floating AI panel */}
+          <div className="lp__mcall-video">
+            {/* Prospect tile */}
+            <div className="lp__mcall-tile lp__mcall-tile--prospect">
+              <div className="lp__mcall-silhouette">
+                <div className="lp__mcall-sil-head" />
+                <div className="lp__mcall-sil-body" />
+              </div>
+              <div className="lp__mcall-tile-name">Sarah Chen · Prospect</div>
+              <div className={`lp__mcall-speech${demoShowAI ? '' : ' lp__mcall-speech--show'}`}>
+                <span className="lp__mcall-speech-label">PROSPECT SAID</span>
+                <span className="lp__mcall-speech-text">{DEMO_SCENES[demoSceneIdx].prospect}</span>
+              </div>
+            </div>
+
+            {/* Rep tile */}
+            <div className="lp__mcall-tile lp__mcall-tile--rep">
+              <div className="lp__mcall-silhouette lp__mcall-silhouette--rep">
+                <div className="lp__mcall-sil-head" />
+                <div className="lp__mcall-sil-body" />
+              </div>
+              <div className="lp__mcall-tile-name">You</div>
+              <div className={`lp__mcall-prob${demoShowAI ? ' lp__mcall-prob--show' : ''}`}>
+                <span className="lp__mcall-prob-label">CLOSE PROB</span>
+                <span className="lp__mcall-prob-val">{DEMO_SCENES[demoSceneIdx].prob}%</span>
+              </div>
+            </div>
+
+            {/* Floating AI coaching panel */}
+            <div className={`lp__mcall-ai${demoShowAI ? ' lp__mcall-ai--show' : ''}`}>
+              <div className="lp__mcall-ai-header">
+                <span className={`lp__mcall-ai-badge lp__mcall-ai-badge--${DEMO_SCENES[demoSceneIdx].badgeType}`}>
+                  {DEMO_SCENES[demoSceneIdx].badge}
+                </span>
+                <span className="lp__mcall-ai-brand">PITCH PLUS</span>
+              </div>
+              <p className="lp__mcall-ai-text">
+                &ldquo;{DEMO_SCENES[demoSceneIdx].suggestion}&rdquo;
+              </p>
+              <div className="lp__mcall-ai-tabs">
+                <button className="lp__mcall-ai-tab lp__mcall-ai-tab--active">✦ Coaching</button>
+                <button className="lp__mcall-ai-tab">◎ Objections</button>
+                <button className="lp__mcall-ai-tab">↗ Follow-up</button>
+              </div>
+            </div>
+          </div>
+
+          {/* Call controls */}
+          <div className="lp__mcall-controls">
+            <button className="lp__mcall-ctrl">🎙 Mute</button>
+            <button className="lp__mcall-ctrl">📷 Stop Video</button>
+            <button className="lp__mcall-ctrl lp__mcall-ctrl--end">End</button>
+          </div>
         </div>
       </section>
 
