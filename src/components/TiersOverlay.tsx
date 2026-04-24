@@ -5,11 +5,10 @@ import './TiersOverlay.css';
 
 interface TiersOverlayProps {
   totalCalls: number;
-  totalSessions: number;
   onClose: () => void;
 }
 
-export function TiersOverlay({ totalCalls, totalSessions, onClose }: TiersOverlayProps) {
+export function TiersOverlay({ totalCalls, onClose }: TiersOverlayProps) {
   const t = useTranslations();
   const ordered = [...MILESTONES].reverse();
 
@@ -26,11 +25,8 @@ export function TiersOverlay({ totalCalls, totalSessions, onClose }: TiersOverla
 
         <div className="tiers-list">
           {ordered.map((m) => {
-            const unlocked = totalCalls >= m.minCalls && totalSessions >= m.minSessions;
-
-            const callPct    = m.minCalls    > 0 ? Math.min(totalCalls    / m.minCalls,    1) : 1;
-            const sessionPct = m.minSessions > 0 ? Math.min(totalSessions / m.minSessions, 1) : 1;
-            const pct        = Math.round(Math.min(callPct, sessionPct) * 100);
+            const unlocked = totalCalls >= m.minCalls;
+            const pct = m.minCalls > 0 ? Math.round(Math.min(totalCalls / m.minCalls, 1) * 100) : 100;
 
             return (
               <div
@@ -50,11 +46,8 @@ export function TiersOverlay({ totalCalls, totalSessions, onClose }: TiersOverla
                   <div className="tiers-card__desc">{m.description}</div>
 
                   <div className="tiers-card__reqs">
-                    <span className={`tiers-card__req${totalCalls >= m.minCalls ? ' tiers-card__req--met' : ''}`}>
-                      {totalCalls >= m.minCalls ? '✓' : '○'} {m.minCalls === 0 ? t.tiers.noCalls : `${m.minCalls} ${t.tiers.calls}`}
-                    </span>
-                    <span className={`tiers-card__req${totalSessions >= m.minSessions ? ' tiers-card__req--met' : ''}`}>
-                      {totalSessions >= m.minSessions ? '✓' : '○'} {m.minSessions === 0 ? t.tiers.noSessions : `${m.minSessions} ${t.tiers.sessions}`}
+                    <span className={`tiers-card__req${unlocked ? ' tiers-card__req--met' : ''}`}>
+                      {unlocked ? '✓' : '○'} {m.minCalls === 0 ? t.tiers.noCalls : `${m.minCalls} ${t.tiers.calls}`}
                     </span>
                   </div>
 

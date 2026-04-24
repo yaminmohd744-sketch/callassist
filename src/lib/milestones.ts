@@ -1,16 +1,10 @@
-// ─── Milestone definitions ────────────────────────────────────────────────────
-// Each milestone requires the user to have at least `minCalls` real calls AND
-// `minSessions` training sessions. Current milestone = highest tier where
-// BOTH thresholds are satisfied. Gaps are intentionally large.
-
 export interface Milestone {
   id: string;
   label: string;
-  badge: string;   // emoji badge shown beside the tier name everywhere
+  badge: string;
   minCalls: number;
-  minSessions: number;
   color: string;
-  description: string; // flavour text shown on the tiers page
+  description: string;
 }
 
 export const MILESTONES: Milestone[] = [
@@ -19,7 +13,6 @@ export const MILESTONES: Milestone[] = [
     label: 'Rookie',
     badge: '🔰',
     minCalls: 0,
-    minSessions: 0,
     color: '#7c8fa6',
     description: 'Just getting started. Every legend began here.',
   },
@@ -28,7 +21,6 @@ export const MILESTONES: Milestone[] = [
     label: 'Prospect Hunter',
     badge: '🎯',
     minCalls: 10,
-    minSessions: 5,
     color: '#34d399',
     description: 'You\'re in the game. Consistent activity is building the foundation.',
   },
@@ -37,7 +29,6 @@ export const MILESTONES: Milestone[] = [
     label: 'Power Dialer',
     badge: '⚡',
     minCalls: 50,
-    minSessions: 20,
     color: '#60a5fa',
     description: 'Volume and volume only. You dial when others sleep.',
   },
@@ -46,7 +37,6 @@ export const MILESTONES: Milestone[] = [
     label: 'Cold Closer',
     badge: '🧊',
     minCalls: 150,
-    minSessions: 60,
     color: '#67e8f9',
     description: 'Ice in your veins. Objections don\'t rattle you anymore.',
   },
@@ -55,7 +45,6 @@ export const MILESTONES: Milestone[] = [
     label: 'Sales Pro',
     badge: '💼',
     minCalls: 400,
-    minSessions: 150,
     color: '#a78bfa',
     description: 'This is your craft. You read rooms, control frames, and close on demand.',
   },
@@ -64,7 +53,6 @@ export const MILESTONES: Milestone[] = [
     label: 'Elite Closer',
     badge: '💎',
     minCalls: 750,
-    minSessions: 300,
     color: '#df7afe',
     description: 'Top 1%. Your pipeline is a machine. Prospects feel the difference.',
   },
@@ -73,7 +61,6 @@ export const MILESTONES: Milestone[] = [
     label: 'Legend',
     badge: '👑',
     minCalls: 1500,
-    minSessions: 600,
     color: '#fbbf24',
     description: 'Untouchable. Your name gets brought up in rooms you\'re not even in.',
   },
@@ -82,27 +69,22 @@ export const MILESTONES: Milestone[] = [
 export interface MilestoneResult {
   current: Milestone;
   next: Milestone | null;
-  /** 0–1 progress toward the next tier (bottlenecked by the lagging dimension) */
+  /** 0–1 progress toward the next tier */
   progress: number;
 }
 
-export function getMilestone(totalCalls: number, totalSessions: number): MilestoneResult {
+export function getMilestone(totalCalls: number): MilestoneResult {
   let current = MILESTONES[0];
   for (const m of MILESTONES) {
-    if (totalCalls >= m.minCalls && totalSessions >= m.minSessions) {
-      current = m;
-    }
+    if (totalCalls >= m.minCalls) current = m;
   }
 
   const currentIdx = MILESTONES.indexOf(current);
   const next = currentIdx < MILESTONES.length - 1 ? MILESTONES[currentIdx + 1] : null;
 
-  let progress = 0;
-  if (next) {
-    const callProgress  = next.minCalls    > 0 ? Math.min(totalCalls    / next.minCalls,    1) : 1;
-    const trainProgress = next.minSessions > 0 ? Math.min(totalSessions / next.minSessions, 1) : 1;
-    progress = Math.min(callProgress, trainProgress);
-  }
+  const progress = next && next.minCalls > 0
+    ? Math.min(totalCalls / next.minCalls, 1)
+    : 0;
 
   return { current, next, progress };
 }

@@ -34,11 +34,11 @@ const MOCK_CALLS = [
 ];
 
 const MOCK_TEAM = [
-  { name: '[Demo] Alex Chen',  calls: 47, avgProb: 72, trainScore: 8.4, streak: 12, isYou: false },
-  { name: '[Demo] Sarah Kim',  calls: 38, avgProb: 68, trainScore: 7.9, streak: 8,  isYou: false },
-  { name: 'You',               calls: 12, avgProb: 66, trainScore: 7.8, streak: 5,  isYou: true  },
-  { name: '[Demo] Marcus J.',  calls: 29, avgProb: 61, trainScore: 7.1, streak: 3,  isYou: false },
-  { name: '[Demo] Priya P.',   calls: 22, avgProb: 54, trainScore: 6.8, streak: 2,  isYou: false },
+  { name: '[Demo] Alex Chen',  calls: 47, avgProb: 72, streak: 12, isYou: false },
+  { name: '[Demo] Sarah Kim',  calls: 38, avgProb: 68, streak: 8,  isYou: false },
+  { name: 'You',               calls: 12, avgProb: 66, streak: 5,  isYou: true  },
+  { name: '[Demo] Marcus J.',  calls: 29, avgProb: 61, streak: 3,  isYou: false },
+  { name: '[Demo] Priya P.',   calls: 22, avgProb: 54, streak: 2,  isYou: false },
 ];
 
 
@@ -691,9 +691,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                 ))}
               </div>
               <div className="analytics__activity-legend">
-                <span className="analytics__activity-dot analytics__activity-dot--both" />{t.analytics.both}
                 <span className="analytics__activity-dot analytics__activity-dot--call" />{t.analytics.call}
-                <span className="analytics__activity-dot analytics__activity-dot--training" />{t.analytics.trainingLabel}
               </div>
             </div>
 
@@ -836,7 +834,6 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                 <span className="analytics__lb-cell analytics__lb-cell--name">{t.analytics.colRep.toUpperCase()}</span>
                 <span className="analytics__lb-cell analytics__lb-cell--num">{t.analytics.colCalls.toUpperCase()}</span>
                 <span className="analytics__lb-cell analytics__lb-cell--num">{t.analytics.colClosePercent.toUpperCase()}</span>
-                <span className="analytics__lb-cell analytics__lb-cell--num">{t.analytics.colTraining.toUpperCase()}</span>
                 <span className="analytics__lb-cell analytics__lb-cell--num">{t.analytics.colStreak.toUpperCase()}</span>
               </div>
               {MOCK_TEAM.map((rep, i) => (
@@ -853,9 +850,6 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                   <span className="analytics__lb-cell analytics__lb-cell--num">{rep.calls}</span>
                   <span className={`analytics__lb-cell analytics__lb-cell--num analytics__lb-val--${scoreTier(rep.avgProb)}`}>
                     {rep.avgProb}%
-                  </span>
-                  <span className={`analytics__lb-cell analytics__lb-cell--num analytics__lb-val--${scoreTier(rep.trainScore * 10, 75, 50)}`}>
-                    {rep.trainScore}/10
                   </span>
                   <span className="analytics__lb-cell analytics__lb-cell--num analytics__lb-streak">
                     {rep.streak}d 🔥

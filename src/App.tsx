@@ -5,7 +5,6 @@ import { DashboardScreen }  from './screens/DashboardScreen';
 import { PreCallScreen }    from './screens/PreCallScreen';
 import { LiveCallScreen }   from './screens/LiveCallScreen';
 const PostCallScreen = lazy(() => import('./screens/PostCallScreen').then(m => ({ default: m.PostCallScreen })));
-import { TrainingScreen }   from './screens/TrainingScreen';
 const AnalyticsScreen = lazy(() => import('./screens/AnalyticsScreen').then(m => ({ default: m.AnalyticsScreen })));
 import { UploadCallScreen } from './screens/UploadCallScreen';
 import { AuthScreen }       from './screens/AuthScreen';
@@ -20,7 +19,6 @@ import type { LanguageCode } from './lib/languages';
 import './screens/AuthScreen.css';
 import { supabase }         from './lib/supabase';
 import { MOCK_SESSIONS }    from './lib/mockSessions';
-import { getTrainingHistory } from './lib/trainingHistory';
 import type { CallConfig, CallSession, CallStage, CallOutcome, TranscriptEntry, AISuggestion, CoachingWalkthrough } from './types';
 
 const OUTCOMES_KEY = 'callassist:outcomes';
@@ -35,8 +33,6 @@ function mergeOutcomes(sessions: CallSession[], map: Record<string, CallOutcome>
 }
 
 const PROFILE_PIC_KEY = 'pp-profile-pic';
-// Estimated seconds per training exchange (~90s avg per rep turn)
-const SECONDS_PER_EXCHANGE = 90;
 
 interface OnboardingData {
   name?: string;
@@ -70,7 +66,7 @@ const isElectron = navigator.userAgent.includes('Electron');
 const INITIAL_THEME = (localStorage.getItem('theme') ?? 'dark') as 'dark' | 'light';
 document.documentElement.dataset.theme = INITIAL_THEME === 'light' ? 'light' : '';
 
-type Screen = 'landing' | 'auth' | 'dashboard' | 'training' | 'analytics' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
+type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
 
 // ─── DB row ↔ CallSession helpers ────────────────────────────────────────────
 
@@ -154,9 +150,6 @@ export function App() {
   // Derived activity stats
   const totalCallSeconds = pastSessions.reduce((sum, s) => sum + s.durationSeconds, 0);
   const totalCallCount = pastSessions.length;
-  const trainingHistory = getTrainingHistory();
-  const totalTrainingSessions = trainingHistory.length;
-  const totalTrainingSeconds = trainingHistory.reduce((sum, h) => sum + h.exchanges * SECONDS_PER_EXCHANGE, 0);
 
   // Derive the effective screen: authenticated users on landing/auth go to dashboard
   const currentScreen: Screen = (user && (screen === 'landing' || screen === 'auth'))
@@ -272,7 +265,7 @@ export function App() {
     );
   }
 
-  const isShell = currentScreen === 'dashboard' || currentScreen === 'training' || currentScreen === 'analytics';
+  const isShell = currentScreen === 'dashboard' || currentScreen === 'analytics';
 
   const onboardingData = getOnboardingData();
 
@@ -304,7 +297,7 @@ export function App() {
 
       {isShell && (
         <AppShell
-          activeScreen={currentScreen as 'dashboard' | 'training' | 'analytics'}
+          activeScreen={currentScreen as 'dashboard' | 'analytics'}
           onNavigate={s => setScreen(s)}
           onStartCall={() => setScreen('pre-call')}
           onUploadCall={() => setScreen('upload-call')}
@@ -319,8 +312,6 @@ export function App() {
           onToggleTheme={toggleTheme}
           totalCallSeconds={totalCallSeconds}
           totalCallCount={totalCallCount}
-          totalTrainingSessions={totalTrainingSessions}
-          totalTrainingSeconds={totalTrainingSeconds}
           profilePic={profilePic}
           onProfilePicChange={handleProfilePicChange}
         >
@@ -339,11 +330,6 @@ export function App() {
                   ''
                 }
               />
-            </ErrorBoundary>
-          )}
-          {currentScreen === 'training' && (
-            <ErrorBoundary>
-              <TrainingScreen onBack={() => setScreen('dashboard')} appLanguage={appLanguage} />
             </ErrorBoundary>
           )}
           {currentScreen === 'analytics' && (

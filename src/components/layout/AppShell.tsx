@@ -7,9 +7,9 @@ import { TierBadge } from '../TierBadge';
 import { useTranslations } from '../../hooks/useTranslations';
 import './AppShell.css';
 
-type ShellScreen = 'dashboard' | 'training' | 'analytics';
+type ShellScreen = 'dashboard' | 'analytics';
 
-const NAV_IDS: ShellScreen[] = ['dashboard', 'training', 'analytics'];
+const NAV_IDS: ShellScreen[] = ['dashboard', 'analytics'];
 
 interface AppShellProps {
   activeScreen: ShellScreen;
@@ -27,8 +27,6 @@ interface AppShellProps {
   onToggleTheme: () => void;
   totalCallSeconds: number;
   totalCallCount: number;
-  totalTrainingSessions: number;
-  totalTrainingSeconds: number;
   profilePic: string | null;
   onProfilePicChange: (dataUrl: string) => void;
   children: React.ReactNode;
@@ -44,7 +42,7 @@ export function AppShell({
   activeScreen, onNavigate, onStartCall, onUploadCall, onSignOut,
   appLanguage, onChangeLanguage, currentLangLabel,
   userName, userEmail, theme, onToggleTheme,
-  totalCallSeconds, totalCallCount, totalTrainingSessions, totalTrainingSeconds,
+  totalCallSeconds, totalCallCount,
   profilePic, onProfilePicChange,
   children,
 }: AppShellProps) {
@@ -72,7 +70,6 @@ export function AppShell({
       {tiersOpen && (
         <TiersOverlay
           totalCalls={totalCallCount}
-          totalSessions={totalTrainingSessions}
           onClose={() => setTiersOpen(false)}
         />
       )}
@@ -163,8 +160,7 @@ export function AppShell({
             </button>
 
             {profileOpen && (() => {
-              const { current: milestone, next, progress } = getMilestone(totalCallCount, totalTrainingSessions);
-              const totalSeconds = totalCallSeconds + totalTrainingSeconds;
+              const { current: milestone, next, progress } = getMilestone(totalCallCount);
 
               function handlePicClick() { picInputRef.current?.click(); }
               function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -251,16 +247,10 @@ export function AppShell({
                         <strong>{totalCallCount}</strong> {t.profile.calls(totalCallCount)} · {formatTotalTime(totalCallSeconds)}
                       </span>
                     </div>
-                    <div className="app-shell__profile-stat">
-                      <span className="app-shell__profile-stat-icon">◈</span>
-                      <span className="app-shell__profile-stat-text">
-                        <strong>{totalTrainingSessions}</strong> {t.profile.trainingSessions(totalTrainingSessions)} · {formatTotalTime(totalTrainingSeconds)}
-                      </span>
-                    </div>
                     <div className="app-shell__profile-stat app-shell__profile-stat--total">
                       <span className="app-shell__profile-stat-icon">⏱</span>
                       <span className="app-shell__profile-stat-text">
-                        <strong>{formatTotalTime(totalSeconds)}</strong> {t.profile.totalOnPlatform}
+                        <strong>{formatTotalTime(totalCallSeconds)}</strong> {t.profile.totalOnPlatform}
                       </span>
                     </div>
                   </div>

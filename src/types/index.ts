@@ -55,19 +55,6 @@ export interface AIAnalysisResult {
   updatedObjectionsCount: number;
 }
 
-// ─── Training ────────────────────────────────────────────────────────────────
-
-export type TrainingScenario =
-  | 'price-objection'
-  | 'not-interested'
-  | 'think-it-over'
-  | 'send-me-info'
-  | 'cold-opener'
-  | 'discovery'
-  | 'closing'
-  | 'random'
-  | 'custom';
-
 export type ProspectTone =
   | 'Skeptical'
   | 'Curious'
@@ -83,30 +70,6 @@ export interface ToneCoaching {
   tone: ProspectTone;
   move: string;
   say: string;
-}
-
-export interface TrainingFeedback {
-  score: number;
-  pros: string[];
-  cons: string[];
-  idealResponse: string;
-  idealReason: string;
-  toneCoach?: ToneCoaching;
-}
-
-export interface TrainingMessage {
-  id: string;
-  role: 'prospect' | 'rep';
-  text: string;
-  prospectTone?: ProspectTone;
-  feedback?: TrainingFeedback;
-}
-
-export interface TrainingSession {
-  scenario: TrainingScenario;
-  scenarioDescription: string;
-  messages: TrainingMessage[];
-  overallScore?: number;
 }
 
 export interface SessionSummary {
