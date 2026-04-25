@@ -30,6 +30,7 @@ export function useAudioTone(config: AudioToneConfig): AudioToneState {
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const isProcessingRef = useRef(false);
+  const lastToneRef = useRef<{ tone: ProspectTone; at: number } | null>(null);
 
   const processChunk = useCallback(async (blob: Blob) => {
     // Skip silent / tiny chunks
@@ -75,9 +76,14 @@ export function useAudioTone(config: AudioToneConfig): AudioToneState {
       const data = await res.json() as { tone?: ProspectTone; move?: string; say?: string };
 
       if (data.tone) {
-        setTone(data.tone);
-        if (data.move && data.say) {
-          setCoaching({ tone: data.tone, move: data.move, say: data.say });
+        const now = Date.now();
+        // Don't thrash the UI — only update if tone changed or 15s have passed.
+        if (!(lastToneRef.current?.tone === data.tone && now - lastToneRef.current.at < 15_000)) {
+          lastToneRef.current = { tone: data.tone, at: now };
+          setTone(data.tone);
+          if (data.move && data.say) {
+            setCoaching({ tone: data.tone, move: data.move, say: data.say });
+          }
         }
       }
     } catch (err) {

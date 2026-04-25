@@ -1,4 +1,5 @@
-import type { TranscriptEntry, AISuggestion, AIAnalysisResult, CallStage, SuggestionType, CoachingWalkthrough, CoachingKeyMoment, CoachingItem } from '../types';
+import type { TranscriptEntry, AISuggestion, AIAnalysisResult, CallStage, SuggestionType, CoachingWalkthrough, CoachingKeyMoment, CoachingItem, CallSession } from '../types';
+import type { BattleCard } from './ai';
 import { genId } from './id';
 
 // ─── Memory ───────────────────────────────────────────────────────────────────
@@ -979,4 +980,168 @@ export function getQuickActionSuggestion(
 
   const entry = map[action] ?? { headline: 'AI Tip', body: 'Keep the conversation focused on their pain points, not your features.' };
   return makeSuggestion('tip', entry.headline, entry.body, `quick-action:${action}`, elapsedSeconds);
+}
+
+// ─── Battle Card ──────────────────────────────────────────────────────────────
+
+export function mockGenerateBattleCard(
+  prospectName: string,
+  prospectTitle: string,
+  company: string,
+  callType: string,
+  callGoal: string,
+  yourPitch: string,
+  priorContext: string,
+): BattleCard {
+  const name = prospectName || 'the prospect';
+  const co   = company || 'their company';
+  const isClose    = callType === 'close' || callType === 'negotiation';
+  const isDiscovery = callType === 'discovery' || callType === 'cold';
+
+  const pitchLower = yourPitch.toLowerCase();
+  const isRealEstate = pitchLower.includes('house') || pitchLower.includes('property') || pitchLower.includes('real estate') || pitchLower.includes('home');
+  const isCourse = pitchLower.includes('course') || pitchLower.includes('program') || pitchLower.includes('coaching') || pitchLower.includes('academy') || pitchLower.includes('masterclass');
+
+  const genericObjections: BattleCard['likelyObjections'] = [
+    {
+      objection: 'I need to think about it',
+      response: `"Of course. What specifically are you evaluating? If I know what's on your mind, I can give you exactly what you need to decide — rather than leaving you to figure it out alone."`,
+    },
+    {
+      objection: `It's too expensive`,
+      response: `"Totally fair — let me ask: what's the cost of NOT solving this right now? Most people find when they put a number on it, the investment looks very different."`,
+    },
+    {
+      objection: 'I need to speak to someone else first',
+      response: `"Makes sense. Who's involved in the decision? I want to make sure they have the right information too — could we get them on a quick call together?"`,
+    },
+  ];
+
+  const realEstateObjections: BattleCard['likelyObjections'] = [
+    {
+      objection: 'The price is higher than we expected',
+      response: `"I understand. Compared to similar properties in this area that have sold recently, this is actually priced competitively. Can I walk you through the comps?"`,
+    },
+    {
+      objection: "We're not in a rush to decide",
+      response: `"That's fine — but inventory at this price point tends to move fast. Would it help to know how many other buyers are currently looking at this?"`,
+    },
+    {
+      objection: "We want to see a few more options first",
+      response: `"Absolutely. What would need to be true for a property to be the right one? If I know your exact criteria, I can save you a lot of time."`,
+    },
+  ];
+
+  const courseObjections: BattleCard['likelyObjections'] = [
+    {
+      objection: "I've tried courses before and they didn't work",
+      response: `"That's one of the most common things I hear — and honestly, it's usually not the person's fault. Most courses give you information but no accountability or implementation support. What made the previous one fall short?"`,
+    },
+    {
+      objection: 'I don\'t have time right now',
+      response: `"When will you have time? Most people say that, and six months later nothing has changed. The question isn't whether you have time — it's whether you can afford to keep waiting on this."`,
+    },
+    {
+      objection: 'I need to see results first before I invest',
+      response: `"That's actually backwards — the results come from taking the action. What specific result would you need to see to feel confident? Let me show you students who were exactly where you are."`,
+    },
+  ];
+
+  const objections = isRealEstate ? realEstateObjections : isCourse ? courseObjections : genericObjections;
+
+  const discoveryQuestions = isRealEstate
+    ? [`What's your non-negotiable for the right property?`, `What's your timeline to move, and what's driving that?`, `Have you seen anything else you liked? What was missing?`]
+    : isCourse
+    ? [`What's the specific outcome you're trying to achieve in the next 90 days?`, `What's already stopped you from getting there on your own?`, `If this worked exactly as promised, what would change for you?`]
+    : isDiscovery
+    ? [`What's the biggest problem this call is hoping to solve?`, `What happens if this problem doesn't get fixed in the next quarter?`, `Who else is affected by this — is it just you or a team?`]
+    : [`Where are you in your decision process?`, `What would make this a clear yes for you?`, `What's the one thing that would need to be true for this to move forward?`];
+
+  const opener = isClose
+    ? `"${name}, when we last spoke you mentioned [their main pain]. I've been thinking about that — I want to make sure we use this call to get you to a decision you're fully confident in either way. Does that work?"`
+    : isRealEstate
+    ? `"${name}, thanks for making time. I've pulled together a few things specific to what you're looking for — before I share them, can I ask what's changed since we last spoke?"`
+    : isCourse
+    ? `"${name}, appreciate you jumping on. Quick question before I dive in — on a scale of 1 to 10, how serious are you right now about solving [the problem your program addresses]?"`
+    : `"${name}, thanks for making time. I'll be direct — I did some thinking about ${co} before this call and I have a couple of questions that will tell me in the first five minutes whether what I have is even relevant to you. Can I start there?"`;
+
+  const insight = priorContext.trim()
+    ? `Based on your notes: "${priorContext.slice(0, 120)}${priorContext.length > 120 ? '…' : ''}" — lead with empathy toward that context before going to your pitch.`
+    : callGoal
+    ? `Your goal is: "${callGoal}". Frame every question and response around whether you're moving toward that outcome.`
+    : `No prior context provided. Open with a discovery question to understand their situation before pitching.`;
+
+  return {
+    likelyObjections: objections,
+    powerQuestions: discoveryQuestions,
+    suggestedOpener: opener,
+    contextInsight: insight,
+  };
+}
+
+// ─── Prospect Summary ─────────────────────────────────────────────────────────
+
+export function mockGenerateProspectSummary(session: CallSession): string {
+  const { config, transcript, finalCloseProbability, callStage, durationSeconds, aiSummary } = session;
+  const name = config.prospectName || 'there';
+  const mins = Math.floor(durationSeconds / 60);
+  const minsLabel = mins > 0 ? `${mins} minute` : 'a brief';
+
+  const repLines = transcript.filter(e => e.speaker === 'rep').map(e => e.text);
+  const prospectLines = transcript.filter(e => e.speaker === 'prospect').map(e => e.text);
+  const hasTranscript = transcript.length > 2;
+
+  const stageLabel = callStage === 'close' ? 'strong close'
+    : callStage === 'pitch' ? 'pitch'
+    : callStage === 'discovery' ? 'discovery'
+    : 'conversation';
+
+  if (aiSummary && aiSummary.length > 50) {
+    const firstPara = aiSummary.split('\n').filter(l => l.trim()).slice(0, 2).join(' ');
+    return [
+      `Hi ${name},`,
+      ``,
+      `Thanks for taking the time for our ${minsLabel}-minute call today.`,
+      ``,
+      firstPara,
+      ``,
+      hasTranscript && prospectLines.length > 0
+        ? `Based on what you shared, here's my understanding of where things stand:`
+        : '',
+      hasTranscript && prospectLines.length > 0
+        ? prospectLines.slice(0, 2).map(l => `• ${l.slice(0, 120)}`).join('\n')
+        : '',
+      ``,
+      finalCloseProbability >= 70
+        ? `We covered a lot of ground and I feel confident we're aligned on the key points. I'll follow up with the next steps shortly.`
+        : finalCloseProbability >= 40
+        ? `We're making progress and I want to make sure you have everything you need to feel fully confident in your decision.`
+        : `I appreciate your honesty and time. Happy to answer any questions or provide more information whenever you're ready.`,
+      ``,
+      `Best,`,
+      config.yourPitch ? `[Your name] — ${config.yourPitch.slice(0, 60)}` : `[Your name]`,
+    ].filter(l => l !== '').join('\n');
+  }
+
+  const stage = stageLabel;
+  return [
+    `Hi ${name},`,
+    ``,
+    `Thanks for the ${minsLabel}-minute call today. We had a solid ${stage} and I wanted to send a quick recap while everything is fresh.`,
+    ``,
+    repLines.length > 0
+      ? `On my end, I walked you through ${config.yourPitch ? config.yourPitch.slice(0, 80) + (config.yourPitch.length > 80 ? '…' : '') : 'what I had in mind for you'}.`
+      : `We discussed ${config.callGoal || 'the opportunity and how it fits your situation'}.`,
+    ``,
+    `Next step: ${
+      callStage === 'close' ? 'I\'ll get the paperwork across to you — please review and let me know if anything needs adjusting.'
+      : callStage === 'pitch' ? 'Have a think on it and I\'ll check back in with you in a couple of days.'
+      : 'Let\'s schedule a follow-up once you\'ve had a chance to reflect — just reply here to find a time.'
+    }`,
+    ``,
+    `Feel free to reply with any questions — happy to jump on a quick call if anything needs clarifying.`,
+    ``,
+    `Best,`,
+    `[Your name]`,
+  ].join('\n');
 }

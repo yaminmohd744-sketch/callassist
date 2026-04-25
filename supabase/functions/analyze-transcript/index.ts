@@ -83,8 +83,8 @@ CALL PHASE: Based on the conversation content (not elapsed time), detect:
 2. "phaseLabel": a 3-6 word human-readable label for what's specifically happening (e.g. "Handling price objection", "Building initial rapport", "Prospect exploring the product", "Going for verbal commitment", "Cold intro", "Addressing timeline concern"). Be specific — not just "discovery" but what KIND of moment this is.
 Always return both fields, even when shouldShow is false.
 
-Respond ONLY with valid JSON (no markdown):
-{"shouldShow": boolean, "type": "tip"|"objection-response"|"close-attempt"|"discovery", "headline": string, "body": string, "probabilityDelta": number, "objectionsCountDelta": number, "detectedStage": "opener"|"discovery"|"pitch"|"close", "phaseLabel": string}
+Respond ONLY with valid JSON (no markdown). IMPORTANT: emit the "body" field first so the verbatim line reaches the rep immediately while the rest streams in:
+{"body": string, "shouldShow": boolean, "type": "tip"|"objection-response"|"close-attempt"|"discovery", "headline": string, "probabilityDelta": number, "objectionsCountDelta": number, "detectedStage": "opener"|"discovery"|"pitch"|"close", "phaseLabel": string}
 
 - "shouldShow": false for routine filler with no real coaching opportunity — default to false when in doubt
 - "type": "objection-response" for objections, "close-attempt" for buying signals, "discovery" for going deeper, "tip" for everything else

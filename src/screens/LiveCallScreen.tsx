@@ -57,6 +57,24 @@ function classifySpeaker(text: string, history: TranscriptEntry[]): 'rep' | 'pro
   return 'rep';
 }
 
+// Once a strong prospect signal locks in the pattern, walk backwards through history
+// (skipping index 0 which is always the rep opening) and apply strict alternation.
+// This retroactively corrects early ambiguous turns like "Hmm" or "Yeah, one second".
+function retroactivelyCorrectSpeakers(
+  history: TranscriptEntry[],
+  confirmedProspectIdx: number
+): TranscriptEntry[] {
+  if (confirmedProspectIdx <= 1) return history;
+  const corrected = [...history];
+  let expected: 'rep' | 'prospect' = 'rep'; // entry just before prospect → rep
+  for (let i = confirmedProspectIdx - 1; i >= 1; i--) {
+    if (corrected[i].speaker === 'system') continue;
+    corrected[i] = { ...corrected[i], speaker: expected };
+    expected = expected === 'rep' ? 'prospect' : 'rep';
+  }
+  return corrected;
+}
+
 interface LiveCallScreenProps {
   config: CallConfig;
   onEndCall: (session: CallSession) => void;
@@ -82,6 +100,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const bubbleRef = useRef<HTMLDivElement>(null);
   const dragOffset = useRef<{ x: number; y: number } | null>(null);
   const flipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const speakerLockedRef = useRef(false);
 
   const handleBubbleDragStart = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
     if (!bubbleRef.current) return;
@@ -139,7 +158,27 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     const isFirst = transcriptRef.current.length === 0;
     const mentionsProspect = config.prospectName.trim().length > 0 &&
       text.toLowerCase().includes(config.prospectName.trim().toLowerCase());
-    const speaker = (isFirst || mentionsProspect) ? 'rep' : classifySpeaker(text, transcriptRef.current);
+
+    let speaker: TranscriptSpeaker;
+    if (isFirst || mentionsProspect) {
+      speaker = 'rep';
+    } else if (speakerLockedRef.current) {
+      // Pattern locked — alternate turns as primary signal, keyword overrides only for strong hits
+      const lastNonSystem = [...transcriptRef.current].reverse().find(e => e.speaker !== 'system');
+      const alternation: TranscriptSpeaker = lastNonSystem?.speaker === 'rep' ? 'prospect' : 'rep';
+      const lower = text.toLowerCase();
+      if (PROSPECT_PHRASES.some(p => lower.includes(p))) speaker = 'prospect';
+      else if (REP_PHRASES.some(p => lower.includes(p))) speaker = 'rep';
+      else speaker = alternation;
+    } else {
+      speaker = classifySpeaker(text, transcriptRef.current);
+    }
+
+    // First time a strong prospect keyword fires — lock the pattern and retroactively correct.
+    const isLockIn = !speakerLockedRef.current &&
+      speaker === 'prospect' &&
+      PROSPECT_PHRASES.some(p => text.toLowerCase().includes(p));
+
     const entry: TranscriptEntry = {
       id: genId(),
       speaker,
@@ -147,7 +186,14 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       timestampSeconds: elapsedSeconds,
       signal: speaker === 'prospect' ? classifySignal(text) : 'neutral',
     };
-    const newTranscript = [...transcriptRef.current, entry];
+
+    let newTranscript = [...transcriptRef.current, entry];
+
+    if (isLockIn) {
+      speakerLockedRef.current = true;
+      newTranscript = retroactivelyCorrectSpeakers(newTranscript, newTranscript.length - 1);
+    }
+
     transcriptRef.current = newTranscript;
     setTranscript(newTranscript);
     if (speaker === 'prospect') {

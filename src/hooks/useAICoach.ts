@@ -42,6 +42,11 @@ export function useAICoach() {
   ) => {
     const current = stateRef.current;
 
+    // Prune recentTriggers entries older than 120 seconds to keep the Map bounded.
+    for (const [key, firedAt] of recentTriggersRef.current) {
+      if (elapsedSeconds - firedAt > 120) recentTriggersRef.current.delete(key);
+    }
+
     // Called on every streaming chunk and on final completion.
     const onStream = (partial: AISuggestion) => {
       setSuggestions(prev => {
@@ -55,7 +60,17 @@ export function useAICoach() {
         }
         // Only add to list if it has visible content (avoid showing empty card briefly)
         if (!partial.body && partial.streaming) return prev;
-        return [partial, ...prev];
+        // Dedup: if this body opens identically to an existing card, replace it.
+        const dupIdx = prev.findIndex(s =>
+          s.body.length > 10 && partial.body.length > 10 &&
+          s.body.slice(0, 40) === partial.body.slice(0, 40)
+        );
+        if (dupIdx !== -1) {
+          const next = [...prev];
+          next[dupIdx] = partial;
+          return next;
+        }
+        return [partial, ...prev].slice(0, 8);
       });
     };
 
@@ -100,7 +115,16 @@ export function useAICoach() {
       // Keyword-fallback path - suggestion not already in state via onStream.
       setSuggestions(prev => {
         if (prev.some(s => s.id === primary.id)) return prev;
-        return [primary, ...prev];
+        const dupIdx = prev.findIndex(s =>
+          s.body.length > 10 && primary.body.length > 10 &&
+          s.body.slice(0, 40) === primary.body.slice(0, 40)
+        );
+        if (dupIdx !== -1) {
+          const next = [...prev];
+          next[dupIdx] = primary;
+          return next;
+        }
+        return [primary, ...prev].slice(0, 8);
       });
     } else {
       memoryRef.current = {

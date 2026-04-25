@@ -289,3 +289,52 @@ export async function generateSessionSummary(
     return fallback;
   }
 }
+
+export interface BattleCard {
+  likelyObjections: { objection: string; response: string }[];
+  powerQuestions: string[];
+  suggestedOpener: string;
+  contextInsight: string;
+}
+
+export async function generateBattleCard(
+  prospectName: string,
+  prospectTitle: string,
+  company: string,
+  callType: string,
+  callGoal: string,
+  yourPitch: string,
+  priorContext: string,
+): Promise<BattleCard> {
+  const fallback = mockGenerateBattleCard(prospectName, prospectTitle, company, callType, callGoal, yourPitch, priorContext);
+  try {
+    const data = await callFunction('generate-battle-card', {
+      prospectName, prospectTitle, company, callType, callGoal, yourPitch, priorContext,
+    }) as Record<string, unknown>;
+    if (Array.isArray(data.likelyObjections)) return data as unknown as BattleCard;
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export async function generateProspectSummary(
+  session: import('../types').CallSession,
+): Promise<string> {
+  const fallback = mockGenerateProspectSummary(session);
+  try {
+    const data = await callFunction('generate-prospect-summary', {
+      config: session.config,
+      transcript: session.transcript,
+      aiSummary: session.aiSummary,
+      closeProbability: session.finalCloseProbability,
+      callStage: session.callStage,
+      durationSeconds: session.durationSeconds,
+    }) as Record<string, unknown>;
+    return typeof data.summary === 'string' ? data.summary : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+import { mockGenerateBattleCard, mockGenerateProspectSummary } from './mockAI';

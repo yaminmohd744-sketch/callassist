@@ -2,7 +2,8 @@ import { useState, useRef } from 'react';
 import { Button } from '../components/ui/Button';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
-import { enhancePitch } from '../lib/ai';
+import { enhancePitch, generateBattleCard } from '../lib/ai';
+import type { BattleCard } from '../lib/ai';
 import type { CallConfig } from '../types';
 import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
@@ -57,6 +58,10 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', 
   const [enhancing, setEnhancing] = useState(false);
   const [enhanced, setEnhanced] = useState(false);
   const enhancingRef = useRef(false);
+  const [battleCard, setBattleCard] = useState<BattleCard | null>(null);
+  const [generatingCard, setGeneratingCard] = useState(false);
+  const [cardExpanded, setCardExpanded] = useState(false);
+  const generatingCardRef = useRef(false);
 
   function handleChange(field: StringConfigField, value: string) {
     setForm(f => ({ ...f, [field]: value }));
@@ -66,6 +71,23 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', 
 
   function handleCallType(value: string) {
     setForm(f => ({ ...f, callType: f.callType === value ? '' : value }));
+  }
+
+  async function handleGenerateBattleCard() {
+    if (generatingCardRef.current) return;
+    generatingCardRef.current = true;
+    setGeneratingCard(true);
+    try {
+      const card = await generateBattleCard(
+        form.prospectName, form.prospectTitle ?? '', form.company,
+        form.callType ?? '', form.callGoal, form.yourPitch, form.priorContext ?? '',
+      );
+      setBattleCard(card);
+      setCardExpanded(true);
+    } finally {
+      generatingCardRef.current = false;
+      setGeneratingCard(false);
+    }
   }
 
   async function handleEnhancePitch() {
