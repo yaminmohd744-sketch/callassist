@@ -8,7 +8,6 @@ import { LeadProfilePanel } from '../components/panels/LeadProfilePanel';
 import { useCallTimer } from '../hooks/useCallTimer';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useAICoach } from '../hooks/useAICoach';
-import { useAudioTone } from '../hooks/useAudioTone';
 import { generateSessionSummary, classifySignalAI } from '../lib/ai';
 import { classifySignal, PROSPECT_PHRASES, REP_PHRASES, PROSPECT_REACTIONS } from '../lib/keywords';
 import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSpeaker } from '../types';
@@ -101,6 +100,10 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const dragOffset = useRef<{ x: number; y: number } | null>(null);
   const flipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const speakerLockedRef = useRef(false);
+  const dgSpeakerMapRef = useRef<Map<number, TranscriptSpeaker> | null>(null);
+  const [repWords, setRepWords] = useState(0);
+  const [prospectWords, setProspectWords] = useState(0);
+  const [fillerCount, setFillerCount] = useState(0);
 
   const handleBubbleDragStart = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
     if (!bubbleRef.current) return;
@@ -144,26 +147,35 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       });
     }).catch(() => { /* aborted — ignore */ });
   }, [config.language]);
-  const { suggestions, phaseLabel, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion, reset: resetCoach } = useAICoach();
-  const {
-    tone: prospectTone,
-    coaching: toneCoaching,
-    startCapture: startToneCapture,
-    stopCapture: stopToneCapture,
-  } = useAudioTone({ prospectName: config.prospectName, callGoal: config.callGoal, yourPitch: config.yourPitch });
+  const { suggestions, phaseLabel, prospectTone, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion, reset: resetCoach } = useAICoach();
+
+  const FILLER_WORDS = ['um', 'uh', ' like ', 'you know', 'basically', 'literally', 'sort of', 'kind of', 'i mean', 'right?'];
 
   // Automatically classify each mic utterance as rep or prospect based on content.
   // Only prospect entries trigger AI analysis.
-  const handleFinalTranscript = useCallback((text: string) => {
+  const handleFinalTranscript = useCallback((text: string, deepgramSpeaker?: number) => {
     const isFirst = transcriptRef.current.length === 0;
     const mentionsProspect = config.prospectName.trim().length > 0 &&
       text.toLowerCase().includes(config.prospectName.trim().toLowerCase());
 
     let speaker: TranscriptSpeaker;
-    if (isFirst || mentionsProspect) {
+
+    // Deepgram diarization takes priority over all heuristics when available
+    if (deepgramSpeaker !== undefined) {
+      if (!dgSpeakerMapRef.current) {
+        dgSpeakerMapRef.current = new Map([[deepgramSpeaker, 'rep']]);
+      }
+      const mapped = dgSpeakerMapRef.current.get(deepgramSpeaker);
+      if (mapped) {
+        speaker = mapped;
+      } else {
+        const newRole: TranscriptSpeaker = [...dgSpeakerMapRef.current.values()][0] === 'rep' ? 'prospect' : 'rep';
+        dgSpeakerMapRef.current.set(deepgramSpeaker, newRole);
+        speaker = newRole;
+      }
+    } else if (isFirst || mentionsProspect) {
       speaker = 'rep';
     } else if (speakerLockedRef.current) {
-      // Pattern locked — alternate turns as primary signal, keyword overrides only for strong hits
       const lastNonSystem = [...transcriptRef.current].reverse().find(e => e.speaker !== 'system');
       const alternation: TranscriptSpeaker = lastNonSystem?.speaker === 'rep' ? 'prospect' : 'rep';
       const lower = text.toLowerCase();
@@ -175,7 +187,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     }
 
     // First time a strong prospect keyword fires — lock the pattern and retroactively correct.
-    const isLockIn = !speakerLockedRef.current &&
+    const isLockIn = deepgramSpeaker === undefined &&
+      !speakerLockedRef.current &&
       speaker === 'prospect' &&
       PROSPECT_PHRASES.some(p => text.toLowerCase().includes(p));
 
@@ -196,6 +209,19 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
     transcriptRef.current = newTranscript;
     setTranscript(newTranscript);
+
+    // Track talk time (word counts per speaker)
+    const wordCount = text.trim().split(/\s+/).length;
+    if (speaker === 'rep') {
+      setRepWords(w => w + wordCount);
+      // Track filler words
+      const lower = text.toLowerCase();
+      const fillers = FILLER_WORDS.filter(f => lower.includes(f)).length;
+      if (fillers > 0) setFillerCount(c => c + fillers);
+    } else if (speaker === 'prospect') {
+      setProspectWords(w => w + wordCount);
+    }
+
     if (speaker === 'prospect') {
       processEntry(entry, newTranscript, elapsedSeconds, config);
       applySignal(entry.id, text);
@@ -265,9 +291,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     setCallStatus('active');
     startTimer();
     startListening();
-    startToneCapture();
     if (recordingSupported) startRecording();
-    return () => { stopToneCapture(); };
+    return () => {};
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -286,6 +311,17 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     const newTranscript = [...transcriptRef.current, entry];
     transcriptRef.current = newTranscript;
     setTranscript(newTranscript);
+
+    const wc = text.trim().split(/\s+/).length;
+    if (manualSpeaker === 'rep') {
+      setRepWords(w => w + wc);
+      const lower = text.toLowerCase();
+      const fillers = FILLER_WORDS.filter(f => lower.includes(f)).length;
+      if (fillers > 0) setFillerCount(c => c + fillers);
+    } else if (manualSpeaker === 'prospect') {
+      setProspectWords(w => w + wc);
+    }
+
     if (manualSpeaker === 'prospect') {
       processEntry(entry, newTranscript, elapsedSeconds, config);
       applySignal(entry.id, text);
@@ -328,7 +364,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
   const handleEndCall = useCallback(async () => {
     stopListening();
-    stopToneCapture();
     stopTimer();
     await stopRecording(recordingKeyRef.current);
     window.electronAPI?.closeOverlay();
@@ -382,7 +417,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     } finally {
       setIsSummarising(false);
     }
-  }, [stopListening, stopToneCapture, stopTimer, config, transcript, suggestions, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);
+  }, [stopListening, stopTimer, config, transcript, suggestions, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);
 
   // Keep a stable ref so the overlay's trigger-end-call listener always calls the latest version.
   const handleEndCallRef = useRef(handleEndCall);
@@ -458,7 +493,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
               callStage={callStage}
               phaseLabel={phaseLabel}
               prospectTone={prospectTone}
-              toneCoaching={toneCoaching}
+              talkRatio={repWords + prospectWords > 0 ? repWords / (repWords + prospectWords) : undefined}
+              fillerCount={fillerCount}
             />
             <LeadProfilePanel
               config={config}

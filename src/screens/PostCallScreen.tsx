@@ -5,6 +5,7 @@ import { loadRecording } from '../hooks/useCallRecorder';
 import { formatDuration, formatDateLong } from '../lib/formatters';
 import { useTranslations } from '../hooks/useTranslations';
 import { computeRepScore } from '../lib/repScore';
+import { generateProspectSummary } from '../lib/ai';
 import './PostCallScreen.css';
 
 function isValidWebhookUrl(url: string): boolean {
@@ -75,7 +76,10 @@ function renderSummary(text: string) {
 export function PostCallScreen({ session, onBack, onNewCall, onUpdateOutcome }: PostCallScreenProps) {
   const [outcome, setOutcome] = useState<CallOutcome>(session.outcome ?? null);
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'coaching' | 'summary' | 'transcript' | 'email' | 'scorecard' | 'replay'>(session.coaching ? 'coaching' : 'summary');
+  const [activeTab, setActiveTab] = useState<'coaching' | 'summary' | 'transcript' | 'email' | 'scorecard' | 'replay' | 'share'>(session.coaching ? 'coaching' : 'summary');
+  const [prospectSummary, setProspectSummary] = useState<string | null>(null);
+  const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [summaryCopied, setSummaryCopied] = useState(false);
   const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
   const [replayCurrentTime, setReplayCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -110,6 +114,29 @@ export function PostCallScreen({ session, onBack, onNewCall, onUpdateOutcome }: 
     return () => { if (recordingUrl) URL.revokeObjectURL(recordingUrl); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, session.recordingKey]);
+
+  async function handleGenerateProspectSummary() {
+    if (generatingSummary) return;
+    setGeneratingSummary(true);
+    try {
+      const summary = await generateProspectSummary(session);
+      setProspectSummary(summary);
+    } finally {
+      setGeneratingSummary(false);
+    }
+  }
+
+  async function handleCopyProspectSummary() {
+    if (!prospectSummary) return;
+    await navigator.clipboard.writeText(prospectSummary);
+    setSummaryCopied(true);
+    setTimeout(() => setSummaryCopied(false), 2000);
+  }
+
+  function handleShareTab() {
+    setActiveTab('share');
+    if (!prospectSummary && !generatingSummary) handleGenerateProspectSummary();
+  }
 
   function handleOutcome(o: CallOutcome) {
     const next = outcome === o ? null : o;
@@ -314,6 +341,14 @@ export function PostCallScreen({ session, onBack, onNewCall, onUpdateOutcome }: 
           className={`postcall__tab ${activeTab === 'scorecard' ? 'postcall__tab--active' : ''}`}
           onClick={() => setActiveTab('scorecard')}
         >SCORECARD</button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 'share'}
+          id="postcall-tab-share"
+          aria-controls="postcall-panel-share"
+          className={`postcall__tab ${activeTab === 'share' ? 'postcall__tab--active' : ''}`}
+          onClick={handleShareTab}
+        >↗ SHARE</button>
       </div>
 
       <div className="postcall__content">
@@ -607,6 +642,59 @@ export function PostCallScreen({ session, onBack, onNewCall, onUpdateOutcome }: 
                   })}
                 </div>
               </>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'share' && (
+          <div className="postcall__share" role="tabpanel" id="postcall-panel-share" aria-labelledby="postcall-tab-share" tabIndex={0}>
+            <div className="postcall__share-header">
+              <div className="postcall__share-title">Prospect Summary</div>
+              <p className="postcall__share-desc">
+                A clean, context-aware recap of this call — written for {session.config.prospectName || 'your prospect'}.
+                Copy it and send via email, WhatsApp, or however you follow up.
+              </p>
+            </div>
+
+            {generatingSummary && (
+              <div className="postcall__share-loading">
+                <span className="postcall__share-spinner" />
+                <span>Analysing your call and crafting the summary…</span>
+              </div>
+            )}
+
+            {!generatingSummary && prospectSummary && (
+              <>
+                <div className="postcall__share-body">
+                  {prospectSummary.split('\n').map((line, i) => {
+                    const trimmed = line.trim();
+                    if (trimmed === '') return <div key={i} className="postcall__share-spacer" />;
+                    return <p key={i} className="postcall__share-line">{line}</p>;
+                  })}
+                </div>
+                <div className="postcall__share-actions">
+                  <button className="postcall__share-copy-btn" onClick={handleCopyProspectSummary}>
+                    {summaryCopied ? '✓ Copied!' : '⎘ Copy to clipboard'}
+                  </button>
+                  <button className="postcall__share-regen-btn" onClick={handleGenerateProspectSummary}>
+                    ↺ Regenerate
+                  </button>
+                </div>
+                <p className="postcall__share-hint">
+                  Paste this anywhere — email, LinkedIn DM, WhatsApp, Notion, your CRM notes.
+                </p>
+              </>
+            )}
+
+            {!generatingSummary && !prospectSummary && (
+              <div className="postcall__share-empty">
+                <button className="postcall__share-generate-btn" onClick={handleGenerateProspectSummary}>
+                  ◈ Generate Prospect Summary
+                </button>
+                <p className="postcall__share-empty-hint">
+                  AI will analyse the call and write a personalised recap you can send directly to {session.config.prospectName || 'the prospect'}.
+                </p>
+              </div>
             )}
           </div>
         )}

@@ -26,17 +26,17 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { entry, transcript, stage, elapsedSeconds, probability, objectionsCount, config, lastLabel, language, currentPhaseLabel } =
+    const { entry, transcript, stage, elapsedSeconds, probability, objectionsCount, config, lastLabel, language, currentPhaseLabel, callSummary } =
       await req.json();
 
     const langNote = language && language !== "en-US"
       ? `\nThe call is in "${language}" — write the body in that language. Headline stays in English.`
       : "";
 
-    // Only last 3 exchanges for speed — enough context without bloat
     const safeTranscript = Array.isArray(transcript) ? transcript : [];
+    // Send last 8 exchanges in full — enough for deep context on most calls
     const recentEntries = (safeTranscript as Array<{ speaker: string; text: string }>)
-      .slice(-3)
+      .slice(-8)
       .map((e) => `${e.speaker === "rep" ? "REP" : "PROSPECT"}: ${e.text}`)
       .join("\n");
 
@@ -53,7 +53,7 @@ Context:
 - Goal: ${config?.callGoal || "move the conversation forward"}
 ${config?.prospectTitle ? `- Prospect role: ${config.prospectTitle}\n` : ''}${config?.callType ? `- Call type: ${config.callType}\n` : ''}- ${Math.floor(elapsedSeconds / 60)}min elapsed | Close probability: ${probability}% | Objections: ${objectionsCount}
 - Last suggestion: ${lastLabel ?? "none"} — suggest something meaningfully different${langNote}
-${config?.priorContext ? `- Prior context: ${config.priorContext}\n` : ''}${currentPhaseLabel ? `- Current detected phase: ${currentPhaseLabel}\n` : ''}
+${config?.priorContext ? `- Prior context: ${config.priorContext}\n` : ''}${currentPhaseLabel ? `- Current detected phase: ${currentPhaseLabel}\n` : ''}${callSummary ? `- Earlier in the call: ${callSummary}\n` : ''}
 Recent conversation:
 ${recentEntries}
 
@@ -84,7 +84,7 @@ CALL PHASE: Based on the conversation content (not elapsed time), detect:
 Always return both fields, even when shouldShow is false.
 
 Respond ONLY with valid JSON (no markdown). IMPORTANT: emit the "body" field first so the verbatim line reaches the rep immediately while the rest streams in:
-{"body": string, "shouldShow": boolean, "type": "tip"|"objection-response"|"close-attempt"|"discovery", "headline": string, "probabilityDelta": number, "objectionsCountDelta": number, "detectedStage": "opener"|"discovery"|"pitch"|"close", "phaseLabel": string}
+{"body": string, "shouldShow": boolean, "type": "tip"|"objection-response"|"close-attempt"|"discovery", "headline": string, "probabilityDelta": number, "objectionsCountDelta": number, "detectedStage": "opener"|"discovery"|"pitch"|"close", "phaseLabel": string, "prospectTone": "Skeptical"|"Curious"|"Defensive"|"Warm"|"Disengaged"|"Frustrated"|"Excited"|"Hesitant"|"Neutral"|null}
 
 - "shouldShow": false for routine filler with no real coaching opportunity — default to false when in doubt
 - "type": "objection-response" for objections, "close-attempt" for buying signals, "discovery" for going deeper, "tip" for everything else
@@ -93,7 +93,8 @@ Respond ONLY with valid JSON (no markdown). IMPORTANT: emit the "body" field fir
 - "probabilityDelta": integer -10 to +10
 - "objectionsCountDelta": 0 or 1
 - "detectedStage": one of "opener", "discovery", "pitch", "close"
-- "phaseLabel": 3-6 word specific description of what's happening right now`;
+- "phaseLabel": 3-6 word specific description of what's happening right now
+- "prospectTone": the prospect's emotional state inferred from their words — one of the enum values, or null if unclear`;
 
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -103,13 +104,13 @@ Respond ONLY with valid JSON (no markdown). IMPORTANT: emit the "body" field fir
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: "Give your coaching suggestion." },
         ],
         stream: true,
-        max_tokens: 220,
+        max_tokens: 280,
         temperature: 0.55,
       }),
     });

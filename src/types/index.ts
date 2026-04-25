@@ -54,6 +54,7 @@ export interface AIAnalysisResult {
   updatedStage: CallStage;
   updatedObjectionsCount: number;
   phaseLabel?: string;
+  prospectTone?: ProspectTone;
 }
 
 export type ProspectTone =

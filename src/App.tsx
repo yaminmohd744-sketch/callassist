@@ -88,6 +88,7 @@ function rowToSession(row: DbRow): CallSession {
     notes:                 Array.isArray(row.notes) ? row.notes as string[] : [],
     talkRatio:             typeof row.talk_ratio === 'number' ? row.talk_ratio : undefined,
     coaching:              row.coaching as CoachingWalkthrough ?? undefined,
+    outcome:               (row.outcome as CallOutcome) ?? null,
   };
 }
 
@@ -108,6 +109,7 @@ function sessionToRow(s: CallSession, userId: string) {
     notes:            s.notes,
     talk_ratio:       s.talkRatio ?? null,
     coaching:         s.coaching ?? null,
+    outcome:          s.outcome ?? null,
   };
 }
 
@@ -220,6 +222,16 @@ export function App() {
     saveOutcomes(next);
     setPastSessions(prev => mergeOutcomes(prev, next));
     setCallSession(prev => prev && prev.endedAt === endedAt ? { ...prev, outcome } : prev);
+    if (user) {
+      supabase
+        .from('call_sessions')
+        .update({ outcome })
+        .eq('user_id', user.id)
+        .eq('ended_at', endedAt)
+        .then(({ error }) => {
+          if (error) console.error('[CallAssist] Failed to save outcome:', error.message);
+        });
+    }
   }
 
   async function handleDeleteSession(endedAt: string) {

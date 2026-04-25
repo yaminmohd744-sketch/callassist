@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { analyzeTranscript, getQuickActionSuggestion, type Memory } from '../lib/ai';
-import type { AISuggestion, CallConfig, CallStage, TranscriptEntry, QuickAction } from '../types';
+import type { AISuggestion, CallConfig, CallStage, TranscriptEntry, QuickAction, ProspectTone } from '../types';
 
 interface AICoachState {
   closeProbability: number;
@@ -23,6 +23,7 @@ const initialMemory: Memory = {
 export function useAICoach() {
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
   const [phaseLabel, setPhaseLabel] = useState<string>('');
+  const [prospectTone, setProspectTone] = useState<ProspectTone | null>(null);
   const stateRef = useRef<AICoachState>({ ...initialState });
   const [coachState, setCoachState] = useState<AICoachState>({ ...initialState });
   const recentTriggersRef = useRef<Map<string, number>>(new Map());
@@ -101,6 +102,7 @@ export function useAICoach() {
 
     updateState(nextState);
     if (result.phaseLabel) setPhaseLabel(result.phaseLabel);
+    if (result.prospectTone) setProspectTone(result.prospectTone);
 
     if (result.suggestions.length > 0) {
       const primary = result.suggestions[0];
@@ -148,6 +150,8 @@ export function useAICoach() {
     analysisAbortRef.current = null;
     updateState({ ...initialState });
     setSuggestions([]);
+    setPhaseLabel('');
+    setProspectTone(null);
     recentTriggersRef.current.clear();
     memoryRef.current = { ...initialMemory };
   }, [updateState]);
@@ -155,6 +159,7 @@ export function useAICoach() {
   return {
     suggestions,
     phaseLabel,
+    prospectTone,
     closeProbability: coachState.closeProbability,
     callStage: coachState.callStage,
     objectionsCount: coachState.objectionsCount,

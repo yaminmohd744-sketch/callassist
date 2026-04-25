@@ -275,6 +275,71 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', 
             </div>
           </div>
 
+          {/* ── Battle Card ── */}
+          <div className="precall__battlecard-wrap">
+            <button
+              type="button"
+              className="precall__battlecard-trigger"
+              onClick={battleCard ? () => setCardExpanded(e => !e) : handleGenerateBattleCard}
+              disabled={generatingCard}
+            >
+              <span className="precall__battlecard-trigger-icon">
+                {generatingCard ? <span className="precall__enhance-spinner" /> : '⚡'}
+              </span>
+              {generatingCard
+                ? 'Generating battle card…'
+                : battleCard
+                ? `${cardExpanded ? '▾' : '▸'} Battle Card`
+                : 'Generate Battle Card'}
+              {!battleCard && !generatingCard && (
+                <span className="precall__battlecard-hint">Likely objections · Power questions · Suggested opener</span>
+              )}
+            </button>
+
+            {battleCard && cardExpanded && (
+              <div className="precall__battlecard">
+
+                <div className="precall__bc-section">
+                  <div className="precall__bc-label">◈ CONTEXT INSIGHT</div>
+                  <p className="precall__bc-insight">{battleCard.contextInsight}</p>
+                </div>
+
+                <div className="precall__bc-section">
+                  <div className="precall__bc-label">▶ SUGGESTED OPENER</div>
+                  <p className="precall__bc-opener">{battleCard.suggestedOpener}</p>
+                </div>
+
+                <div className="precall__bc-section">
+                  <div className="precall__bc-label">? POWER QUESTIONS</div>
+                  <ul className="precall__bc-list">
+                    {battleCard.powerQuestions.map((q, i) => (
+                      <li key={i} className="precall__bc-list-item">{q}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="precall__bc-section">
+                  <div className="precall__bc-label">⚠ LIKELY OBJECTIONS</div>
+                  {battleCard.likelyObjections.map((o, i) => (
+                    <div key={i} className="precall__bc-objection">
+                      <div className="precall__bc-obj-label">"{o.objection}"</div>
+                      <div className="precall__bc-obj-response">{o.response}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="precall__bc-regen"
+                  onClick={handleGenerateBattleCard}
+                  disabled={generatingCard}
+                >
+                  ↺ Regenerate
+                </button>
+              </div>
+            )}
+          </div>
+
           <Button
             variant="primary"
             size="lg"

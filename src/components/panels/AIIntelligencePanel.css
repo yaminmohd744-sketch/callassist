@@ -17,6 +17,57 @@
   gap: var(--space-3);
 }
 
+.ai-panel__talk-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+  flex-shrink: 0;
+}
+
+.ai-panel__talk-row--warn .ai-panel__talk-bar-fill {
+  background: var(--color-accent-red);
+}
+
+.ai-panel__talk-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ai-panel__talk-bar {
+  flex: 1;
+  height: 3px;
+  background: var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ai-panel__talk-bar-fill {
+  height: 100%;
+  background: var(--color-accent-purple);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.ai-panel__filler {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  opacity: 0.7;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ai-panel__filler--high {
+  color: var(--color-accent-red);
+  opacity: 1;
+}
+
 .ai-panel__header-left {
   display: flex;
   flex-direction: column;

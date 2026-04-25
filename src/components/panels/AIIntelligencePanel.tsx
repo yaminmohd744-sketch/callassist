@@ -1,13 +1,12 @@
 
-import { useMemo } from 'react';
 import { SuggestionCard } from '../cards/SuggestionCard';
-import type { AISuggestion, CallStage, ProspectTone, ToneCoaching } from '../../types';
+import type { AISuggestion, CallStage, ProspectTone } from '../../types';
 import { useTranslations } from '../../hooks/useTranslations';
 import './AIIntelligencePanel.css';
 
 const TONE_COLOR: Record<ProspectTone, string> = {
   Skeptical:   '#f59e0b',
-  Curious:     '#00cfff',
+  Curious:     '#814ac8',
   Defensive:   '#ef4444',
   Warm:        '#22c55e',
   Disengaged:  '#6b7280',
@@ -22,7 +21,8 @@ interface AIIntelligencePanelProps {
   callStage: CallStage;
   phaseLabel?: string;
   prospectTone?: ProspectTone | null;
-  toneCoaching?: ToneCoaching | null;
+  talkRatio?: number;
+  fillerCount?: number;
 }
 
 export function AIIntelligencePanel({
@@ -30,7 +30,8 @@ export function AIIntelligencePanel({
   callStage,
   phaseLabel,
   prospectTone,
-  toneCoaching,
+  talkRatio,
+  fillerCount = 0,
 }: AIIntelligencePanelProps) {
   const t = useTranslations();
 
@@ -41,26 +42,9 @@ export function AIIntelligencePanel({
     close:     t.liveCall.stageClose,
   };
 
-  // Convert tone coaching into a normal suggestion card so it renders identically
-  // to AI-generated suggestions — no special UI treatment.
-  const toneSuggestion = useMemo<AISuggestion | null>(() => {
-    if (!toneCoaching) return null;
-    return {
-      id: 'tone-live',
-      type: 'tip',
-      headline: `${toneCoaching.tone} tone — read this`,
-      body: `${toneCoaching.move}\n\n"${toneCoaching.say}"`,
-      triggeredBy: 'voice-tone',
-      timestampSeconds: 0,
-      streaming: false,
-    };
-  }, [toneCoaching]);
-
-  const allCards = useMemo<AISuggestion[]>(() => {
-    return toneSuggestion ? [toneSuggestion, ...suggestions] : suggestions;
-  }, [toneSuggestion, suggestions]);
-
-  const isEmpty = allCards.length === 0;
+  const isEmpty = suggestions.length === 0;
+  const repPct = talkRatio !== undefined ? Math.round(talkRatio * 100) : null;
+  const talkWarning = repPct !== null && repPct > 65;
 
   return (
     <div className="ai-panel">
@@ -87,6 +71,21 @@ export function AIIntelligencePanel({
         </div>
       </div>
 
+      {repPct !== null && (
+        <div className={`ai-panel__talk-row${talkWarning ? ' ai-panel__talk-row--warn' : ''}`}>
+          <span className="ai-panel__talk-label">YOU {repPct}%</span>
+          <div className="ai-panel__talk-bar">
+            <div className="ai-panel__talk-bar-fill" style={{ width: `${repPct}%` }} />
+          </div>
+          <span className="ai-panel__talk-label">{100 - repPct}% THEM</span>
+          {fillerCount > 0 && (
+            <span className={`ai-panel__filler${fillerCount >= 5 ? ' ai-panel__filler--high' : ''}`}>
+              {fillerCount} filler{fillerCount !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="ai-panel__body">
         {isEmpty ? (
           <div className="ai-panel__empty">
@@ -103,7 +102,7 @@ export function AIIntelligencePanel({
           </div>
         ) : (
           <div className="ai-panel__cards">
-            {allCards.map(s => (
+            {suggestions.map(s => (
               <SuggestionCard key={s.id} suggestion={s} />
             ))}
           </div>

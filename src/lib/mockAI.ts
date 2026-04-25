@@ -986,7 +986,7 @@ export function getQuickActionSuggestion(
 
 export function mockGenerateBattleCard(
   prospectName: string,
-  prospectTitle: string,
+  _prospectTitle: string,
   company: string,
   callType: string,
   callGoal: string,

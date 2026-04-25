@@ -82,6 +82,14 @@ export async function analyzeTranscript(
         lastLabel: memory?.lastLabel ?? null,
         language: config?.language ?? 'en-US',
         currentPhaseLabel: memory?.phaseLabel ?? null,
+        // Compress entries older than the last 8 into a short summary string so
+        // the AI retains full-call context without ballooning the token count.
+        callSummary: fullTranscript.length > 8
+          ? fullTranscript.slice(0, -8)
+              .map(e => `${e.speaker === 'rep' ? 'R' : 'P'}: ${e.text.slice(0, 80)}`)
+              .join(' | ')
+              .slice(0, 400)
+          : '',
       }),
       signal: streamController.signal,
     });
@@ -167,9 +175,12 @@ export async function analyzeTranscript(
       ? data.detectedStage as CallStage
       : detectStage(elapsedSeconds);
     const aiPhaseLabel = typeof data.phaseLabel === 'string' ? data.phaseLabel : undefined;
+    const VALID_TONES = ['Skeptical','Curious','Defensive','Warm','Disengaged','Frustrated','Excited','Hesitant','Neutral'];
+    const aiProspectTone = VALID_TONES.includes(data.prospectTone as string)
+      ? data.prospectTone as import('../types').ProspectTone
+      : undefined;
 
     if (!data.shouldShow) {
-      // Remove any streaming placeholder we showed
       if (streamingShown && onStream) {
         onStream({
           id: suggestionId,
@@ -187,6 +198,7 @@ export async function analyzeTranscript(
         updatedStage: aiDetectedStage,
         updatedObjectionsCount: currentObjectionsCount,
         phaseLabel: aiPhaseLabel,
+        prospectTone: aiProspectTone,
       };
     }
 
@@ -209,6 +221,7 @@ export async function analyzeTranscript(
       updatedStage: aiDetectedStage,
       updatedObjectionsCount: currentObjectionsCount + ((data.objectionsCountDelta as number) ?? 0),
       phaseLabel: aiPhaseLabel,
+      prospectTone: aiProspectTone,
     };
   } catch (err) {
     if (streamingShown && onStream && suggestionId) {

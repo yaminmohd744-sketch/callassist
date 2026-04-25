@@ -54,7 +54,7 @@ function getWebSpeech(): WSR | null {
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 interface UseSpeechRecognitionOptions {
-  onFinalTranscript: (text: string) => void;
+  onFinalTranscript: (text: string, speakerIndex?: number) => void;
   language?: string; // BCP 47 code, e.g. 'en-US', 'es-ES'
 }
 
@@ -75,27 +75,35 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   // after a short silence, so fragmented mid-sentence commits get merged.
   // Capped at MAX_BUFFER_CHUNKS to prevent unbounded memory growth on very long calls.
   const MAX_BUFFER_CHUNKS = 50;
-  const bufferRef     = useRef<string[]>([]);
-  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bufferRef          = useRef<string[]>([]);
+  const flushTimerRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Tracks the Deepgram speaker index for the current utterance (updated per chunk).
+  const dgCurrentSpeakerRef = useRef<number | undefined>(undefined);
 
   const commitBuffer = useCallback(() => {
     if (flushTimerRef.current) { clearTimeout(flushTimerRef.current); flushTimerRef.current = null; }
     const combined = bufferRef.current.join(' ').trim();
+    const speaker = dgCurrentSpeakerRef.current;
     bufferRef.current = [];
-    if (combined) onFinalRef.current(combined);
+    dgCurrentSpeakerRef.current = undefined;
+    if (combined) onFinalRef.current(combined, speaker);
   }, []);
 
   const flushBuffer = useCallback((immediate = false) => {
     if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
     if (immediate) {
       const combined = bufferRef.current.join(' ').trim();
+      const speaker = dgCurrentSpeakerRef.current;
       bufferRef.current = [];
-      if (combined) onFinalRef.current(combined);
+      dgCurrentSpeakerRef.current = undefined;
+      if (combined) onFinalRef.current(combined, speaker);
     } else {
       flushTimerRef.current = setTimeout(() => {
         const combined = bufferRef.current.join(' ').trim();
+        const speaker = dgCurrentSpeakerRef.current;
         bufferRef.current = [];
-        if (combined) onFinalRef.current(combined);
+        dgCurrentSpeakerRef.current = undefined;
+        if (combined) onFinalRef.current(combined, speaker);
       }, 350);
     }
   }, []);
@@ -229,6 +237,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         '&smart_format=true',
         '&endpointing=250',
         '&utterance_end_ms=1000',
+        '&diarize=true',
         '&keywords=demo:3',
         '&keywords=trial:2',
         '&keywords=pricing:2',
@@ -281,14 +290,22 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
       ws.onmessage = (event) => {
         if (wsRef.current !== ws) return;
         if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
+        interface DGWord { word: string; speaker: number; }
         interface DGResult {
           type: string; is_final: boolean; speech_final: boolean;
-          channel: { alternatives: { transcript: string }[] };
+          channel: { alternatives: Array<{ transcript: string; words?: DGWord[] }> };
         }
         let data: DGResult;
         try { data = JSON.parse(event.data as string) as DGResult; } catch { return; }
         if (data.type !== 'Results') return;
-        const transcript = data.channel?.alternatives?.[0]?.transcript;
+        const alt = data.channel?.alternatives?.[0];
+        const transcript = alt?.transcript;
+        // Extract majority speaker from word-level diarization when available
+        if (alt?.words && alt.words.length > 0) {
+          const counts = new Map<number, number>();
+          for (const w of alt.words) counts.set(w.speaker, (counts.get(w.speaker) ?? 0) + 1);
+          dgCurrentSpeakerRef.current = [...counts.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0];
+        }
         if (!transcript) return;
         if (data.is_final) {
           const text = transcript.trim();
