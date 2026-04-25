@@ -107,6 +107,21 @@ export interface CoachingWalkthrough {
 
 export type CallOutcome = 'converted' | 'pipeline' | 'no-deal' | null;
 
+// ─── Lead ─────────────────────────────────────────────────────────────────────
+
+export interface Lead {
+  id: string;
+  name: string;
+  company?: string;
+  title?: string;
+  phone?: string;
+  email?: string;
+  priorContext?: string;
+  lastCalledAt?: string;
+  callCount: number;
+  createdAt: string;
+}
+
 export interface CallSession {
   config: CallConfig;
   transcript: TranscriptEntry[];

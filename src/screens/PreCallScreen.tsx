@@ -17,6 +17,7 @@ interface PreCallScreenProps {
   defaultLanguage?: LanguageCode;
   defaultCompany?: string;
   defaultPitch?: string;
+  defaultConfig?: Partial<CallConfig & { prospectTitle?: string }>;
 }
 
 const CALL_TYPES = [
@@ -40,18 +41,18 @@ const GOAL_PLACEHOLDERS: Record<string, string> = {
   default:     'e.g. What do you want to walk away with from this call?',
 };
 
-export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', defaultCompany = '', defaultPitch = '' }: PreCallScreenProps) {
+export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', defaultCompany = '', defaultPitch = '', defaultConfig }: PreCallScreenProps) {
   const [prevTip] = useState<string | null>(() => localStorage.getItem('callassist:nextCallTip'));
   const [tipDismissed, setTipDismissed] = useState(false);
   const [form, setForm] = useState<CallConfig>({
-    prospectName: '',
-    company: defaultCompany,
-    prospectTitle: '',
-    callType: '',
-    callGoal: '',
-    priorContext: '',
-    yourPitch: defaultPitch,
-    language: defaultLanguage,
+    prospectName: defaultConfig?.prospectName ?? '',
+    company:      defaultConfig?.company ?? defaultCompany,
+    prospectTitle: defaultConfig?.prospectTitle ?? '',
+    callType:     defaultConfig?.callType ?? '',
+    callGoal:     defaultConfig?.callGoal ?? '',
+    priorContext: defaultConfig?.priorContext ?? '',
+    yourPitch:    defaultPitch,
+    language:     defaultLanguage,
   });
   const t = useTranslations();
   const [errors, setErrors] = useState<StringConfigErrors>({});

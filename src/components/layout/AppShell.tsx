@@ -7,12 +7,12 @@ import { TierBadge } from '../TierBadge';
 import { useTranslations } from '../../hooks/useTranslations';
 import './AppShell.css';
 
-type ShellScreen = 'dashboard' | 'analytics';
+type ShellScreen = 'dashboard' | 'analytics' | 'leads';
 
-const NAV_IDS: ShellScreen[] = ['dashboard', 'analytics'];
+const NAV_IDS: ShellScreen[] = ['dashboard', 'analytics', 'leads'];
 
 interface AppShellProps {
-  activeScreen: ShellScreen;
+  activeScreen: ShellScreen | string;
   onNavigate: (screen: ShellScreen) => void;
   onStartCall: () => void;
   onUploadCall: () => void;

@@ -7,6 +7,7 @@ import { LiveCallScreen }   from './screens/LiveCallScreen';
 const PostCallScreen = lazy(() => import('./screens/PostCallScreen').then(m => ({ default: m.PostCallScreen })));
 const AnalyticsScreen = lazy(() => import('./screens/AnalyticsScreen').then(m => ({ default: m.AnalyticsScreen })));
 import { UploadCallScreen } from './screens/UploadCallScreen';
+import { LeadsScreen }      from './screens/LeadsScreen';
 import { AuthScreen }       from './screens/AuthScreen';
 import { OnboardingScreen } from './screens/OnboardingScreen';
 import { ThemeToggle }      from './components/ThemeToggle';
@@ -19,7 +20,7 @@ import type { LanguageCode } from './lib/languages';
 import './screens/AuthScreen.css';
 import { supabase }         from './lib/supabase';
 import { MOCK_SESSIONS }    from './lib/mockSessions';
-import type { CallConfig, CallSession, CallStage, CallOutcome, TranscriptEntry, AISuggestion, CoachingWalkthrough } from './types';
+import type { CallConfig, CallSession, CallStage, CallOutcome, TranscriptEntry, AISuggestion, CoachingWalkthrough, Lead } from './types';
 
 const OUTCOMES_KEY = 'callassist:outcomes';
 function loadOutcomes(): Record<string, CallOutcome> {
@@ -66,7 +67,7 @@ const isElectron = navigator.userAgent.includes('Electron');
 const INITIAL_THEME = (localStorage.getItem('theme') ?? 'dark') as 'dark' | 'light';
 document.documentElement.dataset.theme = INITIAL_THEME === 'light' ? 'light' : '';
 
-type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
+type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
 
 // ─── DB row ↔ CallSession helpers ────────────────────────────────────────────
 
@@ -141,6 +142,7 @@ export function App() {
   const [profilePic, setProfilePic] = useState<string | null>(
     () => localStorage.getItem(PROFILE_PIC_KEY)
   );
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   function handleProfilePicChange(dataUrl: string) {
     setProfilePic(dataUrl);
@@ -191,6 +193,7 @@ export function App() {
       });
   }, [user]);
 
+
   function handleStartCall(config: CallConfig) {
     setCallConfig(config);
     setCallSession(null);
@@ -208,6 +211,20 @@ export function App() {
         .single();
       if (error) { console.error('[CallAssist] Failed to save session:', error.message); }
       else if (data) setPastSessions(prev => [rowToSession(data as DbRow), ...prev]);
+    }
+    if (selectedLead && user) {
+      supabase
+        .from('leads')
+        .update({
+          call_count:    selectedLead.callCount + 1,
+          last_called_at: new Date().toISOString(),
+        })
+        .eq('id', selectedLead.id)
+        .eq('user_id', user.id)
+        .then(({ error }) => {
+          if (error) console.error('[CallAssist] Failed to update lead:', error.message);
+        });
+      setSelectedLead(null);
     }
   }
 
@@ -277,7 +294,7 @@ export function App() {
     );
   }
 
-  const isShell = currentScreen === 'dashboard' || currentScreen === 'analytics';
+  const isShell = currentScreen === 'dashboard' || currentScreen === 'analytics' || currentScreen === 'leads';
 
   const onboardingData = getOnboardingData();
 
@@ -309,7 +326,7 @@ export function App() {
 
       {isShell && (
         <AppShell
-          activeScreen={currentScreen as 'dashboard' | 'analytics'}
+          activeScreen={currentScreen as 'dashboard' | 'analytics' | 'leads'}
           onNavigate={s => setScreen(s)}
           onStartCall={() => setScreen('pre-call')}
           onUploadCall={() => setScreen('upload-call')}
@@ -351,17 +368,31 @@ export function App() {
               </Suspense>
             </ErrorBoundary>
           )}
+          {currentScreen === 'leads' && (
+            <ErrorBoundary>
+              <LeadsScreen onCallLead={lead => {
+                setSelectedLead(lead);
+                setScreen('pre-call');
+              }} />
+            </ErrorBoundary>
+          )}
         </AppShell>
       )}
 
       {currentScreen === 'pre-call' && (
         <ErrorBoundary>
           <PreCallScreen
-            onStartCall={handleStartCall}
-            onBack={() => setScreen('dashboard')}
+            onStartCall={config => { setSelectedLead(null); handleStartCall(config); }}
+            onBack={() => { setSelectedLead(null); setScreen(selectedLead ? 'leads' : 'dashboard'); }}
             defaultLanguage={appLanguage}
             defaultCompany={onboardingData.companyName ?? ''}
             defaultPitch={onboardingData.productDescription ?? ''}
+            defaultConfig={selectedLead ? {
+              prospectName:  selectedLead.name,
+              company:       selectedLead.company ?? '',
+              prospectTitle: selectedLead.title ?? '',
+              priorContext:  selectedLead.priorContext ?? '',
+            } : undefined}
           />
         </ErrorBoundary>
       )}
