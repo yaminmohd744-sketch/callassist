@@ -3,8 +3,10 @@
   align-items: center;
   justify-content: space-between;
   height: var(--status-bar-height);
-  background: var(--color-bg-elevated);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--color-border-subtle);
   padding: 0 var(--space-4);
   flex-shrink: 0;
   font-size: var(--font-size-xs);
@@ -21,6 +23,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
+  position: relative;
 }
 
 .status-bar__dot--standby {
@@ -29,13 +32,21 @@
 
 .status-bar__dot--active {
   background: var(--color-accent-green);
-  animation: blink 1s step-end infinite;
-  box-shadow: 0 0 6px var(--color-accent-green);
+  box-shadow: 0 0 8px rgba(34,197,94,0.6);
+}
+
+.status-bar__dot--active::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: rgba(34,197,94,0.3);
+  animation: pulse-ring 1.4s ease-out infinite;
 }
 
 .status-bar__label {
   color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .status-bar--active .status-bar__label {
@@ -45,6 +56,7 @@
 .status-bar__time {
   color: var(--color-text-muted);
   font-size: 11px;
+  font-family: var(--font-mono);
 }
 
 .status-bar__right {
@@ -54,7 +66,8 @@
 }
 
 .status-bar__divider {
-  color: var(--color-text-muted);
+  color: var(--color-border);
+  opacity: 0.6;
 }
 
 .status-bar__stat {
@@ -62,12 +75,12 @@
 }
 
 .status-bar__stat-val {
-  font-weight: 600;
+  font-weight: 700;
   margin-left: var(--space-1);
   color: var(--color-text-secondary);
 }
 
 .status-bar__stat-val--red    { color: var(--color-accent-red); }
-.status-bar__stat-val--high   { color: var(--color-accent-cyan); }
+.status-bar__stat-val--high   { color: var(--color-accent-purple); text-shadow: 0 0 8px rgba(124,58,237,0.4); }
 .status-bar__stat-val--medium { color: var(--color-accent-yellow); }
 .status-bar__stat-val--low    { color: var(--color-accent-red); }

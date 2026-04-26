@@ -1,4 +1,4 @@
-.upload-call {
+﻿.upload-call {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -124,7 +124,7 @@
 
 .upload-call__file-zone:hover {
   border-color: var(--color-accent-cyan);
-  background: rgba(129, 74, 200, 0.04);
+  background: rgba(124, 58, 237, 0.05);
 }
 
 .upload-call__file-icon {

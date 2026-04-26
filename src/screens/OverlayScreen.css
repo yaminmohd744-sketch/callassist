@@ -1,4 +1,4 @@
-/* Make the root container transparent so only the card is visible */
+﻿/* Make the root container transparent so only the card is visible */
 #root {
   background: transparent !important;
   height: auto !important;
@@ -9,7 +9,7 @@
 .ov {
   width: 100vw;
   background: #111111;
-  border: 1px solid rgba(129, 74, 200, 0.5);
+  border: 1px solid rgba(124, 58, 237, 0.55);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -18,8 +18,8 @@
   overflow: hidden;
   box-shadow:
     0 8px 40px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(129, 74, 200, 0.12),
-    0 0 32px rgba(129, 74, 200, 0.18);
+    0 0 0 1px rgba(124, 58, 237, 0.14),
+    0 0 32px rgba(124, 58, 237, 0.2);
   user-select: none;
 }
 
@@ -31,7 +31,7 @@
   padding: 10px 14px;
   -webkit-app-region: drag;
   cursor: grab;
-  background: rgba(129, 74, 200, 0.07);
+  background: rgba(124, 58, 237, 0.07);
 }
 
 
@@ -69,7 +69,7 @@
 }
 
 .ov__logo-plus {
-  background: linear-gradient(135deg, #814ac8, #df7afe);
+  background: linear-gradient(135deg, #7c3aed, #c026d3);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -98,13 +98,13 @@
   padding: 3px 8px;
   border-radius: 6px;
   white-space: nowrap;
-  background: rgba(129, 74, 200, 0.2);
-  color: #814ac8;
-  border: 1px solid rgba(129, 74, 200, 0.35);
+  background: rgba(124, 58, 237, 0.22);
+  color: #7c3aed;
+  border: 1px solid rgba(124, 58, 237, 0.4);
 }
 
 .ov__stage--discovery { background: rgba(99, 179, 237, 0.12); color: #63b3ed; border-color: rgba(99, 179, 237, 0.25); }
-.ov__stage--pitch     { background: rgba(129, 74, 200, 0.18); color: #df7afe; border-color: rgba(129, 74, 200, 0.35); }
+.ov__stage--pitch     { background: rgba(124, 58, 237, 0.2); color: #c026d3; border-color: rgba(124, 58, 237, 0.4); }
 .ov__stage--close     { background: rgba(57, 211, 83, 0.12);  color: #39d353; border-color: rgba(57, 211, 83, 0.25); }
 
 .ov__prob {
@@ -177,7 +177,7 @@
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: #df7afe;
+  color: #c026d3;
   white-space: nowrap;
   padding-top: 2px;
   flex-shrink: 0;

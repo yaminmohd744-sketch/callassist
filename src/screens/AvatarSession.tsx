@@ -4,7 +4,6 @@ import { useCallTimer } from '../hooks/useCallTimer';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { classifySignal } from '../lib/keywords';
 import { createHeyGenSession, startHeyGenSession, sendHeyGenText, stopHeyGenSession } from '../lib/heygen';
-import { startRecallBot } from '../lib/recall';
 import { updateMeetingStatus } from '../lib/meetings';
 import { genId } from '../lib/id';
 import { useAuth } from '../hooks/useAuth';
@@ -25,6 +24,7 @@ export function AvatarSession({ meeting, onEnd }: AvatarSessionProps) {
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const [heyGenSessionId, setHeyGenSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sharePromptDismissed, setSharePromptDismissed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const peerRef = useRef<RTCPeerConnection | null>(null);
   const transcriptRef = useRef<TranscriptEntry[]>([]);
@@ -109,15 +109,6 @@ export function AvatarSession({ meeting, onEnd }: AvatarSessionProps) {
         await startHeyGenSession(session.sessionId, answer.sdp ?? '');
         if (cancelled) return;
 
-        setStatusText('Joining meeting…');
-
-        // Start Recall.ai bot to join the actual Zoom/Meet
-        if (meeting.recallBotId === undefined) {
-          await startRecallBot({ meetingId: meeting.id, meetingUrl: meeting.meetingUrl });
-        }
-
-        if (cancelled) return;
-
         setPhase('active');
         setStatusText('');
         startTimer();
@@ -184,6 +175,28 @@ export function AvatarSession({ meeting, onEnd }: AvatarSessionProps) {
       {/* ── Main layout ── */}
       {phase === 'active' && (
         <div className="av-session__layout">
+
+          {/* ── Screenshare prompt ── */}
+          {!sharePromptDismissed && (
+            <div className="av-session__share-banner">
+              <span className="av-session__share-icon">🖥</span>
+              <div className="av-session__share-text">
+                <strong>Share this tab in your {meeting.platform === 'meet' ? 'Google Meet' : meeting.platform === 'teams' ? 'Teams' : 'Zoom'} call</strong>
+                <span>Your prospect will see the avatar and hear its voice. Use your platform's screenshare → "This Tab" option.</span>
+              </div>
+              <a
+                className="av-session__share-open"
+                href={meeting.meetingUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open meeting ↗
+              </a>
+              <button className="av-session__share-dismiss" onClick={() => setSharePromptDismissed(true)}>
+                Got it ✓
+              </button>
+            </div>
+          )}
 
           {/* Avatar feed */}
           <div className="av-session__avatar-wrap">

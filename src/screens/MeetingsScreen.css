@@ -1,4 +1,4 @@
-.meetings {
+﻿.meetings {
   padding: 2rem 2.5rem;
   max-width: 900px;
   margin: 0 auto;
@@ -28,7 +28,7 @@
 
 .meetings__add-btn {
   flex-shrink: 0;
-  background: linear-gradient(135deg, var(--accent-purple, #814ac8), var(--accent-magenta, #df7afe));
+  background: linear-gradient(135deg, var(--accent-purple, #7c3aed), var(--accent-magenta, #c026d3));
   border: none;
   border-radius: 100px;
   color: #fff;
@@ -117,7 +117,7 @@
   box-sizing: border-box;
 }
 .meetings__input:focus,
-.meetings__textarea:focus { border-color: var(--accent-purple, #814ac8); }
+.meetings__textarea:focus { border-color: var(--accent-purple, #7c3aed); }
 .meetings__textarea { resize: vertical; }
 
 .meetings__input[type="datetime-local"] {
@@ -148,11 +148,11 @@
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
 }
-.meetings__platform-chip:hover { border-color: var(--accent-purple, #814ac8); color: var(--text-primary, #fff); }
+.meetings__platform-chip:hover { border-color: var(--accent-purple, #7c3aed); color: var(--text-primary, #fff); }
 .meetings__platform-chip--active {
-  border-color: var(--accent-purple, #814ac8);
+  border-color: var(--accent-purple, #7c3aed);
   color: var(--text-primary, #fff);
-  background: rgba(129, 74, 200, 0.12);
+  background: rgba(124, 58, 237, 0.14);
 }
 
 .meetings__form-actions {
@@ -175,7 +175,7 @@
 .meetings__btn-cancel:hover { border-color: var(--border, #444); }
 
 .meetings__btn-save {
-  background: linear-gradient(135deg, var(--accent-purple, #814ac8), var(--accent-magenta, #df7afe));
+  background: linear-gradient(135deg, var(--accent-purple, #7c3aed), var(--accent-magenta, #c026d3));
   border: none;
   border-radius: 100px;
   color: #fff;
@@ -251,11 +251,11 @@
   padding: 1rem 1.25rem;
   transition: border-color 0.2s;
 }
-.meetings__card:hover { border-color: rgba(129, 74, 200, 0.3); }
+.meetings__card:hover { border-color: rgba(124, 58, 237, 0.35); }
 
 .meetings__card--live {
-  border-color: rgba(129, 74, 200, 0.4);
-  background: rgba(129, 74, 200, 0.06);
+  border-color: rgba(124, 58, 237, 0.45);
+  background: rgba(124, 58, 237, 0.06);
 }
 
 .meetings__card-left {
@@ -294,7 +294,7 @@
 
 .meetings__card-time {
   font-size: 0.75rem;
-  color: var(--accent-purple, #814ac8);
+  color: var(--accent-purple, #7c3aed);
   font-weight: 600;
 }
 
@@ -320,14 +320,14 @@
 }
 
 .meetings__card-status--scheduled { color: var(--text-secondary, #888); border-color: var(--border, #222); }
-.meetings__card-status--in-progress { color: var(--accent-purple, #814ac8); border-color: rgba(129,74,200,0.3); }
+.meetings__card-status--in-progress { color: var(--accent-purple, #7c3aed); border-color: rgba(129,74,200,0.3); }
 .meetings__card-status--completed { color: var(--accent-green, #39d353); border-color: rgba(57,211,83,0.2); }
 .meetings__card-status--cancelled { color: var(--text-tertiary, #555); border-color: var(--border, #1e1e1e); }
 
 .meetings__card-live-dot {
   width: 6px;
   height: 6px;
-  background: var(--accent-purple, #814ac8);
+  background: var(--accent-purple, #7c3aed);
   border-radius: 50%;
   animation: meet-pulse 1.4s ease-in-out infinite;
 }
@@ -344,7 +344,7 @@
 }
 
 .meetings__card-join-btn {
-  background: linear-gradient(135deg, var(--accent-purple, #814ac8), var(--accent-magenta, #df7afe));
+  background: linear-gradient(135deg, var(--accent-purple, #7c3aed), var(--accent-magenta, #c026d3));
   border: none;
   border-radius: 100px;
   color: #fff;

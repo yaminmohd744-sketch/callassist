@@ -15,6 +15,9 @@
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .transcript-panel__title {
@@ -24,7 +27,8 @@
   font-size: var(--font-size-xs);
   letter-spacing: 0.1em;
   color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .transcript-panel__indicator {
@@ -32,18 +36,28 @@
   height: 6px;
   border-radius: 50%;
   background: var(--color-text-muted);
+  position: relative;
 }
 
 .transcript-panel__indicator--active {
   background: var(--color-accent-green);
-  animation: blink 1s step-end infinite;
+  box-shadow: 0 0 6px rgba(34,197,94,0.6);
+}
+
+.transcript-panel__indicator--active::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: rgba(34,197,94,0.3);
+  animation: pulse-ring 1.4s ease-out infinite;
 }
 
 .transcript-panel__live-badge {
   font-size: var(--font-size-xs);
   letter-spacing: 0.1em;
   color: var(--color-accent-green);
-  animation: blink 1s step-end infinite;
+  font-weight: 700;
 }
 
 .transcript-panel__mic {
@@ -56,37 +70,39 @@
   letter-spacing: 0.08em;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-md);
-  padding: 5px 10px;
+  border-radius: var(--border-radius-pill);
+  padding: 5px 12px;
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .transcript-panel__mic:hover {
-  border-color: var(--color-accent-cyan);
-  color: var(--color-accent-cyan);
+  border-color: var(--color-accent-purple);
+  color: var(--color-accent-purple);
+  background: rgba(124,58,237,0.08);
 }
 
 .transcript-panel__mic--active {
-  background: rgba(129, 74, 200, 0.1);
-  border-color: var(--color-accent-purple);
+  background: rgba(124,58,237,0.12);
+  border-color: rgba(124,58,237,0.45);
   color: var(--color-accent-magenta);
+  box-shadow: 0 0 10px rgba(124,58,237,0.2);
 }
 
 .transcript-panel__mic--unsupported {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
-.transcript-panel__mic-icon { font-size: 12px; }
-.transcript-panel__mic-label { font-size: 10px; font-weight: 600; }
+.transcript-panel__mic-icon  { font-size: 12px; }
+.transcript-panel__mic-label { font-size: 10px; font-weight: 600; text-transform: uppercase; }
 
 .transcript-panel__mic-ring {
   position: absolute;
   inset: -5px;
-  border-radius: var(--border-radius-md);
-  border: 1px solid var(--color-accent-cyan);
+  border-radius: var(--border-radius-pill);
+  border: 1px solid rgba(124,58,237,0.5);
   animation: pulse-ring 1.4s ease-out infinite;
   pointer-events: none;
 }
@@ -95,8 +111,8 @@
   padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-xs);
   color: var(--color-accent-yellow);
-  background: rgba(240, 224, 64, 0.06);
-  border-bottom: 1px solid rgba(240, 224, 64, 0.2);
+  background: rgba(234,179,8,0.06);
+  border-bottom: 1px solid rgba(234,179,8,0.2);
   flex-shrink: 0;
 }
 
@@ -104,8 +120,8 @@
   padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-xs);
   color: var(--color-accent-red);
-  background: rgba(255, 59, 59, 0.06);
-  border-bottom: 1px solid rgba(255, 59, 59, 0.2);
+  background: rgba(239,68,68,0.06);
+  border-bottom: 1px solid rgba(239,68,68,0.2);
   flex-shrink: 0;
 }
 
@@ -131,19 +147,22 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--border-radius-sm);
   border-left: 2px solid transparent;
-  animation: fade-slide-in 200ms ease;
+  animation: fade-slide-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: background var(--transition-fast);
 }
 
-.transcript-entry--neutral  { border-left-color: var(--color-border); }
-.transcript-entry--objection { border-left-color: var(--color-accent-red); background: rgba(255, 68, 68, 0.04); }
-.transcript-entry--buying-signal { border-left-color: var(--color-accent-green); background: rgba(57, 211, 83, 0.04); }
+.transcript-entry:hover {
+  background: rgba(124,58,237,0.04);
+}
 
-.transcript-entry--system { opacity: 0.6; }
-
-.transcript-entry--interim {
+.transcript-entry--neutral      { border-left-color: var(--color-border); }
+.transcript-entry--objection    { border-left-color: var(--color-accent-red); background: rgba(239,68,68,0.04); }
+.transcript-entry--buying-signal { border-left-color: var(--color-accent-green); background: rgba(34,197,94,0.04); }
+.transcript-entry--system       { opacity: 0.55; }
+.transcript-entry--interim      {
   border-left-color: var(--color-accent-purple);
-  background: rgba(129, 74, 200, 0.05);
-  opacity: 0.7;
+  background: rgba(124,58,237,0.06);
+  opacity: 0.72;
 }
 
 .transcript-entry__meta {
@@ -158,6 +177,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   color: var(--color-text-muted);
+  text-transform: uppercase;
 }
 
 .transcript-entry--prospect .transcript-entry__speaker { color: var(--color-prospect); }
@@ -166,12 +186,13 @@
 .transcript-entry__time {
   font-size: 10px;
   color: var(--color-text-muted);
+  font-family: var(--font-mono);
 }
 
 .transcript-entry__text {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .transcript-entry--prospect .transcript-entry__text { color: var(--color-text-primary); }
@@ -188,8 +209,8 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  border-top: 1px solid var(--color-border);
-  background: var(--color-bg-base);
+  border-top: 1px solid var(--color-border-subtle);
+  background: var(--color-bg-glass);
   flex-shrink: 0;
 }
 
@@ -199,6 +220,7 @@
   letter-spacing: 0.12em;
   color: var(--color-text-muted);
   flex-shrink: 0;
+  text-transform: uppercase;
 }
 
 .transcript-panel__speaker-btn {
@@ -207,28 +229,29 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   padding: 3px 10px;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-pill);
   border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
   transition: all var(--transition-fast);
+  text-transform: uppercase;
 }
 
 .transcript-panel__speaker-btn:hover {
   color: var(--color-text-secondary);
-  border-color: var(--color-text-muted);
+  border-color: var(--color-border-bright);
 }
 
 .transcript-panel__speaker-btn--active-prospect {
   background: var(--color-prospect-dim);
-  border-color: var(--color-prospect);
+  border-color: rgba(240,171,252,0.4);
   color: var(--color-prospect);
 }
 
 .transcript-panel__speaker-btn--active-rep {
-  background: rgba(188, 140, 255, 0.12);
-  border-color: var(--color-accent-purple);
+  background: rgba(124,58,237,0.12);
+  border-color: rgba(124,58,237,0.4);
   color: var(--color-accent-purple);
 }
 
@@ -259,20 +282,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg-hover);
-  border: 1px solid var(--color-border);
+  background: var(--color-accent-gradient);
+  border: none;
   border-radius: var(--border-radius-sm);
-  color: var(--color-accent-cyan);
+  color: #fff;
   font-size: 12px;
   cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast);
+  transition: box-shadow var(--transition-fast), opacity var(--transition-fast);
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.4);
 }
 
 .transcript-panel__send:hover:not(:disabled) {
-  background: var(--color-accent-cyan);
-  color: var(--color-bg-base);
-  border-color: var(--color-accent-cyan);
+  box-shadow: 0 2px 14px rgba(124,58,237,0.6), 0 0 20px rgba(192,38,211,0.2);
 }
 
 .transcript-panel__send:disabled {
@@ -280,7 +302,7 @@
   cursor: not-allowed;
 }
 
-/* ─── Speaker flip button ─────────────────────────────────────────────────── */
+/* Speaker flip button */
 .transcript-entry__speaker--flip {
   display: inline-flex;
   align-items: center;
@@ -307,11 +329,5 @@
   transition: opacity var(--transition-fast);
 }
 
-.transcript-entry__speaker--flip:hover .transcript-entry__flip-icon {
-  opacity: 0.6;
-}
-
-.transcript-entry__speaker--flip:hover {
-  text-decoration: underline dashed;
-  text-underline-offset: 2px;
-}
+.transcript-entry__speaker--flip:hover .transcript-entry__flip-icon { opacity: 0.6; }
+.transcript-entry__speaker--flip:hover { text-decoration: underline dashed; text-underline-offset: 2px; }

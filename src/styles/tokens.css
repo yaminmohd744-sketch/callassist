@@ -1,32 +1,41 @@
 :root {
-  /* ─── Color Palette ─────────────────────────────────────── */
-  --color-bg-base:        #000000;
-  --color-bg-surface:     #0a0a0a;
-  --color-bg-elevated:    #111111;
-  --color-bg-hover:       #1a1a1a;
+  /* ─── Brand Colors ───────────────────────────────────────────── */
+  --color-accent-purple:       #7c3aed;
+  --color-accent-magenta:      #c026d3;
+  --color-accent-purple-dim:   rgba(124, 58, 237, 0.15);
+  --color-accent-magenta-dim:  rgba(192, 38, 211, 0.15);
+  --color-accent-gradient:     linear-gradient(135deg, #7c3aed 0%, #c026d3 100%);
+  --color-accent-gradient-sub: linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(192,38,211,0.18) 100%);
+  --color-accent-cyan:         #7c3aed; /* alias – keeps old refs working */
+  --color-accent-cyan-dim:     rgba(124, 58, 237, 0.15);
+  --color-accent-green:        #22c55e;
+  --color-accent-red:          #ef4444;
+  --color-accent-yellow:       #eab308;
+  --color-accent-orange:       #f97316;
+  --color-prospect:            #f0abfc;
+  --color-prospect-dim:        rgba(240, 171, 252, 0.12);
 
-  --color-border:         #1a1a1a;
-  --color-border-subtle:  #111111;
+  /* ─── Dark Backgrounds (default) ────────────────────────────── */
+  --color-bg-base:       #05030f;
+  --color-bg-surface:    #0a0714;
+  --color-bg-elevated:   #100c1e;
+  --color-bg-hover:      #18132b;
+  --color-bg-glass:      rgba(10, 7, 20, 0.72);
+  --color-bg-glass-hi:   rgba(16, 12, 30, 0.82);
 
-  --color-accent-purple:  #814ac8;
-  --color-accent-magenta: #df7afe;
-  --color-accent-purple-dim: #3d1f66;
-  --color-accent-gradient: linear-gradient(135deg, #814ac8, #df7afe);
-  --color-accent-cyan:    #814ac8; /* alias - keeps old references working */
-  --color-accent-cyan-dim:#3d1f66;
-  --color-prospect:       #f9a8d4; /* light pink for prospect labels */
-  --color-prospect-dim:   rgba(249, 168, 212, 0.15);
-  --color-accent-green:   #39d353;
-  --color-accent-red:     #ff4444;
-  --color-accent-yellow:  #f0e040;
-  --color-accent-orange:  #ff7b3b;
+  /* ─── Dark Borders ───────────────────────────────────────────── */
+  --color-border:        rgba(124, 58, 237, 0.22);
+  --color-border-subtle: rgba(124, 58, 237, 0.10);
+  --color-border-glass:  rgba(255, 255, 255, 0.07);
+  --color-border-bright: rgba(124, 58, 237, 0.45);
 
-  --color-text-primary:   #ffffff;
-  --color-text-secondary: rgba(255, 255, 255, 0.72);
-  --color-text-muted:     rgba(255, 255, 255, 0.35);
-  --color-text-accent:    #df7afe;
+  /* ─── Dark Text ──────────────────────────────────────────────── */
+  --color-text-primary:   #f0ebff;
+  --color-text-secondary: rgba(240, 235, 255, 0.65);
+  --color-text-muted:     rgba(240, 235, 255, 0.32);
+  --color-text-accent:    #c026d3;
 
-  /* ─── Typography ────────────────────────────────────────── */
+  /* ─── Typography ─────────────────────────────────────────────── */
   --font-sans: 'Figtree', system-ui, -apple-system, sans-serif;
   --font-mono: 'Fragment Mono', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
 
@@ -39,7 +48,7 @@
   --font-size-2xl:  30px;
   --font-size-3xl:  44px;
 
-  /* ─── Spacing ────────────────────────────────────────────── */
+  /* ─── Spacing ────────────────────────────────────────────────── */
   --space-1:  4px;
   --space-2:  8px;
   --space-3:  12px;
@@ -52,60 +61,81 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* ─── Layout ─────────────────────────────────────────────── */
+  /* ─── Layout ─────────────────────────────────────────────────── */
   --header-height:      52px;
   --status-bar-height:  36px;
   --input-bar-height:   56px;
   --panel-left-width:   320px;
   --panel-right-width:  280px;
-  --border-radius-sm:   6px;
-  --border-radius-md:   12px;
-  --border-radius-lg:   20px;
+  --border-radius-sm:   8px;
+  --border-radius-md:   14px;
+  --border-radius-lg:   22px;
+  --border-radius-xl:   32px;
   --border-radius-pill: 100px;
 
-  /* ─── Effects ────────────────────────────────────────────── */
-  --transition-fast:  150ms ease;
-  --transition-base:  250ms ease;
-  --glow-cyan:        0 0 20px rgba(129, 74, 200, 0.4);
-  --glow-purple:      0 0 20px rgba(129, 74, 200, 0.4);
-  --glow-red:         0 0 12px rgba(255, 68, 68, 0.35);
-  --glow-green:       0 0 12px rgba(57, 211, 83, 0.35);
+  /* ─── Shadows ────────────────────────────────────────────────── */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.5),  0 0 0 1px rgba(255,255,255,0.03);
+  --shadow-md:   0 4px 20px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04);
+  --shadow-lg:   0 16px 48px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.05);
+  --shadow-xl:   0 32px 80px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
+  --shadow-glow: 0 0 0 1px rgba(124,58,237,0.35), 0 4px 20px rgba(124,58,237,0.25), 0 0 60px rgba(192,38,211,0.12);
+
+  /* ─── Glows ──────────────────────────────────────────────────── */
+  --glow-purple:  0 0 20px rgba(124,58,237,0.5),  0 0 60px rgba(124,58,237,0.15);
+  --glow-magenta: 0 0 20px rgba(192,38,211,0.5),  0 0 60px rgba(192,38,211,0.15);
+  --glow-combo:   0 0 20px rgba(124,58,237,0.35), 0 0 48px rgba(192,38,211,0.18);
+  --glow-cyan:    0 0 20px rgba(124,58,237,0.5),  0 0 60px rgba(124,58,237,0.15);
+  --glow-red:     0 0 16px rgba(239,68,68,0.45),  0 0 40px rgba(239,68,68,0.15);
+  --glow-green:   0 0 16px rgba(34,197,94,0.45),  0 0 40px rgba(34,197,94,0.15);
+
+  /* ─── Transitions ────────────────────────────────────────────── */
+  --transition-fast:   150ms cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-base:   250ms cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-slow:   400ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ─── Light Theme ────────────────────────────────────────────────────────── */
+
 [data-theme="light"] {
-  /* ─── Backgrounds ────────────────────────────────────── */
-  --color-bg-base:        #f2f0f8;
-  --color-bg-surface:     #ffffff;
-  --color-bg-elevated:    #f8f6ff;
-  --color-bg-hover:       #ece9f6;
+  --color-bg-base:       #f3effb;
+  --color-bg-surface:    #ffffff;
+  --color-bg-elevated:   #faf7ff;
+  --color-bg-hover:      #ede6ff;
+  --color-bg-glass:      rgba(255, 255, 255, 0.82);
+  --color-bg-glass-hi:   rgba(250, 247, 255, 0.92);
 
-  /* ─── Borders ────────────────────────────────────────── */
-  --color-border:         #d4d0e8;
-  --color-border-subtle:  #e4e1f2;
+  --color-border:        rgba(124, 58, 237, 0.18);
+  --color-border-subtle: rgba(124, 58, 237, 0.09);
+  --color-border-glass:  rgba(124, 58, 237, 0.12);
+  --color-border-bright: rgba(124, 58, 237, 0.4);
 
-  /* ─── Accents ────────────────────────────────────────── */
-  --color-accent-purple:     #7b3fbd;
-  --color-accent-magenta:    #b830e8;
-  --color-accent-purple-dim: #ece4f9;
-  --color-accent-gradient:   linear-gradient(135deg, #7b3fbd, #b830e8);
-  --color-accent-cyan:       #7b3fbd;
-  --color-accent-cyan-dim:   #ece4f9;
-  --color-prospect:          #be185d; /* pink-700 for light theme */
-  --color-prospect-dim:      rgba(190, 24, 93, 0.1);
-  --color-accent-green:      #1a8f35;
-  --color-accent-red:        #d42020;
-  --color-accent-yellow:     #9a7800;
-  --color-accent-orange:     #b84800;
+  --color-accent-magenta:     #a21caf;
+  --color-accent-magenta-dim: rgba(162, 28, 175, 0.1);
+  --color-accent-gradient:    linear-gradient(135deg, #7c3aed 0%, #a21caf 100%);
+  --color-accent-gradient-sub:linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(162,28,175,0.12) 100%);
+  --color-accent-cyan-dim:    rgba(124, 58, 237, 0.1);
+  --color-prospect:           #9333ea;
+  --color-prospect-dim:       rgba(147, 51, 234, 0.1);
+  --color-accent-green:       #16a34a;
+  --color-accent-red:         #dc2626;
+  --color-accent-yellow:      #ca8a04;
+  --color-accent-orange:      #c2410c;
 
-  /* ─── Text ───────────────────────────────────────────── */
-  --color-text-primary:   #1a1726;
-  --color-text-secondary: rgba(26, 23, 38, 0.65);
-  --color-text-muted:     rgba(26, 23, 38, 0.38);
-  --color-text-accent:    #7b3fbd;
+  --color-text-primary:   #1e1333;
+  --color-text-secondary: rgba(30, 19, 51, 0.65);
+  --color-text-muted:     rgba(30, 19, 51, 0.38);
+  --color-text-accent:    #7c3aed;
 
-  /* ─── Effects ────────────────────────────────────────── */
-  --glow-cyan:   0 0 20px rgba(123, 63, 189, 0.18);
-  --glow-purple: 0 0 20px rgba(123, 63, 189, 0.18);
-  --glow-red:    0 0 12px rgba(212, 32, 32, 0.2);
-  --glow-green:  0 0 12px rgba(26, 143, 53, 0.2);
+  --shadow-sm:   0 1px 3px rgba(30,19,51,0.08),  0 0 0 1px rgba(124,58,237,0.06);
+  --shadow-md:   0 4px 20px rgba(30,19,51,0.10), 0 0 0 1px rgba(124,58,237,0.08);
+  --shadow-lg:   0 16px 48px rgba(30,19,51,0.12), 0 0 0 1px rgba(124,58,237,0.1);
+  --shadow-xl:   0 32px 80px rgba(30,19,51,0.15), 0 0 0 1px rgba(124,58,237,0.12);
+  --shadow-glow: 0 0 0 1px rgba(124,58,237,0.25), 0 4px 20px rgba(124,58,237,0.18), 0 0 40px rgba(162,28,175,0.08);
+
+  --glow-purple:  0 0 20px rgba(124,58,237,0.22), 0 0 40px rgba(124,58,237,0.08);
+  --glow-magenta: 0 0 20px rgba(162,28,175,0.22), 0 0 40px rgba(162,28,175,0.08);
+  --glow-combo:   0 0 16px rgba(124,58,237,0.18), 0 0 32px rgba(162,28,175,0.08);
+  --glow-cyan:    0 0 20px rgba(124,58,237,0.22), 0 0 40px rgba(124,58,237,0.08);
+  --glow-red:     0 0 14px rgba(220,38,38,0.2),   0 0 28px rgba(220,38,38,0.08);
+  --glow-green:   0 0 14px rgba(22,163,74,0.2),   0 0 28px rgba(22,163,74,0.08);
 }

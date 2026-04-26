@@ -1,17 +1,65 @@
 .suggestion-card {
-  background: var(--color-bg-elevated);
+  background: var(--color-bg-glass-hi);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-md);
   padding: var(--space-3) var(--space-4);
   border-left-width: 3px;
-  animation: fade-slide-in 250ms ease;
+  animation: fade-slide-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
-.suggestion-card--objection-response { border-left-color: var(--color-accent-red); }
-.suggestion-card--close-attempt      { border-left-color: var(--color-accent-green); }
-.suggestion-card--tip                { border-left-color: var(--color-accent-purple); }
-.suggestion-card--discovery          { border-left-color: var(--color-accent-cyan); }
+.suggestion-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+/* Subtle inner glow matching card type */
+.suggestion-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0.04;
+  pointer-events: none;
+}
+
+.suggestion-card--objection-response {
+  border-left-color: var(--color-accent-red);
+}
+.suggestion-card--objection-response::before {
+  background: var(--color-accent-red);
+  opacity: 0.06;
+}
+
+.suggestion-card--close-attempt {
+  border-left-color: var(--color-accent-green);
+}
+.suggestion-card--close-attempt::before {
+  background: var(--color-accent-green);
+  opacity: 0.05;
+}
+
+.suggestion-card--tip {
+  border-left-color: var(--color-accent-purple);
+}
+.suggestion-card--tip::before {
+  background: var(--color-accent-purple);
+  opacity: 0.06;
+}
+
+.suggestion-card--discovery {
+  border-left-color: var(--color-accent-magenta);
+}
+.suggestion-card--discovery::before {
+  background: var(--color-accent-magenta);
+  opacity: 0.06;
+}
 
 .suggestion-card__header {
   display: flex;
@@ -24,29 +72,31 @@
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .suggestion-card--objection-response .suggestion-card__badge { color: var(--color-accent-red); }
 .suggestion-card--close-attempt      .suggestion-card__badge { color: var(--color-accent-green); }
 .suggestion-card--tip                .suggestion-card__badge { color: var(--color-accent-purple); }
-.suggestion-card--discovery          .suggestion-card__badge { color: var(--color-accent-cyan); }
+.suggestion-card--discovery          .suggestion-card__badge { color: var(--color-accent-magenta); }
 
 .suggestion-card__time {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
+  font-family: var(--font-mono);
 }
 
-/* Physical action — DO this while you speak */
+/* Physical action */
 .suggestion-card__physical {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
-  background: rgba(57, 211, 83, 0.07);
-  border: 1px solid rgba(57, 211, 83, 0.2);
+  background: rgba(34,197,94,0.07);
+  border: 1px solid rgba(34,197,94,0.2);
   border-radius: var(--border-radius-sm);
   margin-bottom: var(--space-3);
-  animation: fade-slide-in 220ms ease;
+  animation: fade-slide-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .suggestion-card__physical-badge {
@@ -54,12 +104,13 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--color-accent-green);
-  background: rgba(57, 211, 83, 0.12);
-  border: 1px solid rgba(57, 211, 83, 0.3);
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.3);
   border-radius: var(--border-radius-sm);
   padding: 2px 6px;
   flex-shrink: 0;
   white-space: nowrap;
+  text-transform: uppercase;
 }
 
 .suggestion-card__physical-text {
@@ -73,7 +124,7 @@
   margin-top: 0;
 }
 
-/* The main "say this" text - large and prominent */
+/* The main "say this" script text */
 .suggestion-card__script {
   display: flex;
   flex-direction: column;
@@ -85,18 +136,23 @@
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--color-accent-purple);
-  opacity: 0.8;
+  opacity: 0.85;
 }
+
+.suggestion-card--objection-response .suggestion-card__say-label { color: var(--color-accent-red); }
+.suggestion-card--close-attempt      .suggestion-card__say-label { color: var(--color-accent-green); }
+.suggestion-card--discovery          .suggestion-card__say-label { color: var(--color-accent-magenta); }
 
 .suggestion-card__say-text {
   font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--color-text-primary);
-  line-height: 1.45;
+  line-height: 1.48;
 }
 
-/* Small note below the script - coaching context, not what to say */
+/* Note */
 .suggestion-card__note {
   font-size: var(--font-size-xs);
   font-weight: 400;
@@ -108,7 +164,7 @@
   opacity: 0.75;
 }
 
-/* The "why" explanation - small and muted */
+/* Why */
 .suggestion-card__why {
   display: flex;
   align-items: baseline;
@@ -127,6 +183,7 @@
   flex-shrink: 0;
   color: var(--color-text-muted);
   opacity: 0.6;
+  text-transform: uppercase;
 }
 
 .suggestion-card__trigger {
@@ -141,19 +198,14 @@
 }
 
 .suggestion-card--streaming {
-  opacity: 0.9;
+  opacity: 0.88;
 }
 
 .suggestion-card__cursor {
   display: inline-block;
-  color: var(--color-accent-cyan);
+  color: var(--color-accent-magenta);
   animation: cursor-blink 0.8s step-end infinite;
   margin-left: 1px;
-}
-
-@keyframes cursor-blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
 }
 
 .suggestion-card__fallback-note {

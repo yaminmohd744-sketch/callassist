@@ -1,4 +1,4 @@
-.leads-screen {
+﻿.leads-screen {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -39,7 +39,7 @@
   min-width: 24px;
   height: 24px;
   padding: 0 6px;
-  background: rgba(129, 74, 200, 0.18);
+  background: rgba(124, 58, 237, 0.2);
   color: var(--color-accent-magenta);
   border-radius: var(--border-radius-pill);
   font-size: 11px;
@@ -273,7 +273,7 @@
   min-width: 20px;
   height: 20px;
   padding: 0 5px;
-  background: rgba(129, 74, 200, 0.18);
+  background: rgba(124, 58, 237, 0.2);
   color: var(--color-accent-magenta);
   border-radius: var(--border-radius-pill);
   font-size: 10px;
@@ -289,7 +289,7 @@
   padding: 5px 12px;
   border-radius: var(--border-radius-pill);
   border: 1px solid var(--color-accent-purple);
-  background: rgba(129, 74, 200, 0.1);
+  background: rgba(124, 58, 237, 0.1);
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   font-weight: 700;
@@ -300,7 +300,7 @@
 }
 
 .leads-screen__call-btn:hover {
-  background: rgba(129, 74, 200, 0.22);
+  background: rgba(124, 58, 237, 0.22);
   border-color: var(--color-accent-magenta);
 }
 
