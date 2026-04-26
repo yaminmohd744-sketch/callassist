@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { SUPPORTED_LANGUAGES } from '../../lib/languages';
 import type { LanguageCode } from '../../lib/languages';
-import { getMilestone, formatTotalTime } from '../../lib/milestones';
-import { TiersOverlay } from '../TiersOverlay';
-import { TierBadge } from '../TierBadge';
+import { formatTotalTime } from '../../lib/formatters';
 import { useTranslations } from '../../hooks/useTranslations';
 import './AppShell.css';
 
@@ -49,7 +47,6 @@ export function AppShell({
   const t = useTranslations();
   const [langOpen, setLangOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [tiersOpen, setTiersOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const picInputRef = useRef<HTMLInputElement>(null);
@@ -67,12 +64,6 @@ export function AppShell({
 
   return (
     <div className="app-shell">
-      {tiersOpen && (
-        <TiersOverlay
-          totalCalls={totalCallCount}
-          onClose={() => setTiersOpen(false)}
-        />
-      )}
 
       {/* ── Top nav ── */}
       <header className="app-shell__topnav">
@@ -160,8 +151,6 @@ export function AppShell({
             </button>
 
             {profileOpen && (() => {
-              const { current: milestone, next, progress } = getMilestone(totalCallCount);
-
               function handlePicClick() { picInputRef.current?.click(); }
               function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {
                 const file = e.target.files?.[0];
@@ -201,41 +190,8 @@ export function AppShell({
                     <div className="app-shell__profile-info">
                       {userName && <div className="app-shell__profile-name">{userName}</div>}
                       <div className="app-shell__profile-email">{userEmail}</div>
-                      <button
-                        className="app-shell__profile-status"
-                        style={{ color: milestone.color }}
-                        onClick={() => { setProfileOpen(false); setTiersOpen(true); }}
-                        title="View all tiers"
-                        aria-label="View tier details"
-                      >
-                        <TierBadge tierId={milestone.id} color={milestone.color} size={16} unlocked />
-                        {milestone.label}
-                        <span className="app-shell__profile-status-arrow" aria-hidden="true">›</span>
-                      </button>
                     </div>
                   </div>
-
-                  {/* Next milestone progress */}
-                  {next && (
-                    <div className="app-shell__milestone-progress">
-                      <div className="app-shell__milestone-track">
-                        <div
-                          className="app-shell__milestone-fill"
-                          style={{ width: `${Math.round(progress * 100)}%`, background: next.color }}
-                        />
-                      </div>
-                      <div className="app-shell__milestone-label">
-                        {Math.round(progress * 100)}% to <span style={{ color: next.color }}>{next.label}</span>
-                      </div>
-                    </div>
-                  )}
-                  {!next && (
-                    <div className="app-shell__milestone-progress">
-                      <div className="app-shell__milestone-label" style={{ color: milestone.color }}>
-                        {t.profile.maxRank}
-                      </div>
-                    </div>
-                  )}
 
                   <div className="app-shell__profile-divider" />
 

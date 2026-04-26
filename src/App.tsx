@@ -9,7 +9,7 @@ import { useAppLanguage }   from './hooks/useAppLanguage';
 import { useToast }         from './lib/toast';
 import type { LanguageCode } from './lib/languages';
 import { supabase }         from './lib/supabase';
-import { loadSessions, saveSession, updateOutcome, deleteSession } from './lib/sessions';
+import { loadSessions, saveSession, deleteSession } from './lib/sessions';
 import { updateLeadAfterCall } from './lib/leads';
 import type { CallConfig, CallSession, CallOutcome, Lead } from './types';
 
@@ -29,10 +29,6 @@ const OUTCOMES_KEY = 'callassist:outcomes';
 function loadOutcomes(): Record<string, CallOutcome> {
   try { return JSON.parse(localStorage.getItem(OUTCOMES_KEY) ?? '{}'); } catch { return {}; }
 }
-function saveOutcomes(map: Record<string, CallOutcome>) {
-  try { localStorage.setItem(OUTCOMES_KEY, JSON.stringify(map)); } catch { /* quota */ }
-}
-
 const PROFILE_PIC_KEY = 'pp-profile-pic';
 
 interface OnboardingData {
@@ -91,7 +87,6 @@ export function App() {
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
-  const [outcomeMap, setOutcomeMap]     = useState<Record<string, CallOutcome>>(loadOutcomes);
   const [showTransition, setShowTransition] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const transitionShown = useRef(false);
@@ -171,18 +166,6 @@ export function App() {
   function handleViewSession(session: CallSession) {
     setCallSession(session);
     setScreen('post-call');
-  }
-
-  function handleUpdateOutcome(endedAt: string, outcome: CallOutcome) {
-    const next = { ...outcomeMap, [endedAt]: outcome };
-    setOutcomeMap(next);
-    saveOutcomes(next);
-    setPastSessions(prev => prev.map(s => s.endedAt === endedAt ? { ...s, outcome } : s));
-    setCallSession(prev => prev && prev.endedAt === endedAt ? { ...prev, outcome } : prev);
-    if (user) {
-      updateOutcome(user.id, endedAt, outcome)
-        .catch(() => toast.error('Failed to save outcome.'));
-    }
   }
 
   async function handleDeleteSession(endedAt: string) {
@@ -366,7 +349,6 @@ export function App() {
               session={callSession}
               onBack={() => setScreen('dashboard')}
               onNewCall={() => setScreen('pre-call')}
-              onUpdateOutcome={(outcome) => handleUpdateOutcome(callSession.endedAt, outcome)}
             />
           </Suspense>
         </ErrorBoundary>

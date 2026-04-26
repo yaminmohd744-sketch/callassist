@@ -3,6 +3,11 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
 
+function sanitize(s: unknown, maxLen: number): string {
+  if (typeof s !== "string") return "";
+  return s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").slice(0, maxLen);
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -37,7 +42,7 @@ Deno.serve(async (req: Request) => {
     ).length;
 
     const formattedTranscript = (transcript as Array<{ speaker: string; text: string; timestampSeconds: number }>)
-      .map((e) => `[${e.timestampSeconds}s] ${e.speaker === "rep" ? "REP" : "PROSPECT"}: ${e.text}`)
+      .map((e) => `[${e.timestampSeconds}s] ${e.speaker === "rep" ? "REP" : "PROSPECT"}: ${sanitize(e.text, 500)}`)
       .join("\n");
 
     const formattedSuggestions = (suggestions as Array<{ type: string; headline: string; triggeredBy: string }>)
@@ -78,11 +83,18 @@ NEXT STEPS:
 - "followUpEmail": A complete follow-up email the rep can send immediately. Include subject line at the top (format: "Subject: ..."). Personalize it to the actual conversation. Professional but not stiff.
 - "leadScore": Integer 0-100. Weight: close probability (50%), buying signals (25%), minus objections (25%).${langNote}`;
 
+    const safeProspectName = sanitize(config?.prospectName, 80);
+    const safeProspectTitle = sanitize(config?.prospectTitle, 80);
+    const safeCompany = sanitize(config?.company, 80);
+    const safePitch = sanitize(config?.yourPitch, 300);
+    const safeGoal = sanitize(config?.callGoal, 200);
+    const safePriorContext = sanitize(config?.priorContext, 400);
+
     const userMessage = `Call details:
-Prospect: ${config.prospectName}${config.prospectTitle ? `, ${config.prospectTitle}` : ''} at ${config.company}
-${config.callType ? `Call type: ${config.callType}\n` : ''}Rep's pitch: ${config.yourPitch}
-Call goal: ${config.callGoal}
-${config.priorContext ? `\nPrior context & research:\n${config.priorContext}\n` : ''}
+Prospect: ${safeProspectName}${safeProspectTitle ? `, ${safeProspectTitle}` : ''} at ${safeCompany}
+${config?.callType ? `Call type: ${config.callType}\n` : ''}Rep's pitch: ${safePitch}
+Call goal: ${safeGoal}
+${safePriorContext ? `\nPrior context & research:\n${safePriorContext}\n` : ''}
 
 Metrics:
 - Final close probability: ${closeProbability}%
@@ -119,7 +131,16 @@ ${formattedSuggestions || "(none)"}`;
       throw new Error(`OpenAI error: ${data.error.message ?? JSON.stringify(data.error)}`);
     }
     if (!data.choices?.length) throw new Error(`OpenAI returned no choices: ${JSON.stringify(data)}`);
-    const result = JSON.parse(data.choices[0].message.content);
+    let result: Record<string, unknown>;
+    try {
+      result = JSON.parse(data.choices[0].message.content);
+    } catch {
+      return new Response(JSON.stringify({
+        aiSummary: "Summary generation was interrupted. Please try again.",
+        followUpEmail: "",
+        leadScore: 50,
+      }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+    }
 
     return new Response(JSON.stringify(result), {
       headers: {

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '../components/ui/Button';
-import type { CallSession, CallOutcome } from '../types';
+import type { CallSession } from '../types';
 import { loadRecording } from '../hooks/useCallRecorder';
 import { formatDuration, formatDateLong } from '../lib/formatters';
 import { useTranslations } from '../hooks/useTranslations';
@@ -54,7 +54,6 @@ interface PostCallScreenProps {
   session: CallSession;
   onBack: () => void;
   onNewCall: () => void;
-  onUpdateOutcome?: (outcome: CallOutcome) => void;
 }
 
 function renderSummary(text: string) {
@@ -73,8 +72,7 @@ function renderSummary(text: string) {
   });
 }
 
-export function PostCallScreen({ session, onBack, onNewCall, onUpdateOutcome }: PostCallScreenProps) {
-  const [outcome, setOutcome] = useState<CallOutcome>(session.outcome ?? null);
+export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenProps) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'coaching' | 'summary' | 'transcript' | 'email' | 'scorecard' | 'replay' | 'share'>(session.coaching ? 'coaching' : 'summary');
   const [prospectSummary, setProspectSummary] = useState<string | null>(null);
@@ -136,12 +134,6 @@ export function PostCallScreen({ session, onBack, onNewCall, onUpdateOutcome }: 
   function handleShareTab() {
     setActiveTab('share');
     if (!prospectSummary && !generatingSummary) handleGenerateProspectSummary();
-  }
-
-  function handleOutcome(o: CallOutcome) {
-    const next = outcome === o ? null : o;
-    setOutcome(next);
-    onUpdateOutcome?.(next);
   }
 
   async function handleCopyEmail() {
@@ -237,22 +229,6 @@ export function PostCallScreen({ session, onBack, onNewCall, onUpdateOutcome }: 
             ▶ {t.postcall.newCall}
           </Button>
         </div>
-      </div>
-
-      <div className="postcall__outcome-row">
-        <span className="postcall__outcome-label">Did this convert?</span>
-        <button
-          className={`postcall__outcome-btn postcall__outcome-btn--won${outcome === 'converted' ? ' postcall__outcome-btn--active' : ''}`}
-          onClick={() => handleOutcome('converted')}
-        >✓ Converted</button>
-        <button
-          className={`postcall__outcome-btn postcall__outcome-btn--pipeline${outcome === 'pipeline' ? ' postcall__outcome-btn--active' : ''}`}
-          onClick={() => handleOutcome('pipeline')}
-        >◷ Pipeline</button>
-        <button
-          className={`postcall__outcome-btn postcall__outcome-btn--lost${outcome === 'no-deal' ? ' postcall__outcome-btn--active' : ''}`}
-          onClick={() => handleOutcome('no-deal')}
-        >✗ No Deal</button>
       </div>
 
       <div className="postcall__stats-row">

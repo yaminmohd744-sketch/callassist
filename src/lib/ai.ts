@@ -124,7 +124,7 @@ export async function analyzeTranscript(
           // Start streaming as soon as we have enough body text to show.
           // We intentionally do NOT extract type/headline from partial JSON —
           // those fields are only set once the stream is complete (see below).
-          if (onStream && accumulated.includes('"body"')) {
+          if (onStream && accumulated.includes('"body":')) {
             // Strip a trailing bare backslash (incomplete escape at chunk boundary)
             // before running the regex so it doesn't fail to match.
             const safeAccum = accumulated.endsWith('\\') ? accumulated.slice(0, -1) : accumulated;

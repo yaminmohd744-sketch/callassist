@@ -7,6 +7,7 @@
   padding: var(--space-8);
   overflow-y: scroll;
   box-sizing: border-box;
+  font-family: var(--font-sans);
 }
 
 .precall__card {
@@ -45,6 +46,7 @@
 }
 
 .precall__title {
+  font-family: var(--font-sans);
   font-size: var(--font-size-xl);
   font-weight: 600;
   margin-bottom: var(--space-2);
@@ -52,6 +54,7 @@
 }
 
 .precall__desc {
+  font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   margin-bottom: var(--space-8);
@@ -70,6 +73,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  font-family: var(--font-sans);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -138,6 +142,7 @@
 }
 
 .precall__label {
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
   letter-spacing: 0.1em;
   color: var(--color-text-secondary);
@@ -199,6 +204,7 @@
 }
 
 .precall__tip-banner-label {
+  font-family: var(--font-sans);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -206,6 +212,7 @@
 }
 
 .precall__tip-banner-text {
+  font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text-primary);
@@ -524,7 +531,8 @@
 }
 
 .precall__bc-insight {
-  font-size: 0.8rem;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   line-height: 1.5;
   margin: 0;
@@ -532,7 +540,8 @@
 }
 
 .precall__bc-opener {
-  font-size: 0.82rem;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   line-height: 1.6;
   margin: 0;
@@ -551,7 +560,8 @@
   gap: var(--space-2);
 }
 .precall__bc-list-item {
-  font-size: 0.8rem;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   padding-left: var(--space-3);
   border-left: 1px solid rgba(255,255,255,0.1);
@@ -566,13 +576,15 @@
   padding: var(--space-3) var(--space-4);
 }
 .precall__bc-obj-label {
-  font-size: 0.78rem;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: #ff6b6b;
   margin-bottom: var(--space-2);
 }
 .precall__bc-obj-response {
-  font-size: 0.78rem;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   line-height: 1.6;
 }

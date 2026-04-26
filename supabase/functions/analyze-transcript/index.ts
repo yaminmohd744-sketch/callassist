@@ -3,6 +3,11 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
 
+function sanitize(s: unknown, maxLen: number): string {
+  if (typeof s !== "string") return "";
+  return s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").slice(0, maxLen);
+}
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -37,8 +42,16 @@ Deno.serve(async (req: Request) => {
     // Send last 8 exchanges in full — enough for deep context on most calls
     const recentEntries = (safeTranscript as Array<{ speaker: string; text: string }>)
       .slice(-8)
-      .map((e) => `${e.speaker === "rep" ? "REP" : "PROSPECT"}: ${e.text}`)
+      .map((e) => `${e.speaker === "rep" ? "REP" : "PROSPECT"}: ${sanitize(e.text, 500)}`)
       .join("\n");
+
+    const safeEntryText = sanitize(entry?.text, 500);
+    const safePitch = sanitize(config?.yourPitch, 300);
+    const safeGoal = sanitize(config?.callGoal, 200);
+    const safeProspectName = sanitize(config?.prospectName, 80);
+    const safeProspectTitle = sanitize(config?.prospectTitle, 80);
+    const safePriorContext = sanitize(config?.priorContext, 400);
+    const safeCallSummary = sanitize(callSummary, 400);
 
     const systemPrompt = `You are an elite real-time sales copilot. You observe live calls silently and intervene ONLY when it materially increases the chance of closing. Most moments do not need intervention — silence is a tool.
 
@@ -49,15 +62,15 @@ Your core principles:
 - If the call is flowing well, return shouldShow: false.
 
 Context:
-- Selling: ${config?.yourPitch || "their product"}
-- Goal: ${config?.callGoal || "move the conversation forward"}
-${config?.prospectTitle ? `- Prospect role: ${config.prospectTitle}\n` : ''}${config?.callType ? `- Call type: ${config.callType}\n` : ''}- ${Math.floor(elapsedSeconds / 60)}min elapsed | Close probability: ${probability}% | Objections: ${objectionsCount}
+- Selling: ${safePitch || "their product"}
+- Goal: ${safeGoal || "move the conversation forward"}
+${safeProspectTitle ? `- Prospect role: ${safeProspectTitle}\n` : ''}${config?.callType ? `- Call type: ${config.callType}\n` : ''}- ${Math.floor(elapsedSeconds / 60)}min elapsed | Close probability: ${probability}% | Objections: ${objectionsCount}
 - Last suggestion: ${lastLabel ?? "none"} — suggest something meaningfully different${langNote}
-${config?.priorContext ? `- Prior context: ${config.priorContext}\n` : ''}${currentPhaseLabel ? `- Current detected phase: ${currentPhaseLabel}\n` : ''}${callSummary ? `- Earlier in the call: ${callSummary}\n` : ''}
+${safePriorContext ? `- Prior context: ${safePriorContext}\n` : ''}${currentPhaseLabel ? `- Current detected phase: ${currentPhaseLabel}\n` : ''}${safeCallSummary ? `- Earlier in the call: ${safeCallSummary}\n` : ''}
 Recent conversation:
 ${recentEntries}
 
-Prospect just said: "${entry.text}"
+Prospect just said: "${safeEntryText}"
 
 LISTENING — detect emotional signals in the prospect's words and guide accordingly:
 - Frustration ("it's been a mess", "really frustrating", "nothing works", "every time") → acknowledge it first before moving forward, don't skip past it
@@ -110,7 +123,7 @@ Respond ONLY with valid JSON (no markdown). IMPORTANT: emit the "body" field fir
           { role: "user", content: "Give your coaching suggestion." },
         ],
         stream: true,
-        max_tokens: 280,
+        max_tokens: 340,
         temperature: 0.55,
       }),
     });

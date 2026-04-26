@@ -40,12 +40,12 @@ export interface T {
     calls: (n: number) => string;
     trainingSessions: (n: number) => string;
     totalOnPlatform: string;
-    maxRank: string;
+    maxRank?: string;
     appLanguage: string;
     langNote: string;
   };
-  // Tiers
-  tiers: {
+  // Tiers — optional; kept in data for backwards compat but no longer rendered
+  tiers?: {
     title: string;
     subtitle: string;
     unlocked: string;

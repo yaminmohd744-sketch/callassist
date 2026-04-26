@@ -104,8 +104,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const flipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const speakerLockedRef = useRef(false);
   const dgSpeakerMapRef = useRef<Map<number, TranscriptSpeaker> | null>(null);
-  const [, setRepWords] = useState(0);
-  const [, setProspectWords] = useState(0);
+  const repWordsRef = useRef(0);
+  const prospectWordsRef = useRef(0);
   const [, setFillerCount] = useState(0);
 
   const handleBubbleDragStart = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
@@ -232,13 +232,13 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     // Track talk time (word counts per speaker)
     const wordCount = text.trim().split(/\s+/).length;
     if (speaker === 'rep') {
-      setRepWords(w => w + wordCount);
+      repWordsRef.current += wordCount;
       // Track filler words
       const lower = text.toLowerCase();
       const fillers = FILLER_WORDS.filter(f => lower.includes(f)).length;
       if (fillers > 0) setFillerCount(c => c + fillers);
     } else if (speaker === 'prospect') {
-      setProspectWords(w => w + wordCount);
+      prospectWordsRef.current += wordCount;
     }
 
     if (speaker === 'prospect') {
@@ -333,12 +333,12 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
     const wc = text.trim().split(/\s+/).length;
     if (manualSpeaker === 'rep') {
-      setRepWords(w => w + wc);
+      repWordsRef.current += wc;
       const lower = text.toLowerCase();
       const fillers = FILLER_WORDS.filter(f => lower.includes(f)).length;
       if (fillers > 0) setFillerCount(c => c + fillers);
     } else if (manualSpeaker === 'prospect') {
-      setProspectWords(w => w + wc);
+      prospectWordsRef.current += wc;
     }
 
     if (manualSpeaker === 'prospect') {
@@ -364,6 +364,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           applySignal(flippedEntry.id, flippedEntry.text);
         }, 400);
       }
+      speakerLockedRef.current = false;
+      dgSpeakerMapRef.current = null;
       return updated;
     });
   }, [processEntry, config, applySignal]);
@@ -399,8 +401,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       localStorage.setItem('callassist:nextCallTip', coaching.nextCallTip);
       clearDraft().catch(() => { /* silent */ });
 
-      const repTurns = transcript.filter(e => e.speaker === 'rep').length;
-      const talkRatio = transcript.length > 0 ? repTurns / transcript.length : 0.5;
+      const totalWords = repWordsRef.current + prospectWordsRef.current;
+      const talkRatio = totalWords > 0 ? repWordsRef.current / totalWords : 0.5;
 
       const session: CallSession = {
         config,
@@ -421,7 +423,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       };
       onEndCall(session);
     } catch {
-      const repTurns = transcript.filter(e => e.speaker === 'rep').length;
+      const totalWords = repWordsRef.current + prospectWordsRef.current;
       onEndCall({
         config, transcript, suggestions,
         durationSeconds: elapsedSeconds,
@@ -430,7 +432,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         endedAt: new Date().toISOString(),
         aiSummary: '', followUpEmail: '', leadScore: 0,
         notes,
-        talkRatio: transcript.length > 0 ? repTurns / transcript.length : 0.5,
+        talkRatio: totalWords > 0 ? repWordsRef.current / totalWords : 0.5,
         coaching: undefined,
       });
     } finally {
