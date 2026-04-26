@@ -117,6 +117,10 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', 
     onStartCall(form);
   }
 
+  function handleSkip() {
+    onStartCall(form);
+  }
+
   const goalPlaceholder = GOAL_PLACEHOLDERS[form.callType ?? ''] ?? GOAL_PLACEHOLDERS.default;
 
   return (
@@ -341,14 +345,19 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', 
             )}
           </div>
 
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={handleSubmit}
-            className="precall__start"
-          >
-            ▶ {t.precall.startCall}
-          </Button>
+          <div className="precall__actions">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleSubmit}
+              className="precall__start"
+            >
+              ▶ {t.precall.startCall}
+            </Button>
+            <button type="button" className="precall__skip" onClick={handleSkip}>
+              {t.common.skip}
+            </button>
+          </div>
         </div>
       </div>
     </div>

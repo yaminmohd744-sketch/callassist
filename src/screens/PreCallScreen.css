@@ -29,6 +29,7 @@
 .precall__back {
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
+  font-weight: 700;
   letter-spacing: 0.1em;
   color: var(--color-text-muted);
   cursor: pointer;
@@ -39,6 +40,7 @@
 .precall__back:hover { color: var(--color-text-secondary); }
 
 .precall__logo {
+  font-family: var(--font-sans);
   font-size: var(--font-size-md);
   font-weight: 900;
   letter-spacing: 0.06em;
@@ -47,15 +49,17 @@
 
 .precall__title {
   font-family: var(--font-sans);
-  font-size: var(--font-size-xl);
-  font-weight: 600;
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
   margin-bottom: var(--space-2);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.025em;
+  color: var(--color-text-primary);
 }
 
 .precall__desc {
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
+  font-weight: 500;
   color: var(--color-text-secondary);
   margin-bottom: var(--space-8);
   line-height: 1.5;
@@ -75,10 +79,10 @@
   gap: var(--space-3);
   font-family: var(--font-sans);
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-weight: 800;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: var(--color-accent-purple);
   margin-top: var(--space-2);
   margin-bottom: calc(-1 * var(--space-2));
 }
@@ -89,8 +93,9 @@
   background: var(--color-border-subtle);
 }
 .precall__section-optional {
+  font-family: var(--font-sans);
   font-size: 9px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: none;
   color: var(--color-accent-purple);
@@ -112,10 +117,10 @@
   border-radius: var(--border-radius-pill);
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-muted);
   cursor: pointer;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
   white-space: nowrap;
 }
@@ -144,9 +149,9 @@
 .precall__label {
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
-  letter-spacing: 0.1em;
-  color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-text-primary);
 }
 
 .precall__required {
@@ -159,9 +164,10 @@
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-md);
   padding: var(--space-3) var(--space-4);
-  font-size: var(--font-size-base);
-  color: var(--color-text-primary);
   font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--color-text-primary);
   transition: border-color var(--transition-fast);
   width: 100%;
   resize: none;
@@ -179,7 +185,9 @@
 }
 
 .precall__error {
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
+  font-weight: 600;
   color: var(--color-accent-red);
 }
 
@@ -206,21 +214,24 @@
 .precall__tip-banner-label {
   font-family: var(--font-sans);
   font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--color-accent-magenta);
 }
 
 .precall__tip-banner-text {
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.5;
 }
 
 .precall__tip-dismiss {
+  font-family: var(--font-sans);
   font-size: 10px;
+  font-weight: 700;
   color: var(--color-text-muted);
   background: none;
   border: none;
@@ -245,7 +256,9 @@
 .precall__hint {
   display: flex;
   gap: var(--space-2);
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
+  font-weight: 500;
   color: var(--color-text-muted);
   line-height: 1.4;
 }
@@ -256,8 +269,31 @@
   margin-top: 1px;
 }
 
+.precall__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
 .precall__start {
   width: 100%;
+}
+
+.precall__skip {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.15s;
+}
+
+.precall__skip:hover {
+  color: var(--color-text-secondary);
 }
 
 /* ─── Pitch enhance button ─────────────────────────────────── */
@@ -278,7 +314,7 @@
   padding: 3px 12px;
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--color-accent-magenta);
   cursor: pointer;
@@ -347,6 +383,7 @@
   padding: 4px 10px;
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
+  font-weight: 600;
   color: var(--color-text-muted);
   cursor: pointer;
   transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
@@ -367,7 +404,9 @@
 /* ─── Transparent mode toggle ──────────────────────────────── */
 
 .precall__field-desc {
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
+  font-weight: 500;
   color: var(--color-text-muted);
   line-height: 1.5;
   margin-top: 2px;
@@ -417,9 +456,10 @@
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   background: var(--color-bg-elevated);
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   color: var(--color-text-secondary);
   cursor: pointer;
   list-style: none;
@@ -445,7 +485,9 @@
 .precall__privacy-row {
   display: flex;
   gap: var(--space-2);
+  font-family: var(--font-sans);
   font-size: var(--font-size-xs);
+  font-weight: 500;
   line-height: 1.5;
   color: var(--color-text-muted);
 }
@@ -476,9 +518,9 @@
   border: 1px solid rgba(129, 74, 200, 0.3);
   border-radius: var(--border-radius-md);
   color: var(--color-accent-magenta);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-align: left;
   cursor: pointer;
@@ -497,11 +539,11 @@
 }
 
 .precall__battlecard-hint {
-  font-size: 0.68rem;
-  color: var(--color-text-muted);
-  font-weight: 400;
-  margin-left: auto;
   font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-left: auto;
 }
 
 .precall__battlecard {
@@ -523,16 +565,18 @@
 .precall__bc-section { display: flex; flex-direction: column; gap: var(--space-2); }
 
 .precall__bc-label {
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--color-accent-purple);
 }
 
 .precall__bc-insight {
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
+  font-weight: 500;
   color: var(--color-text-muted);
   line-height: 1.5;
   margin: 0;
@@ -542,6 +586,7 @@
 .precall__bc-opener {
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
+  font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.6;
   margin: 0;
@@ -562,6 +607,7 @@
 .precall__bc-list-item {
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
+  font-weight: 500;
   color: var(--color-text-secondary);
   padding-left: var(--space-3);
   border-left: 1px solid rgba(255,255,255,0.1);
@@ -578,13 +624,14 @@
 .precall__bc-obj-label {
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-weight: 700;
   color: #ff6b6b;
   margin-bottom: var(--space-2);
 }
 .precall__bc-obj-response {
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
+  font-weight: 500;
   color: var(--color-text-secondary);
   line-height: 1.6;
 }
@@ -595,8 +642,10 @@
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-pill);
   color: var(--color-text-muted);
-  font-size: 0.72rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
   padding: var(--space-1) var(--space-3);
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;

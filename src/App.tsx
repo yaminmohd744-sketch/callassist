@@ -11,7 +11,7 @@ import type { LanguageCode } from './lib/languages';
 import { supabase }         from './lib/supabase';
 import { loadSessions, saveSession, deleteSession } from './lib/sessions';
 import { updateLeadAfterCall } from './lib/leads';
-import type { CallConfig, CallSession, CallOutcome, Lead } from './types';
+import type { CallConfig, CallSession, CallOutcome, Lead, Meeting } from './types';
 
 const LandingScreen    = lazy(() => import('./screens/LandingScreen').then(m => ({ default: m.LandingScreen })));
 const IntroScreen      = lazy(() => import('./screens/IntroScreen').then(m => ({ default: m.IntroScreen })));
@@ -22,6 +22,8 @@ const PostCallScreen   = lazy(() => import('./screens/PostCallScreen').then(m =>
 const AnalyticsScreen  = lazy(() => import('./screens/AnalyticsScreen').then(m => ({ default: m.AnalyticsScreen })));
 const UploadCallScreen = lazy(() => import('./screens/UploadCallScreen').then(m => ({ default: m.UploadCallScreen })));
 const LeadsScreen      = lazy(() => import('./screens/LeadsScreen').then(m => ({ default: m.LeadsScreen })));
+const MeetingsScreen   = lazy(() => import('./screens/MeetingsScreen').then(m => ({ default: m.MeetingsScreen })));
+const AvatarSession    = lazy(() => import('./screens/AvatarSession').then(m => ({ default: m.AvatarSession })));
 const AuthScreen       = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })));
 const OnboardingScreen = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
 
@@ -63,7 +65,7 @@ const isElectron = navigator.userAgent.includes('Electron');
 const INITIAL_THEME = (localStorage.getItem('theme') ?? 'dark') as 'dark' | 'light';
 document.documentElement.dataset.theme = INITIAL_THEME === 'light' ? 'light' : '';
 
-type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
+type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'meetings' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call' | 'avatar-session';
 
 // ─── App ─────────────────────────────────────────────────────────────────────
 
@@ -94,6 +96,7 @@ export function App() {
     () => localStorage.getItem(PROFILE_PIC_KEY)
   );
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
 
   function handleProfilePicChange(dataUrl: string) {
     setProfilePic(dataUrl);
@@ -216,7 +219,7 @@ export function App() {
     );
   }
 
-  const isShell = currentScreen === 'dashboard' || currentScreen === 'analytics' || currentScreen === 'leads';
+  const isShell = currentScreen === 'dashboard' || currentScreen === 'analytics' || currentScreen === 'leads' || currentScreen === 'meetings';
 
   const onboardingData = getOnboardingData();
 
@@ -249,7 +252,7 @@ export function App() {
 
       {isShell && (
         <AppShell
-          activeScreen={currentScreen as 'dashboard' | 'analytics' | 'leads'}
+          activeScreen={currentScreen as 'dashboard' | 'analytics' | 'leads' | 'meetings'}
           onNavigate={s => setScreen(s)}
           onStartCall={() => setScreen('pre-call')}
           onUploadCall={() => setScreen('upload-call')}
@@ -303,7 +306,28 @@ export function App() {
               </Suspense>
             </ErrorBoundary>
           )}
+          {currentScreen === 'meetings' && (
+            <ErrorBoundary>
+              <Suspense fallback={<div className="app-loading" />}>
+                <MeetingsScreen onJoin={meeting => {
+                  setSelectedMeeting(meeting);
+                  setScreen('avatar-session');
+                }} />
+              </Suspense>
+            </ErrorBoundary>
+          )}
         </AppShell>
+      )}
+
+      {currentScreen === 'avatar-session' && selectedMeeting && (
+        <ErrorBoundary>
+          <Suspense fallback={<div className="app-loading" />}>
+            <AvatarSession
+              meeting={selectedMeeting}
+              onEnd={() => { setSelectedMeeting(null); setScreen('meetings'); }}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {currentScreen === 'pre-call' && (
