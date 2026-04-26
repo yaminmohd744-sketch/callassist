@@ -2,7 +2,12 @@ import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react
 import { getDeepgramCode } from '../lib/languages';
 import { FUNCTIONS_BASE, ANON_KEY, getAuthToken } from '../lib/api';
 
+let _deepgramTokenCache: { value: string; expiresAt: number } | null = null;
+
 async function fetchDeepgramKey(): Promise<string | null> {
+  if (_deepgramTokenCache && Date.now() < _deepgramTokenCache.expiresAt) {
+    return _deepgramTokenCache.value;
+  }
   try {
     const authToken = await getAuthToken();
     const res = await fetch(`${FUNCTIONS_BASE}/deepgram-token`, {
@@ -15,7 +20,9 @@ async function fetchDeepgramKey(): Promise<string | null> {
     });
     if (!res.ok) return null;
     const data = await res.json() as { key?: string };
-    return data.key ?? null;
+    const key = data.key ?? null;
+    if (key) _deepgramTokenCache = { value: key, expiresAt: Date.now() + 50_000 };
+    return key;
   } catch {
     return null;
   }

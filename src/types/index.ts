@@ -38,6 +38,8 @@ export interface AISuggestion {
   timestampSeconds: number;
   streaming?: boolean;
   isFallback?: boolean;
+  physicalAction?: string;
+  physicalIcon?: string;
 }
 
 // ─── Call State ──────────────────────────────────────────────────────────────

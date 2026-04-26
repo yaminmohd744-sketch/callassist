@@ -76,7 +76,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
     setFileName(file.name);
     const reader = new FileReader();
     reader.onload = ev => setTranscriptText((ev.target?.result as string) ?? '');
-    reader.onerror = () => setError('Could not read file. Please try another file.');
+    reader.onerror = () => setError(t.errors?.fileRead ?? 'Could not read file. Please try another file.');
     reader.readAsText(file);
   }
 
@@ -103,7 +103,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
         );
       }
       if (transcript.length === 0) {
-        setError('Could not parse the transcript. Check the format and try again.');
+        setError(t.errors?.transcriptParse ?? 'Could not parse the transcript. Check the format and try again.');
         setIsProcessing(false);
         return;
       }

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useLayoutEffect, type MouseEvent as ReactMouseEvent } from 'react';
+import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo, type MouseEvent as ReactMouseEvent } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { Header } from '../components/layout/Header';
 import { StatusBar } from '../components/layout/StatusBar';
@@ -14,6 +14,8 @@ import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry,
 import { genId } from '../lib/id';
 import { saveDraft, loadDraft, clearDraft } from '../lib/callDraft';
 import { useCallRecorder } from '../hooks/useCallRecorder';
+import { useBodyLanguage } from '../hooks/useBodyLanguage';
+import type { AISuggestion } from '../types';
 import './LiveCallScreen.css';
 
 // Classify who is speaking based on content + conversational context.
@@ -95,15 +97,16 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const startedAtRef = useRef(new Date().toISOString());
   const recordingKeyRef = useRef(startedAtRef.current);
   const { startRecording, stopRecording, isSupported: recordingSupported } = useCallRecorder();
+  const [bodySuggestions, setBodySuggestions] = useState<AISuggestion[]>([]);
 
   const bubbleRef = useRef<HTMLDivElement>(null);
   const dragOffset = useRef<{ x: number; y: number } | null>(null);
   const flipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const speakerLockedRef = useRef(false);
   const dgSpeakerMapRef = useRef<Map<number, TranscriptSpeaker> | null>(null);
-  const [repWords, setRepWords] = useState(0);
-  const [prospectWords, setProspectWords] = useState(0);
-  const [fillerCount, setFillerCount] = useState(0);
+  const [, setRepWords] = useState(0);
+  const [, setProspectWords] = useState(0);
+  const [, setFillerCount] = useState(0);
 
   const handleBubbleDragStart = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
     if (!bubbleRef.current) return;
@@ -148,6 +151,22 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     }).catch(() => { /* aborted — ignore */ });
   }, [config.language]);
   const { suggestions, phaseLabel, prospectTone, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion, reset: resetCoach } = useAICoach();
+
+  const latestAIScript = suggestions.length > 0 ? suggestions[suggestions.length - 1].body : undefined;
+  const onBodySuggestion = useCallback((s: AISuggestion) => {
+    setBodySuggestions(prev => [...prev.slice(-9), s]);
+  }, []);
+  useBodyLanguage({
+    isActive: callStatus === 'active',
+    elapsedSeconds,
+    currentScript: latestAIScript,
+    onSuggestion: onBodySuggestion,
+  });
+
+  const allSuggestions = useMemo(() => {
+    return [...suggestions, ...bodySuggestions]
+      .sort((a, b) => a.timestampSeconds - b.timestampSeconds);
+  }, [suggestions, bodySuggestions]);
 
   const FILLER_WORDS = ['um', 'uh', ' like ', 'you know', 'basically', 'literally', 'sort of', 'kind of', 'i mean', 'right?'];
 
@@ -434,7 +453,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     }
   }, []);
 
-  const latestSuggestion = suggestions.length > 0 ? suggestions[suggestions.length - 1] : null;
+  const latestSuggestion = allSuggestions.length > 0 ? allSuggestions[allSuggestions.length - 1] : null;
   const stageLabelMap: Record<string, string> = {
     opener: 'OPENER', discovery: 'DISCOVERY', pitch: 'PITCH', close: 'CLOSE',
   };
@@ -489,12 +508,10 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
               onManualSpeakerToggle={() => setManualSpeaker(s => s === 'prospect' ? 'rep' : 'prospect')}
             />
             <AIIntelligencePanel
-              suggestions={suggestions}
+              suggestions={allSuggestions}
               callStage={callStage}
               phaseLabel={phaseLabel}
               prospectTone={prospectTone}
-              talkRatio={repWords + prospectWords > 0 ? repWords / (repWords + prospectWords) : undefined}
-              fillerCount={fillerCount}
             />
             <LeadProfilePanel
               config={config}
@@ -554,12 +571,22 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           </div>
           {latestSuggestion ? (
             <div className="live-call__bubble-suggestion">
-              <span className="live-call__bubble-suggestion-label">
-                {suggestionTypeLabel[latestSuggestion.type] ?? 'NEXT'}
-              </span>
-              <span className="live-call__bubble-suggestion-text">
-                {latestSuggestion.body}
-              </span>
+              {latestSuggestion.physicalAction && (
+                <div className="live-call__bubble-do">
+                  <span className="live-call__bubble-do-label">DO</span>
+                  <span className="live-call__bubble-do-text">{latestSuggestion.physicalAction}</span>
+                </div>
+              )}
+              {latestSuggestion.body && (
+                <div className="live-call__bubble-say">
+                  <span className="live-call__bubble-suggestion-label">
+                    {latestSuggestion.physicalAction ? 'SAY' : (suggestionTypeLabel[latestSuggestion.type] ?? 'NEXT')}
+                  </span>
+                  <span className="live-call__bubble-suggestion-text">
+                    {latestSuggestion.body.split('\n\n')[0]}
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="live-call__bubble-listening">

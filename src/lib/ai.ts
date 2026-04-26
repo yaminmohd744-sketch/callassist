@@ -62,7 +62,7 @@ export async function analyzeTranscript(
     } else {
       externalSignal?.addEventListener('abort', () => streamController.abort(), { once: true });
     }
-    const streamTimer = setTimeout(() => streamController.abort(), 30_000);
+    const streamTimer = setTimeout(() => streamController.abort(), 50_000);
     const authToken = await getAuthToken();
     const res = await fetch(`${FUNCTIONS_BASE}/analyze-transcript`, {
       method: 'POST',

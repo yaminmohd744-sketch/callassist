@@ -6,6 +6,15 @@ export default defineConfig({
   plugins: [react()],
   // base './' ensures file:// paths work when Electron loads the built app
   base: './',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['@supabase/supabase-js', '@sentry/react', '@sentry/browser'],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     strictPort: true,

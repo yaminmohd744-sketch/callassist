@@ -5,6 +5,7 @@ import './styles/globals.css';
 import { App } from './App';
 import { OverlayScreen } from './screens/OverlayScreen';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { ToastProvider } from './lib/toast';
 
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
 if (sentryDsn) {
@@ -25,7 +26,9 @@ if (isOverlay) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      {isOverlay ? <OverlayScreen /> : <App />}
+      <ToastProvider>
+        {isOverlay ? <OverlayScreen /> : <App />}
+      </ToastProvider>
     </ErrorBoundary>
   </StrictMode>,
 );

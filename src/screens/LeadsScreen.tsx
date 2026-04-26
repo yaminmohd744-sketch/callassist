@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../lib/toast';
+import { loadLeads, saveLead, deleteLead, importLeads } from '../lib/leads';
 import type { Lead } from '../types';
 import './LeadsScreen.css';
 
@@ -29,7 +30,7 @@ function splitCSVLine(line: string): string[] {
   return result;
 }
 
-function parseCSV(text: string): Omit<Lead, 'id' | 'callCount' | 'createdAt'>[] {
+function parseCSV(text: string): Omit<Lead, 'id' | 'callCount' | 'createdAt' | 'lastCalledAt'>[] {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
   const headers = splitCSVLine(lines[0]).map(h => h.trim().toLowerCase().replace(/"/g, ''));
@@ -41,32 +42,13 @@ function parseCSV(text: string): Omit<Lead, 'id' | 'callCount' | 'createdAt'>[] 
     if (!name) return null;
     return {
       name,
-      company: row['company'] || row['organization'] || undefined,
-      title: row['title'] || row['job title'] || undefined,
-      phone: row['phone'] || row['phone number'] || undefined,
-      email: row['email'] || row['email address'] || undefined,
+      company:      row['company'] || row['organization'] || undefined,
+      title:        row['title'] || row['job title'] || undefined,
+      phone:        row['phone'] || row['phone number'] || undefined,
+      email:        row['email'] || row['email address'] || undefined,
       priorContext: row['notes'] || row['context'] || row['prior context'] || undefined,
     };
-  }).filter((r) => r !== null) as Omit<Lead, 'id' | 'callCount' | 'createdAt'>[];
-}
-
-// ─── Row ↔ Lead helpers ───────────────────────────────────────────────────────
-
-type DbRow = Record<string, unknown>;
-
-function rowToLead(r: DbRow): Lead {
-  return {
-    id:            r.id as string,
-    name:          r.name as string,
-    company:       typeof r.company === 'string' ? r.company : undefined,
-    title:         typeof r.title === 'string' ? r.title : undefined,
-    phone:         typeof r.phone === 'string' ? r.phone : undefined,
-    email:         typeof r.email === 'string' ? r.email : undefined,
-    priorContext:  typeof r.prior_context === 'string' ? r.prior_context : undefined,
-    lastCalledAt:  typeof r.last_called_at === 'string' ? r.last_called_at : undefined,
-    callCount:     typeof r.call_count === 'number' ? r.call_count : 0,
-    createdAt:     r.created_at as string,
-  };
+  }).filter((r) => r !== null) as Omit<Lead, 'id' | 'callCount' | 'createdAt' | 'lastCalledAt'>[];
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -75,8 +57,10 @@ const EMPTY_FORM = { name: '', company: '', title: '', phone: '', email: '', pri
 
 export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
   const { user } = useAuth();
+  const toast = useToast();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState('');
@@ -85,19 +69,21 @@ export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const loadLeads = useCallback(async () => {
+  const fetchLeads = useCallback(async () => {
     if (!user) { setLoading(false); return; }
     setLoading(true);
-    const { data, error } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    if (!error && data) setLeads(data.map(r => rowToLead(r as DbRow)));
-    setLoading(false);
+    setLoadError(false);
+    try {
+      const data = await loadLeads(user.id);
+      setLeads(data);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
-  useEffect(() => { loadLeads(); }, [loadLeads]);
+  useEffect(() => { fetchLeads(); }, [fetchLeads]);
 
   async function handleAddLead(e: React.FormEvent) {
     e.preventDefault();
@@ -105,30 +91,33 @@ export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
     if (!user) return;
     setSaving(true);
     setFormError('');
-    const { data, error } = await supabase
-      .from('leads')
-      .insert({
-        user_id:       user.id,
-        name:          form.name.trim(),
-        company:       form.company.trim() || null,
-        title:         form.title.trim() || null,
-        phone:         form.phone.trim() || null,
-        email:         form.email.trim() || null,
-        prior_context: form.priorContext.trim() || null,
-      })
-      .select()
-      .single();
-    setSaving(false);
-    if (error) { setFormError('Failed to save lead. Try again.'); return; }
-    if (data) setLeads(prev => [rowToLead(data as DbRow), ...prev]);
-    setForm(EMPTY_FORM);
-    setShowForm(false);
+    try {
+      const saved = await saveLead({
+        name:         form.name.trim(),
+        company:      form.company.trim() || undefined,
+        title:        form.title.trim() || undefined,
+        phone:        form.phone.trim() || undefined,
+        email:        form.email.trim() || undefined,
+        priorContext: form.priorContext.trim() || undefined,
+      }, user.id);
+      setLeads(prev => [saved, ...prev]);
+      setForm(EMPTY_FORM);
+      setShowForm(false);
+    } catch {
+      setFormError('Failed to save lead. Try again.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleDelete(id: string) {
+    // Optimistic removal — restore on failure
     setLeads(prev => prev.filter(l => l.id !== id));
     if (user) {
-      await supabase.from('leads').delete().eq('id', id).eq('user_id', user.id);
+      deleteLead(id, user.id).catch(() => {
+        toast.error('Failed to delete lead.');
+        fetchLeads();
+      });
     }
   }
 
@@ -140,22 +129,20 @@ export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
     const text = await file.text();
     const parsed = parseCSV(text);
     if (parsed.length === 0) { setImportStatus('No valid leads found in file.'); return; }
+    const truncated = parsed.length === 500;
     setImportStatus(`Importing ${parsed.length} leads...`);
-    const rows = parsed.map(p => ({
-      user_id:       user.id,
-      name:          p.name,
-      company:       p.company || null,
-      title:         p.title || null,
-      phone:         p.phone || null,
-      email:         p.email || null,
-      prior_context: p.priorContext || null,
-    }));
-    const { data, error } = await supabase.from('leads').insert(rows).select();
-    if (error) { setImportStatus('Import failed. Check file format.'); return; }
-    const newLeads = (data ?? []).map(r => rowToLead(r as DbRow));
-    setLeads(prev => [...newLeads, ...prev]);
-    setImportStatus(`Imported ${newLeads.length} lead${newLeads.length !== 1 ? 's' : ''}.`);
-    setTimeout(() => setImportStatus(''), 4000);
+    try {
+      const newLeads = await importLeads(parsed, user.id);
+      setLeads(prev => [...newLeads, ...prev]);
+      setImportStatus(
+        truncated
+          ? `Imported 500 leads (file may have been truncated at 500 rows).`
+          : `Imported ${newLeads.length} lead${newLeads.length !== 1 ? 's' : ''}.`
+      );
+    } catch {
+      setImportStatus('Import failed. Check file format.');
+    }
+    setTimeout(() => setImportStatus(''), 5000);
   }
 
   const filtered = searchQuery.trim()
@@ -273,6 +260,15 @@ export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
           <div className="leads-screen__empty-icon">◌</div>
           <p className="leads-screen__empty-text">Loading leads...</p>
         </div>
+      ) : loadError ? (
+        <div className="leads-screen__empty">
+          <div className="leads-screen__empty-icon">⚠</div>
+          <p className="leads-screen__empty-title">Failed to load leads</p>
+          <p className="leads-screen__empty-text">Check your connection and try again.</p>
+          <button className="leads-screen__btn-primary" onClick={fetchLeads} style={{ marginTop: 12 }}>
+            Retry
+          </button>
+        </div>
       ) : filtered.length === 0 && leads.length === 0 ? (
         <div className="leads-screen__empty">
           <div className="leads-screen__empty-icon">◎</div>
@@ -332,6 +328,7 @@ export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
                       className="leads-screen__delete-btn"
                       onClick={() => handleDelete(lead.id)}
                       title="Delete lead"
+                      aria-label="Delete lead"
                     >
                       ✕
                     </button>

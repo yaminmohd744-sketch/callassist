@@ -108,8 +108,8 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', 
 
   function handleSubmit() {
     const newErrors: StringConfigErrors = {};
-    if (!form.prospectName.trim()) newErrors.prospectName = 'Required';
-    if (!form.callGoal.trim())     newErrors.callGoal = 'Required';
+    if (!form.prospectName.trim()) newErrors.prospectName = t.errors?.required ?? 'Required';
+    if (!form.callGoal.trim())     newErrors.callGoal = t.errors?.required ?? 'Required';
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;

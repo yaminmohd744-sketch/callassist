@@ -189,13 +189,13 @@ export function AppShell({
 
                   {/* User info */}
                   <div className="app-shell__profile-header">
-                    <div className="app-shell__profile-avatar-lg" onClick={handlePicClick} title="Change photo">
+                    <div className="app-shell__profile-avatar-lg" onClick={handlePicClick} title="Change photo" role="button" aria-label="Change profile photo" tabIndex={0} onKeyDown={e => e.key === 'Enter' && handlePicClick()}>
                       {profilePic
                         ? <img src={profilePic} alt="Profile" className="app-shell__avatar-img" />
                         : getInitials(userName || userEmail)
                       }
                       <div className="app-shell__avatar-edit-overlay">
-                        <span>✎</span>
+                        <span aria-hidden="true">✎</span>
                       </div>
                     </div>
                     <div className="app-shell__profile-info">
@@ -206,10 +206,11 @@ export function AppShell({
                         style={{ color: milestone.color }}
                         onClick={() => { setProfileOpen(false); setTiersOpen(true); }}
                         title="View all tiers"
+                        aria-label="View tier details"
                       >
                         <TierBadge tierId={milestone.id} color={milestone.color} size={16} unlocked />
                         {milestone.label}
-                        <span className="app-shell__profile-status-arrow">›</span>
+                        <span className="app-shell__profile-status-arrow" aria-hidden="true">›</span>
                       </button>
                     </div>
                   </div>

@@ -42,7 +42,7 @@ function downloadCSV(filename: string, content: string) {
   a.href = url;
   a.download = filename;
   a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
 }
 
 interface DateGroup {

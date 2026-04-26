@@ -113,7 +113,7 @@ export function LeadProfilePanel({ config, closeProbability, objectionsCount, on
             onChange={e => onNoteChange(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); onAddNote(); } }}
           />
-          <button className="lead-panel__note-btn" onClick={onAddNote}>+</button>
+          <button className="lead-panel__note-btn" onClick={onAddNote} aria-label="Add note">+</button>
         </div>
       </div>
     </div>

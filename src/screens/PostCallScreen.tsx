@@ -24,7 +24,7 @@ function downloadFile(filename: string, content: string) {
   a.href = url;
   a.download = filename;
   a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
 }
 
 function buildTranscriptText(session: CallSession): string {
@@ -673,10 +673,10 @@ export function PostCallScreen({ session, onBack, onNewCall, onUpdateOutcome }: 
                   })}
                 </div>
                 <div className="postcall__share-actions">
-                  <button className="postcall__share-copy-btn" onClick={handleCopyProspectSummary}>
+                  <button className="postcall__share-copy-btn" onClick={handleCopyProspectSummary} aria-label="Copy to clipboard">
                     {summaryCopied ? '✓ Copied!' : '⎘ Copy to clipboard'}
                   </button>
-                  <button className="postcall__share-regen-btn" onClick={handleGenerateProspectSummary}>
+                  <button className="postcall__share-regen-btn" onClick={handleGenerateProspectSummary} aria-label="Regenerate prospect summary">
                     ↺ Regenerate
                   </button>
                 </div>

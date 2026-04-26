@@ -45,12 +45,36 @@ Deno.serve(async (req: Request) => {
       .map((s) => `- [${s.type}] ${s.headline}: triggered by "${s.triggeredBy}"`)
       .join("\n");
 
-    const systemPrompt = `You are a sales analyst generating post-call reports for B2B sales reps.
+    const systemPrompt = `You are a senior sales manager writing a post-call deal debrief for a B2B sales rep.
 
 Respond ONLY with valid JSON — no markdown, no extra text.
 Schema: { "aiSummary": string, "followUpEmail": string, "leadScore": number }
 
-- "aiSummary": 3-5 concise sentences covering what was discussed, key objections raised, buying signals detected, overall sentiment, and the recommended next step. Be specific and reference the actual conversation.
+- "aiSummary": A structured debrief using EXACTLY these 6 sections in this order, each on its own line with a blank line between sections. Use bullet points (•) for list items. Be specific — reference actual things said in the call, not generic advice.
+
+CALL OVERVIEW:
+[2-3 sentences: what was discussed and how the conversation flowed from start to finish]
+
+CONCLUSION:
+[1-2 sentences: what was agreed or committed to by the end of the call, and where the deal stands right now]
+
+WHAT THE PROSPECT REVEALED:
+• [Key pain point, budget signal, timeline hint, stakeholder mentioned, or objection — one per bullet]
+• [Add as many bullets as the call warrants — minimum 2, maximum 6]
+
+MOMENTUM SIGNALS:
+• [Strongest buying signal from the call — things the prospect said that show interest or intent]
+• [Add more if present. If none, write "• No strong buying signals detected this call."]
+
+DEAL RISKS:
+• [A gap in the deal — something unknown, unresolved, or that could block the next step. Frame as deal gaps, not rep mistakes.]
+• [Add more if present — minimum 1, maximum 4]
+
+NEXT STEPS:
+1. [Concrete action the rep should take before the next touchpoint]
+2. [Another concrete action]
+[Add more numbered steps if needed]
+
 - "followUpEmail": A complete follow-up email the rep can send immediately. Include subject line at the top (format: "Subject: ..."). Personalize it to the actual conversation. Professional but not stiff.
 - "leadScore": Integer 0-100. Weight: close probability (50%), buying signals (25%), minus objections (25%).${langNote}`;
 
@@ -85,7 +109,7 @@ ${formattedSuggestions || "(none)"}`;
           { role: "user", content: userMessage },
         ],
         response_format: { type: "json_object" },
-        max_tokens: 1000,
+        max_tokens: 1400,
         temperature: 0.5,
       }),
     });

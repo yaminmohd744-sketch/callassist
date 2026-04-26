@@ -162,12 +162,41 @@
   background: rgba(255, 68, 68, 0.22);
 }
 
-/* suggestion row */
+/* suggestion row — flex column so DO and SAY stack vertically */
 .live-call__bubble-suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 14px;
+}
+
+/* DO row — physical action */
+.live-call__bubble-do {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.live-call__bubble-do-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-green);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.live-call__bubble-do-text {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* SAY row — verbal suggestion */
+.live-call__bubble-say {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 10px 14px;
 }
 
 .live-call__bubble-suggestion-label {

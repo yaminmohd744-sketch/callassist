@@ -36,6 +36,43 @@
   color: var(--color-text-muted);
 }
 
+/* Physical action — DO this while you speak */
+.suggestion-card__physical {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(57, 211, 83, 0.07);
+  border: 1px solid rgba(57, 211, 83, 0.2);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--space-3);
+  animation: fade-slide-in 220ms ease;
+}
+
+.suggestion-card__physical-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-accent-green);
+  background: rgba(57, 211, 83, 0.12);
+  border: 1px solid rgba(57, 211, 83, 0.3);
+  border-radius: var(--border-radius-sm);
+  padding: 2px 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.suggestion-card__physical-text {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.3;
+}
+
+.suggestion-card__script--below-physical {
+  margin-top: 0;
+}
+
 /* The main "say this" text - large and prominent */
 .suggestion-card__script {
   display: flex;

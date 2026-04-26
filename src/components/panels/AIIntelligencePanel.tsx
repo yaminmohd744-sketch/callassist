@@ -21,8 +21,6 @@ interface AIIntelligencePanelProps {
   callStage: CallStage;
   phaseLabel?: string;
   prospectTone?: ProspectTone | null;
-  talkRatio?: number;
-  fillerCount?: number;
 }
 
 export function AIIntelligencePanel({
@@ -30,8 +28,6 @@ export function AIIntelligencePanel({
   callStage,
   phaseLabel,
   prospectTone,
-  talkRatio,
-  fillerCount = 0,
 }: AIIntelligencePanelProps) {
   const t = useTranslations();
 
@@ -42,9 +38,7 @@ export function AIIntelligencePanel({
     close:     t.liveCall.stageClose,
   };
 
-  const isEmpty = suggestions.length === 0;
-  const repPct = talkRatio !== undefined ? Math.round(talkRatio * 100) : null;
-  const talkWarning = repPct !== null && repPct > 65;
+  const activeCard = suggestions.length > 0 ? suggestions[suggestions.length - 1] : null;
 
   return (
     <div className="ai-panel">
@@ -71,23 +65,8 @@ export function AIIntelligencePanel({
         </div>
       </div>
 
-      {repPct !== null && (
-        <div className={`ai-panel__talk-row${talkWarning ? ' ai-panel__talk-row--warn' : ''}`}>
-          <span className="ai-panel__talk-label">YOU {repPct}%</span>
-          <div className="ai-panel__talk-bar">
-            <div className="ai-panel__talk-bar-fill" style={{ width: `${repPct}%` }} />
-          </div>
-          <span className="ai-panel__talk-label">{100 - repPct}% THEM</span>
-          {fillerCount > 0 && (
-            <span className={`ai-panel__filler${fillerCount >= 5 ? ' ai-panel__filler--high' : ''}`}>
-              {fillerCount} filler{fillerCount !== 1 ? 's' : ''}
-            </span>
-          )}
-        </div>
-      )}
-
       <div className="ai-panel__body">
-        {isEmpty ? (
+        {!activeCard ? (
           <div className="ai-panel__empty">
             <div className="ai-panel__empty-icon">◎</div>
             <div className="ai-panel__empty-title">{t.liveCall.readyToAssist}</div>
@@ -101,11 +80,7 @@ export function AIIntelligencePanel({
             </div>
           </div>
         ) : (
-          <div className="ai-panel__cards">
-            {suggestions.map(s => (
-              <SuggestionCard key={s.id} suggestion={s} />
-            ))}
-          </div>
+          <SuggestionCard suggestion={activeCard} />
         )}
       </div>
 

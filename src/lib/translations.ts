@@ -394,6 +394,14 @@ export interface T {
     analyzing: string;
     browseFiles: string;
   };
+  // Error messages — optional so existing compact language objects don't need updating;
+  // screens fall back to English when undefined
+  errors?: {
+    required: string;
+    saveLead: string;
+    fileRead: string;
+    transcriptParse: string;
+  };
 }
 
 // ─── Translation data ─────────────────────────────────────────────────────────
@@ -708,6 +716,12 @@ const en: T = {
     dropzone: 'Drop your audio file here',
     analyzing: 'Analyzing your call...',
     browseFiles: 'Browse files',
+  },
+  errors: {
+    required: 'Required',
+    saveLead: 'Failed to save lead. Try again.',
+    fileRead: 'Could not read file. Please try another file.',
+    transcriptParse: 'Could not parse the transcript. Check the format and try again.',
   },
 };
 

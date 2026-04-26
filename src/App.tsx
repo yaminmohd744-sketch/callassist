@@ -1,26 +1,29 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { LandingScreen }    from './screens/LandingScreen';
-import { IntroScreen }      from './screens/IntroScreen';
-import { DashboardScreen }  from './screens/DashboardScreen';
-import { PreCallScreen }    from './screens/PreCallScreen';
-import { LiveCallScreen }   from './screens/LiveCallScreen';
-const PostCallScreen = lazy(() => import('./screens/PostCallScreen').then(m => ({ default: m.PostCallScreen })));
-const AnalyticsScreen = lazy(() => import('./screens/AnalyticsScreen').then(m => ({ default: m.AnalyticsScreen })));
-import { UploadCallScreen } from './screens/UploadCallScreen';
-import { LeadsScreen }      from './screens/LeadsScreen';
-import { AuthScreen }       from './screens/AuthScreen';
-import { OnboardingScreen } from './screens/OnboardingScreen';
+import * as Sentry from '@sentry/react';
 import { ThemeToggle }      from './components/ThemeToggle';
 import { AppShell }         from './components/layout/AppShell';
 import { ErrorBoundary }    from './components/ErrorBoundary';
 import { LoginTransitionOverlay } from './components/LoginTransitionOverlay';
 import { useAuth }          from './hooks/useAuth';
 import { useAppLanguage }   from './hooks/useAppLanguage';
+import { useToast }         from './lib/toast';
 import type { LanguageCode } from './lib/languages';
-import './screens/AuthScreen.css';
 import { supabase }         from './lib/supabase';
-import { MOCK_SESSIONS }    from './lib/mockSessions';
-import type { CallConfig, CallSession, CallStage, CallOutcome, TranscriptEntry, AISuggestion, CoachingWalkthrough, Lead } from './types';
+import { loadSessions, saveSession, updateOutcome, deleteSession } from './lib/sessions';
+import { updateLeadAfterCall } from './lib/leads';
+import type { CallConfig, CallSession, CallOutcome, Lead } from './types';
+
+const LandingScreen    = lazy(() => import('./screens/LandingScreen').then(m => ({ default: m.LandingScreen })));
+const IntroScreen      = lazy(() => import('./screens/IntroScreen').then(m => ({ default: m.IntroScreen })));
+const DashboardScreen  = lazy(() => import('./screens/DashboardScreen').then(m => ({ default: m.DashboardScreen })));
+const PreCallScreen    = lazy(() => import('./screens/PreCallScreen').then(m => ({ default: m.PreCallScreen })));
+const LiveCallScreen   = lazy(() => import('./screens/LiveCallScreen').then(m => ({ default: m.LiveCallScreen })));
+const PostCallScreen   = lazy(() => import('./screens/PostCallScreen').then(m => ({ default: m.PostCallScreen })));
+const AnalyticsScreen  = lazy(() => import('./screens/AnalyticsScreen').then(m => ({ default: m.AnalyticsScreen })));
+const UploadCallScreen = lazy(() => import('./screens/UploadCallScreen').then(m => ({ default: m.UploadCallScreen })));
+const LeadsScreen      = lazy(() => import('./screens/LeadsScreen').then(m => ({ default: m.LeadsScreen })));
+const AuthScreen       = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })));
+const OnboardingScreen = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
 
 const OUTCOMES_KEY = 'callassist:outcomes';
 function loadOutcomes(): Record<string, CallOutcome> {
@@ -28,9 +31,6 @@ function loadOutcomes(): Record<string, CallOutcome> {
 }
 function saveOutcomes(map: Record<string, CallOutcome>) {
   try { localStorage.setItem(OUTCOMES_KEY, JSON.stringify(map)); } catch { /* quota */ }
-}
-function mergeOutcomes(sessions: CallSession[], map: Record<string, CallOutcome>): CallSession[] {
-  return sessions.map(s => map[s.endedAt] !== undefined ? { ...s, outcome: map[s.endedAt] } : s);
 }
 
 const PROFILE_PIC_KEY = 'pp-profile-pic';
@@ -69,57 +69,13 @@ document.documentElement.dataset.theme = INITIAL_THEME === 'light' ? 'light' : '
 
 type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
 
-// ─── DB row ↔ CallSession helpers ────────────────────────────────────────────
-
-type DbRow = Record<string, unknown>;
-
-function rowToSession(row: DbRow): CallSession {
-  return {
-    config:                (row.config as CallConfig) ?? ({} as CallConfig),
-    transcript:            Array.isArray(row.transcript) ? row.transcript as TranscriptEntry[] : [],
-    suggestions:           Array.isArray(row.suggestions) ? row.suggestions as AISuggestion[] : [],
-    durationSeconds:       typeof row.duration_seconds === 'number' ? row.duration_seconds : 0,
-    finalCloseProbability: typeof row.final_close_prob === 'number' ? row.final_close_prob : 50,
-    objectionsCount:       typeof row.objections_count === 'number' ? row.objections_count : 0,
-    callStage:             (row.call_stage as CallStage) ?? 'opener',
-    endedAt:               typeof row.ended_at === 'string' ? row.ended_at : new Date().toISOString(),
-    aiSummary:             typeof row.ai_summary === 'string' ? row.ai_summary : '',
-    followUpEmail:         typeof row.follow_up_email === 'string' ? row.follow_up_email : '',
-    leadScore:             typeof row.lead_score === 'number' ? row.lead_score : 0,
-    notes:                 Array.isArray(row.notes) ? row.notes as string[] : [],
-    talkRatio:             typeof row.talk_ratio === 'number' ? row.talk_ratio : undefined,
-    coaching:              row.coaching as CoachingWalkthrough ?? undefined,
-    outcome:               (row.outcome as CallOutcome) ?? null,
-  };
-}
-
-function sessionToRow(s: CallSession, userId: string) {
-  return {
-    user_id:          userId,
-    config:           s.config,
-    transcript:       s.transcript,
-    suggestions:      s.suggestions,
-    duration_seconds: s.durationSeconds,
-    final_close_prob: s.finalCloseProbability,
-    objections_count: s.objectionsCount,
-    call_stage:       s.callStage,
-    ended_at:         s.endedAt,
-    ai_summary:       s.aiSummary,
-    follow_up_email:  s.followUpEmail,
-    lead_score:       s.leadScore,
-    notes:            s.notes,
-    talk_ratio:       s.talkRatio ?? null,
-    coaching:         s.coaching ?? null,
-    outcome:          s.outcome ?? null,
-  };
-}
-
 // ─── App ─────────────────────────────────────────────────────────────────────
 
 export function App() {
 
   const { user, loading: authLoading } = useAuth();
   const { appLanguage, setAppLanguage, currentLang } = useAppLanguage();
+  const toast = useToast();
 
   const [theme, setTheme] = useState<'dark' | 'light'>(INITIAL_THEME);
 
@@ -135,7 +91,7 @@ export function App() {
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
-  const [outcomeMap, setOutcomeMap] = useState<Record<string, CallOutcome>>(loadOutcomes);
+  const [outcomeMap, setOutcomeMap]     = useState<Record<string, CallOutcome>>(loadOutcomes);
   const [showTransition, setShowTransition] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const transitionShown = useRef(false);
@@ -146,24 +102,21 @@ export function App() {
 
   function handleProfilePicChange(dataUrl: string) {
     setProfilePic(dataUrl);
-    // Skip persisting images over ~500KB to avoid filling localStorage quota
     if (dataUrl.length > 500_000) return;
-    try { localStorage.setItem(PROFILE_PIC_KEY, dataUrl); } catch { /* storage full — pic not persisted */ }
+    try { localStorage.setItem(PROFILE_PIC_KEY, dataUrl); } catch { /* storage full */ }
   }
 
-  // Derived activity stats
   const totalCallSeconds = pastSessions.reduce((sum, s) => sum + s.durationSeconds, 0);
   const totalCallCount = pastSessions.length;
 
-  // Derive the effective screen: authenticated users on landing/auth go to dashboard
   const currentScreen: Screen = (user && (screen === 'landing' || screen === 'auth'))
     ? 'dashboard'
     : screen;
 
-  // Show onboarding for first-time users (no saved onboarding data).
-  // setState calls here are intentional — they synchronize React with
-  // localStorage state after auth resolves (a genuine external system read).
   useEffect(() => {
+    if (user) Sentry.setUser({ id: user.id, email: user.email ?? undefined });
+    else Sentry.setUser(null);
+
     if (!authLoading && user && !transitionShown.current) {
       const hasOnboarded = !!localStorage.getItem('pp-onboarding');
       if (!hasOnboarded) {
@@ -176,23 +129,20 @@ export function App() {
     }
   }, [user, authLoading]);
 
-  // Load sessions from Supabase whenever the authenticated user changes
+  // Load sessions — show a toast if it fails so the user knows history is unavailable
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!user) { setPastSessions([]); return; }
-    supabase
-      .from('call_sessions')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('ended_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (error) { console.error('[CallAssist] Failed to load sessions:', error.message); return; }
-        const real = data ? data.map(rowToSession) : [];
-        const merged = mergeOutcomes(real.length > 0 ? real : MOCK_SESSIONS, loadOutcomes());
-        setPastSessions(merged);
+    loadSessions(user.id, loadOutcomes())
+      .then(sessions => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setPastSessions(sessions);
+      })
+      .catch(() => {
+        toast.error('Failed to load your call history. Check your connection and refresh.');
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
-
 
   function handleStartCall(config: CallConfig) {
     setCallConfig(config);
@@ -204,27 +154,17 @@ export function App() {
     setCallSession(session);
     setScreen('post-call');
     if (user) {
-      const { data, error } = await supabase
-        .from('call_sessions')
-        .insert(sessionToRow(session, user.id))
-        .select()
-        .single();
-      if (error) { console.error('[CallAssist] Failed to save session:', error.message); }
-      else if (data) setPastSessions(prev => [rowToSession(data as DbRow), ...prev]);
-    }
-    if (selectedLead && user) {
-      supabase
-        .from('leads')
-        .update({
-          call_count:    selectedLead.callCount + 1,
-          last_called_at: new Date().toISOString(),
-        })
-        .eq('id', selectedLead.id)
-        .eq('user_id', user.id)
-        .then(({ error }) => {
-          if (error) console.error('[CallAssist] Failed to update lead:', error.message);
-        });
-      setSelectedLead(null);
+      try {
+        const saved = await saveSession(session, user.id);
+        setPastSessions(prev => [saved, ...prev]);
+      } catch {
+        toast.error('Call ended but failed to save. Your data is safe locally.');
+      }
+      if (selectedLead) {
+        updateLeadAfterCall(selectedLead.id, user.id, selectedLead.callCount)
+          .catch(() => { /* silent — lead sync is non-critical */ });
+        setSelectedLead(null);
+      }
     }
   }
 
@@ -237,29 +177,25 @@ export function App() {
     const next = { ...outcomeMap, [endedAt]: outcome };
     setOutcomeMap(next);
     saveOutcomes(next);
-    setPastSessions(prev => mergeOutcomes(prev, next));
+    setPastSessions(prev => prev.map(s => s.endedAt === endedAt ? { ...s, outcome } : s));
     setCallSession(prev => prev && prev.endedAt === endedAt ? { ...prev, outcome } : prev);
     if (user) {
-      supabase
-        .from('call_sessions')
-        .update({ outcome })
-        .eq('user_id', user.id)
-        .eq('ended_at', endedAt)
-        .then(({ error }) => {
-          if (error) console.error('[CallAssist] Failed to save outcome:', error.message);
-        });
+      updateOutcome(user.id, endedAt, outcome)
+        .catch(() => toast.error('Failed to save outcome.'));
     }
   }
 
   async function handleDeleteSession(endedAt: string) {
+    // Optimistic update — roll back on failure
     setPastSessions(prev => prev.filter(s => s.endedAt !== endedAt));
     if (user) {
-      const { error } = await supabase
-        .from('call_sessions')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('ended_at', endedAt);
-      if (error) console.error('[CallAssist] Failed to delete session:', error.message);
+      deleteSession(user.id, endedAt).catch(() => {
+        toast.error('Failed to delete session.');
+        // Reload sessions to restore correct state
+        loadSessions(user.id, loadOutcomes())
+          .then(sessions => setPastSessions(sessions))
+          .catch(() => { /* already toasted above */ });
+      });
     }
   }
 
@@ -267,28 +203,31 @@ export function App() {
   if (authLoading) return <div className="app-loading">LOADING...</div>;
 
   if (!user) {
-    // Desktop app: skip landing, go straight to auth
     if (isElectron || screen === 'auth') return (
       <>
-        <AuthScreen onBack={isElectron ? () => {} : () => setScreen('landing')} />
+        <Suspense fallback={<div className="app-loading" />}>
+          <AuthScreen onBack={isElectron ? () => {} : () => setScreen('landing')} />
+        </Suspense>
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </>
     );
-    // Web app: show landing page first
     return (
       <>
-        <LandingScreen onDownload={() => {
-          // Silently try to open the installed desktop app via the custom protocol.
-          // Using a hidden iframe avoids the OS error dialog if the app isn't installed.
-          const iframe = document.createElement('iframe');
-          iframe.style.display = 'none';
-          iframe.src = 'pitchplus://open';
-          document.body.appendChild(iframe);
-          setTimeout(() => document.body.removeChild(iframe), 2000);
-          // Fallback: if app isn't installed, go to sign-in so they can still register
-          setTimeout(() => setScreen('auth'), 1800);
-        }} />
-        {showIntro && <IntroScreen onDone={() => setShowIntro(false)} />}
+        <Suspense fallback={<div className="app-loading" />}>
+          <LandingScreen onDownload={() => {
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = 'pitchplus://open';
+            document.body.appendChild(iframe);
+            setTimeout(() => document.body.removeChild(iframe), 2000);
+            setTimeout(() => setScreen('auth'), 1800);
+          }} />
+        </Suspense>
+        {showIntro && (
+          <Suspense fallback={null}>
+            <IntroScreen onDone={() => setShowIntro(false)} />
+          </Suspense>
+        )}
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </>
     );
@@ -308,12 +247,14 @@ export function App() {
   return (
     <>
       {showOnboarding && (
-        <OnboardingScreen onDone={data => {
-          try { localStorage.setItem('pp-onboarding', JSON.stringify(data)); } catch { /* storage full */ }
-          setAppLanguage(data.language as LanguageCode);
-          setShowOnboarding(false);
-          setShowTransition(true);
-        }} />
+        <Suspense fallback={<div className="app-loading" />}>
+          <OnboardingScreen onDone={data => {
+            try { localStorage.setItem('pp-onboarding', JSON.stringify(data)); } catch { /* storage full */ }
+            setAppLanguage(data.language as LanguageCode);
+            setShowOnboarding(false);
+            setShowTransition(true);
+          }} />
+        </Suspense>
       )}
       {showTransition && !showOnboarding && (
         <LoginTransitionOverlay
@@ -321,7 +262,6 @@ export function App() {
           onDone={() => setShowTransition(false)}
         />
       )}
-      {/* ThemeToggle only shown outside the shell — inside it lives in the profile dropdown */}
       {!isShell && <ThemeToggle theme={theme} onToggle={toggleTheme} />}
 
       {isShell && (
@@ -346,19 +286,21 @@ export function App() {
         >
           {currentScreen === 'dashboard' && (
             <ErrorBoundary>
-              <DashboardScreen
-                pastSessions={pastSessions}
-                onStartCall={() => setScreen('pre-call')}
-                onUploadCall={() => setScreen('upload-call')}
-                onViewSession={handleViewSession}
-                onDeleteSession={handleDeleteSession}
-                userName={
-                  user?.user_metadata?.full_name?.split(' ')[0] ||
-                  user?.user_metadata?.name?.split(' ')[0] ||
-                  user?.email?.split('@')[0] ||
-                  ''
-                }
-              />
+              <Suspense fallback={<div className="app-loading" />}>
+                <DashboardScreen
+                  pastSessions={pastSessions}
+                  onStartCall={() => setScreen('pre-call')}
+                  onUploadCall={() => setScreen('upload-call')}
+                  onViewSession={handleViewSession}
+                  onDeleteSession={handleDeleteSession}
+                  userName={
+                    user?.user_metadata?.full_name?.split(' ')[0] ||
+                    user?.user_metadata?.name?.split(' ')[0] ||
+                    user?.email?.split('@')[0] ||
+                    ''
+                  }
+                />
+              </Suspense>
             </ErrorBoundary>
           )}
           {currentScreen === 'analytics' && (
@@ -370,10 +312,12 @@ export function App() {
           )}
           {currentScreen === 'leads' && (
             <ErrorBoundary>
-              <LeadsScreen onCallLead={lead => {
-                setSelectedLead(lead);
-                setScreen('pre-call');
-              }} />
+              <Suspense fallback={<div className="app-loading" />}>
+                <LeadsScreen onCallLead={lead => {
+                  setSelectedLead(lead);
+                  setScreen('pre-call');
+                }} />
+              </Suspense>
             </ErrorBoundary>
           )}
         </AppShell>
@@ -381,32 +325,38 @@ export function App() {
 
       {currentScreen === 'pre-call' && (
         <ErrorBoundary>
-          <PreCallScreen
-            onStartCall={config => { setSelectedLead(null); handleStartCall(config); }}
-            onBack={() => { setSelectedLead(null); setScreen(selectedLead ? 'leads' : 'dashboard'); }}
-            defaultLanguage={appLanguage}
-            defaultCompany={onboardingData.companyName ?? ''}
-            defaultPitch={onboardingData.productDescription ?? ''}
-            defaultConfig={selectedLead ? {
-              prospectName:  selectedLead.name,
-              company:       selectedLead.company ?? '',
-              prospectTitle: selectedLead.title ?? '',
-              priorContext:  selectedLead.priorContext ?? '',
-            } : undefined}
-          />
+          <Suspense fallback={<div className="app-loading" />}>
+            <PreCallScreen
+              onStartCall={config => { setSelectedLead(null); handleStartCall(config); }}
+              onBack={() => { setSelectedLead(null); setScreen(selectedLead ? 'leads' : 'dashboard'); }}
+              defaultLanguage={appLanguage}
+              defaultCompany={onboardingData.companyName ?? ''}
+              defaultPitch={onboardingData.productDescription ?? ''}
+              defaultConfig={selectedLead ? {
+                prospectName:  selectedLead.name,
+                company:       selectedLead.company ?? '',
+                prospectTitle: selectedLead.title ?? '',
+                priorContext:  selectedLead.priorContext ?? '',
+              } : undefined}
+            />
+          </Suspense>
         </ErrorBoundary>
       )}
       {currentScreen === 'live-call' && callConfig && (
         <ErrorBoundary>
-          <LiveCallScreen config={callConfig} onEndCall={handleEndCall} />
+          <Suspense fallback={<div className="app-loading" />}>
+            <LiveCallScreen config={callConfig} onEndCall={handleEndCall} />
+          </Suspense>
         </ErrorBoundary>
       )}
       {currentScreen === 'upload-call' && (
         <ErrorBoundary>
-          <UploadCallScreen
-            onEndCall={handleEndCall}
-            onBack={() => setScreen('dashboard')}
-          />
+          <Suspense fallback={<div className="app-loading" />}>
+            <UploadCallScreen
+              onEndCall={handleEndCall}
+              onBack={() => setScreen('dashboard')}
+            />
+          </Suspense>
         </ErrorBoundary>
       )}
       {currentScreen === 'post-call' && callSession && (
