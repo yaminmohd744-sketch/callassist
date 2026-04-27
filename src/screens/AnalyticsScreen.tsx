@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { useAppLanguage } from '../hooks/useAppLanguage';
 import type { CallSession } from '../types';

@@ -36,8 +36,9 @@
   --color-text-accent:    #c026d3;
 
   /* ─── Typography ─────────────────────────────────────────────── */
-  --font-sans: 'Figtree', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Fragment Mono', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+  --font-sans:    'Satoshi', system-ui, -apple-system, sans-serif;
+  --font-display: 'Clash Display', 'Satoshi', system-ui, sans-serif;
+  --font-mono:    'Tabular', 'Fragment Mono', 'JetBrains Mono', 'Courier New', monospace;
 
   --font-size-xs:   11px;
   --font-size-sm:   12px;

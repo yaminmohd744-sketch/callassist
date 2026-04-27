@@ -114,8 +114,9 @@
 }
 
 .dashboard__greeting-text {
+  font-family: var(--font-display);
   font-size: var(--font-size-2xl);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.025em;
   color: var(--color-text-primary);
   margin-bottom: var(--space-1);
@@ -133,6 +134,7 @@
 }
 
 .dashboard__title {
+  font-family: var(--font-display);
   font-size: var(--font-size-2xl);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -187,6 +189,7 @@
 }
 
 .dashboard__stat-val {
+  font-family: var(--font-display);
   font-size: var(--font-size-2xl);
   font-weight: 700;
   margin-bottom: var(--space-1);
@@ -480,6 +483,7 @@
 .dashboard__crm-info { flex: 1; min-width: 0; }
 
 .dashboard__crm-name {
+  font-family: var(--font-display);
   font-size: var(--font-size-md);
   font-weight: 600;
   color: var(--color-text-primary);
@@ -543,8 +547,9 @@
 }
 
 .dashboard__crm-detail-name {
+  font-family: var(--font-display);
   font-size: var(--font-size-2xl);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
