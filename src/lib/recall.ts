@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+﻿import { supabase } from './supabase';
 
 export interface RecallBotConfig {
   meetingId: string;
@@ -28,7 +28,7 @@ export async function startRecallBot(config: RecallBotConfig): Promise<string> {
       body: JSON.stringify({
         meetingId:  config.meetingId,
         meetingUrl: config.meetingUrl,
-        botName:    config.botName ?? 'Pitch Plus',
+        botName:    config.botName ?? 'Pitchbase',
       }),
     },
   );

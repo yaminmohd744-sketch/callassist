@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import './LandingScreen.css';
 
 interface LandingScreenProps {
@@ -156,11 +156,11 @@ const FEATURE_TABS = [
 const PRICING_FAQ = [
   {
     q: 'Can my prospect hear or tell that I\'m using AI coaching during the call?',
-    a: 'No. Pitch Plus runs silently in a separate browser tab your prospect only hears you speaking normally. The coaching suggestions appear as text on your screen, so there\'s nothing audible on their end. It works the same way a physical cheat sheet would, except it updates in real time based on what\'s actually being said.',
+    a: 'No. Pitchbase runs silently in a separate browser tab your prospect only hears you speaking normally. The coaching suggestions appear as text on your screen, so there\'s nothing audible on their end. It works the same way a physical cheat sheet would, except it updates in real time based on what\'s actually being said.',
   },
   {
     q: 'How accurate is the speech recognition, and what happens if it mishears something?',
-    a: 'Pitch Plus uses your browser\'s native Web Speech API, which performs best in a quiet environment with a decent microphone. In good conditions accuracy is high enough to reliably catch objection keywords and buying signals. If a word is misheard, the coaching panel may occasionally miss a cue but it won\'t interrupt the call or show anything incorrect to the prospect. The full transcript is editable after the call before it\'s saved.',
+    a: 'Pitchbase uses your browser\'s native Web Speech API, which performs best in a quiet environment with a decent microphone. In good conditions accuracy is high enough to reliably catch objection keywords and buying signals. If a word is misheard, the coaching panel may occasionally miss a cue but it won\'t interrupt the call or show anything incorrect to the prospect. The full transcript is editable after the call before it\'s saved.',
   },
   {
     q: 'Does it work for any product or industry, or is it only built for certain types of sales?',
@@ -558,7 +558,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             <div className="lp__sv-label">MULTILINGUAL</div>
             <h2 className="lp__sv-h2">Close deals in any language</h2>
             <p className="lp__sv-sub">
-              While every competitor limits coaching to English, Pitch Plus coaches in 10 languages 
+              While every competitor limits coaching to English, Pitchbase coaches in 10 languages 
               real-time objection handling and post-call analysis, all localised.
             </p>
           </div>
@@ -590,7 +590,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
           </div>
 
           <div className="lp__sv-lang-vs">
-            <span className="lp__sv-lang-vs-us">Pitch Plus: 10 languages</span>
+            <span className="lp__sv-lang-vs-us">Pitchbase: 10 languages</span>
             <span className="lp__sv-lang-vs-sep">vs</span>
             <span className="lp__sv-lang-vs-them">Competitors: English only</span>
           </div>
@@ -774,7 +774,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             <div className="lp__sv-label">DOWNLOAD</div>
             <h2 className="lp__sv-h2">One install.<br />Always ready to sell.</h2>
             <p className="lp__sv-sub">
-              Pitch Plus is a native Windows desktop app. Install it once and it's always a click away —
+              Pitchbase is a native Windows desktop app. Install it once and it's always a click away —
               no browser tab, no extension, no lag. Just open and coach.
             </p>
           </div>
@@ -798,7 +798,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             {[
               { num: '01', title: 'Download the app', desc: 'Click Download Free and run the installer. Takes under a minute on any Windows 10 or 11 machine.' },
               { num: '02', title: 'Create your account', desc: 'Sign up inside the app in 30 seconds. No credit card required for the free plan.' },
-              { num: '03', title: 'Allow microphone', desc: 'Grant microphone permission once. Pitch Plus never records without your explicit start.' },
+              { num: '03', title: 'Allow microphone', desc: 'Grant microphone permission once. Pitchbase never records without your explicit start.' },
               { num: '04', title: 'Start your call', desc: 'Enter your prospect\'s details, hit Start, and get live coaching the moment they speak.' },
             ].map((step, i) => (
               <div key={i} className="lp__sv-tstep" style={{ '--i': i } as React.CSSProperties}>
@@ -829,7 +829,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         <div className="lp__sv lp__sv--changelog">
           <div className="lp__sv-hero">
             <div className="lp__sv-label">CHANGELOG</div>
-            <h2 className="lp__sv-h2">What's new in Pitch Plus</h2>
+            <h2 className="lp__sv-h2">What's new in Pitchbase</h2>
             <p className="lp__sv-sub">New features, improvements, and fixes — published as they ship.</p>
           </div>
 
@@ -875,7 +875,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             <div className="lp__sv-label">HELP CENTER</div>
             <h2 className="lp__sv-h2">How can we help?</h2>
             <p className="lp__sv-sub">
-              Everything you need to get the most out of Pitch Plus — from your first call to advanced coaching techniques.
+              Everything you need to get the most out of Pitchbase — from your first call to advanced coaching techniques.
             </p>
           </div>
 
@@ -943,11 +943,11 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         {nav}
         <div className="lp__sv lp__sv--about">
           <div className="lp__sv-hero">
-            <div className="lp__sv-label">ABOUT PITCH PLUS</div>
+            <div className="lp__sv-label">ABOUT PITCHBASE</div>
             <h2 className="lp__sv-h2">Built by salespeople,<br />for salespeople.</h2>
             <p className="lp__sv-sub">
               We spent years losing deals in the last 30 seconds because we said the wrong thing.
-              Pitch Plus is the tool we always wished existed.
+              Pitchbase is the tool we always wished existed.
             </p>
           </div>
 
@@ -974,7 +974,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
               No lag. No judgment. Just the right words, right now.
             </p>
             <p>
-              Today, Pitch Plus coaches reps in 10 languages across 40+ countries. We're a small team of
+              Today, Pitchbase coaches reps in 10 languages across 40+ countries. We're a small team of
               engineers, salespeople, and linguists united by one belief: the best salespeople aren't born —
               they're built, rep by rep.
             </p>
@@ -1012,7 +1012,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         <div className="lp__sv lp__sv--blog">
           <div className="lp__sv-hero">
             <div className="lp__sv-label">BLOG</div>
-            <h2 className="lp__sv-h2">The Pitch Plus Sales Blog</h2>
+            <h2 className="lp__sv-h2">The Pitchbase Sales Blog</h2>
             <p className="lp__sv-sub">Techniques, data, and ideas for reps who want to close more.</p>
           </div>
 
@@ -1136,28 +1136,28 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
               <div className="lp__contact-card-icon">◎</div>
               <div className="lp__contact-card-title">Product support</div>
               <p className="lp__contact-card-desc">Questions about your account, billing, call quality, or how a feature works. We've got you.</p>
-              <a className="lp__contact-link" href="mailto:support@pitchplus.ai">support@pitchplus.ai</a>
+              <a className="lp__contact-link" href="mailto:support@pitchbase.ai">support@pitchbase.ai</a>
               <div className="lp__contact-sla">Avg. response: &lt; 4 hours</div>
             </div>
             <div className="lp__contact-card">
               <div className="lp__contact-card-icon">◈</div>
               <div className="lp__contact-card-title">Sales & partnerships</div>
               <p className="lp__contact-card-desc">Team plans, reseller deals, API access, or white-label enquiries. Let's talk numbers.</p>
-              <a className="lp__contact-link" href="mailto:sales@pitchplus.ai">sales@pitchplus.ai</a>
+              <a className="lp__contact-link" href="mailto:sales@pitchbase.ai">sales@pitchbase.ai</a>
               <div className="lp__contact-sla">Avg. response: &lt; 1 business day</div>
             </div>
             <div className="lp__contact-card">
               <div className="lp__contact-card-icon">✦</div>
               <div className="lp__contact-card-title">Press & media</div>
               <p className="lp__contact-card-desc">Writing about AI in sales, multilingual tools, or the future of coaching? We'll make it easy.</p>
-              <a className="lp__contact-link" href="mailto:press@pitchplus.ai">press@pitchplus.ai</a>
+              <a className="lp__contact-link" href="mailto:press@pitchbase.ai">press@pitchbase.ai</a>
               <div className="lp__contact-sla">Avg. response: &lt; 1 business day</div>
             </div>
             <div className="lp__contact-card">
               <div className="lp__contact-card-icon">▣</div>
               <div className="lp__contact-card-title">Legal & privacy</div>
               <p className="lp__contact-card-desc">Data subject requests, GDPR enquiries, DPA requests, or legal correspondence.</p>
-              <a className="lp__contact-link" href="mailto:privacy@pitchplus.ai">privacy@pitchplus.ai</a>
+              <a className="lp__contact-link" href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a>
               <div className="lp__contact-sla">GDPR response: within 30 days</div>
             </div>
           </div>
@@ -1198,7 +1198,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             <h1 className="lp__legal-title">Privacy Policy</h1>
             <p className="lp__legal-meta">Effective date: 1 April 2025 &nbsp;·&nbsp; Last updated: 6 April 2026</p>
             <p className="lp__legal-intro">
-              Pitch Plus ("we", "us", "our") is committed to protecting your personal data. This Privacy Policy explains what information we collect, why we collect it, how we use it, and what rights you have in relation to it. It applies to all users of <strong>pitchplus.ai</strong> and the Pitch Plus desktop and web application.
+              Pitchbase ("we", "us", "our") is committed to protecting your personal data. This Privacy Policy explains what information we collect, why we collect it, how we use it, and what rights you have in relation to it. It applies to all users of <strong>pitchbase.ai</strong> and the Pitchbase desktop and web application.
             </p>
             <div className="lp__legal-links">
               <button className="lp__legal-sibling" onClick={() => goSection('terms')}>Terms of Service →</button>
@@ -1218,7 +1218,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
               <section id="pp-1" className="lp__legal-section">
                 <h2>1. Who we are</h2>
-                <p>Pitch Plus is operated by <strong>Pitch Plus Ltd</strong>, a company incorporated in England and Wales. We are the data controller for the personal data described in this policy. Our registered address is available upon written request to <a href="mailto:privacy@pitchplus.ai">privacy@pitchplus.ai</a>.</p>
+                <p>Pitchbase is operated by <strong>Pitchbase Ltd</strong>, a company incorporated in England and Wales. We are the data controller for the personal data described in this policy. Our registered address is available upon written request to <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a>.</p>
               </section>
 
               <section id="pp-2" className="lp__legal-section">
@@ -1268,7 +1268,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
               <section id="pp-4" className="lp__legal-section">
                 <h2>4. How we use your data</h2>
                 <ul className="lp__legal-list">
-                  <li>To provide, operate, and maintain the Pitch Plus service.</li>
+                  <li>To provide, operate, and maintain the Pitchbase service.</li>
                   <li>To process payments and send transactional communications (receipts, billing alerts, password resets).</li>
                   <li>To generate and display AI-powered coaching suggestions, post-call analysis, lead scores, and follow-up emails within your account.</li>
                   <li>To provide customer support and respond to queries.</li>
@@ -1285,7 +1285,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                 <ul className="lp__legal-list">
                   <li><strong>Service providers (processors).</strong> We use third-party vendors who act as data processors on our behalf: <strong>Supabase</strong> (database, authentication, and storage), <strong>Stripe</strong> (payment processing), and <strong>OpenAI</strong> (AI-generated coaching suggestions, post-call analysis, and follow-up email generation). Each vendor is bound by a Data Processing Agreement (DPA) and may not use your data for their own purposes. A full list of sub-processors is available on request.</li>
                   <li><strong>Legal requirements.</strong> We may disclose your data where required by law, court order, or to cooperate with law enforcement agencies, provided we are legally permitted to notify you before doing so.</li>
-                  <li><strong>Business transfers.</strong> If Pitch Plus Ltd is acquired by or merges with another company, your data may be transferred as part of that transaction. We will notify you via email and/or a prominent notice on our website before any transfer and before your data becomes subject to a different privacy policy.</li>
+                  <li><strong>Business transfers.</strong> If Pitchbase Ltd is acquired by or merges with another company, your data may be transferred as part of that transaction. We will notify you via email and/or a prominent notice on our website before any transfer and before your data becomes subject to a different privacy policy.</li>
                   <li><strong>With your consent.</strong> We may share information for any other purpose with your explicit prior consent.</li>
                 </ul>
               </section>
@@ -1298,7 +1298,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                   <li>Adequacy decisions where applicable.</li>
                   <li>Binding corporate rules where applicable.</li>
                 </ul>
-                <p>You may request a copy of the relevant transfer mechanism by contacting <a href="mailto:privacy@pitchplus.ai">privacy@pitchplus.ai</a>.</p>
+                <p>You may request a copy of the relevant transfer mechanism by contacting <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a>.</p>
               </section>
 
               <section id="pp-7" className="lp__legal-section">
@@ -1339,12 +1339,12 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                   <li><strong>Rights related to automated decision-making (Art. 22 GDPR):</strong> Our AI-generated lead scores and coaching suggestions are tools to assist you — they do not constitute automated decisions that produce legal or similarly significant effects about you.</li>
                   <li><strong>California residents (CCPA/CPRA):</strong> You have the right to know what personal information is collected, disclosed, or sold, the right to delete, the right to opt out of sale (we do not sell data), and the right to non-discrimination for exercising these rights.</li>
                 </ul>
-                <p>To exercise any of these rights, email <a href="mailto:privacy@pitchplus.ai">privacy@pitchplus.ai</a> from the email address associated with your account, or use the data export/deletion tools in your account settings.</p>
+                <p>To exercise any of these rights, email <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a> from the email address associated with your account, or use the data export/deletion tools in your account settings.</p>
               </section>
 
               <section id="pp-10" className="lp__legal-section">
                 <h2>10. Children's privacy</h2>
-                <p>Pitch Plus is a business-to-business sales tool. We do not knowingly collect personal data from anyone under the age of 16. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at <a href="mailto:privacy@pitchplus.ai">privacy@pitchplus.ai</a> and we will delete the information promptly.</p>
+                <p>Pitchbase is a business-to-business sales tool. We do not knowingly collect personal data from anyone under the age of 16. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a> and we will delete the information promptly.</p>
               </section>
 
               <section id="pp-11" className="lp__legal-section">
@@ -1354,14 +1354,14 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
               <section id="pp-12" className="lp__legal-section">
                 <h2>12. Changes to this policy</h2>
-                <p>We may update this Privacy Policy from time to time. When we make material changes, we will notify you by email (to the address associated with your account) and by posting a notice in the application at least 14 days before the changes take effect. The "Last updated" date at the top of this page will always reflect the most recent revision. Your continued use of Pitch Plus after changes take effect constitutes acceptance of the updated policy.</p>
+                <p>We may update this Privacy Policy from time to time. When we make material changes, we will notify you by email (to the address associated with your account) and by posting a notice in the application at least 14 days before the changes take effect. The "Last updated" date at the top of this page will always reflect the most recent revision. Your continued use of Pitchbase after changes take effect constitutes acceptance of the updated policy.</p>
               </section>
 
               <section id="pp-13" className="lp__legal-section">
                 <h2>13. Contact & complaints</h2>
                 <p>For any questions, concerns, or requests relating to this Privacy Policy or your personal data, please contact us at:</p>
                 <div className="lp__legal-contact-block">
-                  <div><strong>Email:</strong> <a href="mailto:privacy@pitchplus.ai">privacy@pitchplus.ai</a></div>
+                  <div><strong>Email:</strong> <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a></div>
                   <div><strong>Response time:</strong> Within 5 business days for general queries; within 30 days for formal rights requests.</div>
                 </div>
                 <p>If you are in the EEA or UK and are not satisfied with our response, you have the right to lodge a complaint with your local data protection supervisory authority. In the UK, this is the <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">Information Commissioner's Office (ICO)</a>. In Ireland, it is the <a href="https://www.dataprotection.ie" target="_blank" rel="noopener noreferrer">Data Protection Commission (DPC)</a>.</p>
@@ -1407,7 +1407,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             <h1 className="lp__legal-title">Terms of Service</h1>
             <p className="lp__legal-meta">Effective date: 1 April 2025 &nbsp;·&nbsp; Last updated: 6 April 2026</p>
             <p className="lp__legal-intro">
-              These Terms of Service ("Terms") form a legally binding agreement between <strong>Pitch Plus Ltd</strong> ("Pitch Plus", "we", "us") and you ("User", "you"). Please read them carefully before using the service. By creating an account or using Pitch Plus, you agree to be bound by these Terms and our Privacy Policy.
+              These Terms of Service ("Terms") form a legally binding agreement between <strong>Pitchbase Ltd</strong> ("Pitchbase", "we", "us") and you ("User", "you"). Please read them carefully before using the service. By creating an account or using Pitchbase, you agree to be bound by these Terms and our Privacy Policy.
             </p>
             <div className="lp__legal-links">
               <button className="lp__legal-sibling" onClick={() => goSection('privacy')}>Privacy Policy →</button>
@@ -1427,20 +1427,20 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
               <section id="tos-1" className="lp__legal-section">
                 <h2>1. Acceptance & eligibility</h2>
-                <p>By accessing or using Pitch Plus, you confirm that: (a) you are at least 18 years of age; (b) you have the legal capacity to enter into binding contracts; and (c) your use of the service complies with all applicable laws and regulations in your jurisdiction.</p>
-                <p>If you are using Pitch Plus on behalf of an organisation, you represent and warrant that you have the authority to bind that organisation to these Terms, and references to "you" shall include that organisation.</p>
+                <p>By accessing or using Pitchbase, you confirm that: (a) you are at least 18 years of age; (b) you have the legal capacity to enter into binding contracts; and (c) your use of the service complies with all applicable laws and regulations in your jurisdiction.</p>
+                <p>If you are using Pitchbase on behalf of an organisation, you represent and warrant that you have the authority to bind that organisation to these Terms, and references to "you" shall include that organisation.</p>
               </section>
 
               <section id="tos-2" className="lp__legal-section">
                 <h2>2. Description of service</h2>
-                <p>Pitch Plus is an AI-powered sales coaching platform that provides real-time coaching suggestions during sales calls, training scenarios, post-call analysis, CRM functionality, and related tools ("Service"). The Service is provided via a web application and optional desktop client.</p>
+                <p>Pitchbase is an AI-powered sales coaching platform that provides real-time coaching suggestions during sales calls, training scenarios, post-call analysis, CRM functionality, and related tools ("Service"). The Service is provided via a web application and optional desktop client.</p>
                 <p>We reserve the right to modify, suspend, or discontinue any feature or aspect of the Service at any time with reasonable notice, except where immediate action is required for security, legal, or operational reasons.</p>
               </section>
 
               <section id="tos-3" className="lp__legal-section">
                 <h2>3. Account registration & security</h2>
-                <p>You must register for an account to use the Service. You agree to: (a) provide accurate, current, and complete registration information; (b) maintain and promptly update your information; (c) keep your password confidential and not share it with any third party; and (d) notify us immediately at <a href="mailto:support@pitchplus.ai">support@pitchplus.ai</a> if you suspect unauthorised access to your account.</p>
-                <p>You are responsible for all activity that occurs under your account. Pitch Plus will not be liable for any loss or damage arising from your failure to comply with these security obligations.</p>
+                <p>You must register for an account to use the Service. You agree to: (a) provide accurate, current, and complete registration information; (b) maintain and promptly update your information; (c) keep your password confidential and not share it with any third party; and (d) notify us immediately at <a href="mailto:support@pitchbase.ai">support@pitchbase.ai</a> if you suspect unauthorised access to your account.</p>
+                <p>You are responsible for all activity that occurs under your account. Pitchbase will not be liable for any loss or damage arising from your failure to comply with these security obligations.</p>
               </section>
 
               <section id="tos-4" className="lp__legal-section">
@@ -1448,7 +1448,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                 <p><strong>Billing cycle.</strong> Paid plans are billed monthly in advance on the anniversary of your subscription start date. Prices are displayed in USD. All fees are exclusive of applicable taxes (VAT, GST, etc.), which are added at checkout where required by law.</p>
                 <p><strong>Payment.</strong> You authorise us (via Stripe) to charge your designated payment method for all fees due. If payment fails, we will retry and may suspend your account after 7 days of non-payment, with prior notice.</p>
                 <p><strong>Price changes.</strong> We may change subscription prices with at least 30 days' advance notice by email. Continued use of the Service after the notice period constitutes acceptance of the new pricing. If you do not accept the new price, you may cancel before the new pricing takes effect.</p>
-                <p><strong>Taxes.</strong> You are responsible for all taxes associated with your purchase except those based on Pitch Plus's net income. Where we are legally required to collect taxes, they will appear on your invoice.</p>
+                <p><strong>Taxes.</strong> You are responsible for all taxes associated with your purchase except those based on Pitchbase's net income. Where we are legally required to collect taxes, they will appear on your invoice.</p>
               </section>
 
               <section id="tos-5" className="lp__legal-section">
@@ -1459,13 +1459,13 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
               <section id="tos-6" className="lp__legal-section">
                 <h2>6. Cancellation & refunds</h2>
                 <p><strong>Cancellation.</strong> You may cancel your subscription at any time from your account settings. Cancellation takes effect at the end of the current billing period. You will retain access to paid features until the end of the period for which you have already paid.</p>
-                <p><strong>Money-back guarantee.</strong> Paid plans include a <strong>7-day money-back guarantee</strong> from the date of your first paid payment. To request a refund under this guarantee, email <a href="mailto:support@pitchplus.ai">support@pitchplus.ai</a> within 7 days of your initial charge. Refunds are not available after this period except where required by applicable consumer protection law (including UK Consumer Contracts Regulations 2013).</p>
+                <p><strong>Money-back guarantee.</strong> Paid plans include a <strong>7-day money-back guarantee</strong> from the date of your first paid payment. To request a refund under this guarantee, email <a href="mailto:support@pitchbase.ai">support@pitchbase.ai</a> within 7 days of your initial charge. Refunds are not available after this period except where required by applicable consumer protection law (including UK Consumer Contracts Regulations 2013).</p>
                 <p><strong>No partial refunds.</strong> We do not provide prorated refunds for unused time within a billing period, except where required by law.</p>
               </section>
 
               <section id="tos-7" className="lp__legal-section">
                 <h2>7. Acceptable use</h2>
-                <p>You agree to use Pitch Plus only for lawful business sales and communication purposes and in accordance with these Terms. In particular:</p>
+                <p>You agree to use Pitchbase only for lawful business sales and communication purposes and in accordance with these Terms. In particular:</p>
                 <ul className="lp__legal-list">
                   <li>You must obtain all legally required consents before recording or processing any call or conversation involving a third party, in compliance with applicable wiretapping, recording, and data protection laws in your jurisdiction (including but not limited to the Electronic Communications Privacy Act (ECPA) in the US, the Regulation of Investigatory Powers Act (RIPA) in the UK, and equivalent laws elsewhere).</li>
                   <li>You must not use the Service to make misleading, deceptive, or fraudulent representations to prospects in violation of applicable consumer protection, telemarketing, or unfair commercial practices law.</li>
@@ -1491,21 +1491,21 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
               <section id="tos-9" className="lp__legal-section">
                 <h2>9. Intellectual property</h2>
-                <p><strong>Our IP.</strong> Pitch Plus, its logo, software, design, code, algorithms, text, graphics, and all other content comprising the Service are owned by or licensed to Pitch Plus Ltd and protected by copyright, trade mark, and other intellectual property laws. No rights are granted to you except as expressly set out in these Terms.</p>
+                <p><strong>Our IP.</strong> Pitchbase, its logo, software, design, code, algorithms, text, graphics, and all other content comprising the Service are owned by or licensed to Pitchbase Ltd and protected by copyright, trade mark, and other intellectual property laws. No rights are granted to you except as expressly set out in these Terms.</p>
                 <p><strong>Feedback.</strong> If you provide us with feedback, suggestions, or ideas about the Service, you grant us an irrevocable, perpetual, royalty-free, worldwide licence to use that feedback for any purpose without compensation to you.</p>
               </section>
 
               <section id="tos-10" className="lp__legal-section">
                 <h2>10. User content & data</h2>
                 <p><strong>Ownership.</strong> You retain full ownership of all data you generate using the Service, including call transcripts, notes, CRM records, and follow-up emails ("User Data").</p>
-                <p><strong>Licence to us.</strong> You grant Pitch Plus a limited, non-exclusive, royalty-free licence to store, process, and display your User Data solely to the extent necessary to provide the Service to you. This licence terminates when you delete your account or the relevant data.</p>
+                <p><strong>Licence to us.</strong> You grant Pitchbase a limited, non-exclusive, royalty-free licence to store, process, and display your User Data solely to the extent necessary to provide the Service to you. This licence terminates when you delete your account or the relevant data.</p>
                 <p><strong>No training use.</strong> We will not use your User Data to train or fine-tune any AI model without your explicit, separately obtained written consent.</p>
                 <p><strong>Data export.</strong> You may export your data at any time from your account settings in JSON format. Following account deletion, data is permanently deleted within 30 days as described in our Privacy Policy.</p>
               </section>
 
               <section id="tos-11" className="lp__legal-section">
                 <h2>11. Third-party integrations</h2>
-                <p>The Service uses third-party providers including OpenAI (AI model inference), Supabase (data storage), and Stripe (payment processing). These providers have their own terms and privacy policies. Pitch Plus is not responsible for the acts or omissions of third-party providers. We select third-party processors carefully and hold them to strict data processing standards, but we cannot guarantee their continuous availability or service quality.</p>
+                <p>The Service uses third-party providers including OpenAI (AI model inference), Supabase (data storage), and Stripe (payment processing). These providers have their own terms and privacy policies. Pitchbase is not responsible for the acts or omissions of third-party providers. We select third-party processors carefully and hold them to strict data processing standards, but we cannot guarantee their continuous availability or service quality.</p>
                 <p>Service availability may be affected by the availability of third-party APIs. We do not guarantee uninterrupted service and will not be liable for downtime caused by third-party dependencies.</p>
               </section>
 
@@ -1518,21 +1518,21 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
               <section id="tos-13" className="lp__legal-section">
                 <h2>13. Limitation of liability</h2>
-                <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, PITCH PLUS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES (INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, REVENUE, DATA, OR BUSINESS OPPORTUNITIES) ARISING OUT OF OR RELATED TO THESE TERMS OR THE SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
+                <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, PITCHBASE SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES (INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, REVENUE, DATA, OR BUSINESS OPPORTUNITIES) ARISING OUT OF OR RELATED TO THESE TERMS OR THE SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
                 <p>OUR AGGREGATE LIABILITY TO YOU FOR ALL CLAIMS ARISING OUT OF OR RELATED TO THESE TERMS OR THE SERVICE SHALL NOT EXCEED THE TOTAL AMOUNT YOU PAID TO US IN THE <strong>12 MONTHS</strong> PRECEDING THE EVENT GIVING RISE TO THE CLAIM, OR £100 (GBP), WHICHEVER IS GREATER.</p>
                 <p>Nothing in these Terms limits our liability for: (a) death or personal injury caused by our negligence; (b) fraud or fraudulent misrepresentation; or (c) any other liability that cannot be limited or excluded by law.</p>
               </section>
 
               <section id="tos-14" className="lp__legal-section">
                 <h2>14. Indemnification</h2>
-                <p>You agree to indemnify, defend, and hold harmless Pitch Plus Ltd, its officers, directors, employees, and agents from and against any third-party claims, liabilities, damages, judgments, awards, losses, costs, and expenses (including reasonable legal fees) arising out of or relating to: (a) your violation of these Terms; (b) your use of the Service in breach of applicable law; or (c) any content you submit to or transmit through the Service that infringes third-party rights.</p>
+                <p>You agree to indemnify, defend, and hold harmless Pitchbase Ltd, its officers, directors, employees, and agents from and against any third-party claims, liabilities, damages, judgments, awards, losses, costs, and expenses (including reasonable legal fees) arising out of or relating to: (a) your violation of these Terms; (b) your use of the Service in breach of applicable law; or (c) any content you submit to or transmit through the Service that infringes third-party rights.</p>
               </section>
 
               <section id="tos-15" className="lp__legal-section">
                 <h2>15. Dispute resolution</h2>
-                <p><strong>Good faith resolution.</strong> Before initiating formal proceedings, you agree to contact us at <a href="mailto:legal@pitchplus.ai">legal@pitchplus.ai</a> and give us 30 days to attempt to resolve the dispute informally.</p>
+                <p><strong>Good faith resolution.</strong> Before initiating formal proceedings, you agree to contact us at <a href="mailto:legal@pitchbase.ai">legal@pitchbase.ai</a> and give us 30 days to attempt to resolve the dispute informally.</p>
                 <p><strong>Consumer ADR.</strong> If you are a consumer located in the UK or EU and your dispute cannot be resolved informally, you may be entitled to use an Alternative Dispute Resolution (ADR) scheme. We are willing to participate in ADR proceedings conducted by the Centre for Effective Dispute Resolution (CEDR) or equivalent EU ADR entity.</p>
-                <p><strong>Class action waiver.</strong> To the extent permitted by applicable law, you and Pitch Plus agree that any dispute resolution proceedings will be conducted on an individual basis only, and not as a class, consolidated, or representative action.</p>
+                <p><strong>Class action waiver.</strong> To the extent permitted by applicable law, you and Pitchbase agree that any dispute resolution proceedings will be conducted on an individual basis only, and not as a class, consolidated, or representative action.</p>
               </section>
 
               <section id="tos-16" className="lp__legal-section">
@@ -1543,7 +1543,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
               <section id="tos-17" className="lp__legal-section">
                 <h2>17. General provisions</h2>
-                <p><strong>Entire agreement.</strong> These Terms (together with the Privacy Policy and Cookie Policy) constitute the entire agreement between you and Pitch Plus regarding the Service and supersede all prior agreements and understandings.</p>
+                <p><strong>Entire agreement.</strong> These Terms (together with the Privacy Policy and Cookie Policy) constitute the entire agreement between you and Pitchbase regarding the Service and supersede all prior agreements and understandings.</p>
                 <p><strong>Severability.</strong> If any provision of these Terms is held invalid or unenforceable, the remaining provisions will continue in full force and effect.</p>
                 <p><strong>No waiver.</strong> Our failure to enforce any provision of these Terms will not be construed as a waiver of our right to enforce that or any other provision in the future.</p>
                 <p><strong>Assignment.</strong> You may not assign your rights or obligations under these Terms without our prior written consent. We may assign our rights to any affiliate or successor in connection with a merger, acquisition, or sale of assets.</p>
@@ -1559,9 +1559,9 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                 <h2>19. Contact</h2>
                 <p>For legal queries, please contact us at:</p>
                 <div className="lp__legal-contact-block">
-                  <div><strong>Legal matters:</strong> <a href="mailto:legal@pitchplus.ai">legal@pitchplus.ai</a></div>
-                  <div><strong>Support:</strong> <a href="mailto:support@pitchplus.ai">support@pitchplus.ai</a></div>
-                  <div><strong>Privacy matters:</strong> <a href="mailto:privacy@pitchplus.ai">privacy@pitchplus.ai</a></div>
+                  <div><strong>Legal matters:</strong> <a href="mailto:legal@pitchbase.ai">legal@pitchbase.ai</a></div>
+                  <div><strong>Support:</strong> <a href="mailto:support@pitchbase.ai">support@pitchbase.ai</a></div>
+                  <div><strong>Privacy matters:</strong> <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a></div>
                 </div>
               </section>
 
@@ -1593,7 +1593,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             <h1 className="lp__legal-title">Cookie Policy</h1>
             <p className="lp__legal-meta">Effective date: 1 April 2025 &nbsp;·&nbsp; Last updated: 6 April 2026</p>
             <p className="lp__legal-intro">
-              This Cookie Policy explains what cookies are, which cookies Pitch Plus uses, why we use them, and how you can control them. It should be read alongside our <button className="lp__legal-inline-link" onClick={() => goSection('privacy')}>Privacy Policy</button>.
+              This Cookie Policy explains what cookies are, which cookies Pitchbase uses, why we use them, and how you can control them. It should be read alongside our <button className="lp__legal-inline-link" onClick={() => goSection('privacy')}>Privacy Policy</button>.
             </p>
             <div className="lp__legal-links">
               <button className="lp__legal-sibling" onClick={() => goSection('privacy')}>Privacy Policy →</button>
@@ -1716,7 +1716,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
               <section id="cp-7" className="lp__legal-section">
                 <h2>7. Contact</h2>
-                <p>Questions about our use of cookies? Email <a href="mailto:privacy@pitchplus.ai">privacy@pitchplus.ai</a>. We aim to respond within 5 business days.</p>
+                <p>Questions about our use of cookies? Email <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a>. We aim to respond within 5 business days.</p>
               </section>
 
             </div>
@@ -1764,7 +1764,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
               <span className="lp__dot lp__dot--red" />
               <span className="lp__dot lp__dot--yellow" />
               <span className="lp__dot lp__dot--green" />
-              <span className="lp__terminal-title">PITCH PLUS - LIVE</span>
+              <span className="lp__terminal-title">PITCHBASE - LIVE</span>
             </div>
             <div className="lp__terminal-body">
               {DEMO_FRAMES.slice(0, visibleFrames).map((frame, i) => (
@@ -1801,7 +1801,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         <div className="lp__section-label reveal">SEE IT IN ACTION</div>
         <h2 className="lp__section-h2 reveal" data-delay="0.1">The AI that works <em>during</em> the call</h2>
         <p className="lp__section-sub reveal" data-delay="0.18">
-          The moment your prospect speaks, Pitch Plus detects objections and buying signals — and surfaces exactly what to say before the silence gets awkward.
+          The moment your prospect speaks, Pitchbase detects objections and buying signals — and surfaces exactly what to say before the silence gets awkward.
         </p>
 
         <div className="lp__mcall reveal" data-delay="0.28">
@@ -1850,7 +1850,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                 <span className={`lp__mcall-ai-badge lp__mcall-ai-badge--${DEMO_SCENES[demoSceneIdx].badgeType}`}>
                   {DEMO_SCENES[demoSceneIdx].badge}
                 </span>
-                <span className="lp__mcall-ai-brand">PITCH PLUS</span>
+                <span className="lp__mcall-ai-brand">PITCHBASE</span>
               </div>
               <p className="lp__mcall-ai-text">
                 &ldquo;{DEMO_SCENES[demoSceneIdx].suggestion}&rdquo;
@@ -1893,7 +1893,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         <div className="lp__section-label reveal">MULTILINGUAL</div>
         <h2 className="lp__section-h2 reveal" data-delay="0.1">Sell in 10 languages</h2>
         <p className="lp__section-sub reveal" data-delay="0.18">
-          Competitors coach only in English. Pitch Plus coaches in your language 
+          Competitors coach only in English. Pitchbase coaches in your language 
           real-time objection handling and post-call analysis, all localised.
         </p>
         <div className="lp__lang-grid reveal" data-delay="0.25">
@@ -1909,13 +1909,13 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
       {/* ── Comparison ── */}
       <section className="lp__section">
         <div className="lp__section-label reveal">COMPARISON</div>
-        <h2 className="lp__section-h2 reveal" data-delay="0.1">Why Pitch Plus over the alternatives?</h2>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Why Pitchbase over the alternatives?</h2>
         <div className="lp__compare-wrap reveal" data-delay="0.18">
           <table className="lp__compare">
             <thead>
               <tr>
                 <th className="lp__compare-feature-col">Feature</th>
-                <th className="lp__compare-us-col">Pitch Plus</th>
+                <th className="lp__compare-us-col">Pitchbase</th>
                 <th className="lp__compare-them-col">Other Tools</th>
               </tr>
             </thead>
@@ -2128,7 +2128,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         </div>
 
         <div className="lp__footer-bottom">
-          <div className="lp__footer-copy">© 2025 Pitch Plus. All rights reserved.</div>
+          <div className="lp__footer-copy">© 2025 Pitchbase. All rights reserved.</div>
           <div className="lp__footer-socials">
             <a className="lp__footer-social" href="#" aria-label="Twitter / X">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>

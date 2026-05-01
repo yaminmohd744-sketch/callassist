@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo, type MouseEvent as ReactMouseEvent } from 'react';
+﻿import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo, type MouseEvent as ReactMouseEvent } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { Header } from '../components/layout/Header';
 import { StatusBar } from '../components/layout/StatusBar';
@@ -398,7 +398,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         objectionsCount
       );
 
-      localStorage.setItem('callassist:nextCallTip', coaching.nextCallTip);
+      localStorage.setItem('pitchbase:nextCallTip', coaching.nextCallTip);
       clearDraft().catch(() => { /* silent */ });
 
       const totalWords = repWordsRef.current + prospectWordsRef.current;

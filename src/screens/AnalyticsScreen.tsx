@@ -188,8 +188,8 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTeamCode(localStorage.getItem('callassist_team_code') ?? '');
-    setJoinedTeam(localStorage.getItem('callassist_joined_team') ?? '');
+    setTeamCode(localStorage.getItem('pitchbase_team_code') ?? '');
+    setJoinedTeam(localStorage.getItem('pitchbase_joined_team') ?? '');
   }, []);
 
   async function copyTeamCode() {
@@ -200,7 +200,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
   function generateTeamCode() {
     const code = Math.random().toString(36).slice(2, 8).toUpperCase();
-    localStorage.setItem('callassist_team_code', code);
+    localStorage.setItem('pitchbase_team_code', code);
     setTeamCode(code);
     setTeamMsg(t.analytics.teamCodeCreated);
   }
@@ -208,7 +208,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   function handleJoinTeam() {
     const code = joinCode.trim().toUpperCase();
     if (!code) return;
-    localStorage.setItem('callassist_joined_team', code);
+    localStorage.setItem('pitchbase_joined_team', code);
     setJoinedTeam(code);
     setJoinCode('');
     setTeamMsg(t.analytics.joinedTeamMsg(code));

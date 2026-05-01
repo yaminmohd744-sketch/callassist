@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/react';
+﻿import * as Sentry from '@sentry/react';
 import {
   analyzeTranscript as mockAnalyzeTranscript,
   generateSessionSummary as mockGenerateSessionSummary,
@@ -227,7 +227,7 @@ export async function analyzeTranscript(
     if (streamingShown && onStream && suggestionId) {
       onStream({ id: suggestionId, type: 'tip', headline: '', body: '', triggeredBy: newEntry.text, timestampSeconds: elapsedSeconds, streaming: false });
     }
-    console.error('[CallAssist] AI call failed, using fallback:', err instanceof Error ? err.message : err);
+    console.error('[Pitchbase] AI call failed, using fallback:', err instanceof Error ? err.message : err);
     Sentry.captureException(err, { tags: { section: 'analyze-transcript' } });
     const fallback = await mockAnalyzeTranscript(
       newEntry, fullTranscript, currentStage, elapsedSeconds,
@@ -249,7 +249,7 @@ export async function enhancePitch(
     const data = await callFunction('enhance-pitch', { pitch, company, callGoal }) as Record<string, unknown>;
     return (data.enhancedPitch as string) ?? pitch;
   } catch (err) {
-    console.error('[CallAssist] Pitch enhancement failed:', err instanceof Error ? err.message : err);
+    console.error('[Pitchbase] Pitch enhancement failed:', err instanceof Error ? err.message : err);
     Sentry.captureException(err, { tags: { section: 'enhance-pitch' } });
     return pitch;
   }
@@ -297,7 +297,7 @@ export async function generateSessionSummary(
       coaching: fallback.coaching,
     };
   } catch (err) {
-    console.error('[CallAssist] Summary call failed, using fallback:', err instanceof Error ? err.message : err);
+    console.error('[Pitchbase] Summary call failed, using fallback:', err instanceof Error ? err.message : err);
     Sentry.captureException(err, { tags: { section: 'generate-summary' } });
     return fallback;
   }

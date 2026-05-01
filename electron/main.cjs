@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen } = require('electron');
+﻿const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
 
 const isDev = !!process.defaultApp || process.env.NODE_ENV !== 'production';
@@ -7,9 +7,9 @@ const BASE_URL = isDev
   : `file://${path.join(__dirname, '../dist/index.html')}`;
 
 // Register custom URL protocol so the web landing page can open the app.
-// Web button fires: pitchplus://open  →  this app comes to the foreground.
-// TODO: update 'pitchplus' to the new brand name once decided.
-app.setAsDefaultProtocolClient('pitchplus');
+// Web button fires: pitchbase://open  →  this app comes to the foreground.
+// TODO: update 'pitchbase' to the new brand name once decided.
+app.setAsDefaultProtocolClient('pitchbase');
 
 // Enforce a single instance. If the user clicks the web button while the
 // app is already running, focus the existing window instead of opening a second.

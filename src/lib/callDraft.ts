@@ -1,6 +1,6 @@
-import type { TranscriptEntry, AISuggestion, CallConfig } from '../types';
+﻿import type { TranscriptEntry, AISuggestion, CallConfig } from '../types';
 
-const DB_NAME = 'pitchplus';
+const DB_NAME = 'pitchbase';
 const STORE   = 'call_draft';
 const KEY     = 'active';
 

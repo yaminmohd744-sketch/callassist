@@ -1,10 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
+﻿import { createClient } from '@supabase/supabase-js';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string;
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 if (!url || !key) {
-  throw new Error('[CallAssist] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY — check your .env file');
+  throw new Error('[Pitchbase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY — check your .env file');
 }
 
 export const supabase = createClient(url, key);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAICoach } from '../hooks/useAICoach';
 import { useCallTimer } from '../hooks/useCallTimer';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
@@ -116,7 +116,7 @@ export function AvatarSession({ meeting, onEnd }: AvatarSessionProps) {
 
         // Greet the prospect
         await sendHeyGenText(session.sessionId,
-          `Hi ${meeting.prospectName}, thanks for making time today. I'm the Pitch Plus assistant. Let's dive right in.`
+          `Hi ${meeting.prospectName}, thanks for making time today. I'm the Pitchbase assistant. Let's dive right in.`
         );
 
         if (user) {

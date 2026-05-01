@@ -111,6 +111,17 @@ export type CallOutcome = 'converted' | 'pipeline' | 'no-deal' | null;
 
 // ─── Lead ─────────────────────────────────────────────────────────────────────
 
+// ─── CRM Package ──────────────────────────────────────────────────────────────
+
+export type CrmSource = 'salesforce' | 'hubspot' | 'pipedrive' | 'apollo' | 'zoho' | 'custom';
+
+export interface CrmPackage {
+  id: string;
+  name: string;
+  source: CrmSource;
+  createdAt: string;
+}
+
 // ─── Meeting ──────────────────────────────────────────────────────────────────
 
 export type MeetingPlatform = 'zoom' | 'meet' | 'teams' | 'other';

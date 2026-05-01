@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+﻿import { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '../components/ui/Button';
 import type { CallSession } from '../types';
 import { loadRecording } from '../hooks/useCallRecorder';
@@ -29,7 +29,7 @@ function downloadFile(filename: string, content: string) {
 
 function buildTranscriptText(session: CallSession): string {
   const header = [
-    `CALL ASSIST - TRANSCRIPT`,
+    `PITCHBASE - TRANSCRIPT`,
     `═══════════════════════════════════════`,
     `Prospect : ${session.config.prospectName || '-'}`,
     `Company  : ${session.config.company || '-'}`,
@@ -86,7 +86,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
   // Phase 4: CRM export state
   const [jsonCopied, setJsonCopied] = useState(false);
-  const [webhookUrl, setWebhookUrl] = useState(() => localStorage.getItem('callassist:zapier-webhook') ?? '');
+  const [webhookUrl, setWebhookUrl] = useState(() => localStorage.getItem('pitchbase:zapier-webhook') ?? '');
   const [webhookStatus, setWebhookStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
   const [webhookUrlError, setWebhookUrlError] = useState<string | null>(null);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
@@ -484,7 +484,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
                           setWebhookUrlError('Must be a valid https:// URL');
                         } else {
                           setWebhookUrlError(null);
-                          try { localStorage.setItem('callassist:zapier-webhook', val); } catch { /* storage full */ }
+                          try { localStorage.setItem('pitchbase:zapier-webhook', val); } catch { /* storage full */ }
                         }
                       }}
                     />

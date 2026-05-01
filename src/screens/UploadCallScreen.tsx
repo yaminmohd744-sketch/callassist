@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { generateSessionSummary } from '../lib/ai';
 import { classifySignal } from '../lib/keywords';
@@ -120,7 +120,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
         config, transcript, [], finalCloseProbability, objectionsCount
       );
 
-      try { localStorage.setItem('callassist:nextCallTip', coaching.nextCallTip); } catch { /* storage full */ }
+      try { localStorage.setItem('pitchbase:nextCallTip', coaching.nextCallTip); } catch { /* storage full */ }
 
       const session: CallSession = {
         config,

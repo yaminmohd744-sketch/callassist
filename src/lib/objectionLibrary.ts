@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'callassist:custom-objections';
+﻿const STORAGE_KEY = 'pitchbase:custom-objections';
 
 export interface CustomObjectionEntry {
   id: string;

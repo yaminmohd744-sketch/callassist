@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+﻿import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import * as Sentry from '@sentry/react';
 import { ThemeToggle }      from './components/ThemeToggle';
 import { AppShell }         from './components/layout/AppShell';
@@ -27,7 +27,7 @@ const AvatarSession    = lazy(() => import('./screens/AvatarSession').then(m => 
 const AuthScreen       = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })));
 const OnboardingScreen = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
 
-const OUTCOMES_KEY = 'callassist:outcomes';
+const OUTCOMES_KEY = 'pitchbase:outcomes';
 function loadOutcomes(): Record<string, CallOutcome> {
   try { return JSON.parse(localStorage.getItem(OUTCOMES_KEY) ?? '{}'); } catch { return {}; }
 }
@@ -203,7 +203,7 @@ export function App() {
           <LandingScreen onDownload={() => {
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
-            iframe.src = 'pitchplus://open';
+            iframe.src = 'pitchbase://open';
             document.body.appendChild(iframe);
             setTimeout(() => document.body.removeChild(iframe), 2000);
             setTimeout(() => setScreen('auth'), 1800);

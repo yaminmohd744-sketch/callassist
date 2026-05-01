@@ -1,13 +1,14 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../lib/toast';
 import { loadLeads, saveLead, deleteLead, importLeads } from '../lib/leads';
-import type { Lead } from '../types';
+import {
+  loadPackages, upsertPackage, deletePackage as removePackage,
+  assignLeadToPackage, getLeadsForPackage,
+} from '../lib/packages';
+import { formatDuration, formatDateShort } from '../lib/formatters';
+import type { Lead, CallSession, CrmPackage, CrmSource } from '../types';
 import './LeadsScreen.css';
-
-interface LeadsScreenProps {
-  onCallLead: (lead: Lead) => void;
-}
 
 // ─── CSV parser ───────────────────────────────────────────────────────────────
 
@@ -51,22 +52,72 @@ function parseCSV(text: string): Omit<Lead, 'id' | 'callCount' | 'createdAt' | '
   }).filter((r) => r !== null) as Omit<Lead, 'id' | 'callCount' | 'createdAt' | 'lastCalledAt'>[];
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── CRM source metadata ──────────────────────────────────────────────────────
+
+const SOURCE_META: Record<CrmSource, { label: string; icon: string; color: string }> = {
+  salesforce: { label: 'Salesforce', icon: '☁',  color: '#00A1E0' },
+  hubspot:    { label: 'HubSpot',    icon: '⬤',  color: '#FF7A59' },
+  pipedrive:  { label: 'Pipedrive',  icon: '◎',  color: '#2ECC71' },
+  apollo:     { label: 'Apollo',     icon: '⬡',  color: '#9b59b6' },
+  zoho:       { label: 'Zoho',       icon: '▣',  color: '#E42527' },
+  custom:     { label: 'Custom',     icon: '◆',  color: '#888888' },
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2 && parts[0] && parts[1]) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+function formatDate(iso?: string): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type LeadsView = 'packages' | 'leads' | 'detail';
 
 const EMPTY_FORM = { name: '', company: '', title: '', phone: '', email: '', priorContext: '' };
 
-export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
+interface LeadsScreenProps {
+  onCallLead: (lead: Lead) => void;
+  pastSessions: CallSession[];
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export function LeadsScreen({ onCallLead, pastSessions }: LeadsScreenProps) {
   const { user } = useAuth();
-  const toast = useToast();
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
+  const toast    = useToast();
+
+  // Data
+  const [leads,    setLeads]    = useState<Lead[]>([]);
+  const [packages, setPackages] = useState<CrmPackage[]>([]);
+  const [loading,   setLoading]   = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState(EMPTY_FORM);
+
+  // Navigation
+  const [view,            setView]            = useState<LeadsView>('packages');
+  const [activePackageId, setActivePackageId] = useState<string | null>(null); // null = All Leads
+  const [selectedLead,    setSelectedLead]    = useState<Lead | null>(null);
+
+  // Add-lead form
+  const [showForm,  setShowForm]  = useState(false);
+  const [form,      setForm]      = useState(EMPTY_FORM);
   const [formError, setFormError] = useState('');
-  const [saving, setSaving] = useState(false);
+  const [saving,    setSaving]    = useState(false);
+
+  // New-package form
+  const [showNewPkg,      setShowNewPkg]      = useState(false);
+  const [newPkgName,      setNewPkgName]      = useState('');
+  const [newPkgSource,    setNewPkgSource]    = useState<CrmSource>('custom');
+
+  // Other UI
   const [importStatus, setImportStatus] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery,  setSearchQuery]  = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchLeads = useCallback(async () => {
@@ -83,7 +134,44 @@ export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
     }
   }, [user]);
 
-  useEffect(() => { fetchLeads(); }, [fetchLeads]);
+  useEffect(() => {
+    fetchLeads();
+    setPackages(loadPackages());
+  }, [fetchLeads]);
+
+  // Leads visible in the current package (or all)
+  const visibleLeads = useMemo(() => {
+    if (activePackageId === null) return leads;
+    return getLeadsForPackage(activePackageId, leads);
+  }, [leads, activePackageId]);
+
+  const filtered = useMemo(() => {
+    if (!searchQuery.trim()) return visibleLeads;
+    const q = searchQuery.toLowerCase();
+    return visibleLeads.filter(l =>
+      l.name.toLowerCase().includes(q) ||
+      (l.company ?? '').toLowerCase().includes(q) ||
+      (l.title ?? '').toLowerCase().includes(q)
+    );
+  }, [visibleLeads, searchQuery]);
+
+  // Call sessions matched to the selected lead
+  const leadSessions = useMemo(() => {
+    if (!selectedLead) return [];
+    const name    = selectedLead.name.toLowerCase();
+    const company = (selectedLead.company ?? '').toLowerCase();
+    return pastSessions
+      .filter(s => {
+        const pn = (s.config.prospectName ?? '').toLowerCase();
+        const pc = (s.config.company ?? '').toLowerCase();
+        if (pn !== name) return false;
+        if (company && pc && pc !== company) return false;
+        return true;
+      })
+      .sort((a, b) => new Date(b.endedAt).getTime() - new Date(a.endedAt).getTime());
+  }, [selectedLead, pastSessions]);
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
 
   async function handleAddLead(e: React.FormEvent) {
     e.preventDefault();
@@ -100,6 +188,7 @@ export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
         email:        form.email.trim() || undefined,
         priorContext: form.priorContext.trim() || undefined,
       }, user.id);
+      if (activePackageId) assignLeadToPackage(saved.id, activePackageId);
       setLeads(prev => [saved, ...prev]);
       setForm(EMPTY_FORM);
       setShowForm(false);
@@ -111,7 +200,6 @@ export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
   }
 
   async function handleDelete(id: string) {
-    // Optimistic removal — restore on failure
     setLeads(prev => prev.filter(l => l.id !== id));
     if (user) {
       deleteLead(id, user.id).catch(() => {
@@ -133,10 +221,13 @@ export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
     setImportStatus(`Importing ${parsed.length} leads...`);
     try {
       const newLeads = await importLeads(parsed, user.id);
+      if (activePackageId) {
+        for (const l of newLeads) assignLeadToPackage(l.id, activePackageId);
+      }
       setLeads(prev => [...newLeads, ...prev]);
       setImportStatus(
         truncated
-          ? `Imported 500 leads (file may have been truncated at 500 rows).`
+          ? 'Imported 500 leads (file truncated at 500 rows).'
           : `Imported ${newLeads.length} lead${newLeads.length !== 1 ? 's' : ''}.`
       );
     } catch {
@@ -145,200 +236,418 @@ export function LeadsScreen({ onCallLead }: LeadsScreenProps) {
     setTimeout(() => setImportStatus(''), 5000);
   }
 
-  const filtered = searchQuery.trim()
-    ? leads.filter(l => {
-        const q = searchQuery.toLowerCase();
-        return l.name.toLowerCase().includes(q) ||
-               (l.company ?? '').toLowerCase().includes(q) ||
-               (l.title ?? '').toLowerCase().includes(q);
-      })
-    : leads;
-
-  function formatDate(iso?: string) {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  function handleCreatePackage() {
+    if (!newPkgName.trim()) return;
+    const pkg: CrmPackage = {
+      id:        `pkg-${Date.now()}`,
+      name:      newPkgName.trim(),
+      source:    newPkgSource,
+      createdAt: new Date().toISOString(),
+    };
+    upsertPackage(pkg);
+    setPackages(loadPackages());
+    setNewPkgName('');
+    setNewPkgSource('custom');
+    setShowNewPkg(false);
   }
 
-  return (
-    <div className="leads-screen">
-      {/* Header */}
-      <div className="leads-screen__header">
-        <div className="leads-screen__header-left">
-          <h1 className="leads-screen__title">LEADS</h1>
-          <span className="leads-screen__count">{leads.length}</span>
-        </div>
-        <div className="leads-screen__header-actions">
-          {importStatus && <span className="leads-screen__import-status">{importStatus}</span>}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv"
-            style={{ display: 'none' }}
-            onChange={handleImport}
-          />
-          <button className="leads-screen__btn-ghost" onClick={() => fileInputRef.current?.click()}>
-            ↑ Import CSV
-          </button>
-          <button
-            className="leads-screen__btn-primary"
-            onClick={() => { setShowForm(f => !f); setFormError(''); }}
-          >
-            {showForm ? '✕ Cancel' : '+ Add Lead'}
-          </button>
-        </div>
-      </div>
+  function handleDeletePackage(id: string) {
+    removePackage(id);
+    setPackages(loadPackages());
+  }
 
-      {/* Add lead form */}
-      {showForm && (
-        <form className="leads-screen__form" onSubmit={handleAddLead}>
-          <div className="leads-screen__form-row">
-            <input
-              className="leads-screen__input"
-              placeholder="Name *"
-              value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              autoFocus
-            />
-            <input
-              className="leads-screen__input"
-              placeholder="Company"
-              value={form.company}
-              onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
-            />
-            <input
-              className="leads-screen__input"
-              placeholder="Job title"
-              value={form.title}
-              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-            />
+  function openPackage(packageId: string | null) {
+    setActivePackageId(packageId);
+    setView('leads');
+    setSearchQuery('');
+    setShowForm(false);
+  }
+
+  function goBackToLeads() {
+    setSelectedLead(null);
+    setView('leads');
+  }
+
+  function goBackToPackages() {
+    setSelectedLead(null);
+    setActivePackageId(null);
+    setView('packages');
+    setShowForm(false);
+  }
+
+  const activePackage = packages.find(p => p.id === activePackageId) ?? null;
+
+  // ── Packages view ────────────────────────────────────────────────────────────
+
+  if (view === 'packages') {
+    return (
+      <div className="leads-screen">
+        <div className="leads-screen__header">
+          <div className="leads-screen__header-left">
+            <h1 className="leads-screen__title">CRM</h1>
+            <span className="leads-screen__count">{packages.length + 1}</span>
           </div>
-          <div className="leads-screen__form-row">
-            <input
-              className="leads-screen__input"
-              placeholder="Phone"
-              value={form.phone}
-              onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-            />
-            <input
-              className="leads-screen__input"
-              placeholder="Email"
-              value={form.email}
-              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-            />
-          </div>
-          <textarea
-            className="leads-screen__textarea"
-            placeholder="Prior context / notes (optional)"
-            value={form.priorContext}
-            onChange={e => setForm(f => ({ ...f, priorContext: e.target.value }))}
-            rows={2}
-          />
-          {formError && <p className="leads-screen__form-error">{formError}</p>}
-          <div className="leads-screen__form-actions">
-            <button type="submit" className="leads-screen__btn-primary" disabled={saving}>
-              {saving ? 'Saving...' : 'Save Lead'}
+          <div className="leads-screen__header-actions">
+            <button
+              className="leads-screen__btn-ghost"
+              onClick={() => setShowNewPkg(v => !v)}
+            >
+              {showNewPkg ? '✕ Cancel' : '+ New Package'}
             </button>
           </div>
-        </form>
-      )}
+        </div>
 
-      {/* Search */}
-      {leads.length > 0 && (
-        <div className="leads-screen__search-row">
-          <input
-            className="leads-screen__search"
-            placeholder="Search by name, company, or title..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
-        </div>
-      )}
+        {/* New-package form */}
+        {showNewPkg && (
+          <div className="leads-screen__pkg-form">
+            <div className="leads-screen__pkg-templates">
+              {(Object.keys(SOURCE_META) as CrmSource[]).map(src => {
+                const meta = SOURCE_META[src];
+                return (
+                  <button
+                    key={src}
+                    className={`leads-screen__pkg-tpl ${newPkgSource === src ? 'leads-screen__pkg-tpl--active' : ''}`}
+                    style={{ '--pkg-color': meta.color } as React.CSSProperties}
+                    onClick={() => {
+                      setNewPkgSource(src);
+                      if (src !== 'custom') setNewPkgName(meta.label);
+                      else setNewPkgName('');
+                    }}
+                  >
+                    <span className="leads-screen__pkg-tpl-icon">{meta.icon}</span>
+                    <span className="leads-screen__pkg-tpl-label">{meta.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="leads-screen__pkg-form-row">
+              <input
+                className="leads-screen__input"
+                placeholder="Package name"
+                value={newPkgName}
+                onChange={e => setNewPkgName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleCreatePackage()}
+                autoFocus
+              />
+              <button
+                className="leads-screen__btn-primary"
+                onClick={handleCreatePackage}
+                disabled={!newPkgName.trim()}
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        )}
 
-      {/* Table */}
-      {loading ? (
-        <div className="leads-screen__empty">
-          <div className="leads-screen__empty-icon">◌</div>
-          <p className="leads-screen__empty-text">Loading leads...</p>
+        {/* Package grid */}
+        <div className="leads-screen__pkg-grid">
+          {/* All Leads — always first */}
+          <div
+            className="leads-screen__pkg-card leads-screen__pkg-card--all"
+            onClick={() => openPackage(null)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={e => e.key === 'Enter' && openPackage(null)}
+          >
+            <div className="leads-screen__pkg-card-icon">◎</div>
+            <div className="leads-screen__pkg-card-body">
+              <div className="leads-screen__pkg-card-name">All Leads</div>
+              <div className="leads-screen__pkg-card-meta">
+                {leads.length} lead{leads.length !== 1 ? 's' : ''}
+              </div>
+            </div>
+            <div className="leads-screen__pkg-card-arrow">→</div>
+          </div>
+
+          {packages.map(pkg => {
+            const meta  = SOURCE_META[pkg.source];
+            const count = getLeadsForPackage(pkg.id, leads).length;
+            return (
+              <div
+                key={pkg.id}
+                className="leads-screen__pkg-card"
+                onClick={() => openPackage(pkg.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={e => e.key === 'Enter' && openPackage(pkg.id)}
+              >
+                <div className="leads-screen__pkg-card-icon" style={{ color: meta.color }}>
+                  {meta.icon}
+                </div>
+                <div className="leads-screen__pkg-card-body">
+                  <div className="leads-screen__pkg-card-name">{pkg.name}</div>
+                  <div className="leads-screen__pkg-card-meta">
+                    <span className="leads-screen__pkg-source-badge" style={{ color: meta.color }}>
+                      {meta.label}
+                    </span>
+                    <span className="leads-screen__pkg-sep">·</span>
+                    {count} lead{count !== 1 ? 's' : ''}
+                  </div>
+                </div>
+                <button
+                  className="leads-screen__pkg-delete"
+                  title="Delete package"
+                  onClick={e => { e.stopPropagation(); handleDeletePackage(pkg.id); }}
+                >
+                  ✕
+                </button>
+                <div className="leads-screen__pkg-card-arrow">→</div>
+              </div>
+            );
+          })}
         </div>
-      ) : loadError ? (
-        <div className="leads-screen__empty">
-          <div className="leads-screen__empty-icon">⚠</div>
-          <p className="leads-screen__empty-title">Failed to load leads</p>
-          <p className="leads-screen__empty-text">Check your connection and try again.</p>
-          <button className="leads-screen__btn-primary" onClick={fetchLeads} style={{ marginTop: 12 }}>
-            Retry
-          </button>
-        </div>
-      ) : filtered.length === 0 && leads.length === 0 ? (
-        <div className="leads-screen__empty">
-          <div className="leads-screen__empty-icon">◎</div>
-          <p className="leads-screen__empty-title">No leads yet</p>
-          <p className="leads-screen__empty-text">
-            Import a CSV from HubSpot, Salesforce, Google Sheets, or any CRM —
-            or add leads manually above. Then click <strong>Call →</strong> to
-            jump straight into a pre-filled call.
+
+        {packages.length === 0 && !showNewPkg && (
+          <p className="leads-screen__pkg-hint">
+            Create a package to organize leads by CRM source — Salesforce, HubSpot, Pipedrive, and more.
           </p>
-          <p className="leads-screen__empty-hint">
-            CSV headers detected: name, company, title, phone, email, notes
-          </p>
+        )}
+      </div>
+    );
+  }
+
+  // ── Leads view ───────────────────────────────────────────────────────────────
+
+  if (view === 'leads') {
+    const pkgMeta    = activePackage ? SOURCE_META[activePackage.source] : null;
+    const pkgTitle   = activePackage ? activePackage.name : 'All Leads';
+    const pkgIcon    = pkgMeta ? pkgMeta.icon : '◎';
+
+    return (
+      <div className="leads-screen">
+        <div className="leads-screen__header">
+          <div className="leads-screen__header-left">
+            <button className="leads-screen__back-btn" onClick={goBackToPackages}>← CRM</button>
+            <h1 className="leads-screen__title">
+              <span style={pkgMeta ? { color: pkgMeta.color } : undefined}>{pkgIcon}</span>{' '}
+              {pkgTitle.toUpperCase()}
+            </h1>
+            <span className="leads-screen__count">{visibleLeads.length}</span>
+          </div>
+          <div className="leads-screen__header-actions">
+            {importStatus && <span className="leads-screen__import-status">{importStatus}</span>}
+            <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleImport} />
+            <button className="leads-screen__btn-ghost" onClick={() => fileInputRef.current?.click()}>
+              ↑ Import CSV
+            </button>
+            <button
+              className="leads-screen__btn-primary"
+              onClick={() => { setShowForm(f => !f); setFormError(''); }}
+            >
+              {showForm ? '✕ Cancel' : '+ Add Lead'}
+            </button>
+          </div>
         </div>
-      ) : filtered.length === 0 ? (
-        <div className="leads-screen__empty">
-          <p className="leads-screen__empty-text">No leads match "{searchQuery}"</p>
-        </div>
-      ) : (
-        <div className="leads-screen__table-wrap">
-          <table className="leads-screen__table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Company</th>
-                <th>Title</th>
-                <th>Last Called</th>
-                <th>Calls</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(lead => (
-                <tr key={lead.id} className="leads-screen__row">
-                  <td className="leads-screen__cell leads-screen__cell--name">
-                    <span className="leads-screen__name">{lead.name}</span>
-                    {lead.email && <span className="leads-screen__sub">{lead.email}</span>}
-                  </td>
-                  <td className="leads-screen__cell">{lead.company || <span className="leads-screen__muted">—</span>}</td>
-                  <td className="leads-screen__cell">{lead.title || <span className="leads-screen__muted">—</span>}</td>
-                  <td className="leads-screen__cell leads-screen__cell--date">{formatDate(lead.lastCalledAt)}</td>
-                  <td className="leads-screen__cell leads-screen__cell--count">
-                    {lead.callCount > 0 ? (
-                      <span className="leads-screen__call-badge">{lead.callCount}</span>
-                    ) : (
-                      <span className="leads-screen__muted">0</span>
-                    )}
-                  </td>
-                  <td className="leads-screen__cell leads-screen__cell--actions">
-                    <button
-                      className="leads-screen__call-btn"
-                      onClick={() => onCallLead(lead)}
-                      title={`Call ${lead.name}`}
-                    >
-                      Call →
-                    </button>
-                    <button
-                      className="leads-screen__delete-btn"
-                      onClick={() => handleDelete(lead.id)}
-                      title="Delete lead"
-                      aria-label="Delete lead"
-                    >
-                      ✕
-                    </button>
-                  </td>
+
+        {/* Add-lead form */}
+        {showForm && (
+          <form className="leads-screen__form" onSubmit={handleAddLead}>
+            <div className="leads-screen__form-row">
+              <input className="leads-screen__input" placeholder="Name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} autoFocus />
+              <input className="leads-screen__input" placeholder="Company" value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} />
+              <input className="leads-screen__input" placeholder="Job title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+            </div>
+            <div className="leads-screen__form-row">
+              <input className="leads-screen__input" placeholder="Phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+              <input className="leads-screen__input" placeholder="Email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+            </div>
+            <textarea className="leads-screen__textarea" placeholder="Prior context / notes (optional)" value={form.priorContext} onChange={e => setForm(f => ({ ...f, priorContext: e.target.value }))} rows={2} />
+            {formError && <p className="leads-screen__form-error">{formError}</p>}
+            <div className="leads-screen__form-actions">
+              <button type="submit" className="leads-screen__btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save Lead'}</button>
+            </div>
+          </form>
+        )}
+
+        {/* Search */}
+        {visibleLeads.length > 0 && (
+          <div className="leads-screen__search-row">
+            <input
+              className="leads-screen__search"
+              placeholder="Search by name, company, or title..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+          </div>
+        )}
+
+        {/* Table */}
+        {loading ? (
+          <div className="leads-screen__empty">
+            <div className="leads-screen__empty-icon">◌</div>
+            <p className="leads-screen__empty-text">Loading leads...</p>
+          </div>
+        ) : loadError ? (
+          <div className="leads-screen__empty">
+            <div className="leads-screen__empty-icon">⚠</div>
+            <p className="leads-screen__empty-title">Failed to load leads</p>
+            <p className="leads-screen__empty-text">Check your connection and try again.</p>
+            <button className="leads-screen__btn-primary" onClick={fetchLeads} style={{ marginTop: 12 }}>Retry</button>
+          </div>
+        ) : filtered.length === 0 && visibleLeads.length === 0 ? (
+          <div className="leads-screen__empty">
+            <div className="leads-screen__empty-icon">◎</div>
+            <p className="leads-screen__empty-title">No leads in this package</p>
+            <p className="leads-screen__empty-text">
+              Import a CSV or add leads manually — they'll be automatically assigned to <strong>{pkgTitle}</strong>.
+            </p>
+            <p className="leads-screen__empty-hint">CSV headers: name, company, title, phone, email, notes</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="leads-screen__empty">
+            <p className="leads-screen__empty-text">No leads match "{searchQuery}"</p>
+          </div>
+        ) : (
+          <div className="leads-screen__table-wrap">
+            <table className="leads-screen__table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Company</th>
+                  <th>Title</th>
+                  <th>Last Called</th>
+                  <th>Calls</th>
+                  <th></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filtered.map(lead => (
+                  <tr
+                    key={lead.id}
+                    className="leads-screen__row leads-screen__row--clickable"
+                    onClick={() => { setSelectedLead(lead); setView('detail'); }}
+                  >
+                    <td className="leads-screen__cell leads-screen__cell--name">
+                      <span className="leads-screen__name">{lead.name}</span>
+                      {lead.email && <span className="leads-screen__sub">{lead.email}</span>}
+                    </td>
+                    <td className="leads-screen__cell">{lead.company || <span className="leads-screen__muted">—</span>}</td>
+                    <td className="leads-screen__cell">{lead.title || <span className="leads-screen__muted">—</span>}</td>
+                    <td className="leads-screen__cell leads-screen__cell--date">{formatDate(lead.lastCalledAt)}</td>
+                    <td className="leads-screen__cell leads-screen__cell--count">
+                      {lead.callCount > 0
+                        ? <span className="leads-screen__call-badge">{lead.callCount}</span>
+                        : <span className="leads-screen__muted">0</span>}
+                    </td>
+                    <td className="leads-screen__cell leads-screen__cell--actions" onClick={e => e.stopPropagation()}>
+                      <button className="leads-screen__call-btn" onClick={() => onCallLead(lead)} title={`Call ${lead.name}`}>Call →</button>
+                      <button className="leads-screen__delete-btn" onClick={() => handleDelete(lead.id)} title="Delete lead" aria-label="Delete lead">✕</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Lead detail view ─────────────────────────────────────────────────────────
+
+  if (view === 'detail' && selectedLead) {
+    const pkgLabel = activePackage ? activePackage.name : 'All Leads';
+
+    return (
+      <div className="leads-screen">
+        <div className="leads-screen__header">
+          <div className="leads-screen__header-left">
+            <button className="leads-screen__back-btn" onClick={goBackToLeads}>← {pkgLabel}</button>
+          </div>
+          <div className="leads-screen__header-actions">
+            <button className="leads-screen__btn-primary" onClick={() => onCallLead(selectedLead)}>
+              ▶ Call Now
+            </button>
+          </div>
         </div>
-      )}
-    </div>
-  );
+
+        <div className="leads-screen__detail-wrap">
+          {/* Contact hero */}
+          <div className="leads-screen__contact-card">
+            <div className="leads-screen__contact-avatar">
+              {getInitials(selectedLead.name)}
+            </div>
+            <div className="leads-screen__contact-info">
+              <h2 className="leads-screen__contact-name">{selectedLead.name}</h2>
+              {(selectedLead.title || selectedLead.company) && (
+                <p className="leads-screen__contact-sub">
+                  {[selectedLead.title, selectedLead.company].filter(Boolean).join(' · ')}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Contact fields */}
+          <div className="leads-screen__contact-fields">
+            {selectedLead.phone && (
+              <div className="leads-screen__contact-field">
+                <span className="leads-screen__field-label">PHONE</span>
+                <a href={`tel:${selectedLead.phone}`} className="leads-screen__field-value leads-screen__field-link">
+                  {selectedLead.phone}
+                </a>
+              </div>
+            )}
+            {selectedLead.email && (
+              <div className="leads-screen__contact-field">
+                <span className="leads-screen__field-label">EMAIL</span>
+                <a href={`mailto:${selectedLead.email}`} className="leads-screen__field-value leads-screen__field-link">
+                  {selectedLead.email}
+                </a>
+              </div>
+            )}
+            {selectedLead.priorContext && (
+              <div className="leads-screen__contact-field leads-screen__contact-field--full">
+                <span className="leads-screen__field-label">CONTEXT</span>
+                <p className="leads-screen__field-value leads-screen__field-context">{selectedLead.priorContext}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Call history */}
+          <div className="leads-screen__history-section">
+            <div className="leads-screen__history-header">
+              <span className="leads-screen__history-title">CALL HISTORY</span>
+              <span className="leads-screen__count">{leadSessions.length}</span>
+            </div>
+
+            {leadSessions.length === 0 ? (
+              <div className="leads-screen__history-empty">
+                No calls recorded for this contact yet.
+              </div>
+            ) : (
+              <div className="leads-screen__history-list">
+                {leadSessions.map((session, i) => {
+                  const pl = session.finalCloseProbability >= 61 ? 'high' : session.finalCloseProbability >= 31 ? 'medium' : 'low';
+                  const sl = session.leadScore >= 70 ? 'high' : session.leadScore >= 40 ? 'medium' : 'low';
+                  return (
+                    <div key={i} className="leads-screen__history-card">
+                      <div className="leads-screen__history-card-left">
+                        <div className="leads-screen__history-date">{formatDateShort(session.endedAt)}</div>
+                        <div className="leads-screen__history-goal">{session.config.callGoal}</div>
+                      </div>
+                      <div className="leads-screen__history-card-right">
+                        <span className={`leads-screen__score-pill leads-screen__score-pill--${pl}`}>
+                          {session.finalCloseProbability}% close
+                        </span>
+                        <span className={`leads-screen__score-pill leads-screen__score-pill--${sl}`}>
+                          score {session.leadScore}
+                        </span>
+                        <span className="leads-screen__history-dur">{formatDuration(session.durationSeconds)}</span>
+                        <span className={`leads-screen__stage-badge leads-screen__stage-badge--${session.callStage}`}>
+                          {session.callStage.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }

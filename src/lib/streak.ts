@@ -1,4 +1,4 @@
-const KEY = 'callassist_practice_dates';
+﻿const KEY = 'pitchbase_practice_dates';
 
 function toDateStr(d: Date): string {
   return d.toISOString().split('T')[0];

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
 import './OnboardingScreen.css';
@@ -51,7 +51,7 @@ const COMPANY_CATEGORIES: Category[] = [
 ];
 
 const STEPS = [
-  { title: 'Welcome to Pitch Plus'         },
+  { title: 'Welcome to Pitchbase'         },
   { title: 'Who are you selling for?'      },
   { title: 'What do you sell?'             },
   { title: 'Tell us about it'              },

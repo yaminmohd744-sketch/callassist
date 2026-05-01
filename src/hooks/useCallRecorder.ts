@@ -1,6 +1,6 @@
-import { useRef, useState, useCallback } from 'react';
+﻿import { useRef, useState, useCallback } from 'react';
 
-const DB_NAME  = 'pitchplus';
+const DB_NAME  = 'pitchbase';
 const STORE    = 'call_recordings';
 
 function openRecordingDB(): Promise<IDBDatabase> {

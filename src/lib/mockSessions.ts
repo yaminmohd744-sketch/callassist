@@ -1,4 +1,4 @@
-import type { CallSession } from '../types';
+﻿import type { CallSession } from '../types';
 
 export const MOCK_SESSIONS: CallSession[] = [
   // ─── 1. Sarah Chen — strong close ──────────────────────────────────────────
@@ -11,7 +11,7 @@ export const MOCK_SESSIONS: CallSession[] = [
       language: 'en-US',
     },
     transcript: [
-      { id: 'm1-1',  speaker: 'rep',      text: "Hi, is this Sarah? Hey Sarah, this is Alex calling from PitchPlus. Hope I'm not catching you at a bad time — do you have about two minutes?", timestampSeconds: 5,   signal: 'neutral' },
+      { id: 'm1-1',  speaker: 'rep',      text: "Hi, is this Sarah? Hey Sarah, this is Alex calling from Pitchbase. Hope I'm not catching you at a bad time — do you have about two minutes?", timestampSeconds: 5,   signal: 'neutral' },
       { id: 'm1-2',  speaker: 'prospect', text: "Yeah, sure, go ahead. What's this about?", timestampSeconds: 12,  signal: 'neutral' },
       { id: 'm1-3',  speaker: 'rep',      text: "Appreciate it. So the reason I'm reaching out — I was looking at Nexus Ventures and noticed your sales team has grown quite a bit over the past year. We work with growth-stage firms like yours to help sales reps close more consistently using real-time AI coaching during calls. Does that sound relevant at all?", timestampSeconds: 18,  signal: 'neutral' },
       { id: 'm1-4',  speaker: 'prospect', text: "Actually yeah, we've been struggling with that. Our reps are good individually but the performance gap between our top and bottom performers is huge. What exactly does the AI do?", timestampSeconds: 42,  signal: 'buying-signal' },
@@ -85,7 +85,7 @@ NEXT STEPS:
 2. Research Daniel's LinkedIn before Thursday — know his background and priorities.
 3. Prepare demo scenario around performance gap / rep consistency, not just feature walkthrough.
 4. Have ROI calculator ready: 12 reps × estimated hours saved × average deal value.`,
-    followUpEmail: `Subject: Demo confirmed — Thursday 2pm | PitchPlus × Nexus Ventures
+    followUpEmail: `Subject: Demo confirmed — Thursday 2pm | Pitchbase × Nexus Ventures
 
 Hi Sarah,
 
@@ -103,7 +103,7 @@ Looking forward to Thursday.
 
 Best,
 Alex
-PitchPlus | alex@pitchplus.io | Book a time: cal.pitchplus.io/alex`,
+Pitchbase | alex@pitchbase.io | Book a time: cal.pitchbase.io/alex`,
     leadScore: 82,
     notes: [
       '0:42 Pain: performance gap between top & bottom reps',
@@ -123,7 +123,7 @@ PitchPlus | alex@pitchplus.io | Book a time: cal.pitchplus.io/alex`,
       language: 'en-US',
     },
     transcript: [
-      { id: 'm2-1',  speaker: 'rep',      text: "Hi Marcus, this is Alex from PitchPlus. I know this is out of the blue — do you have 90 seconds?", timestampSeconds: 4,   signal: 'neutral' },
+      { id: 'm2-1',  speaker: 'rep',      text: "Hi Marcus, this is Alex from Pitchbase. I know this is out of the blue — do you have 90 seconds?", timestampSeconds: 4,   signal: 'neutral' },
       { id: 'm2-2',  speaker: 'prospect', text: "I've got a minute. Make it quick.", timestampSeconds: 10,  signal: 'neutral' },
       { id: 'm2-3',  speaker: 'rep',      text: "Appreciate it. We build AI coaching software for sales teams — it sits in the background during calls and gives reps real-time guidance on objections and closing. I noticed PeakForce has been scaling its outbound team and thought it might be relevant. Is improving rep performance something that's on your radar right now?", timestampSeconds: 16,  signal: 'neutral' },
       { id: 'm2-4',  speaker: 'prospect', text: "Not really — we just signed a contract with another vendor three months ago for something similar. We're not looking to switch.", timestampSeconds: 40,  signal: 'objection' },
@@ -198,7 +198,7 @@ Hi Marcus,
 
 Good speaking with you. As promised, I'm keeping this short.
 
-You mentioned your manager currently reviews call recordings manually to coach the team — that's exactly the gap we built our post-call engine around. Here's what happens on PitchPlus automatically, within 60 seconds of every call ending:
+You mentioned your manager currently reviews call recordings manually to coach the team — that's exactly the gap we built our post-call engine around. Here's what happens on Pitchbase automatically, within 60 seconds of every call ending:
 
   • Structured call summary (what was discussed, what objections came up, what was agreed)
   • Objection log with timestamps — so managers can jump straight to the moments that matter
@@ -209,13 +209,13 @@ No recording review. No manual notes. Your manager gets a full picture of every 
 
 I've attached a two-page overview and linked a 4-minute product walkthrough below. No fluff — just the core workflow.
 
-→ Watch the 4-min walkthrough: pitchplus.io/demo-video
+→ Watch the 4-min walkthrough: pitchbase.io/demo-video
 
 I know the timing isn't right today, and I'll respect that. I'll reach out again around the time your renewal evaluation would naturally kick off — but if anything changes before then, you've got my details.
 
 Cheers,
 Alex
-PitchPlus | alex@pitchplus.io`,
+Pitchbase | alex@pitchbase.io`,
     leadScore: 41,
     notes: [
       '1:08 Pain: manager reviews call recordings manually — no automated post-call analysis',
@@ -235,7 +235,7 @@ PitchPlus | alex@pitchplus.io`,
       language: 'en-US',
     },
     transcript: [
-      { id: 'm3-1',  speaker: 'rep',      text: "Hi Priya, this is Alex from PitchPlus. You filled out a form on our site earlier today — thanks for reaching out. Is now a good time to chat?", timestampSeconds: 5,   signal: 'neutral' },
+      { id: 'm3-1',  speaker: 'rep',      text: "Hi Priya, this is Alex from Pitchbase. You filled out a form on our site earlier today — thanks for reaching out. Is now a good time to chat?", timestampSeconds: 5,   signal: 'neutral' },
       { id: 'm3-2',  speaker: 'prospect', text: "Yes, perfect timing actually. I've been looking at a few sales coaching tools and yours kept coming up. I wanted to understand it better.", timestampSeconds: 14,  signal: 'buying-signal' },
       { id: 'm3-3',  speaker: 'rep',      text: "Great — I love hearing that. What prompted the search? Is there a specific problem you're trying to solve or a trigger event?", timestampSeconds: 24,  signal: 'neutral' },
       { id: 'm3-4',  speaker: 'prospect', text: "We're scaling from 5 to 15 reps over the next two quarters. Right now coaching is entirely ad hoc — I sit in on calls when I can, but that obviously doesn't scale. I need something systematic.", timestampSeconds: 34,  signal: 'buying-signal' },
@@ -311,7 +311,7 @@ NEXT STEPS:
 2. Research Priya's LinkedIn + CloudBridge's recent hires to personalise the opening of the demo.
 3. Prepare a competitor comparison slide (she mentioned evaluating others — know who you're up against).
 4. At demo end: present pricing and ask for a decision timeline directly.`,
-    followUpEmail: `Subject: Friday 10am confirmed — your personalised PitchPlus demo
+    followUpEmail: `Subject: Friday 10am confirmed — your personalised Pitchbase demo
 
 Hi Priya,
 
@@ -336,7 +336,7 @@ If there's anything specific you want me to demo or a scenario you want to walk 
 See you Friday!
 
 Alex
-PitchPlus | alex@pitchplus.io | cal.pitchplus.io/alex`,
+Pitchbase | alex@pitchbase.io | cal.pitchbase.io/alex`,
     leadScore: 94,
     notes: [
       '0:34 Trigger: scaling 5→15 reps in 2 quarters — systematic coaching needed',
@@ -359,7 +359,7 @@ PitchPlus | alex@pitchplus.io | cal.pitchplus.io/alex`,
       language: 'en-US',
     },
     transcript: [
-      { id: 'm4-1',  speaker: 'rep',      text: "Hi James, this is Alex from PitchPlus. We spoke briefly about six months ago — you'd asked me to follow up around now. Is this still a decent time?", timestampSeconds: 4,   signal: 'neutral' },
+      { id: 'm4-1',  speaker: 'rep',      text: "Hi James, this is Alex from Pitchbase. We spoke briefly about six months ago — you'd asked me to follow up around now. Is this still a decent time?", timestampSeconds: 4,   signal: 'neutral' },
       { id: 'm4-2',  speaker: 'prospect', text: "Uh, I don't really remember that conversation to be honest. What is it you're selling?", timestampSeconds: 14,  signal: 'neutral' },
       { id: 'm4-3',  speaker: 'rep',      text: "Totally fair — it was a quick chat. We build AI coaching software for sales reps — it listens during calls and surfaces real-time guidance for objections and closing. At the time you mentioned Ironclad was looking at ways to improve rep performance consistency.", timestampSeconds: 22,  signal: 'neutral' },
       { id: 'm4-4',  speaker: 'prospect', text: "Yeah, we actually hired a sales manager since then who handles all the coaching internally. We're good on that front.", timestampSeconds: 42,  signal: 'objection' },
@@ -434,7 +434,7 @@ Not asking you to do anything with this now. Just wanted to leave a more specifi
 Speak in the fall,
 
 Alex
-PitchPlus | alex@pitchplus.io`,
+Pitchbase | alex@pitchbase.io`,
     leadScore: 22,
     notes: [
       '0:42 Sales manager hired 6 months ago — handles coaching post-call in weekly meeting',
@@ -453,7 +453,7 @@ PitchPlus | alex@pitchplus.io`,
       language: 'en-US',
     },
     transcript: [
-      { id: 'm5-1',  speaker: 'rep',      text: "Hi Amara, this is Alex from PitchPlus — do you have a couple of minutes?", timestampSeconds: 4,   signal: 'neutral' },
+      { id: 'm5-1',  speaker: 'rep',      text: "Hi Amara, this is Alex from Pitchbase — do you have a couple of minutes?", timestampSeconds: 4,   signal: 'neutral' },
       { id: 'm5-2',  speaker: 'prospect', text: "Sure, a couple. What's this about?", timestampSeconds: 11,  signal: 'neutral' },
       { id: 'm5-3',  speaker: 'rep',      text: "We build AI coaching software for sales teams. The short version is it helps reps handle objections better and close more consistently without needing a manager on every call. I noticed Meridian Growth has been scaling outbound — is rep performance consistency something you're actively working on?", timestampSeconds: 18,  signal: 'neutral' },
       { id: 'm5-4',  speaker: 'prospect', text: "Yeah, actually. We've got eight reps and the spread is massive — our top two are crushing it but the other six are all over the place. I've tried listening to calls, doing training sessions, but it's not moving the needle fast enough.", timestampSeconds: 38,  signal: 'buying-signal' },
@@ -539,12 +539,12 @@ WHAT WE DISCUSSED:
 
 The core problem you're solving: your top 2 reps are performing strongly, but the remaining 6 reps have inconsistent performance — particularly when handling objections like "too expensive" or "not now." They know the answers in theory but can't execute under pressure during live calls.
 
-How PitchPlus addresses it: The platform sits in the background during every call. The moment a rep hears an objection, it surfaces the right response on their screen in real time — no hesitation, no panic pitch. Managers get a live dashboard showing every rep's call stage, talk ratio, and close probability without needing to sit in on calls.
+How Pitchbase addresses it: The platform sits in the background during every call. The moment a rep hears an objection, it surfaces the right response on their screen in real time — no hesitation, no panic pitch. Managers get a live dashboard showing every rep's call stage, talk ratio, and close probability without needing to sit in on calls.
 
 THE MATH WE RAN:
 • 8 reps × $8K average deal
 • If the bottom 6 reps close just 1 additional deal per month: $48K in additional monthly revenue
-• PitchPlus Growth plan for 8 reps: a fraction of that
+• Pitchbase Growth plan for 8 reps: a fraction of that
 
 WHAT'S ATTACHED:
 The one-pager is written for your VP — it covers ROI framing, implementation timeline (most teams live within a day), and what the onboarding process looks like for managers specifically.
@@ -554,7 +554,7 @@ For the three-way call, it would help me to know one thing in advance: what's yo
 Looking forward to meeting him.
 
 Alex
-PitchPlus | alex@pitchplus.io | cal.pitchplus.io/alex`,
+Pitchbase | alex@pitchbase.io | cal.pitchbase.io/alex`,
     leadScore: 65,
     notes: [
       '0:38 Pain: top 2 reps crushing it, bottom 6 inconsistent — 80/20 problem',

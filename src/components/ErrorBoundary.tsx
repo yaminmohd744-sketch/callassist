@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from 'react';
+﻿import { Component, type ReactNode } from 'react';
 import * as Sentry from '@sentry/react';
 
 interface Props {
@@ -22,7 +22,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   override componentDidCatch(error: unknown, info: { componentStack: string }) {
-    console.error('[CallAssist] Uncaught error:', error, info.componentStack);
+    console.error('[Pitchbase] Uncaught error:', error, info.componentStack);
     Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
   }
 
