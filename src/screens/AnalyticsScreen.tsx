@@ -162,7 +162,7 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
                 x={p.x} y={H - 4}
                 textAnchor={i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle'}
                 fill="rgba(255,255,255,0.28)" fontSize={10}
-                fontFamily="Figtree, system-ui, sans-serif"
+                fontFamily="Satoshi, system-ui, sans-serif"
               >
                 {p.label}
               </text>

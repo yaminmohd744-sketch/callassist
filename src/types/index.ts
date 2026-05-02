@@ -122,24 +122,6 @@ export interface CrmPackage {
   createdAt: string;
 }
 
-// ─── Meeting ──────────────────────────────────────────────────────────────────
-
-export type MeetingPlatform = 'zoom' | 'meet' | 'teams' | 'other';
-export type MeetingStatus = 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
-
-export interface Meeting {
-  id: string;
-  prospectName: string;
-  company?: string;
-  prospectTitle?: string;
-  platform: MeetingPlatform;
-  meetingUrl: string;
-  scheduledAt: string; // ISO datetime
-  context?: string;
-  status: MeetingStatus;
-  recallBotId?: string;
-  createdAt: string;
-}
 
 export interface Lead {
   id: string;
