@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
-import { Button } from '../components/ui/Button';
 import type { Meeting } from '../types';
 import './MeetingLiveViewer.css';
 
