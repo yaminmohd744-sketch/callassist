@@ -166,7 +166,7 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
                 x={p.x} y={p.y - 9}
                 textAnchor={i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle'}
                 fill={p.color} fontSize={9} fontWeight="700"
-                fontFamily="'Fragment Mono','JetBrains Mono',monospace"
+                fontFamily="'Clash Display', system-ui, sans-serif"
               >
                 {fmtVal(p.value, unit)}
               </text>

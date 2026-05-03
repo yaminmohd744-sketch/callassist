@@ -60,21 +60,17 @@ function renderSummary(text: string) {
   const lines = text.split('\n');
   return lines.map((line, i) => {
     const trimmed = line.trim();
-    // Detect ALL-CAPS subheadings like "WHAT WENT WELL:" or "NEXT STEPS:"
-    const isHeading = /^[A-Z][A-Z\s]+:$/.test(trimmed);
-    if (isHeading) {
-      return <div key={i} className="postcall__summary-heading">{trimmed}</div>;
-    }
-    if (trimmed === '') {
-      return <div key={i} className="postcall__summary-spacer" />;
-    }
+    const isHeading = /^[A-Z][A-Z\s]+$/.test(trimmed) && trimmed.length > 2;
+    if (isHeading) return <div key={i} className="postcall__summary-heading">{trimmed}</div>;
+    if (trimmed === '') return <div key={i} className="postcall__summary-spacer" />;
+    if (trimmed.startsWith('•')) return <div key={i} className="postcall__summary-bullet">{trimmed}</div>;
     return <div key={i} className="postcall__summary-line">{line}</div>;
   });
 }
 
 export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenProps) {
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'coaching' | 'summary' | 'transcript' | 'email' | 'scorecard' | 'replay' | 'share'>(session.coaching ? 'coaching' : 'summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'transcript' | 'email' | 'scorecard' | 'replay' | 'share'>('summary');
   const [prospectSummary, setProspectSummary] = useState<string | null>(null);
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [summaryCopied, setSummaryCopied] = useState(false);
@@ -267,16 +263,6 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
       </div>
 
       <div className="postcall__tabs" role="tablist">
-        {session.coaching && (
-          <button
-            role="tab"
-            aria-selected={activeTab === 'coaching'}
-            id="postcall-tab-coaching"
-            aria-controls="postcall-panel-coaching"
-            className={`postcall__tab ${activeTab === 'coaching' ? 'postcall__tab--active' : ''}`}
-            onClick={() => setActiveTab('coaching')}
-          >COACHING</button>
-        )}
         <button
           role="tab"
           aria-selected={activeTab === 'summary'}
@@ -330,68 +316,17 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
       </div>
 
       <div className="postcall__content">
-        {activeTab === 'coaching' && session.coaching && (
-          <div className="coaching" role="tabpanel" id="postcall-panel-coaching" aria-labelledby="postcall-tab-coaching" tabIndex={0}>
-            <div className="coaching__verdict">
-              <span className="coaching__verdict-icon">{session.finalCloseProbability >= 55 ? '◆' : session.finalCloseProbability >= 35 ? '◇' : '△'}</span>
-              <span className="coaching__verdict-text">{session.coaching.overallVerdict}</span>
-            </div>
-
-            <div className="coaching__grid">
-              <div className="coaching__section coaching__section--green">
-                <div className="coaching__section-title">WHAT WENT WELL</div>
-                <ul className="coaching__list">
-                  {session.coaching.whatWentWell.map((item, i) => (
-                    <li key={i} className="coaching__list-item coaching__list-item--green">
-                      <div className="coaching__item-point">{item.point}</div>
-                      <div className="coaching__item-note">{item.salesNote}</div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="coaching__section coaching__section--orange">
-                <div className="coaching__section-title">AREAS TO IMPROVE</div>
-                <ul className="coaching__list">
-                  {session.coaching.areasToImprove.map((item, i) => (
-                    <li key={i} className="coaching__list-item coaching__list-item--orange">
-                      <div className="coaching__item-point">{item.point}</div>
-                      <div className="coaching__item-note">{item.salesNote}</div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {session.coaching.keyMoments.length > 0 && (
-              <div className="coaching__moments">
-                <div className="coaching__section-title">KEY MOMENTS</div>
-                <div className="coaching__moments-list">
-                  {session.coaching.keyMoments.map((m, i) => {
-                    const mins = String(Math.floor(m.timestampSeconds / 60)).padStart(2, '0');
-                    const secs = String(m.timestampSeconds % 60).padStart(2, '0');
-                    return (
-                      <div key={i} className={`coaching__moment coaching__moment--${m.label === 'Objection' ? 'objection' : 'signal'}`}>
-                        <span className="coaching__moment-time">{mins}:{secs}</span>
-                        <span className="coaching__moment-label">{m.label}</span>
-                        <span className="coaching__moment-note">{m.note}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <div className="coaching__tip">
-              <div className="coaching__tip-label">TIP FOR NEXT CALL</div>
-              <div className="coaching__tip-text">{session.coaching.nextCallTip}</div>
-            </div>
-          </div>
-        )}
-
         {activeTab === 'summary' && (
           <div className="postcall__summary" role="tabpanel" id="postcall-panel-summary" aria-labelledby="postcall-tab-summary" tabIndex={0}>
             {renderSummary(session.aiSummary)}
+            {session.notes && session.notes.length > 0 && (
+              <div className="postcall__summary-notes-section">
+                <div className="postcall__summary-heading">CALL NOTES</div>
+                {session.notes.map((note, i) => (
+                  <div key={i} className="postcall__summary-bullet">• {note}</div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

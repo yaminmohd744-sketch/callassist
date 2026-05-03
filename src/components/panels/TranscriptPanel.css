@@ -65,7 +65,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   letter-spacing: 0.08em;
   background: var(--color-bg-elevated);
@@ -186,7 +186,7 @@
 .transcript-entry__time {
   font-size: 10px;
   color: var(--color-text-muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
 }
 
 .transcript-entry__text {
@@ -224,7 +224,7 @@
 }
 
 .transcript-panel__speaker-btn {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -255,52 +255,6 @@
   color: var(--color-accent-purple);
 }
 
-/* Input bar */
-.transcript-panel__input {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border-top: 1px solid var(--color-border);
-  background: var(--color-bg-elevated);
-  flex-shrink: 0;
-}
-
-.transcript-panel__text {
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-primary);
-  font-family: var(--font-sans);
-}
-
-.transcript-panel__send {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-accent-gradient);
-  border: none;
-  border-radius: var(--border-radius-sm);
-  color: #fff;
-  font-size: 12px;
-  cursor: pointer;
-  transition: box-shadow var(--transition-fast), opacity var(--transition-fast);
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(124,58,237,0.4);
-}
-
-.transcript-panel__send:hover:not(:disabled) {
-  box-shadow: 0 2px 14px rgba(124,58,237,0.6), 0 0 20px rgba(192,38,211,0.2);
-}
-
-.transcript-panel__send:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
 
 /* Speaker flip button */
 .transcript-entry__speaker--flip {

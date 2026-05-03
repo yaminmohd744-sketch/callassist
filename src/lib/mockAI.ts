@@ -902,23 +902,54 @@ export function generateSessionSummary(
   if (closeProbability >= 70) sentiment = 'positive';
   else if (closeProbability <= 35) sentiment = 'negative';
 
+  // ── What went well (factual, not coaching) ───────────────────────────────
+  const wentWellLines: string[] = [];
+  if (buyingSignals >= 1) {
+    wentWellLines.push(`${prospect} showed genuine interest — ${buyingSignals} buying signal${buyingSignals !== 1 ? 's' : ''} came through during the call.`);
+  }
+  if (objectionsCount >= 1 && suggestions.some(s => s.type === 'objection-response')) {
+    wentWellLines.push(`Kept the conversation going through ${objectionsCount} objection${objectionsCount > 1 ? 's' : ''}.`);
+  }
+  if (closeProbability >= 65) {
+    wentWellLines.push(`Strong close probability of ${closeProbability}% — ${prospect} stayed engaged and momentum built.`);
+  } else if (closeProbability >= 50) {
+    wentWellLines.push(`Close probability held at ${closeProbability}% — ${prospect} remained engaged throughout.`);
+  }
+  if (talkRatio <= 0.45 && prospectEntries.length > 2) {
+    wentWellLines.push(`Good balance — ${prospect} did most of the talking.`);
+  }
+  if (reachedCloseStage) {
+    wentWellLines.push(`Reached the close stage by end of the call.`);
+  }
+  if (wentWellLines.length === 0) {
+    wentWellLines.push(`Call completed with ${prospect} at ${company}.`);
+  }
+
+  // ── What was discussed ────────────────────────────────────────────────────
+  const discussedLines: string[] = [];
+  discussedLines.push(`Called ${prospect}${company ? ` at ${company}` : ''}. Goal: ${config.callGoal}.`);
+  if (totalEntries > 0) {
+    discussedLines.push(`${totalEntries} exchanges recorded across the call.`);
+  }
+  if (objectionHandlers > 0) {
+    const objHeadlines = suggestions.filter(s => s.type === 'objection-response').map(s => s.headline).filter(Boolean);
+    if (objHeadlines.length > 0) discussedLines.push(`Objections raised: ${objHeadlines.join(', ')}.`);
+  } else {
+    discussedLines.push(`No significant objections raised.`);
+  }
+  if (buyingSignals > 0) {
+    const signalHeadlines = suggestions.filter(s => s.type === 'close-attempt').map(s => s.headline).filter(Boolean).slice(0, 3);
+    if (signalHeadlines.length > 0) discussedLines.push(`Positive moments: ${signalHeadlines.join(', ')}.`);
+  }
+  discussedLines.push(`Call ended with a close score of ${closeProbability}%.`);
+
   const aiSummary = [
-    `Call with ${config.prospectName} at ${config.company}.`,
-    `Goal: ${config.callGoal}.`,
+    `WHAT WENT WELL`,
+    ...wentWellLines.map(l => `• ${l}`),
     ``,
-    `${totalEntries} transcript entries captured.`,
-    `${objectionsCount} objection${objectionsCount !== 1 ? 's' : ''} detected, ${buyingSignals} buying signal${buyingSignals !== 1 ? 's' : ''} identified.`,
-    `Overall sentiment: ${sentiment}.`,
-    ``,
-    objectionHandlers > 0
-      ? `Key objections handled: ${suggestions.filter(s => s.type === 'objection-response').map(s => s.headline).join(', ')}.`
-      : `No significant objections raised.`,
-    buyingSignals > 0
-      ? `Positive signals: ${suggestions.filter(s => s.type === 'close-attempt').map(s => s.headline).slice(0, 3).join(', ')}.`
-      : ``,
-    ``,
-    `Recommended next step: ${closeProbability >= 60 ? 'Schedule a follow-up demo or proposal call.' : closeProbability >= 40 ? 'Send detailed info and follow up in 2-3 days.' : 'Nurture relationship - re-engage in 2 weeks with new angle.'}`,
-  ].filter(Boolean).join('\n');
+    `WHAT WAS DISCUSSED`,
+    ...discussedLines.map(l => `• ${l}`),
+  ].join('\n');
 
   const followUpEmail = `Subject: Following up on our conversation - ${config.company}
 

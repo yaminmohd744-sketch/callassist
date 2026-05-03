@@ -10,11 +10,12 @@ import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useAICoach } from '../hooks/useAICoach';
 import { generateSessionSummary, classifySignalAI } from '../lib/ai';
 import { classifySignal, PROSPECT_PHRASES, REP_PHRASES, PROSPECT_REACTIONS } from '../lib/keywords';
-import type { CallConfig, CallSession, CallStatus, QuickAction, TranscriptEntry, TranscriptSpeaker } from '../types';
+import type { CallConfig, CallSession, CallStatus, TranscriptEntry, TranscriptSpeaker } from '../types';
 import { genId } from '../lib/id';
 import { saveDraft, loadDraft, clearDraft } from '../lib/callDraft';
 import { useCallRecorder } from '../hooks/useCallRecorder';
 import { useBodyLanguage } from '../hooks/useBodyLanguage';
+import { extractAutoNote } from '../lib/autoNotes';
 import type { AISuggestion } from '../types';
 import './LiveCallScreen.css';
 
@@ -86,11 +87,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const transcriptRef = useRef<TranscriptEntry[]>([]);
   const [callStatus, setCallStatus] = useState<CallStatus>('standby');
-  const [manualInput, setManualInput] = useState('');
   const [notes, setNotes] = useState<string[]>([]);
   const [noteInput, setNoteInput] = useState('');
   const [mobilePanel, setMobilePanel] = useState<'transcript' | 'ai' | 'lead'>('transcript');
-  const [manualSpeaker, setManualSpeaker] = useState<'rep' | 'prospect'>('prospect');
   const [isSummarising, setIsSummarising] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [draftRecovery, setDraftRecovery] = useState<{ transcript: TranscriptEntry[]; startedAt: string } | null>(null);
@@ -150,7 +149,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       });
     }).catch(() => { /* aborted — ignore */ });
   }, [config.language]);
-  const { suggestions, phaseLabel, prospectTone, closeProbability, callStage, objectionsCount, processEntry, addQuickActionSuggestion, reset: resetCoach } = useAICoach();
+  const { suggestions, phaseLabel, prospectTone, closeProbability, callStage, objectionsCount, processEntry, reset: resetCoach } = useAICoach();
 
   const latestAIScript = suggestions.length > 0 ? suggestions[suggestions.length - 1].body : undefined;
   const onBodySuggestion = useCallback((s: AISuggestion) => {
@@ -244,6 +243,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     if (speaker === 'prospect') {
       processEntry(entry, newTranscript, elapsedSeconds, config);
       applySignal(entry.id, text);
+      const autoNote = extractAutoNote(text, elapsedSeconds);
+      if (autoNote) setNotes(prev => [...prev, `◆ ${autoNote}`]);
     }
   }, [elapsedSeconds, processEntry, config, applySignal]);
 
@@ -315,38 +316,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleManualSubmit = useCallback(() => {
-    const text = manualInput.trim();
-    if (!text) return;
-
-    const entry: TranscriptEntry = {
-      id: genId(),
-      speaker: manualSpeaker,
-      text,
-      timestampSeconds: elapsedSeconds,
-      signal: manualSpeaker === 'prospect' ? classifySignal(text) : 'neutral',
-    };
-
-    const newTranscript = [...transcriptRef.current, entry];
-    transcriptRef.current = newTranscript;
-    setTranscript(newTranscript);
-
-    const wc = text.trim().split(/\s+/).length;
-    if (manualSpeaker === 'rep') {
-      repWordsRef.current += wc;
-      const lower = text.toLowerCase();
-      const fillers = FILLER_WORDS.filter(f => lower.includes(f)).length;
-      if (fillers > 0) setFillerCount(c => c + fillers);
-    } else if (manualSpeaker === 'prospect') {
-      prospectWordsRef.current += wc;
-    }
-
-    if (manualSpeaker === 'prospect') {
-      processEntry(entry, newTranscript, elapsedSeconds, config);
-      applySignal(entry.id, text);
-    }
-    setManualInput('');
-  }, [manualInput, manualSpeaker, elapsedSeconds, processEntry, config, applySignal]);
 
   const handleFlipSpeaker = useCallback((id: string) => {
     setTranscript(prev => {
@@ -378,10 +347,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     setNotes(prev => [...prev, `${mins}:${secs} ${text}`]);
     setNoteInput('');
   }, [noteInput, elapsedSeconds]);
-
-  const handleQuickAction = useCallback((action: QuickAction) => {
-    addQuickActionSuggestion(action, { prospectName: config.prospectName, callGoal: config.callGoal }, elapsedSeconds);
-  }, [addQuickActionSuggestion, config.prospectName, config.callGoal, elapsedSeconds]);
 
   const handleEndCall = useCallback(async () => {
     stopListening();
@@ -502,12 +467,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
               isListening={isListening}
               interimText={interimText}
               errorMessage={errorMessage}
-              manualInput={manualInput}
-              onManualInputChange={setManualInput}
-              onManualSubmit={handleManualSubmit}
               onFlipSpeaker={handleFlipSpeaker}
-              manualSpeaker={manualSpeaker}
-              onManualSpeakerToggle={() => setManualSpeaker(s => s === 'prospect' ? 'rep' : 'prospect')}
             />
             <AIIntelligencePanel
               suggestions={allSuggestions}
@@ -519,7 +479,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
               config={config}
               closeProbability={closeProbability}
               objectionsCount={objectionsCount}
-              onAction={handleQuickAction}
               notes={notes}
               noteInput={noteInput}
               onNoteChange={setNoteInput}

@@ -17,7 +17,7 @@
 }
 
 .postcall__back {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   letter-spacing: 0.1em;
   color: var(--color-text-muted);
@@ -161,7 +161,7 @@
 }
 
 .postcall__tab {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   letter-spacing: 0.1em;
   padding: var(--space-3) var(--space-5);
@@ -188,7 +188,7 @@
 }
 
 .postcall__pre {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   line-height: 1.7;
@@ -202,26 +202,41 @@
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-md);
   padding: var(--space-6);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   line-height: 1.7;
 }
 
 .postcall__summary-heading {
+  font-size: var(--font-size-xs);
   font-weight: 700;
-  color: var(--color-text-primary);
-  margin-top: var(--space-4);
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-2);
 }
 .postcall__summary-heading:first-child {
   margin-top: 0;
 }
 
+.postcall__summary-bullet {
+  color: var(--color-text-secondary);
+  line-height: 1.65;
+  padding: var(--space-1) 0;
+}
+
 .postcall__summary-line {
   color: var(--color-text-secondary);
+  line-height: 1.65;
 }
 
 .postcall__summary-spacer {
-  height: var(--space-2);
+  height: var(--space-3);
+}
+
+.postcall__summary-notes-section {
+  margin-top: var(--space-4);
 }
 
 /* Transcript */
@@ -300,7 +315,7 @@
   border-radius: var(--border-radius-md);
   padding: var(--space-6);
   color: var(--color-text-primary);
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   line-height: 1.7;
   resize: vertical;
@@ -347,7 +362,7 @@
   background: var(--color-bg-elevated);
   border: none;
   cursor: pointer;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -397,7 +412,7 @@
   padding: var(--space-2) var(--space-3);
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   transition: border-color var(--transition-fast);
 }
 .postcall__webhook-input:focus {
@@ -411,7 +426,7 @@
   background: var(--color-accent-purple);
   border: none;
   border-radius: var(--border-radius-pill);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: #fff;
@@ -723,7 +738,7 @@
 }
 
 .coaching__moment-time {
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-size: 11px;
   color: var(--color-text-muted);
 }
@@ -855,13 +870,13 @@
 }
 
 .postcall__replay-ts {
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
 }
 
 .postcall__replay-speaker {
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;

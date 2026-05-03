@@ -26,7 +26,7 @@
 }
 
 .objlib__back {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   letter-spacing: 0.1em;
   color: var(--color-text-muted);
@@ -70,7 +70,7 @@
   background: var(--color-accent-purple);
   border: none;
   border-radius: var(--border-radius-pill);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -129,7 +129,7 @@
   padding: var(--space-3) var(--space-4);
   font-size: var(--font-size-base);
   color: var(--color-text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   transition: border-color var(--transition-fast);
   width: 100%;
   resize: vertical;
@@ -157,7 +157,7 @@
   background: var(--color-accent-purple);
   border: none;
   border-radius: var(--border-radius-pill);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -172,7 +172,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-pill);
   padding: var(--space-2) var(--space-4);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--color-text-muted);
@@ -249,7 +249,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-pill);
   padding: 2px 12px;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--color-text-secondary);
@@ -263,7 +263,7 @@
   border: 1px solid transparent;
   border-radius: var(--border-radius-pill);
   padding: 2px 12px;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--color-text-muted);

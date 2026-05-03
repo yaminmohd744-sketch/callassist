@@ -46,7 +46,7 @@
   background: none;
   border: none;
   border-radius: 8px;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   cursor: pointer;
@@ -423,7 +423,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-pill);
   color: var(--color-text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-md);
   padding: 10px 20px;
   outline: none;
@@ -528,7 +528,7 @@
 .dashboard__crm-back {
   background: none;
   border: none;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text-muted);
@@ -567,7 +567,7 @@
 }
 
 .dashboard__crm-pre {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   line-height: 1.7;
@@ -588,7 +588,7 @@
 }
 
 .dashboard__crm-copy-btn {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -880,7 +880,7 @@
 .history__coaching-summary {}
 
 .history__summary-pre {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   white-space: pre-wrap;

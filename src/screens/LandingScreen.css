@@ -3,7 +3,7 @@
 .lp {
   background: var(--color-bg-base);
   color: var(--color-text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   overflow-x: hidden;
   overflow-y: auto;
   height: 100%;
@@ -64,7 +64,7 @@
 .lp__nav-links button {
   background: none;
   border: none;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-md);
   font-weight: 500;
   color: var(--color-text-secondary);
@@ -89,7 +89,7 @@
 .lp__nav-signin {
   background: none;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-secondary);
@@ -111,7 +111,7 @@
   gap: 9px;
   background: var(--color-accent-gradient);
   border: none;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   font-weight: 700;
   color: #ffffff;
@@ -157,7 +157,7 @@
 .lp__nav-cta {
   background: var(--color-accent-gradient);
   border: none;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   font-weight: 700;
   color: #ffffff;
@@ -279,7 +279,7 @@
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   box-shadow: 0 0 60px rgba(124, 58, 237, 0.1), 0 24px 48px rgba(0,0,0,0.5);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
 }
 
 .lp__terminal-bar {
@@ -360,7 +360,7 @@
 /* ─── Buttons ─────────────────────────────────────────────── */
 
 .lp__btn {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: -0.01em;
   border: none;
@@ -608,7 +608,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--border-radius-lg);
   overflow: hidden;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-xs);
 }
 
@@ -1059,7 +1059,7 @@
   border: none;
   background: transparent;
   color: var(--color-text-muted);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -1332,7 +1332,7 @@
 }
 
 .lp__footer-col-title {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -1343,7 +1343,7 @@
 .lp__footer-link {
   background: none;
   border: none;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   font-weight: 400;
   color: var(--color-text-muted);
@@ -1454,7 +1454,7 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
 }
 
 /* ─── Section view keyframes ─────────────────────────────────── */
@@ -2032,7 +2032,7 @@
   color: var(--color-text-primary);
   font-size: var(--font-size-md);
   font-weight: 600;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   text-align: left;
   cursor: pointer;
   transition: color var(--transition-fast);
@@ -2233,7 +2233,7 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--color-text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   margin-bottom: 4px;
   animation: demo-lang-in 0.35s ease both;
 }
@@ -2632,7 +2632,7 @@
 .lp__blog-read {
   background: none;
   border: none;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-accent-purple);
@@ -2976,7 +2976,7 @@
 }
 
 .lp__legal-sibling {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-accent-purple);
@@ -3145,7 +3145,7 @@
   background: none;
   border: none;
   padding: 0;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: inherit;
   color: var(--color-accent-purple);
   cursor: pointer;
@@ -3212,7 +3212,7 @@
 .lp__cookie-table tbody tr:hover td { background: var(--color-bg-elevated); }
 
 .lp__cookie-table code {
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-size: 11px;
   color: var(--color-accent-magenta);
   background: rgba(192, 38, 211, 0.07);

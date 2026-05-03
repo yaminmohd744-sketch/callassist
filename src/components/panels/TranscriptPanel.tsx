@@ -12,12 +12,7 @@ interface TranscriptPanelProps {
   isListening: boolean;
   interimText: string;
   errorMessage?: string | null;
-  manualInput: string;
-  onManualInputChange: (val: string) => void;
-  onManualSubmit: () => void;
   onFlipSpeaker?: (id: string) => void;
-  manualSpeaker?: 'rep' | 'prospect';
-  onManualSpeakerToggle?: () => void;
 }
 
 export const TranscriptPanel = memo(function TranscriptPanel({
@@ -25,12 +20,7 @@ export const TranscriptPanel = memo(function TranscriptPanel({
   isListening,
   interimText,
   errorMessage,
-  manualInput,
-  onManualInputChange,
-  onManualSubmit,
   onFlipSpeaker,
-  manualSpeaker = 'prospect',
-  onManualSpeakerToggle,
 }: TranscriptPanelProps) {
   const t = useTranslations();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -38,10 +28,6 @@ export const TranscriptPanel = memo(function TranscriptPanel({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [entries.length, interimText]);
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') onManualSubmit();
-  }
 
   return (
     <div className="transcript-panel">
@@ -106,33 +92,6 @@ export const TranscriptPanel = memo(function TranscriptPanel({
         <div ref={bottomRef} />
       </div>
 
-      <div className="transcript-panel__input">
-        {onManualSpeakerToggle && (
-          <button
-            type="button"
-            className="transcript-panel__speaker-toggle"
-            onClick={onManualSpeakerToggle}
-            title="Toggle speaker: rep or prospect"
-          >
-            {manualSpeaker === 'prospect' ? t.liveCall.prospect : t.liveCall.you}
-          </button>
-        )}
-        <input
-          className="transcript-panel__text"
-          placeholder={manualSpeaker === 'prospect' ? t.liveCall.typeProspect : (t.liveCall.typeRep ?? 'Type your response...')}
-          value={manualInput}
-          onChange={e => onManualInputChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <button
-          className="transcript-panel__send"
-          onClick={onManualSubmit}
-          disabled={!manualInput.trim()}
-          title="Send"
-        >
-          ➤
-        </button>
-      </div>
     </div>
   );
 });

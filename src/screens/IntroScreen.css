@@ -174,7 +174,7 @@
 /* Individual characters — hidden by default, stagger in when wordmark becomes visible */
 .intro__char {
   display: inline-block;
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: clamp(32px, 6vw, 50px);
   font-weight: 900;
   line-height: 1;
