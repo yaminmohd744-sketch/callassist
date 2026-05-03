@@ -137,9 +137,11 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
   }
 
   async function handleCopyEmail() {
-    await navigator.clipboard.writeText(emailDraft);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(emailDraft);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* text is visible — user can select manually */ }
   }
 
   function handleDownloadEmail() {

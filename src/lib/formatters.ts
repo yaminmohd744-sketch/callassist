@@ -29,6 +29,17 @@ export function formatDateLong(iso: string): string {
   });
 }
 
+/** "Today 14:30" / "Tomorrow 09:00" / "Mon 12 Jan 14:30" — used in meeting cards */
+export function formatScheduledAt(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  if (d.toDateString() === now.toDateString()) return `Today ${time}`;
+  if (d.toDateString() === tomorrow.toDateString()) return `Tomorrow ${time}`;
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ` ${time}`;
+}
+
 /** "Xh Ym" or "Ym" — used in profile activity stats */
 export function formatTotalTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);

@@ -42,7 +42,9 @@ const GOAL_PLACEHOLDERS: Record<string, string> = {
 };
 
 export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', defaultCompany = '', defaultPitch = '', defaultConfig }: PreCallScreenProps) {
-  const [prevTip] = useState<string | null>(() => localStorage.getItem('pitchbase:nextCallTip'));
+  const [prevTip] = useState<string | null>(() => {
+    try { return localStorage.getItem('pitchbase:nextCallTip'); } catch { return null; }
+  });
   const [tipDismissed, setTipDismissed] = useState(false);
   const [form, setForm] = useState<CallConfig>({
     prospectName: defaultConfig?.prospectName ?? '',

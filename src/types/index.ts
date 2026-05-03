@@ -109,6 +109,46 @@ export interface CoachingWalkthrough {
 
 export type CallOutcome = 'converted' | 'pipeline' | 'no-deal' | null;
 
+// ─── Meeting ──────────────────────────────────────────────────────────────────
+
+export type MeetingPlatform = 'zoom' | 'meet' | 'teams' | 'other';
+export type MeetingStatus = 'scheduled' | 'live' | 'completed' | 'cancelled';
+
+export interface MeetingFollowUp {
+  id: string;
+  task: string;
+  dueLabel: string;
+  done: boolean;
+}
+
+export interface MeetingReport {
+  summary: string;
+  notes: string[];
+  followUps: MeetingFollowUp[];
+  followUpEmail: string;
+  outcome: 'converted' | 'pipeline' | 'no-deal' | null;
+}
+
+export interface Meeting {
+  id: string;
+  prospectName: string;
+  company?: string;
+  prospectTitle?: string;
+  platform: MeetingPlatform;
+  meetingUrl: string;
+  scheduledAt: string;
+  goal: string;
+  context?: string;
+  pitch?: string;
+  status: MeetingStatus;
+  startedAt?: string;
+  endedAt?: string;
+  durationSeconds?: number;
+  report?: MeetingReport;
+  notifyEmail: boolean;
+  createdAt: string;
+}
+
 // ─── Lead ─────────────────────────────────────────────────────────────────────
 
 // ─── CRM Package ──────────────────────────────────────────────────────────────

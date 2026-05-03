@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import { Button } from '../components/ui/Button';
 import type { CallSession } from '../types';
 import { getStreak } from '../lib/streak';
@@ -25,6 +25,7 @@ export function DashboardScreen({
     : 0;
   const totalObjections = pastSessions.reduce((sum, s) => sum + s.objectionsCount, 0);
   const streak = getStreak();
+  const sortedSessions = useMemo(() => [...pastSessions].reverse(), [pastSessions]);
 
   return (
     <div className="dashboard">
@@ -91,10 +92,10 @@ export function DashboardScreen({
             </div>
           ) : (
             <div className="dashboard__call-list">
-              {[...pastSessions].reverse().map((session, i) => {
+              {sortedSessions.map((session) => {
                 const probLevel = session.finalCloseProbability >= 61 ? 'high' : session.finalCloseProbability >= 31 ? 'medium' : 'low';
                 return (
-                  <div key={i} className="dashboard__call-row" onClick={() => onViewSession(session)} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && onViewSession(session)}>
+                  <div key={session.endedAt} className="dashboard__call-row" onClick={() => onViewSession(session)} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && onViewSession(session)}>
                     <div className="dashboard__call-prospect">
                       <div className="dashboard__call-name">
                         {session.config.prospectName || 'Unknown prospect'}
