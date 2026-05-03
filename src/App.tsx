@@ -11,7 +11,7 @@ import type { LanguageCode } from './lib/languages';
 import { supabase }         from './lib/supabase';
 import { loadSessions, saveSession, deleteSession, updateOutcome } from './lib/sessions';
 import { updateLeadAfterCall } from './lib/leads';
-import type { CallConfig, CallSession, CallOutcome, Lead, Meeting } from './types';
+import type { CallConfig, CallSession, CallOutcome, Lead } from './types';
 
 const LandingScreen    = lazy(() => import('./screens/LandingScreen').then(m => ({ default: m.LandingScreen })));
 const IntroScreen      = lazy(() => import('./screens/IntroScreen').then(m => ({ default: m.IntroScreen })));
@@ -22,11 +22,8 @@ const PostCallScreen   = lazy(() => import('./screens/PostCallScreen').then(m =>
 const AnalyticsScreen  = lazy(() => import('./screens/AnalyticsScreen').then(m => ({ default: m.AnalyticsScreen })));
 const UploadCallScreen = lazy(() => import('./screens/UploadCallScreen').then(m => ({ default: m.UploadCallScreen })));
 const LeadsScreen      = lazy(() => import('./screens/LeadsScreen').then(m => ({ default: m.LeadsScreen })));
-const MeetingsScreen      = lazy(() => import('./screens/MeetingsScreen').then(m => ({ default: m.MeetingsScreen })));
-const MeetingLiveViewer   = lazy(() => import('./screens/MeetingLiveViewer').then(m => ({ default: m.MeetingLiveViewer })));
-const MeetingReport       = lazy(() => import('./screens/MeetingReport').then(m => ({ default: m.MeetingReport })));
-const AuthScreen          = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })));
-const OnboardingScreen    = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
+const AuthScreen       = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })));
+const OnboardingScreen = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
 
 // One-time migration: move localStorage outcomes into Supabase call_sessions rows
 const OUTCOMES_LEGACY_KEY = 'pitchbase:outcomes';
@@ -94,7 +91,7 @@ const INITIAL_THEME = (
 ) as 'dark' | 'light';
 document.documentElement.dataset.theme = INITIAL_THEME === 'light' ? 'light' : '';
 
-type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'meetings' | 'meeting-live' | 'meeting-report' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
+type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
 
 // ─── App ─────────────────────────────────────────────────────────────────────
 
@@ -108,6 +105,10 @@ export function App() {
 
   function toggleTheme() {
     const next = theme === 'dark' ? 'light' : 'dark';
+    const overlay = document.createElement('div');
+    overlay.className = `theme-flash theme-flash--${next}`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('animationend', () => overlay.remove(), { once: true });
     setTheme(next);
     try { localStorage.setItem('theme', next); } catch { /* storage full */ }
     document.documentElement.dataset.theme = next === 'light' ? 'light' : '';
@@ -125,8 +126,6 @@ export function App() {
     () => localStorage.getItem(PROFILE_PIC_KEY)
   );
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-
   function handleProfilePicChange(dataUrl: string) {
     if (dataUrl.length > 500_000) return;
     setProfilePic(dataUrl);
@@ -249,7 +248,7 @@ export function App() {
     );
   }
 
-  const isShell = currentScreen === 'dashboard' || currentScreen === 'analytics' || currentScreen === 'leads' || currentScreen === 'meetings';
+  const isShell = currentScreen === 'dashboard' || currentScreen === 'analytics' || currentScreen === 'leads';
 
   const onboardingData = getOnboardingData();
   const loginUserName = getDisplayName(user, onboardingData.name);
@@ -276,7 +275,7 @@ export function App() {
 
       {isShell && (
         <AppShell
-          activeScreen={currentScreen as 'dashboard' | 'analytics' | 'leads' | 'meetings'}
+          activeScreen={currentScreen as 'dashboard' | 'analytics' | 'leads'}
           onNavigate={s => setScreen(s)}
           onStartCall={() => setScreen('pre-call')}
           onUploadCall={() => setScreen('upload-call')}
@@ -329,39 +328,7 @@ export function App() {
               </Suspense>
             </ErrorBoundary>
           )}
-          {currentScreen === 'meetings' && (
-            <ErrorBoundary>
-              <Suspense fallback={<div className="app-loading" />}>
-                <MeetingsScreen
-                  userId={user.id}
-                  onWatchLive={meeting => { setSelectedMeeting(meeting); setScreen('meeting-live'); }}
-                  onViewReport={meeting => { setSelectedMeeting(meeting); setScreen('meeting-report'); }}
-                />
-              </Suspense>
-            </ErrorBoundary>
-          )}
         </AppShell>
-      )}
-
-      {currentScreen === 'meeting-live' && selectedMeeting && (
-        <ErrorBoundary>
-          <Suspense fallback={<div className="app-loading" />}>
-            <MeetingLiveViewer
-              meeting={selectedMeeting}
-              onBack={() => { setSelectedMeeting(null); setScreen('meetings'); }}
-            />
-          </Suspense>
-        </ErrorBoundary>
-      )}
-      {currentScreen === 'meeting-report' && selectedMeeting && (
-        <ErrorBoundary>
-          <Suspense fallback={<div className="app-loading" />}>
-            <MeetingReport
-              meeting={selectedMeeting}
-              onBack={() => { setSelectedMeeting(null); setScreen('meetings'); }}
-            />
-          </Suspense>
-        </ErrorBoundary>
       )}
 
       {currentScreen === 'pre-call' && (
@@ -371,14 +338,13 @@ export function App() {
               onStartCall={config => { setSelectedLead(null); handleStartCall(config); }}
               onBack={() => { setSelectedLead(null); setScreen(selectedLead ? 'leads' : 'dashboard'); }}
               defaultLanguage={appLanguage}
-              defaultCompany={onboardingData.companyName ?? ''}
-              defaultPitch={onboardingData.productDescription ?? ''}
               defaultConfig={selectedLead ? {
                 prospectName:  selectedLead.name,
                 company:       selectedLead.company ?? '',
                 prospectTitle: selectedLead.title ?? '',
                 priorContext:  selectedLead.priorContext ?? '',
               } : undefined}
+              userId={user.id}
             />
           </Suspense>
         </ErrorBoundary>

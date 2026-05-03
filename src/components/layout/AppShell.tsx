@@ -5,9 +5,9 @@ import { formatTotalTime } from '../../lib/formatters';
 import { useTranslations } from '../../hooks/useTranslations';
 import './AppShell.css';
 
-type ShellScreen = 'dashboard' | 'analytics' | 'leads' | 'meetings';
+type ShellScreen = 'dashboard' | 'analytics' | 'leads';
 
-const NAV_IDS: ShellScreen[] = ['dashboard', 'analytics', 'leads', 'meetings'];
+const NAV_IDS: ShellScreen[] = ['dashboard', 'analytics', 'leads'];
 
 interface AppShellProps {
   activeScreen: ShellScreen | string;

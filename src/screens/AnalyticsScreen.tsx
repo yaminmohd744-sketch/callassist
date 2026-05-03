@@ -68,15 +68,21 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [W, setW] = useState(800);
+  const [drawn, setDrawn] = useState(false);
 
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setW(el.clientWidth || 800);
     const obs = new ResizeObserver(e => setW(e[0].contentRect.width));
     obs.observe(el);
     return () => obs.disconnect();
+  }, []);
+
+  // Trigger draw animation after mount
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(id);
   }, []);
 
   const H = 180;
@@ -99,6 +105,8 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
     ? [`M ${pts[0].x} ${P.t + ph}`, ...pts.map(p => `L ${p.x} ${p.y}`), `L ${pts[pts.length - 1].x} ${P.t + ph}`, 'Z'].join(' ')
     : '';
 
+  const DRAW_DURATION = 900; // ms
+
   return (
     <div ref={wrapRef} className="analytics__linechart-wrap" style={style}>
       {canDraw && (
@@ -116,6 +124,16 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
                 <stop offset="100%" stopColor={pts[i + 1].color} />
               </linearGradient>
             ))}
+            {/* Clip rect that slides from left to right to reveal the chart */}
+            <clipPath id={`${chartId}-clip`}>
+              <rect
+                x={P.l} y={0}
+                width={drawn ? pw : 0} height={H + 10}
+                style={{
+                  transition: drawn ? `width ${DRAW_DURATION}ms cubic-bezier(0.4,0,0.2,1)` : 'none',
+                }}
+              />
+            </clipPath>
           </defs>
 
           {/* Grid lines */}
@@ -126,20 +144,23 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
             />
           ))}
 
-          {/* Area fill */}
-          <path d={areaD} fill={`url(#${chartId}-area)`} />
+          {/* Area fill + line segments clipped to draw animation */}
+          <g clipPath={`url(#${chartId}-clip)`}>
+            <path d={areaD} fill={`url(#${chartId}-area)`} />
+            {pts.slice(0, -1).map((p, i) => (
+              <line key={i}
+                x1={p.x} y1={p.y} x2={pts[i + 1].x} y2={pts[i + 1].y}
+                stroke={`url(#${chartId}-s${i})`} strokeWidth={2.5} strokeLinecap="round"
+              />
+            ))}
+          </g>
 
-          {/* Colored line segments */}
-          {pts.slice(0, -1).map((p, i) => (
-            <line key={i}
-              x1={p.x} y1={p.y} x2={pts[i + 1].x} y2={pts[i + 1].y}
-              stroke={`url(#${chartId}-s${i})`} strokeWidth={2.5} strokeLinecap="round"
-            />
-          ))}
-
-          {/* Dots + value labels */}
+          {/* Dots + value labels — fade in after line finishes drawing */}
           {pts.map((p, i) => (
-            <g key={i}>
+            <g key={i} style={{
+              opacity: drawn ? 1 : 0,
+              transition: `opacity 0.3s ease ${DRAW_DURATION * 0.6 + i * 40}ms`,
+            }}>
               <title>{p.label}: {fmtVal(p.value, unit)}</title>
               <text
                 x={p.x} y={p.y - 9}
@@ -162,7 +183,7 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
                 x={p.x} y={H - 4}
                 textAnchor={i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle'}
                 fill="rgba(255,255,255,0.28)" fontSize={10}
-                fontFamily="Satoshi, system-ui, sans-serif"
+                fontFamily="Clash Display, system-ui, sans-serif"
               >
                 {p.label}
               </text>

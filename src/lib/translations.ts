@@ -8,7 +8,6 @@ export interface T {
     training: string;
     analytics: string;
     leads: string;
-    meetings: string;
     newCall: string;
     upload: string;
   };
@@ -413,7 +412,7 @@ const en: T = {
     training: 'Training',
     analytics: 'Analytics',
     leads: 'Leads',
-    meetings: 'Meetings',
+   
     newCall: '▶ New Call',
     upload: '↑ Upload',
   },
@@ -728,7 +727,7 @@ const en: T = {
 };
 
 const es: T = {
-  nav: { dashboard: 'Panel', training: 'Entrenamiento', analytics: 'Análisis', leads: 'Clientes', meetings: 'Reuniones', newCall: '▶ Nueva Llamada', upload: '↑ Subir' },
+  nav: { dashboard: 'Panel', training: 'Entrenamiento', analytics: 'Análisis', leads: 'Clientes', newCall: '▶ Nueva Llamada', upload: '↑ Subir' },
   common: { back: 'Volver', cancel: 'Cancelar', save: 'Guardar', send: 'Enviar', start: 'Iniciar', done: 'Hecho', close: 'Cerrar', loading: 'Cargando...', signOut: 'Cerrar sesión', next: 'Siguiente', skip: 'Omitir', edit: 'Editar', delete: 'Eliminar', confirm: 'Confirmar', tryAgain: 'Intentar de nuevo', learnMore: 'Saber más', or: 'o' },
   profile: { activity: 'ACTIVIDAD', appearance: 'APARIENCIA', dark: 'Oscuro', light: 'Claro', calls: n => `${n} llamada${n !== 1 ? 's' : ''}`, trainingSessions: n => `${n} sesión${n !== 1 ? 'es' : ''} de entrenamiento`, totalOnPlatform: 'total en la plataforma', maxRank: '✦ Rango máximo alcanzado', appLanguage: 'Idioma de la app', langNote: 'Afecta el idioma del coaching y el entrenamiento. Se puede cambiar por llamada en la configuración previa.' },
   tiers: { title: 'Niveles de Rango', subtitle: 'Desbloquea niveles completando llamadas reales y sesiones de entrenamiento. Ambos deben alcanzar el umbral para avanzar.', unlocked: 'Desbloqueado', noCalls: 'Sin llamadas requeridas', noSessions: 'Sin sesiones requeridas', calls: 'llamadas', sessions: 'sesiones de entrenamiento', percentThere: '% ahí' },
@@ -746,7 +745,7 @@ const es: T = {
 };
 
 const fr: T = {
-  nav: { dashboard: 'Tableau de bord', training: 'Entraînement', analytics: 'Analytique', leads: 'Prospects', meetings: 'Réunions', newCall: '▶ Nouvel Appel', upload: '↑ Importer' },
+  nav: { dashboard: 'Tableau de bord', training: 'Entraînement', analytics: 'Analytique', leads: 'Prospects', newCall: '▶ Nouvel Appel', upload: '↑ Importer' },
   common: { back: 'Retour', cancel: 'Annuler', save: 'Enregistrer', send: 'Envoyer', start: 'Démarrer', done: 'Terminé', close: 'Fermer', loading: 'Chargement...', signOut: 'Se déconnecter', next: 'Suivant', skip: 'Passer', edit: 'Modifier', delete: 'Supprimer', confirm: 'Confirmer', tryAgain: 'Réessayer', learnMore: 'En savoir plus', or: 'ou' },
   profile: { activity: 'ACTIVITÉ', appearance: 'APPARENCE', dark: 'Sombre', light: 'Clair', calls: n => `${n} appel${n !== 1 ? 's' : ''}`, trainingSessions: n => `${n} session${n !== 1 ? 's' : ''} d'entraînement`, totalOnPlatform: 'total sur la plateforme', maxRank: '✦ Rang maximum atteint', appLanguage: 'Langue de l\'app', langNote: 'Affecte la langue du coaching et de l\'entraînement. Peut être changé par appel dans la configuration.' },
   tiers: { title: 'Niveaux de Rang', subtitle: 'Débloquez les niveaux en complétant des appels réels et des sessions d\'entraînement. Les deux doivent atteindre le seuil pour progresser.', unlocked: 'Débloqué', noCalls: 'Aucun appel requis', noSessions: 'Aucune session requise', calls: 'appels', sessions: 'sessions d\'entraînement', percentThere: '% accompli' },
@@ -764,7 +763,7 @@ const fr: T = {
 };
 
 const pt: T = {
-  nav: { dashboard: 'Painel', training: 'Treinamento', analytics: 'Análise', leads: 'Leads', meetings: 'Reuniões', newCall: '▶ Nova Chamada', upload: '↑ Enviar' },
+  nav: { dashboard: 'Painel', training: 'Treinamento', analytics: 'Análise', leads: 'Leads', newCall: '▶ Nova Chamada', upload: '↑ Enviar' },
   common: { back: 'Voltar', cancel: 'Cancelar', save: 'Salvar', send: 'Enviar', start: 'Iniciar', done: 'Concluído', close: 'Fechar', loading: 'Carregando...', signOut: 'Sair', next: 'Próximo', skip: 'Pular', edit: 'Editar', delete: 'Excluir', confirm: 'Confirmar', tryAgain: 'Tentar novamente', learnMore: 'Saiba mais', or: 'ou' },
   profile: { activity: 'ATIVIDADE', appearance: 'APARÊNCIA', dark: 'Escuro', light: 'Claro', calls: n => `${n} chamada${n !== 1 ? 's' : ''}`, trainingSessions: n => `${n} sessão${n !== 1 ? 'ões' : ''} de treinamento`, totalOnPlatform: 'total na plataforma', maxRank: '✦ Rank máximo atingido', appLanguage: 'Idioma do app', langNote: 'Afeta o idioma do coaching e treinamento. Pode ser alterado por chamada nas configurações.' },
   tiers: { title: 'Níveis de Rank', subtitle: 'Desbloqueie níveis completando chamadas reais e sessões de treinamento. Ambos devem atingir o limite para avançar.', unlocked: 'Desbloqueado', noCalls: 'Nenhuma chamada necessária', noSessions: 'Nenhuma sessão necessária', calls: 'chamadas', sessions: 'sessões de treinamento', percentThere: '% lá' },
@@ -782,7 +781,7 @@ const pt: T = {
 };
 
 const de: T = {
-  nav: { dashboard: 'Dashboard', training: 'Training', analytics: 'Analytik', leads: 'Leads', meetings: 'Meetings', newCall: '▶ Neuer Anruf', upload: '↑ Hochladen' },
+  nav: { dashboard: 'Dashboard', training: 'Training', analytics: 'Analytik', leads: 'Leads', newCall: '▶ Neuer Anruf', upload: '↑ Hochladen' },
   common: { back: 'Zurück', cancel: 'Abbrechen', save: 'Speichern', send: 'Senden', start: 'Starten', done: 'Fertig', close: 'Schließen', loading: 'Lädt...', signOut: 'Abmelden', next: 'Weiter', skip: 'Überspringen', edit: 'Bearbeiten', delete: 'Löschen', confirm: 'Bestätigen', tryAgain: 'Nochmal versuchen', learnMore: 'Mehr erfahren', or: 'oder' },
   profile: { activity: 'AKTIVITÄT', appearance: 'ERSCHEINUNGSBILD', dark: 'Dunkel', light: 'Hell', calls: n => `${n} Anruf${n !== 1 ? 'e' : ''}`, trainingSessions: n => `${n} Trainingseinheit${n !== 1 ? 'en' : ''}`, totalOnPlatform: 'gesamt auf der Plattform', maxRank: '✦ Maximaler Rang erreicht', appLanguage: 'App-Sprache', langNote: 'Beeinflusst die Coaching- und Trainingssprache. Im Vorab-Setup pro Anruf änderbar.' },
   tiers: { title: 'Rang-Stufen', subtitle: 'Stufen durch echte Anrufe und Trainingseinheiten freischalten. Beide Werte müssen den Schwellenwert erreichen.', unlocked: 'Freigeschaltet', noCalls: 'Keine Anrufe erforderlich', noSessions: 'Keine Sitzungen erforderlich', calls: 'Anrufe', sessions: 'Trainingseinheiten', percentThere: '% geschafft' },
@@ -800,7 +799,7 @@ const de: T = {
 };
 
 const it: T = {
-  nav: { dashboard: 'Dashboard', training: 'Formazione', analytics: 'Analisi', leads: 'Lead', meetings: 'Riunioni', newCall: '▶ Nuova Chiamata', upload: '↑ Carica' },
+  nav: { dashboard: 'Dashboard', training: 'Formazione', analytics: 'Analisi', leads: 'Lead', newCall: '▶ Nuova Chiamata', upload: '↑ Carica' },
   common: { back: 'Indietro', cancel: 'Annulla', save: 'Salva', send: 'Invia', start: 'Avvia', done: 'Fatto', close: 'Chiudi', loading: 'Caricamento...', signOut: 'Esci', next: 'Avanti', skip: 'Salta', edit: 'Modifica', delete: 'Elimina', confirm: 'Conferma', tryAgain: 'Riprova', learnMore: 'Scopri di più', or: 'o' },
   profile: { activity: 'ATTIVITÀ', appearance: 'ASPETTO', dark: 'Scuro', light: 'Chiaro', calls: n => `${n} chiamata${n !== 1 ? 'e' : ''}`, trainingSessions: n => `${n} sessione${n !== 1 ? 'i' : ''} di formazione`, totalOnPlatform: 'totale sulla piattaforma', maxRank: '✦ Rango massimo raggiunto', appLanguage: 'Lingua dell\'app', langNote: 'Influisce sulla lingua del coaching e della formazione. Modificabile per chiamata nella configurazione.' },
   tiers: { title: 'Livelli di Rango', subtitle: 'Sblocca i livelli completando chiamate reali e sessioni di formazione. Entrambi devono raggiungere la soglia per avanzare.', unlocked: 'Sbloccato', noCalls: 'Nessuna chiamata richiesta', noSessions: 'Nessuna sessione richiesta', calls: 'chiamate', sessions: 'sessioni di formazione', percentThere: '% raggiunto' },
@@ -818,7 +817,7 @@ const it: T = {
 };
 
 const nl: T = {
-  nav: { dashboard: 'Dashboard', training: 'Training', analytics: 'Analyse', leads: 'Leads', meetings: 'Vergaderingen', newCall: '▶ Nieuw Gesprek', upload: '↑ Uploaden' },
+  nav: { dashboard: 'Dashboard', training: 'Training', analytics: 'Analyse', leads: 'Leads', newCall: '▶ Nieuw Gesprek', upload: '↑ Uploaden' },
   common: { back: 'Terug', cancel: 'Annuleren', save: 'Opslaan', send: 'Versturen', start: 'Starten', done: 'Klaar', close: 'Sluiten', loading: 'Laden...', signOut: 'Uitloggen', next: 'Volgende', skip: 'Overslaan', edit: 'Bewerken', delete: 'Verwijderen', confirm: 'Bevestigen', tryAgain: 'Opnieuw proberen', learnMore: 'Meer weten', or: 'of' },
   profile: { activity: 'ACTIVITEIT', appearance: 'WEERGAVE', dark: 'Donker', light: 'Licht', calls: n => `${n} gesprek${n !== 1 ? 'ken' : ''}`, trainingSessions: n => `${n} trainingssessie${n !== 1 ? 's' : ''}`, totalOnPlatform: 'totaal op het platform', maxRank: '✦ Maximale rang bereikt', appLanguage: 'App-taal', langNote: 'Beïnvloedt de taal van coaching en training. Per gesprek aanpasbaar in de voorbereiding.' },
   tiers: { title: 'Rang-Niveaus', subtitle: 'Ontgrendel niveaus door echte gesprekken en trainingsessies te voltooien. Beide moeten de drempel bereiken.', unlocked: 'Ontgrendeld', noCalls: 'Geen gesprekken vereist', noSessions: 'Geen sessies vereist', calls: 'gesprekken', sessions: 'trainingsessies', percentThere: '% behaald' },
@@ -836,7 +835,7 @@ const nl: T = {
 };
 
 const zh: T = {
-  nav: { dashboard: '仪表板', training: '训练', analytics: '分析', leads: '线索', meetings: '会议', newCall: '▶ 新通话', upload: '↑ 上传' },
+  nav: { dashboard: '仪表板', training: '训练', analytics: '分析', leads: '线索', newCall: '▶ 新通话', upload: '↑ 上传' },
   common: { back: '返回', cancel: '取消', save: '保存', send: '发送', start: '开始', done: '完成', close: '关闭', loading: '加载中...', signOut: '退出登录', next: '下一步', skip: '跳过', edit: '编辑', delete: '删除', confirm: '确认', tryAgain: '重试', learnMore: '了解更多', or: '或' },
   profile: { activity: '活动', appearance: '外观', dark: '深色', light: '浅色', calls: n => `${n} 次通话`, trainingSessions: n => `${n} 次训练`, totalOnPlatform: '平台总时长', maxRank: '✦ 已达最高等级', appLanguage: '应用语言', langNote: '影响辅导和训练语言。可在通话前设置中逐次更改。' },
   tiers: { title: '等级体系', subtitle: '通过完成真实通话和训练课程解锁等级，两项均须达到阈值方可晋升。', unlocked: '已解锁', noCalls: '无通话要求', noSessions: '无课程要求', calls: '次通话', sessions: '次训练', percentThere: '% 进度' },
@@ -854,7 +853,7 @@ const zh: T = {
 };
 
 const ja: T = {
-  nav: { dashboard: 'ダッシュボード', training: 'トレーニング', analytics: '分析', leads: 'リード', meetings: 'ミーティング', newCall: '▶ 新規通話', upload: '↑ アップロード' },
+  nav: { dashboard: 'ダッシュボード', training: 'トレーニング', analytics: '分析', leads: 'リード', newCall: '▶ 新規通話', upload: '↑ アップロード' },
   common: { back: '戻る', cancel: 'キャンセル', save: '保存', send: '送信', start: '開始', done: '完了', close: '閉じる', loading: '読み込み中...', signOut: 'サインアウト', next: '次へ', skip: 'スキップ', edit: '編集', delete: '削除', confirm: '確認', tryAgain: '再試行', learnMore: '詳細を見る', or: 'または' },
   profile: { activity: 'アクティビティ', appearance: '外観', dark: 'ダーク', light: 'ライト', calls: n => `${n} 件の通話`, trainingSessions: n => `${n} 件のトレーニング`, totalOnPlatform: 'プラットフォーム合計', maxRank: '✦ 最高ランク達成', appLanguage: 'アプリの言語', langNote: 'コーチングとトレーニングの言語に影響します。通話前設定で変更可能。' },
   tiers: { title: 'ランクティア', subtitle: '実際の通話とトレーニングを完了してティアをアンロック。両方が基準を満たす必要があります。', unlocked: 'アンロック済み', noCalls: '通話不要', noSessions: 'セッション不要', calls: '件の通話', sessions: '件のトレーニング', percentThere: '% 達成' },
@@ -872,7 +871,7 @@ const ja: T = {
 };
 
 const ar: T = {
-  nav: { dashboard: 'لوحة القيادة', training: 'التدريب', analytics: 'التحليلات', leads: 'العملاء', meetings: 'الاجتماعات', newCall: '▶ مكالمة جديدة', upload: '↑ رفع' },
+  nav: { dashboard: 'لوحة القيادة', training: 'التدريب', analytics: 'التحليلات', leads: 'العملاء', newCall: '▶ مكالمة جديدة', upload: '↑ رفع' },
   common: { back: 'رجوع', cancel: 'إلغاء', save: 'حفظ', send: 'إرسال', start: 'بدء', done: 'تم', close: 'إغلاق', loading: 'جار التحميل...', signOut: 'تسجيل الخروج', next: 'التالي', skip: 'تخطي', edit: 'تعديل', delete: 'حذف', confirm: 'تأكيد', tryAgain: 'المحاولة مجددًا', learnMore: 'معرفة المزيد', or: 'أو' },
   profile: { activity: 'النشاط', appearance: 'المظهر', dark: 'داكن', light: 'فاتح', calls: n => `${n} مكالمة`, trainingSessions: n => `${n} جلسة تدريب`, totalOnPlatform: 'الإجمالي على المنصة', maxRank: '✦ تم الوصول للمرتبة القصوى', appLanguage: 'لغة التطبيق', langNote: 'يؤثر على لغة التدريب والإرشاد. يمكن تغييره لكل مكالمة في إعدادات ما قبل المكالمة.' },
   tiers: { title: 'مستويات الرتبة', subtitle: 'افتح المستويات عبر إكمال المكالمات الحقيقية وجلسات التدريب. يجب أن يصل كلاهما للحد المطلوب للتقدم.', unlocked: 'مفتوح', noCalls: 'لا يلزم مكالمات', noSessions: 'لا يلزم جلسات', calls: 'مكالمة', sessions: 'جلسات تدريب', percentThere: '% من الهدف' },

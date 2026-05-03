@@ -6,7 +6,7 @@ import {
   assignLead, loadLeadPackageMap, getLeadsForPackage,
 } from '../lib/packagesSupabase';
 import { formatDuration, formatDateShort } from '../lib/formatters';
-import type { Lead, CallSession, CrmPackage, CrmSource } from '../types';
+import type { Lead, CallSession, CrmPackage } from '../types';
 import './LeadsScreen.css';
 
 // ─── CSV parser ───────────────────────────────────────────────────────────────
@@ -50,17 +50,6 @@ function parseCSV(text: string): Omit<Lead, 'id' | 'callCount' | 'createdAt' | '
     };
   }).filter((r) => r !== null) as Omit<Lead, 'id' | 'callCount' | 'createdAt' | 'lastCalledAt'>[];
 }
-
-// ─── CRM source metadata ──────────────────────────────────────────────────────
-
-const SOURCE_META: Record<CrmSource, { label: string; icon: string; color: string }> = {
-  salesforce: { label: 'Salesforce', icon: '☁',  color: '#00A1E0' },
-  hubspot:    { label: 'HubSpot',    icon: '⬤',  color: '#FF7A59' },
-  pipedrive:  { label: 'Pipedrive',  icon: '◎',  color: '#2ECC71' },
-  apollo:     { label: 'Apollo',     icon: '⬡',  color: '#9b59b6' },
-  zoho:       { label: 'Zoho',       icon: '▣',  color: '#E42527' },
-  custom:     { label: 'Custom',     icon: '◆',  color: '#888888' },
-};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -111,9 +100,8 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
   const [saving,    setSaving]    = useState(false);
 
   // New-package form
-  const [showNewPkg,      setShowNewPkg]      = useState(false);
-  const [newPkgName,      setNewPkgName]      = useState('');
-  const [newPkgSource,    setNewPkgSource]    = useState<CrmSource>('custom');
+  const [showNewPkg,  setShowNewPkg]  = useState(false);
+  const [newPkgName,  setNewPkgName]  = useState('');
 
   // Other UI
   const [importStatus, setImportStatus] = useState('');
@@ -245,12 +233,11 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
     const pkg: CrmPackage = {
       id:        `pkg-${Date.now()}`,
       name:      newPkgName.trim(),
-      source:    newPkgSource,
+      source:    'custom',
       createdAt: new Date().toISOString(),
     };
     setPackages(prev => [pkg, ...prev]);
     setNewPkgName('');
-    setNewPkgSource('custom');
     setShowNewPkg(false);
     try {
       await savePackage(pkg, userId);
@@ -302,6 +289,10 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
             <span className="leads-screen__count">{packages.length + 1}</span>
           </div>
           <div className="leads-screen__header-actions">
+            <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleImport} />
+            <button className="leads-screen__btn-import" onClick={() => fileInputRef.current?.click()}>
+              ↑ Import CRM
+            </button>
             <button
               className="leads-screen__btn-ghost"
               onClick={() => setShowNewPkg(v => !v)}
@@ -311,33 +302,15 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
           </div>
         </div>
 
+        {importStatus && <p className="leads-screen__import-status leads-screen__import-status--top">{importStatus}</p>}
+
         {/* New-package form */}
         {showNewPkg && (
           <div className="leads-screen__pkg-form">
-            <div className="leads-screen__pkg-templates">
-              {(Object.keys(SOURCE_META) as CrmSource[]).map(src => {
-                const meta = SOURCE_META[src];
-                return (
-                  <button
-                    key={src}
-                    className={`leads-screen__pkg-tpl ${newPkgSource === src ? 'leads-screen__pkg-tpl--active' : ''}`}
-                    style={{ '--pkg-color': meta.color } as React.CSSProperties}
-                    onClick={() => {
-                      setNewPkgSource(src);
-                      if (src !== 'custom') setNewPkgName(meta.label);
-                      else setNewPkgName('');
-                    }}
-                  >
-                    <span className="leads-screen__pkg-tpl-icon">{meta.icon}</span>
-                    <span className="leads-screen__pkg-tpl-label">{meta.label}</span>
-                  </button>
-                );
-              })}
-            </div>
             <div className="leads-screen__pkg-form-row">
               <input
                 className="leads-screen__input"
-                placeholder="Package name"
+                placeholder="Package name (e.g. Q2 Prospects)"
                 value={newPkgName}
                 onChange={e => setNewPkgName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleCreatePackage()}
@@ -375,7 +348,6 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
           </div>
 
           {packages.map(pkg => {
-            const meta  = SOURCE_META[pkg.source];
             const count = getLeadsForPackage(pkg.id, leads, leadPackageMap).length;
             return (
               <div
@@ -386,16 +358,10 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
                 tabIndex={0}
                 onKeyDown={e => e.key === 'Enter' && openPackage(pkg.id)}
               >
-                <div className="leads-screen__pkg-card-icon" style={{ color: meta.color }}>
-                  {meta.icon}
-                </div>
+                <div className="leads-screen__pkg-card-icon">◈</div>
                 <div className="leads-screen__pkg-card-body">
                   <div className="leads-screen__pkg-card-name">{pkg.name}</div>
                   <div className="leads-screen__pkg-card-meta">
-                    <span className="leads-screen__pkg-source-badge" style={{ color: meta.color }}>
-                      {meta.label}
-                    </span>
-                    <span className="leads-screen__pkg-sep">·</span>
                     {count} lead{count !== 1 ? 's' : ''}
                   </div>
                 </div>
@@ -414,7 +380,7 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
 
         {packages.length === 0 && !showNewPkg && (
           <p className="leads-screen__pkg-hint">
-            Create a package to organize leads by CRM source — Salesforce, HubSpot, Pipedrive, and more.
+            Create a package to organise your leads — then import a CSV from your CRM or add leads manually.
           </p>
         )}
       </div>
@@ -424,19 +390,14 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
   // ── Leads view ───────────────────────────────────────────────────────────────
 
   if (view === 'leads') {
-    const pkgMeta    = activePackage ? SOURCE_META[activePackage.source] : null;
-    const pkgTitle   = activePackage ? activePackage.name : 'All Leads';
-    const pkgIcon    = pkgMeta ? pkgMeta.icon : '◎';
+    const pkgTitle = activePackage ? activePackage.name : 'All Leads';
 
     return (
       <div className="leads-screen">
         <div className="leads-screen__header">
           <div className="leads-screen__header-left">
             <button className="leads-screen__back-btn" onClick={goBackToPackages}>← CRM</button>
-            <h1 className="leads-screen__title">
-              <span style={pkgMeta ? { color: pkgMeta.color } : undefined}>{pkgIcon}</span>{' '}
-              {pkgTitle.toUpperCase()}
-            </h1>
+            <h1 className="leads-screen__title">{pkgTitle.toUpperCase()}</h1>
             <span className="leads-screen__count">{visibleLeads.length}</span>
           </div>
           <div className="leads-screen__header-actions">

@@ -1,14 +1,13 @@
-﻿import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '../components/ui/Button';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
-import { enhancePitch, generateBattleCard } from '../lib/ai';
-import type { BattleCard } from '../lib/ai';
-import type { CallConfig, CallType } from '../types';
+import { loadLeads } from '../lib/leads';
+import type { CallConfig, CallType, Lead } from '../types';
 import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
 
-type StringConfigField = 'prospectName' | 'company' | 'prospectTitle' | 'yourPitch' | 'callGoal' | 'callType' | 'priorContext' | 'language';
+type StringConfigField = 'callGoal' | 'callType' | 'language';
 type StringConfigErrors = Partial<Record<StringConfigField, string>>;
 
 interface PreCallScreenProps {
@@ -18,348 +17,316 @@ interface PreCallScreenProps {
   defaultCompany?: string;
   defaultPitch?: string;
   defaultConfig?: Partial<CallConfig & { prospectTitle?: string }>;
+  userId?: string;
 }
 
 const CALL_TYPES: { value: CallType; label: string }[] = [
-  { value: 'cold',        label: 'Cold call'       },
-  { value: 'warm',        label: 'Warm follow-up'  },
-  { value: 'referral',    label: 'Referral'         },
-  { value: 'discovery',   label: 'Discovery'        },
-  { value: 'demo',        label: 'Demo'             },
-  { value: 'negotiation', label: 'Negotiation'      },
-  { value: 'close',       label: 'Closing call'     },
+  { value: 'cold',        label: 'Cold call'      },
+  { value: 'warm',        label: 'Warm follow-up' },
+  { value: 'referral',    label: 'Referral'        },
+  { value: 'discovery',   label: 'Discovery'       },
+  { value: 'demo',        label: 'Demo'            },
+  { value: 'negotiation', label: 'Negotiation'     },
+  { value: 'close',       label: 'Closing call'    },
 ];
 
-const GOAL_PLACEHOLDERS: Record<string, string> = {
-  cold:        'e.g. Get them to agree to a 20-minute discovery call',
-  warm:        'e.g. Follow up on the proposal and confirm next steps',
-  referral:    'e.g. Introduce yourself and schedule a demo',
-  discovery:   'e.g. Uncover budget, timeline, and key pain points',
-  demo:        'e.g. Show the dashboard, address their data security concern',
-  negotiation: 'e.g. Agree on pricing, handle the contract length objection',
-  close:       'e.g. Get a verbal yes and confirm the start date',
-  default:     'e.g. What do you want to walk away with from this call?',
-};
-
-export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', defaultCompany = '', defaultPitch = '', defaultConfig }: PreCallScreenProps) {
-  const [prevTip] = useState<string | null>(() => {
-    try { return localStorage.getItem('pitchbase:nextCallTip'); } catch { return null; }
-  });
-  const [tipDismissed, setTipDismissed] = useState(false);
-  const [form, setForm] = useState<CallConfig>({
-    prospectName: defaultConfig?.prospectName ?? '',
-    company:      defaultConfig?.company ?? defaultCompany,
-    prospectTitle: defaultConfig?.prospectTitle ?? '',
-    callType:     defaultConfig?.callType ?? undefined,
-    callGoal:     defaultConfig?.callGoal ?? '',
-    priorContext: defaultConfig?.priorContext ?? '',
-    yourPitch:    defaultPitch,
-    language:     defaultLanguage,
-  });
+export function PreCallScreen({
+  onStartCall,
+  onBack,
+  defaultLanguage = 'en-US',
+  defaultConfig,
+  userId,
+}: PreCallScreenProps) {
   const t = useTranslations();
-  const [errors, setErrors] = useState<StringConfigErrors>({});
-  const [enhancing, setEnhancing] = useState(false);
-  const [enhanced, setEnhanced] = useState(false);
-  const enhancingRef = useRef(false);
-  const [battleCard, setBattleCard] = useState<BattleCard | null>(null);
-  const [generatingCard, setGeneratingCard] = useState(false);
-  const [cardExpanded, setCardExpanded] = useState(false);
-  const generatingCardRef = useRef(false);
 
-  function handleChange(field: StringConfigField, value: string) {
-    setForm(f => ({ ...f, [field]: value }));
-    if (errors[field]) setErrors(e => ({ ...e, [field]: '' }));
-    if (field === 'yourPitch') setEnhanced(false);
-  }
+  const [callType, setCallType] = useState<CallType | undefined>(defaultConfig?.callType);
+  const [inCrm, setInCrm]       = useState<boolean | null>(null);
+  const [leads, setLeads]        = useState<Lead[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(
+    defaultConfig?.prospectName
+      ? ({ name: defaultConfig.prospectName, company: defaultConfig.company, title: defaultConfig.prospectTitle, priorContext: defaultConfig.priorContext } as Lead)
+      : null,
+  );
+  const [leadSearch, setLeadSearch] = useState('');
+  const [callGoal, setCallGoal]     = useState(defaultConfig?.callGoal ?? '');
+  const [perks, setPerks]           = useState<string[]>(['']);
+  const [language, setLanguage]     = useState<string>(defaultLanguage);
+  const [errors, setErrors]         = useState<StringConfigErrors>({});
+  const loadedRef = useRef(false);
+
+  // Load CRM leads when user taps Yes
+  useEffect(() => {
+    if (inCrm !== true || loadedRef.current) return;
+    loadedRef.current = true;
+    if (!userId) return;
+    setLeadsLoading(true);
+    loadLeads(userId)
+      .then(setLeads)
+      .catch(() => {})
+      .finally(() => setLeadsLoading(false));
+  }, [inCrm, userId]);
 
   function handleCallType(value: CallType) {
-    setForm(f => ({ ...f, callType: f.callType === value ? undefined : value }));
+    setCallType(prev => prev === value ? undefined : value);
   }
 
-  async function handleGenerateBattleCard() {
-    if (generatingCardRef.current) return;
-    generatingCardRef.current = true;
-    setGeneratingCard(true);
-    try {
-      const card = await generateBattleCard(
-        form.prospectName, form.prospectTitle ?? '', form.company,
-        form.callType ?? '', form.callGoal, form.yourPitch, form.priorContext ?? '',
-      );
-      setBattleCard(card);
-      setCardExpanded(true);
-    } finally {
-      generatingCardRef.current = false;
-      setGeneratingCard(false);
+  function handlePerkChange(index: number, value: string) {
+    setPerks(prev => {
+      const next = [...prev];
+      next[index] = value;
+      if (index === prev.length - 1 && value.trim()) next.push('');
+      return next;
+    });
+  }
+
+  function handlePerkKeyDown(index: number, e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setPerks(prev => {
+        const next = [...prev];
+        if (index === prev.length - 1 && prev[index].trim()) next.push('');
+        return next;
+      });
+      // Focus next input
+      setTimeout(() => {
+        const inputs = document.querySelectorAll<HTMLInputElement>('.precall__perk-input');
+        inputs[index + 1]?.focus();
+      }, 0);
+    }
+    if (e.key === 'Backspace' && perks[index] === '' && perks.length > 1) {
+      e.preventDefault();
+      setPerks(prev => prev.filter((_, i) => i !== index));
+      setTimeout(() => {
+        const inputs = document.querySelectorAll<HTMLInputElement>('.precall__perk-input');
+        inputs[Math.max(0, index - 1)]?.focus();
+      }, 0);
     }
   }
 
-  async function handleEnhancePitch() {
-    if (!form.yourPitch.trim() || enhancingRef.current) return;
-    enhancingRef.current = true;
-    setEnhancing(true);
-    setEnhanced(false);
-    try {
-      const result = await enhancePitch(form.yourPitch, form.company, form.callGoal);
-      setForm(f => ({ ...f, yourPitch: result }));
-      setEnhanced(true);
-    } finally {
-      enhancingRef.current = false;
-      setEnhancing(false);
-    }
+  function handleRemovePerk(index: number) {
+    setPerks(prev => {
+      const next = prev.filter((_, i) => i !== index);
+      return next.length === 0 ? [''] : next;
+    });
+  }
+
+  function handleInCrm(value: boolean) {
+    setInCrm(value);
+    if (!value) setSelectedLead(null);
+  }
+
+  function handleSelectLead(lead: Lead) {
+    setSelectedLead(lead);
   }
 
   function handleSubmit() {
     const newErrors: StringConfigErrors = {};
-    if (!form.prospectName.trim()) newErrors.prospectName = t.errors?.required ?? 'Required';
-    if (!form.callGoal.trim())     newErrors.callGoal = t.errors?.required ?? 'Required';
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    onStartCall(form);
+    if (!callGoal.trim()) newErrors.callGoal = 'Required';
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+
+    const filledPerks = perks.filter(p => p.trim());
+    const yourPitch = filledPerks.join('\n');
+
+    onStartCall({
+      prospectName:  selectedLead?.name ?? '',
+      company:       selectedLead?.company ?? '',
+      prospectTitle: selectedLead?.title ?? '',
+      priorContext:  selectedLead?.priorContext ?? '',
+      callType,
+      callGoal,
+      yourPitch,
+      language,
+    });
   }
 
-  function handleSkip() {
-    onStartCall(form);
-  }
+  const filteredLeads = leads.filter(l =>
+    l.name.toLowerCase().includes(leadSearch.toLowerCase()) ||
+    (l.company ?? '').toLowerCase().includes(leadSearch.toLowerCase()),
+  );
 
-  const goalPlaceholder = GOAL_PLACEHOLDERS[form.callType ?? ''] ?? GOAL_PLACEHOLDERS.default;
+  const GOAL_PLACEHOLDERS: Record<string, string> = {
+    cold:        'e.g. Get them to agree to a 20-minute discovery call',
+    warm:        'e.g. Follow up on the proposal and confirm next steps',
+    referral:    'e.g. Introduce yourself and schedule a demo',
+    discovery:   'e.g. Uncover budget, timeline, and key pain points',
+    demo:        'e.g. Show the dashboard, address their data security concern',
+    negotiation: 'e.g. Agree on pricing, handle the contract length objection',
+    close:       'e.g. Get a verbal yes and confirm the start date',
+    default:     'e.g. What do you want to walk away with from this call?',
+  };
+  const goalPlaceholder = GOAL_PLACEHOLDERS[callType ?? ''] ?? GOAL_PLACEHOLDERS.default;
 
   return (
     <div className="precall">
       <div className="precall__card">
+
         <div className="precall__header">
           <button className="precall__back" onClick={onBack}>← BACK</button>
           <div className="precall__logo">PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span></div>
         </div>
 
-        {prevTip && !tipDismissed && (
-          <div className="precall__tip-banner">
-            <div className="precall__tip-banner-inner">
-              <span className="precall__tip-banner-label">TIP FROM LAST CALL</span>
-              <span className="precall__tip-banner-text">{prevTip}</span>
-            </div>
-            <button className="precall__tip-dismiss" onClick={() => setTipDismissed(true)} aria-label="Dismiss">✕</button>
-          </div>
-        )}
-
-        <h2 className="precall__title">{t.precall.title}</h2>
+        <h2 className="precall__title">Pre-Call Setup</h2>
         <p className="precall__desc">Give the AI context before your call. The more specific you are, the sharper the coaching.</p>
 
         <div className="precall__form">
 
-          {/* ── Who are you calling? ── */}
-          <div className="precall__section-label">Who are you calling?</div>
-
-          <div className="precall__row">
-            <div className={`precall__field ${errors.prospectName ? 'precall__field--error' : ''}`}>
-              <label className="precall__label">{t.precall.prospectName} <span className="precall__required">*</span></label>
-              <input
-                className="precall__input"
-                placeholder={t.precall.prospectNamePlaceholder}
-                value={form.prospectName}
-                onChange={e => handleChange('prospectName', e.target.value)}
-                autoFocus
-              />
-              {errors.prospectName && <span className="precall__error">{errors.prospectName}</span>}
-            </div>
-
-            <div className="precall__field">
-              <label className="precall__label">Their Title / Role</label>
-              <input
-                className="precall__input"
-                placeholder="e.g. VP of Sales, CFO, Head of Marketing"
-                value={form.prospectTitle ?? ''}
-                onChange={e => handleChange('prospectTitle', e.target.value)}
-              />
-            </div>
+          {/* ── 1. Call Type ── */}
+          <div className="precall__section-label">What type of call is this?</div>
+          <div className="precall__chips">
+            {CALL_TYPES.map(ct => (
+              <button
+                key={ct.value}
+                type="button"
+                className={`precall__chip${callType === ct.value ? ' precall__chip--active' : ''}`}
+                onClick={() => handleCallType(ct.value)}
+              >
+                {ct.label}
+              </button>
+            ))}
           </div>
 
-          <div className="precall__field">
-            <label className="precall__label">{t.precall.company}</label>
-            <input
-              className="precall__input"
-              placeholder={t.precall.companyPlaceholder}
-              value={form.company}
-              onChange={e => handleChange('company', e.target.value)}
-            />
+          {/* ── 2. Is the lead in CRM? ── */}
+          <div className="precall__section-label">Is this lead in your CRM?</div>
+          <div className="precall__crm-toggle">
+            <button
+              type="button"
+              className={`precall__crm-btn${inCrm === true ? ' precall__crm-btn--active' : ''}`}
+              onClick={() => handleInCrm(true)}
+            >
+              Yes
+            </button>
+            <button
+              type="button"
+              className={`precall__crm-btn${inCrm === false ? ' precall__crm-btn--active' : ''}`}
+              onClick={() => handleInCrm(false)}
+            >
+              No
+            </button>
           </div>
 
-          {/* ── About this call ── */}
-          <div className="precall__section-label">About this call</div>
-
-          <div className="precall__field">
-            <label className="precall__label">Call Type</label>
-            <div className="precall__chips">
-              {CALL_TYPES.map(ct => (
-                <button
-                  key={ct.value}
-                  type="button"
-                  className={`precall__chip${form.callType === ct.value ? ' precall__chip--active' : ''}`}
-                  onClick={() => handleCallType(ct.value)}
-                >
-                  {ct.label}
-                </button>
-              ))}
+          {/* ── CRM lead picker ── */}
+          {inCrm === true && (
+            <div className="precall__crm-picker">
+              {selectedLead ? (
+                <div className="precall__crm-selected">
+                  <div className="precall__crm-selected-info">
+                    <span className="precall__crm-selected-name">{selectedLead.name}</span>
+                    {selectedLead.company && (
+                      <span className="precall__crm-selected-company">{selectedLead.company}</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="precall__crm-clear"
+                    onClick={() => setSelectedLead(null)}
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    className="precall__input precall__crm-search"
+                    placeholder="Search by name or company…"
+                    value={leadSearch}
+                    onChange={e => setLeadSearch(e.target.value)}
+                    autoFocus
+                  />
+                  <div className="precall__crm-list">
+                    {leadsLoading ? (
+                      <div className="precall__crm-empty">Loading…</div>
+                    ) : filteredLeads.length === 0 ? (
+                      <div className="precall__crm-empty">No leads found</div>
+                    ) : filteredLeads.map(lead => (
+                      <button
+                        key={lead.id}
+                        type="button"
+                        className="precall__crm-lead"
+                        onClick={() => handleSelectLead(lead)}
+                      >
+                        <span className="precall__crm-lead-name">{lead.name}</span>
+                        {lead.company && (
+                          <span className="precall__crm-lead-company">{lead.company}</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-          </div>
+          )}
 
+          {/* ── 3. Call Goal ── */}
+          <div className="precall__section-label">Call Goal <span className="precall__required">*</span></div>
           <div className={`precall__field ${errors.callGoal ? 'precall__field--error' : ''}`}>
-            <label className="precall__label">{t.precall.callGoal} <span className="precall__required">*</span></label>
             <input
               className="precall__input"
               placeholder={goalPlaceholder}
-              value={form.callGoal}
-              onChange={e => handleChange('callGoal', e.target.value)}
+              value={callGoal}
+              onChange={e => { setCallGoal(e.target.value); if (errors.callGoal) setErrors(e2 => ({ ...e2, callGoal: '' })); }}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
             />
             {errors.callGoal && <span className="precall__error">{errors.callGoal}</span>}
           </div>
 
-          {/* ── Context (optional) ── */}
-          <div className="precall__section-label">
-            Context
-            <span className="precall__section-optional">optional but powerful</span>
-          </div>
-
-          <div className="precall__field">
-            <label className="precall__label">What do you know about them?</label>
-            <textarea
-              className="precall__textarea"
-              placeholder="Pain points, research from LinkedIn, what they mentioned last time, objections you're expecting, trigger events (funding round, new hire, etc.)…"
-              value={form.priorContext ?? ''}
-              onChange={e => handleChange('priorContext', e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          {/* ── Your pitch ── */}
-          <div className="precall__section-label">Your pitch</div>
-
-          <div className="precall__field">
-            <div className="precall__label-row">
-              <label className="precall__label">{t.precall.yourPitch}</label>
-              <button
-                type="button"
-                className={`precall__enhance-btn ${enhanced ? 'precall__enhance-btn--done' : ''}`}
-                onClick={handleEnhancePitch}
-                disabled={!form.yourPitch.trim() || enhancing}
-                title="Let AI expand and structure your pitch for better coaching"
-              >
-                {enhancing ? (
-                  <span className="precall__enhance-spinner" />
-                ) : enhanced ? (
-                  '✓ Enhanced'
-                ) : (
-                  '◈ Enhance'
+          {/* ── 4. Your Perks ── */}
+          <div className="precall__section-label">Your Perks</div>
+          <p className="precall__perks-desc">List everything great about your service — features, guarantees, pricing, differentiators. The AI will use this during the call.</p>
+          <div className="precall__perks-list">
+            {perks.map((perk, i) => (
+              <div key={i} className="precall__perk-row">
+                <span className="precall__perk-bullet">◆</span>
+                <input
+                  className="precall__input precall__perk-input"
+                  placeholder={i === 0 ? 'e.g. 14-day free trial, no credit card required' : 'Add another perk…'}
+                  value={perk}
+                  onChange={e => handlePerkChange(i, e.target.value)}
+                  onKeyDown={e => handlePerkKeyDown(i, e)}
+                />
+                {perks.length > 1 && perk.trim() && (
+                  <button
+                    type="button"
+                    className="precall__perk-remove"
+                    onClick={() => handleRemovePerk(i)}
+                    aria-label="Remove"
+                  >✕</button>
                 )}
-              </button>
-            </div>
-            <textarea
-              className="precall__textarea"
-              placeholder={t.precall.yourPitchPlaceholder}
-              value={form.yourPitch}
-              onChange={e => handleChange('yourPitch', e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          {/* ── Language ── */}
-          <div className="precall__field">
-            <label className="precall__label">{t.precall.language}</label>
-            <div className="precall__lang-grid">
-              {SUPPORTED_LANGUAGES.map(l => (
-                <button
-                  key={l.code}
-                  type="button"
-                  className={`precall__lang-btn ${form.language === l.code ? 'precall__lang-btn--active' : ''}`}
-                  onClick={() => setForm(f => ({ ...f, language: l.code }))}
-                >
-                  <img className="precall__lang-flag" src={`https://flagcdn.com/w20/${l.code.split('-')[1].toLowerCase()}.png`} alt={l.label} onError={e => { e.currentTarget.style.display = 'none'; }} />
-                  <span>{l.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* ── Battle Card ── */}
-          <div className="precall__battlecard-wrap">
-            <button
-              type="button"
-              className="precall__battlecard-trigger"
-              onClick={battleCard ? () => setCardExpanded(e => !e) : handleGenerateBattleCard}
-              disabled={generatingCard}
-            >
-              <span className="precall__battlecard-trigger-icon">
-                {generatingCard ? <span className="precall__enhance-spinner" /> : '⚡'}
-              </span>
-              {generatingCard
-                ? 'Generating battle card…'
-                : battleCard
-                ? `${cardExpanded ? '▾' : '▸'} Battle Card`
-                : 'Generate Battle Card'}
-              {!battleCard && !generatingCard && (
-                <span className="precall__battlecard-hint">Likely objections · Power questions · Suggested opener</span>
-              )}
-            </button>
-
-            {battleCard && cardExpanded && (
-              <div className="precall__battlecard">
-
-                <div className="precall__bc-section">
-                  <div className="precall__bc-label">◈ CONTEXT INSIGHT</div>
-                  <p className="precall__bc-insight">{battleCard.contextInsight}</p>
-                </div>
-
-                <div className="precall__bc-section">
-                  <div className="precall__bc-label">▶ SUGGESTED OPENER</div>
-                  <p className="precall__bc-opener">{battleCard.suggestedOpener}</p>
-                </div>
-
-                <div className="precall__bc-section">
-                  <div className="precall__bc-label">? POWER QUESTIONS</div>
-                  <ul className="precall__bc-list">
-                    {battleCard.powerQuestions.map((q, i) => (
-                      <li key={i} className="precall__bc-list-item">{q}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="precall__bc-section">
-                  <div className="precall__bc-label">⚠ LIKELY OBJECTIONS</div>
-                  {battleCard.likelyObjections.map((o, i) => (
-                    <div key={i} className="precall__bc-objection">
-                      <div className="precall__bc-obj-label">"{o.objection}"</div>
-                      <div className="precall__bc-obj-response">{o.response}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  className="precall__bc-regen"
-                  onClick={handleGenerateBattleCard}
-                  disabled={generatingCard}
-                >
-                  ↺ Regenerate
-                </button>
               </div>
-            )}
+            ))}
           </div>
 
+          {/* ── 5. Language ── */}
+          <div className="precall__section-label">{t.precall.language}</div>
+          <div className="precall__lang-grid">
+            {SUPPORTED_LANGUAGES.map(l => (
+              <button
+                key={l.code}
+                type="button"
+                className={`precall__lang-btn ${language === l.code ? 'precall__lang-btn--active' : ''}`}
+                onClick={() => setLanguage(l.code)}
+              >
+                <img
+                  className="precall__lang-flag"
+                  src={`https://flagcdn.com/w20/${l.code.split('-')[1].toLowerCase()}.png`}
+                  alt={l.label}
+                  onError={e => { e.currentTarget.style.display = 'none'; }}
+                />
+                <span>{l.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* ── Actions ── */}
           <div className="precall__actions">
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={handleSubmit}
-              className="precall__start"
-            >
+            <Button variant="primary" size="lg" onClick={handleSubmit} className="precall__start">
               ▶ {t.precall.startCall}
             </Button>
-            <button type="button" className="precall__skip" onClick={handleSkip}>
+            <button type="button" className="precall__skip" onClick={handleSubmit}>
               {t.common.skip}
             </button>
           </div>
+
         </div>
       </div>
     </div>
