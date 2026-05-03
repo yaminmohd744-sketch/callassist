@@ -2,9 +2,27 @@ import { supabase } from './supabase';
 import { MOCK_SESSIONS } from './mockSessions';
 import type { CallConfig, CallSession, CallStage, CallOutcome, TranscriptEntry, AISuggestion, CoachingWalkthrough } from '../types';
 
-type DbRow = Record<string, unknown>;
+interface SessionRow {
+  user_id: string;
+  config: unknown;
+  transcript: unknown;
+  suggestions: unknown;
+  duration_seconds: number;
+  final_close_prob: number;
+  objections_count: number;
+  call_stage: string;
+  ended_at: string;
+  ai_summary: string;
+  follow_up_email: string;
+  lead_score: number;
+  notes: unknown;
+  talk_ratio: number | null;
+  coaching: unknown;
+  outcome: string | null;
+  created_at?: string;
+}
 
-export function rowToSession(row: DbRow): CallSession {
+export function rowToSession(row: SessionRow): CallSession {
   return {
     config:                (row.config as CallConfig) ?? ({} as CallConfig),
     transcript:            Array.isArray(row.transcript) ? row.transcript as TranscriptEntry[] : [],
@@ -45,16 +63,15 @@ export function sessionToRow(s: CallSession, userId: string) {
   };
 }
 
-export async function loadSessions(userId: string, outcomeMap: Record<string, CallOutcome>): Promise<CallSession[]> {
+export async function loadSessions(userId: string): Promise<CallSession[]> {
   const { data, error } = await supabase
     .from('call_sessions')
     .select('*')
     .eq('user_id', userId)
     .order('ended_at', { ascending: false });
   if (error) throw new Error(error.message);
-  const real = data ? data.map(r => rowToSession(r as DbRow)) : [];
-  const base = real.length > 0 ? real : MOCK_SESSIONS;
-  return base.map(s => outcomeMap[s.endedAt] !== undefined ? { ...s, outcome: outcomeMap[s.endedAt] } : s);
+  const real = data ? data.map(r => rowToSession(r as SessionRow)) : [];
+  return real.length > 0 ? real : MOCK_SESSIONS;
 }
 
 export async function saveSession(session: CallSession, userId: string): Promise<CallSession> {
@@ -64,7 +81,7 @@ export async function saveSession(session: CallSession, userId: string): Promise
     .select()
     .single();
   if (error) throw new Error(error.message);
-  return rowToSession(data as DbRow);
+  return rowToSession(data as SessionRow);
 }
 
 export async function updateOutcome(userId: string, endedAt: string, outcome: CallOutcome): Promise<void> {

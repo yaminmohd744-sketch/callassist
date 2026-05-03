@@ -1,5 +1,7 @@
 // ─── Configuration ───────────────────────────────────────────────────────────
 
+export type CallType = 'cold' | 'warm' | 'referral' | 'discovery' | 'demo' | 'negotiation' | 'close';
+
 export interface CallConfig {
   prospectName: string;
   company: string;
@@ -8,7 +10,7 @@ export interface CallConfig {
   language: string; // BCP 47 language code, e.g. 'en-US', 'es-ES'
   // Optional enrichment fields — set during pre-call setup
   prospectTitle?: string;  // their job title / role
-  callType?: string;       // 'cold' | 'warm' | 'referral' | 'discovery' | 'demo' | 'negotiation' | 'close'
+  callType?: CallType;
   priorContext?: string;   // research, previous interactions, expected objections
 }
 

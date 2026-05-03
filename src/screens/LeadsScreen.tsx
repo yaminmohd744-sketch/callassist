@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../lib/toast';
 import { loadLeads, saveLead, deleteLead, importLeads } from '../lib/leads';
 import {
-  loadPackages, upsertPackage, deletePackage as removePackage,
-  assignLeadToPackage, getLeadsForPackage,
-} from '../lib/packages';
+  loadPackages, savePackage, deletePackage as removePackage,
+  assignLead, loadLeadPackageMap, getLeadsForPackage,
+} from '../lib/packagesSupabase';
 import { formatDuration, formatDateShort } from '../lib/formatters';
 import type { Lead, CallSession, CrmPackage, CrmSource } from '../types';
 import './LeadsScreen.css';
@@ -83,21 +82,22 @@ type LeadsView = 'packages' | 'leads' | 'detail';
 const EMPTY_FORM = { name: '', company: '', title: '', phone: '', email: '', priorContext: '' };
 
 interface LeadsScreenProps {
+  userId: string;
   onCallLead: (lead: Lead) => void;
   pastSessions: CallSession[];
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function LeadsScreen({ onCallLead, pastSessions }: LeadsScreenProps) {
-  const { user } = useAuth();
-  const toast    = useToast();
+export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenProps) {
+  const toast = useToast();
 
   // Data
-  const [leads,    setLeads]    = useState<Lead[]>([]);
-  const [packages, setPackages] = useState<CrmPackage[]>([]);
-  const [loading,   setLoading]   = useState(true);
-  const [loadError, setLoadError] = useState(false);
+  const [leads,          setLeads]          = useState<Lead[]>([]);
+  const [packages,       setPackages]       = useState<CrmPackage[]>([]);
+  const [leadPackageMap, setLeadPackageMap] = useState<Record<string, string>>({});
+  const [loading,        setLoading]        = useState(true);
+  const [loadError,      setLoadError]      = useState(false);
 
   // Navigation
   const [view,            setView]            = useState<LeadsView>('packages');
@@ -121,29 +121,31 @@ export function LeadsScreen({ onCallLead, pastSessions }: LeadsScreenProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchLeads = useCallback(async () => {
-    if (!user) { setLoading(false); return; }
     setLoading(true);
     setLoadError(false);
     try {
-      const data = await loadLeads(user.id);
+      const [data, pkgs, lmap] = await Promise.all([
+        loadLeads(userId),
+        loadPackages(userId),
+        loadLeadPackageMap(userId),
+      ]);
       setLeads(data);
+      setPackages(pkgs);
+      setLeadPackageMap(lmap);
     } catch {
       setLoadError(true);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    fetchLeads();
-    setPackages(loadPackages());
-  }, [fetchLeads]);
+  useEffect(() => { fetchLeads(); }, [fetchLeads]);
 
   // Leads visible in the current package (or all)
   const visibleLeads = useMemo(() => {
     if (activePackageId === null) return leads;
-    return getLeadsForPackage(activePackageId, leads);
-  }, [leads, activePackageId]);
+    return getLeadsForPackage(activePackageId, leads, leadPackageMap);
+  }, [leads, activePackageId, leadPackageMap]);
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return visibleLeads;
@@ -176,7 +178,6 @@ export function LeadsScreen({ onCallLead, pastSessions }: LeadsScreenProps) {
   async function handleAddLead(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim()) { setFormError('Name is required.'); return; }
-    if (!user) return;
     setSaving(true);
     setFormError('');
     try {
@@ -187,8 +188,11 @@ export function LeadsScreen({ onCallLead, pastSessions }: LeadsScreenProps) {
         phone:        form.phone.trim() || undefined,
         email:        form.email.trim() || undefined,
         priorContext: form.priorContext.trim() || undefined,
-      }, user.id);
-      if (activePackageId) assignLeadToPackage(saved.id, activePackageId);
+      }, userId);
+      if (activePackageId) {
+        await assignLead(saved.id, activePackageId, userId);
+        setLeadPackageMap(prev => ({ ...prev, [saved.id]: activePackageId }));
+      }
       setLeads(prev => [saved, ...prev]);
       setForm(EMPTY_FORM);
       setShowForm(false);
@@ -201,18 +205,16 @@ export function LeadsScreen({ onCallLead, pastSessions }: LeadsScreenProps) {
 
   async function handleDelete(id: string) {
     setLeads(prev => prev.filter(l => l.id !== id));
-    if (user) {
-      deleteLead(id, user.id).catch(() => {
-        toast.error('Failed to delete lead.');
-        fetchLeads();
-      });
-    }
+    deleteLead(id, userId).catch(() => {
+      toast.error('Failed to delete lead.');
+      fetchLeads();
+    });
   }
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = '';
-    if (!file || !user) return;
+    if (!file) return;
     setImportStatus('Parsing...');
     const text = await file.text();
     const parsed = parseCSV(text);
@@ -220,23 +222,25 @@ export function LeadsScreen({ onCallLead, pastSessions }: LeadsScreenProps) {
     const truncated = parsed.length === 500;
     setImportStatus(`Importing ${parsed.length} leads...`);
     try {
-      const newLeads = await importLeads(parsed, user.id);
+      const newLeads = await importLeads(parsed, userId);
       if (activePackageId) {
-        for (const l of newLeads) assignLeadToPackage(l.id, activePackageId);
+        await Promise.all(newLeads.map(l => assignLead(l.id, activePackageId, userId)));
+        const newMap = { ...leadPackageMap };
+        for (const l of newLeads) newMap[l.id] = activePackageId;
+        setLeadPackageMap(newMap);
       }
       setLeads(prev => [...newLeads, ...prev]);
-      setImportStatus(
-        truncated
-          ? 'Imported 500 leads (file truncated at 500 rows).'
-          : `Imported ${newLeads.length} lead${newLeads.length !== 1 ? 's' : ''}.`
-      );
+      setImportStatus(`Imported ${newLeads.length} lead${newLeads.length !== 1 ? 's' : ''}.`);
+      if (truncated) {
+        toast.error('Only the first 500 rows were imported. Split your file to import the rest.');
+      }
     } catch {
       setImportStatus('Import failed. Check file format.');
     }
     setTimeout(() => setImportStatus(''), 5000);
   }
 
-  function handleCreatePackage() {
+  async function handleCreatePackage() {
     if (!newPkgName.trim()) return;
     const pkg: CrmPackage = {
       id:        `pkg-${Date.now()}`,
@@ -244,16 +248,26 @@ export function LeadsScreen({ onCallLead, pastSessions }: LeadsScreenProps) {
       source:    newPkgSource,
       createdAt: new Date().toISOString(),
     };
-    upsertPackage(pkg);
-    setPackages(loadPackages());
+    setPackages(prev => [pkg, ...prev]);
     setNewPkgName('');
     setNewPkgSource('custom');
     setShowNewPkg(false);
+    try {
+      await savePackage(pkg, userId);
+    } catch {
+      toast.error('Failed to save package.');
+      setPackages(prev => prev.filter(p => p.id !== pkg.id));
+    }
   }
 
-  function handleDeletePackage(id: string) {
-    removePackage(id);
-    setPackages(loadPackages());
+  async function handleDeletePackage(id: string) {
+    setPackages(prev => prev.filter(p => p.id !== id));
+    try {
+      await removePackage(id, userId);
+    } catch {
+      toast.error('Failed to delete package.');
+      fetchLeads(); // reload to restore state
+    }
   }
 
   function openPackage(packageId: string | null) {
@@ -362,7 +376,7 @@ export function LeadsScreen({ onCallLead, pastSessions }: LeadsScreenProps) {
 
           {packages.map(pkg => {
             const meta  = SOURCE_META[pkg.source];
-            const count = getLeadsForPackage(pkg.id, leads).length;
+            const count = getLeadsForPackage(pkg.id, leads, leadPackageMap).length;
             return (
               <div
                 key={pkg.id}

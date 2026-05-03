@@ -4,7 +4,7 @@ import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
 import { enhancePitch, generateBattleCard } from '../lib/ai';
 import type { BattleCard } from '../lib/ai';
-import type { CallConfig } from '../types';
+import type { CallConfig, CallType } from '../types';
 import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
 
@@ -20,7 +20,7 @@ interface PreCallScreenProps {
   defaultConfig?: Partial<CallConfig & { prospectTitle?: string }>;
 }
 
-const CALL_TYPES = [
+const CALL_TYPES: { value: CallType; label: string }[] = [
   { value: 'cold',        label: 'Cold call'       },
   { value: 'warm',        label: 'Warm follow-up'  },
   { value: 'referral',    label: 'Referral'         },
@@ -50,7 +50,7 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', 
     prospectName: defaultConfig?.prospectName ?? '',
     company:      defaultConfig?.company ?? defaultCompany,
     prospectTitle: defaultConfig?.prospectTitle ?? '',
-    callType:     defaultConfig?.callType ?? '',
+    callType:     defaultConfig?.callType ?? undefined,
     callGoal:     defaultConfig?.callGoal ?? '',
     priorContext: defaultConfig?.priorContext ?? '',
     yourPitch:    defaultPitch,
@@ -72,8 +72,8 @@ export function PreCallScreen({ onStartCall, onBack, defaultLanguage = 'en-US', 
     if (field === 'yourPitch') setEnhanced(false);
   }
 
-  function handleCallType(value: string) {
-    setForm(f => ({ ...f, callType: f.callType === value ? '' : value }));
+  function handleCallType(value: CallType) {
+    setForm(f => ({ ...f, callType: f.callType === value ? undefined : value }));
   }
 
   async function handleGenerateBattleCard() {

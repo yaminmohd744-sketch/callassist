@@ -1,20 +1,32 @@
 import { supabase } from './supabase';
 import type { Lead } from '../types';
 
-type DbRow = Record<string, unknown>;
+interface LeadRow {
+  id: string;
+  user_id: string;
+  name: string;
+  company: string | null;
+  title: string | null;
+  phone: string | null;
+  email: string | null;
+  prior_context: string | null;
+  last_called_at: string | null;
+  call_count: number;
+  created_at: string;
+}
 
-export function rowToLead(r: DbRow): Lead {
+export function rowToLead(r: LeadRow): Lead {
   return {
-    id:           r.id as string,
-    name:         r.name as string,
-    company:      typeof r.company === 'string' ? r.company : undefined,
-    title:        typeof r.title === 'string' ? r.title : undefined,
-    phone:        typeof r.phone === 'string' ? r.phone : undefined,
-    email:        typeof r.email === 'string' ? r.email : undefined,
-    priorContext: typeof r.prior_context === 'string' ? r.prior_context : undefined,
-    lastCalledAt: typeof r.last_called_at === 'string' ? r.last_called_at : undefined,
-    callCount:    typeof r.call_count === 'number' ? r.call_count : 0,
-    createdAt:    r.created_at as string,
+    id:           r.id,
+    name:         r.name,
+    company:      r.company ?? undefined,
+    title:        r.title ?? undefined,
+    phone:        r.phone ?? undefined,
+    email:        r.email ?? undefined,
+    priorContext: r.prior_context ?? undefined,
+    lastCalledAt: r.last_called_at ?? undefined,
+    callCount:    r.call_count,
+    createdAt:    r.created_at,
   };
 }
 
@@ -25,7 +37,7 @@ export async function loadLeads(userId: string): Promise<Lead[]> {
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
-  return (data ?? []).map(r => rowToLead(r as DbRow));
+  return (data ?? []).map(r => rowToLead(r as LeadRow));
 }
 
 export async function saveLead(
@@ -46,7 +58,7 @@ export async function saveLead(
     .select()
     .single();
   if (error) throw new Error(error.message);
-  return rowToLead(data as DbRow);
+  return rowToLead(data as LeadRow);
 }
 
 export async function deleteLead(id: string, userId: string): Promise<void> {
@@ -73,7 +85,7 @@ export async function importLeads(
   }));
   const { data, error } = await supabase.from('leads').insert(rows).select();
   if (error) throw new Error(error.message);
-  return (data ?? []).map(r => rowToLead(r as DbRow));
+  return (data ?? []).map(r => rowToLead(r as LeadRow));
 }
 
 export async function updateLeadAfterCall(id: string, userId: string, callCount: number): Promise<void> {

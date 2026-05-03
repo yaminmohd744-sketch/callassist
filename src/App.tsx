@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import * as Sentry from '@sentry/react';
 import { ThemeToggle }      from './components/ThemeToggle';
 import { AppShell }         from './components/layout/AppShell';
@@ -9,7 +9,7 @@ import { useAppLanguage }   from './hooks/useAppLanguage';
 import { useToast }         from './lib/toast';
 import type { LanguageCode } from './lib/languages';
 import { supabase }         from './lib/supabase';
-import { loadSessions, saveSession, deleteSession } from './lib/sessions';
+import { loadSessions, saveSession, deleteSession, updateOutcome } from './lib/sessions';
 import { updateLeadAfterCall } from './lib/leads';
 import type { CallConfig, CallSession, CallOutcome, Lead, Meeting } from './types';
 
@@ -28,13 +28,21 @@ const MeetingReport       = lazy(() => import('./screens/MeetingReport').then(m 
 const AuthScreen          = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })));
 const OnboardingScreen    = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
 
-const OUTCOMES_KEY = 'pitchbase:outcomes';
-function loadOutcomes(): Record<string, CallOutcome> {
-  try { return JSON.parse(localStorage.getItem(OUTCOMES_KEY) ?? '{}'); } catch (err) {
-    if (import.meta.env.DEV) console.warn('[Pitchbase] loadOutcomes parse error:', err);
-    return {};
+// One-time migration: move localStorage outcomes into Supabase call_sessions rows
+const OUTCOMES_LEGACY_KEY = 'pitchbase:outcomes';
+async function migrateOutcomes(userId: string): Promise<void> {
+  const raw = localStorage.getItem(OUTCOMES_LEGACY_KEY);
+  if (!raw) return;
+  try {
+    const map = JSON.parse(raw) as Record<string, CallOutcome>;
+    const entries = Object.entries(map).filter(([, v]) => v !== null);
+    await Promise.all(entries.map(([endedAt, outcome]) => updateOutcome(userId, endedAt, outcome)));
+    localStorage.removeItem(OUTCOMES_LEGACY_KEY);
+  } catch {
+    // Non-critical — data stays in localStorage until next successful migration
   }
 }
+
 const PROFILE_PIC_KEY = 'pp-profile-pic';
 
 interface OnboardingData {
@@ -78,8 +86,12 @@ function getDisplayName(
   );
 }
 
-// Read once at module scope for FOUC prevention and React state initialisation
-const INITIAL_THEME = (localStorage.getItem('theme') ?? 'dark') as 'dark' | 'light';
+// Read once at module scope for FOUC prevention and React state initialisation.
+// Falls back to system preference for first-time visitors.
+const INITIAL_THEME = (
+  localStorage.getItem('theme') ??
+  (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+) as 'dark' | 'light';
 document.documentElement.dataset.theme = INITIAL_THEME === 'light' ? 'light' : '';
 
 type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'meetings' | 'meeting-live' | 'meeting-report' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
@@ -143,19 +155,21 @@ export function App() {
     }
   }, [user, authLoading]);
 
-  // Load sessions — show a toast if it fails so the user knows history is unavailable
+  // Load sessions and run one-time outcome migration on login
   useEffect(() => {
     if (!user) { setPastSessions([]); return; }
     async function load() {
+      // Migrate legacy localStorage outcomes to Supabase (no-op if already migrated)
+      await migrateOutcomes(user!.id);
       try {
-        const sessions = await loadSessions(user!.id, loadOutcomes());
+        const sessions = await loadSessions(user!.id);
         setPastSessions(sessions);
       } catch {
         toast.error('Failed to load your call history. Check your connection and refresh.');
       }
     }
     load();
-  }, [user]); // loadSessions and toast are stable module-level references
+  }, [user]); // toast is a stable context reference
 
   function handleStartCall(config: CallConfig) {
     setCallConfig(config);
@@ -175,7 +189,7 @@ export function App() {
       }
       if (selectedLead) {
         updateLeadAfterCall(selectedLead.id, user.id, selectedLead.callCount)
-          .catch(() => { /* silent — lead sync is non-critical */ });
+          .catch(() => toast.error('Failed to sync lead call count. It will update next time.'));
         setSelectedLead(null);
       }
     }
@@ -192,8 +206,7 @@ export function App() {
     if (user) {
       deleteSession(user.id, endedAt).catch(() => {
         toast.error('Failed to delete session.');
-        // Reload sessions to restore correct state
-        loadSessions(user.id, loadOutcomes())
+        loadSessions(user.id)
           .then(sessions => setPastSessions(sessions))
           .catch(() => { /* already toasted above */ });
       });
@@ -239,7 +252,6 @@ export function App() {
   const isShell = currentScreen === 'dashboard' || currentScreen === 'analytics' || currentScreen === 'leads' || currentScreen === 'meetings';
 
   const onboardingData = getOnboardingData();
-
   const loginUserName = getDisplayName(user, onboardingData.name);
 
   return (
@@ -291,7 +303,7 @@ export function App() {
                   onUploadCall={() => setScreen('upload-call')}
                   onViewSession={handleViewSession}
                   onDeleteSession={handleDeleteSession}
-                  userName={getDisplayName(user, onboardingData.name)}
+                  userName={loginUserName}
                 />
               </Suspense>
             </ErrorBoundary>
@@ -307,6 +319,7 @@ export function App() {
             <ErrorBoundary>
               <Suspense fallback={<div className="app-loading" />}>
                 <LeadsScreen
+                  userId={user.id}
                   pastSessions={pastSessions}
                   onCallLead={lead => {
                     setSelectedLead(lead);
@@ -320,6 +333,7 @@ export function App() {
             <ErrorBoundary>
               <Suspense fallback={<div className="app-loading" />}>
                 <MeetingsScreen
+                  userId={user.id}
                   onWatchLive={meeting => { setSelectedMeeting(meeting); setScreen('meeting-live'); }}
                   onViewReport={meeting => { setSelectedMeeting(meeting); setScreen('meeting-report'); }}
                 />

@@ -1,13 +1,17 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { Button } from '../components/ui/Button';
 import type { Meeting, MeetingPlatform, MeetingFollowUp } from '../types';
-import { loadMeetings, addMeeting, deleteMeeting, updateMeeting } from '../lib/meetingsStore';
+import {
+  loadMeetings, saveMeeting, updateMeeting, deleteMeeting,
+} from '../lib/meetingsSupabase';
 import { formatScheduledAt } from '../lib/formatters';
+import { useToast } from '../lib/toast';
 import './MeetingsScreen.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 interface MeetingsScreenProps {
+  userId: string;
   onWatchLive: (meeting: Meeting) => void;
   onViewReport: (meeting: Meeting) => void;
 }
@@ -159,17 +163,33 @@ const EMPTY_FORM: ScheduleFormData = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function MeetingsScreen({ onWatchLive, onViewReport }: MeetingsScreenProps) {
-  const stored = loadMeetings();
-  const [isDemoMode,  setIsDemoMode]  = useState(stored.length === 0);
-  const [meetings,    setMeetings]    = useState<Meeting[]>(stored.length ? stored : DEMO_MEETINGS);
+export function MeetingsScreen({ userId, onWatchLive, onViewReport }: MeetingsScreenProps) {
+  const toast = useToast();
+  const [loading,     setLoading]     = useState(true);
+  const [isDemoMode,  setIsDemoMode]  = useState(false);
+  const [meetings,    setMeetings]    = useState<Meeting[]>([]);
   const [showPanel,   setShowPanel]   = useState(false);
   const [form,        setForm]        = useState<ScheduleFormData>({ ...EMPTY_FORM, scheduledAt: localDateTimeValue() });
   const [formError,   setFormError]   = useState('');
   const [editId,      setEditId]      = useState<string | null>(null);
-  const [expandedId,  setExpandedId]  = useState<string | null>(null); // history expand
-  const [ticker,      setTicker]      = useState(0); // drives live elapsed timer
+  const [expandedId,  setExpandedId]  = useState<string | null>(null);
+  const [ticker,      setTicker]      = useState(0);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Load meetings from Supabase on mount
+  useEffect(() => {
+    loadMeetings(userId)
+      .then(data => {
+        setMeetings(data.length ? data : DEMO_MEETINGS);
+        setIsDemoMode(data.length === 0);
+      })
+      .catch(() => {
+        toast.error('Failed to load meetings. Check your connection.');
+        setMeetings(DEMO_MEETINGS);
+        setIsDemoMode(true);
+      })
+      .finally(() => setLoading(false));
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Tick every second for live elapsed display
   useEffect(() => {
@@ -198,13 +218,22 @@ export function MeetingsScreen({ onWatchLive, onViewReport }: MeetingsScreenProp
       company:    m.company,
     })));
 
-  function toggleFollowUp(meetingId: string, followUpId: string) {
+  async function toggleFollowUp(meetingId: string, followUpId: string) {
     const mtg = meetings.find(m => m.id === meetingId);
     if (!mtg?.report?.followUps) return;
     const updatedFollowUps = mtg.report.followUps.map((fu): MeetingFollowUp =>
       fu.id === followUpId ? { ...fu, done: !fu.done } : fu
     );
-    setMeetings(updateMeeting(meetingId, { report: { ...mtg.report, followUps: updatedFollowUps } }));
+    const updatedReport = { ...mtg.report, followUps: updatedFollowUps };
+    // Optimistic update
+    setMeetings(prev => prev.map(m => m.id === meetingId ? { ...m, report: updatedReport } : m));
+    try {
+      await updateMeeting(meetingId, userId, { report: updatedReport });
+    } catch {
+      toast.error('Failed to save follow-up status.');
+      // Rollback
+      setMeetings(prev => prev.map(m => m.id === meetingId ? mtg : m));
+    }
   }
 
   // ── Schedule panel handlers ──────────────────────────────────────────────────
@@ -228,38 +257,60 @@ export function MeetingsScreen({ onWatchLive, onViewReport }: MeetingsScreenProp
     setShowPanel(true);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.prospectName.trim())            { setFormError('Prospect name is required.'); return; }
-    if (!form.meetingUrl.trim())              { setFormError('Meeting link is required.'); return; }
+    if (!form.prospectName.trim())               { setFormError('Prospect name is required.'); return; }
+    if (!form.meetingUrl.trim())                 { setFormError('Meeting link is required.'); return; }
     if (!form.meetingUrl.startsWith('https://')) { setFormError('Meeting link must start with https://'); return; }
-    if (!form.scheduledAt)                   { setFormError('Date and time are required.'); return; }
-    if (!form.goal.trim())                   { setFormError('Meeting goal is required.'); return; }
+    if (!form.scheduledAt)                       { setFormError('Date and time are required.'); return; }
+    if (!form.goal.trim())                       { setFormError('Meeting goal is required.'); return; }
+
+    const patch = {
+      prospectName:  form.prospectName.trim(),
+      company:       form.company.trim() || undefined,
+      prospectTitle: form.prospectTitle.trim() || undefined,
+      platform:      form.platform,
+      meetingUrl:    form.meetingUrl.trim(),
+      scheduledAt:   new Date(form.scheduledAt).toISOString(),
+      goal:          form.goal.trim(),
+      context:       form.context.trim() || undefined,
+      pitch:         form.pitch.trim() || undefined,
+      notifyEmail:   form.notifyEmail,
+    };
+
+    setShowPanel(false);
 
     if (editId) {
-      setMeetings(updateMeeting(editId, {
-        prospectName: form.prospectName.trim(), company: form.company.trim() || undefined,
-        prospectTitle: form.prospectTitle.trim() || undefined, platform: form.platform,
-        meetingUrl: form.meetingUrl.trim(), scheduledAt: new Date(form.scheduledAt).toISOString(),
-        goal: form.goal.trim(), context: form.context.trim() || undefined,
-        pitch: form.pitch.trim() || undefined, notifyEmail: form.notifyEmail,
-      }));
+      setMeetings(prev => prev.map(m => m.id === editId ? { ...m, ...patch } : m));
+      try {
+        await updateMeeting(editId, userId, patch);
+      } catch {
+        toast.error('Failed to save meeting changes.');
+      }
     } else {
       const meeting: Meeting = {
-        id: `m-${Date.now()}`, prospectName: form.prospectName.trim(),
-        company: form.company.trim() || undefined, prospectTitle: form.prospectTitle.trim() || undefined,
-        platform: form.platform, meetingUrl: form.meetingUrl.trim(),
-        scheduledAt: new Date(form.scheduledAt).toISOString(), goal: form.goal.trim(),
-        context: form.context.trim() || undefined, pitch: form.pitch.trim() || undefined,
-        notifyEmail: form.notifyEmail, status: 'scheduled', createdAt: new Date().toISOString(),
+        id: `m-${Date.now()}`,
+        ...patch,
+        status: 'scheduled',
+        createdAt: new Date().toISOString(),
       };
-      setMeetings(addMeeting(meeting));
-      if (isDemoMode) setIsDemoMode(false);
+      setMeetings(prev => [meeting, ...prev]);
+      if (isDemoMode) {
+        setIsDemoMode(false);
+        setMeetings([meeting]);
+      }
+      try {
+        const saved = await saveMeeting(meeting, userId);
+        setMeetings(prev => prev.map(m => m.id === meeting.id ? saved : m));
+      } catch {
+        toast.error('Failed to save meeting. Check your connection.');
+      }
     }
-    setShowPanel(false);
   }
 
   // ── Render ───────────────────────────────────────────────────────────────────
+
+  if (loading) return <div className="app-loading">LOADING...</div>;
 
   return (
     <div className="meetings">
@@ -417,7 +468,12 @@ export function MeetingsScreen({ onWatchLive, onViewReport }: MeetingsScreenProp
                       <div className="msb__item-time">{formatTimeOnly(m.scheduledAt)}</div>
                       <div className="msb__item-platform">{PLATFORM_ICONS[m.platform]}</div>
                       <button className="msb__edit-btn" title="Edit" onClick={e => { e.stopPropagation(); openEditPanel(m); }}>✎</button>
-                      <button className="msb__del-btn" title="Cancel" onClick={e => { e.stopPropagation(); setMeetings(deleteMeeting(m.id)); }}>✕</button>
+                      <button className="msb__del-btn" title="Cancel" onClick={async e => {
+                        e.stopPropagation();
+                        setMeetings(prev => prev.filter(x => x.id !== m.id));
+                        try { await deleteMeeting(m.id, userId); }
+                        catch { toast.error('Failed to cancel meeting.'); setMeetings(prev => [...prev, m]); }
+                      }}>✕</button>
                     </div>
                   </div>
                 ))}
