@@ -291,6 +291,17 @@
   }
 }
 
+.livecall__mic-warning {
+  margin: 0 var(--space-4) var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-accent-red);
+  font-family: var(--font-display);
+}
+
 .live-call__summarising-overlay {
   position: fixed;
   inset: 0;

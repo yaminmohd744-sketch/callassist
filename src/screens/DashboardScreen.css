@@ -81,12 +81,10 @@
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-5) var(--space-6);
-  background: rgba(124, 58, 237, 0.05);
-  border: 1px solid rgba(124, 58, 237, 0.25);
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.35);
   border-radius: var(--border-radius-lg);
-  box-shadow: 0 0 24px rgba(124, 58, 237, 0.08), 0 2px 16px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 32px rgba(124, 58, 237, 0.15), 0 2px 16px rgba(0, 0, 0, 0.4);
 }
 
 .dashboard__greeting-text {
@@ -131,20 +129,18 @@
 }
 
 .dashboard__stat-card {
-  background: rgba(124, 58, 237, 0.05);
-  border: 1px solid rgba(124, 58, 237, 0.25);
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.35);
   border-radius: var(--border-radius-lg);
   padding: var(--space-4) var(--space-5);
-  box-shadow: 0 0 24px rgba(124, 58, 237, 0.08), 0 2px 16px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 32px rgba(124, 58, 237, 0.15), 0 2px 16px rgba(0, 0, 0, 0.4);
   transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .dashboard__stat-card:hover {
-  background: rgba(124, 58, 237, 0.09);
-  border-color: rgba(124, 58, 237, 0.4);
-  box-shadow: 0 0 32px rgba(124, 58, 237, 0.14), 0 2px 16px rgba(0, 0, 0, 0.3);
+  background: rgba(124, 58, 237, 0.18);
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 0 40px rgba(124, 58, 237, 0.22), 0 2px 16px rgba(0, 0, 0, 0.4);
 }
 
 .dashboard__stat-val {
@@ -234,13 +230,11 @@
 .dashboard__call-list {
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(124, 58, 237, 0.25);
+  border: 1px solid rgba(124, 58, 237, 0.35);
   border-radius: var(--border-radius-lg);
   overflow: hidden;
-  background: rgba(124, 58, 237, 0.05);
-  box-shadow: 0 0 24px rgba(124, 58, 237, 0.08), 0 2px 16px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(124, 58, 237, 0.08);
+  box-shadow: 0 0 32px rgba(124, 58, 237, 0.15), 0 2px 16px rgba(0, 0, 0, 0.4);
 }
 
 .dashboard__call-row {
@@ -248,7 +242,7 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-3) var(--space-5);
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.15);
   cursor: pointer;
   transition: background var(--transition-fast);
 }
@@ -258,7 +252,7 @@
 }
 
 .dashboard__call-row:hover {
-  background: var(--color-bg-elevated);
+  background: rgba(124, 58, 237, 0.12);
 }
 
 .dashboard__call-prospect {

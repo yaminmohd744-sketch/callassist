@@ -11,7 +11,11 @@ import './PostCallScreen.css';
 function isValidWebhookUrl(url: string): boolean {
   try {
     const u = new URL(url.trim());
-    return u.protocol === 'https:';
+    if (u.protocol !== 'https:') return false;
+    const h = u.hostname;
+    if (h === 'localhost' || h === '127.0.0.1' || h === '169.254.169.254') return false;
+    if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(h)) return false;
+    return true;
   } catch {
     return false;
   }
@@ -85,6 +89,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
   const [webhookUrl, setWebhookUrl] = useState(() => localStorage.getItem('pitchbase:zapier-webhook') ?? '');
   const [webhookStatus, setWebhookStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
   const [webhookUrlError, setWebhookUrlError] = useState<string | null>(null);
+  const isSendingRef = useRef(false);
   const [integrationsOpen, setIntegrationsOpen] = useState(false);
 
   const t = useTranslations();
@@ -176,12 +181,14 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
   }
 
   async function handleSendZapier() {
+    if (isSendingRef.current) return;
     if (!webhookUrl.trim()) return;
     if (!isValidWebhookUrl(webhookUrl)) {
       setWebhookStatus('error');
       setTimeout(() => setWebhookStatus('idle'), 3000);
       return;
     }
+    isSendingRef.current = true;
     setWebhookStatus('sending');
     try {
       const payload = {
@@ -196,12 +203,20 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
         aiSummary: session.aiSummary,
         followUpEmail: emailDraft,
       };
-      await fetch(webhookUrl.trim(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const res = await fetch(webhookUrl.trim(), {
+        method: 'POST',
+        signal: AbortSignal.timeout(10_000),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`Webhook returned ${res.status}`);
       setWebhookStatus('ok');
       setTimeout(() => setWebhookStatus('idle'), 3000);
     } catch {
       setWebhookStatus('error');
       setTimeout(() => setWebhookStatus('idle'), 3000);
+    } finally {
+      isSendingRef.current = false;
     }
   }
 

@@ -3,6 +3,7 @@ import { getDeepgramCode } from '../lib/languages';
 import { FUNCTIONS_BASE, ANON_KEY, getAuthToken } from '../lib/api';
 
 let _deepgramTokenCache: { value: string; expiresAt: number } | null = null;
+export function clearDeepgramTokenCache() { _deepgramTokenCache = null; }
 
 async function fetchDeepgramKey(): Promise<string | null> {
   if (_deepgramTokenCache && Date.now() + 5_000 < _deepgramTokenCache.expiresAt) {
@@ -71,6 +72,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const wsRef           = useRef<WebSocket | null>(null);
+  const wsClosingRef    = useRef(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef       = useRef<MediaStream | null>(null);
   const wsrRef          = useRef<WSR | null>(null); // Web Speech Recognition fallback
@@ -192,8 +194,10 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
     try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
     mediaRecorderRef.current = null;
 
+    wsClosingRef.current = true;
     try { wsRef.current?.close(); } catch { /* ignore */ }
     wsRef.current = null;
+    wsClosingRef.current = false;
 
     streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
@@ -295,7 +299,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
       };
 
       ws.onmessage = (event) => {
-        if (wsRef.current !== ws) return;
+        if (wsRef.current !== ws || wsClosingRef.current) return;
         if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
         interface DGWord { word: string; speaker: number; }
         interface DGResult {

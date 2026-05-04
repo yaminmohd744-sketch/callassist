@@ -36,7 +36,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  background: var(--color-bg-base);
+  background: transparent;
   font-family: var(--font-display);
   color: var(--color-text-primary);
   overflow-y: auto;
@@ -102,7 +102,7 @@
   gap: 2px;
   padding: 0 var(--space-8) var(--space-4);
   flex-shrink: 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.2);
 }
 
 .analytics__tab {
@@ -120,9 +120,9 @@
 }
 
 .analytics__tab--active {
-  background: var(--color-bg-elevated);
-  color: var(--color-accent-cyan);
-  border-color: var(--color-border);
+  background: rgba(124, 58, 237, 0.18);
+  color: var(--color-accent-purple);
+  border-color: rgba(124, 58, 237, 0.45);
 }
 
 .analytics__tab:hover:not(.analytics__tab--active) {
@@ -149,20 +149,22 @@
 }
 
 .analytics__stat-card {
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.35);
   border-radius: var(--border-radius-lg);
   padding: var(--space-5) var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  box-shadow: 0 0 32px rgba(124, 58, 237, 0.15), 0 2px 16px rgba(0, 0, 0, 0.4);
   animation: an-stat-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) var(--an-delay, 0ms) both;
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .analytics__stat-card:hover {
-  background: var(--color-bg-elevated);
-  border-color: rgba(124, 58, 237, 0.35);
+  background: rgba(124, 58, 237, 0.18);
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 0 40px rgba(124, 58, 237, 0.22), 0 2px 16px rgba(0, 0, 0, 0.4);
 }
 
 .analytics__stat-val {
@@ -193,19 +195,22 @@
 }
 
 .analytics__chart-card {
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.35);
   border-radius: var(--border-radius-lg);
   padding: var(--space-5) var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  box-shadow: 0 0 32px rgba(124, 58, 237, 0.15), 0 2px 16px rgba(0, 0, 0, 0.4);
   animation: an-chart-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) var(--an-delay, 200ms) both;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .analytics__chart-card:hover {
-  border-color: rgba(124, 58, 237, 0.22);
+  background: rgba(124, 58, 237, 0.12);
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 0 40px rgba(124, 58, 237, 0.2), 0 2px 16px rgba(0, 0, 0, 0.4);
 }
 
 .analytics__chart-card--wide {

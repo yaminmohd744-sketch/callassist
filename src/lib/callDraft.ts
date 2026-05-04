@@ -21,13 +21,13 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
-export async function saveDraft(draft: CallDraft): Promise<void> {
+export async function saveDraft(draft: CallDraft): Promise<boolean> {
   if ('storage' in navigator) {
     try {
       const { quota, usage } = await navigator.storage.estimate();
       if (quota && usage && (quota - usage) < 10_000_000) {
         console.warn('[Pitchbase] Storage low (<10 MB free), skipping draft save');
-        return;
+        return false;
       }
     } catch { /* estimate not available — proceed */ }
   }
@@ -36,7 +36,7 @@ export async function saveDraft(draft: CallDraft): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readwrite');
     tx.objectStore(STORE).put(draft, KEY);
-    tx.oncomplete = () => resolve();
+    tx.oncomplete = () => resolve(true);
     tx.onerror    = () => {
       const err = tx.error;
       if (err?.name === 'QuotaExceededError') {

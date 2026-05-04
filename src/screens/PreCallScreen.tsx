@@ -54,6 +54,7 @@ export function PreCallScreen({
   const [language, setLanguage]     = useState<string>(defaultLanguage);
   const [errors, setErrors]         = useState<StringConfigErrors>({});
   const loadedRef = useRef(false);
+  const perkInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Load CRM leads when user taps Yes
   useEffect(() => {
@@ -90,16 +91,14 @@ export function PreCallScreen({
       });
       // Focus next input
       setTimeout(() => {
-        const inputs = document.querySelectorAll<HTMLInputElement>('.precall__perk-input');
-        inputs[index + 1]?.focus();
+        perkInputRefs.current[index + 1]?.focus();
       }, 0);
     }
     if (e.key === 'Backspace' && perks[index] === '' && perks.length > 1) {
       e.preventDefault();
       setPerks(prev => prev.filter((_, i) => i !== index));
       setTimeout(() => {
-        const inputs = document.querySelectorAll<HTMLInputElement>('.precall__perk-input');
-        inputs[Math.max(0, index - 1)]?.focus();
+        perkInputRefs.current[Math.max(0, index - 1)]?.focus();
       }, 0);
     }
   }
@@ -281,6 +280,7 @@ export function PreCallScreen({
               <div key={i} className="precall__perk-row">
                 <span className="precall__perk-bullet">◆</span>
                 <input
+                  ref={el => { perkInputRefs.current[i] = el; }}
                   className="precall__input precall__perk-input"
                   placeholder={i === 0 ? 'e.g. 14-day free trial, no credit card required' : 'Add another perk…'}
                   value={perk}

@@ -264,8 +264,10 @@
 .leads-screen__table-wrap {
   flex: 1;
   overflow-y: auto;
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(124, 58, 237, 0.35);
   border-radius: var(--border-radius-md);
+  background: rgba(124, 58, 237, 0.06);
+  box-shadow: 0 0 24px rgba(124, 58, 237, 0.1), 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .leads-screen__table {
@@ -288,8 +290,8 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   color: var(--color-text-muted);
-  background: var(--color-bg-elevated);
-  border-bottom: 1px solid var(--color-border);
+  background: rgba(124, 58, 237, 0.12);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.2);
   white-space: nowrap;
 }
 
@@ -299,7 +301,7 @@
   animation-delay: calc(110ms + var(--i, 0) * 28ms);
 }
 
-.leads-screen__row:hover { background: var(--color-bg-elevated); }
+.leads-screen__row:hover { background: rgba(124, 58, 237, 0.1); }
 
 .leads-screen__row + .leads-screen__row {
   border-top: 1px solid var(--color-border-subtle);
@@ -552,19 +554,21 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border);
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.35);
   border-radius: var(--border-radius-md);
+  box-shadow: 0 0 24px rgba(124, 58, 237, 0.1), 0 2px 12px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
   position: relative;
   animation: ls-item-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(80ms + var(--i, 0) * 50ms);
 }
 
 .leads-screen__pkg-card:hover {
-  border-color: var(--color-accent-purple);
-  background: var(--color-bg-surface);
+  border-color: rgba(124, 58, 237, 0.55);
+  background: rgba(124, 58, 237, 0.18);
+  box-shadow: 0 0 32px rgba(124, 58, 237, 0.18), 0 2px 12px rgba(0, 0, 0, 0.3);
   transform: translateY(-2px);
 }
 

@@ -10,6 +10,7 @@ import { useToast }         from './lib/toast';
 import type { LanguageCode } from './lib/languages';
 import { supabase }         from './lib/supabase';
 import { loadSessions, saveSession, deleteSession, updateOutcome } from './lib/sessions';
+import { clearDeepgramTokenCache } from './hooks/useSpeechRecognition';
 import { updateLeadAfterCall } from './lib/leads';
 import type { CallConfig, CallSession, CallOutcome, Lead } from './types';
 
@@ -30,14 +31,15 @@ const OUTCOMES_LEGACY_KEY = 'pitchbase:outcomes';
 async function migrateOutcomes(userId: string): Promise<void> {
   const raw = localStorage.getItem(OUTCOMES_LEGACY_KEY);
   if (!raw) return;
-  try {
-    const map = JSON.parse(raw) as Record<string, CallOutcome>;
-    const entries = Object.entries(map).filter(([, v]) => v !== null);
-    await Promise.all(entries.map(([endedAt, outcome]) => updateOutcome(userId, endedAt, outcome)));
-    localStorage.removeItem(OUTCOMES_LEGACY_KEY);
-  } catch {
-    // Non-critical — data stays in localStorage until next successful migration
+  let map: Record<string, CallOutcome>;
+  try { map = JSON.parse(raw) as Record<string, CallOutcome>; } catch { return; }
+  const entries = Object.entries(map).filter(([, v]) => v !== null);
+  let allSucceeded = true;
+  for (const [endedAt, outcome] of entries) {
+    try { await updateOutcome(userId, endedAt, outcome); }
+    catch { allSucceeded = false; }
   }
+  if (allSucceeded) localStorage.removeItem(OUTCOMES_LEGACY_KEY);
 }
 
 const PROFILE_PIC_KEY = 'pp-profile-pic';
@@ -127,9 +129,11 @@ export function App() {
   );
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   function handleProfilePicChange(dataUrl: string) {
-    if (dataUrl.length > 500_000) return;
+    if (!dataUrl.startsWith('data:image/')) { toast.error('Invalid image format'); return; }
+    if (dataUrl.length > 500_000) { toast.error('Image too large (max ~375 KB)'); return; }
     setProfilePic(dataUrl);
-    try { localStorage.setItem(PROFILE_PIC_KEY, dataUrl); } catch { /* storage full */ }
+    try { localStorage.setItem(PROFILE_PIC_KEY, dataUrl); }
+    catch { toast.error('Storage full — photo not saved'); }
   }
 
   const totalCallSeconds = pastSessions.reduce((sum, s) => sum + s.durationSeconds, 0);
@@ -279,7 +283,7 @@ export function App() {
           onNavigate={s => setScreen(s)}
           onStartCall={() => setScreen('pre-call')}
           onUploadCall={() => setScreen('upload-call')}
-          onSignOut={() => supabase.auth.signOut()}
+          onSignOut={() => { clearDeepgramTokenCache(); supabase.auth.signOut(); }}
           appLanguage={appLanguage}
           onChangeLanguage={setAppLanguage}
           currentLangFlag={currentLang.flag}
@@ -292,6 +296,7 @@ export function App() {
           totalCallCount={totalCallCount}
           profilePic={profilePic}
           onProfilePicChange={handleProfilePicChange}
+          onProfilePicError={() => { setProfilePic(null); localStorage.removeItem(PROFILE_PIC_KEY); }}
         >
           {currentScreen === 'dashboard' && (
             <ErrorBoundary>

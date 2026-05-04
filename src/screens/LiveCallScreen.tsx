@@ -1,4 +1,5 @@
 ﻿import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo, type MouseEvent as ReactMouseEvent } from 'react';
+import { useToast } from '../lib/toast';
 import { useTranslations } from '../hooks/useTranslations';
 import { Header } from '../components/layout/Header';
 import { StatusBar } from '../components/layout/StatusBar';
@@ -84,6 +85,7 @@ interface LiveCallScreenProps {
 
 export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const t = useTranslations();
+  const toast = useToast();
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const transcriptRef = useRef<TranscriptEntry[]>([]);
   const [callStatus, setCallStatus] = useState<CallStatus>('standby');
@@ -91,6 +93,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [noteInput, setNoteInput] = useState('');
   const [mobilePanel, setMobilePanel] = useState<'transcript' | 'ai' | 'lead'>('transcript');
   const [isSummarising, setIsSummarising] = useState(false);
+  const [micWarning, setMicWarning] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [draftRecovery, setDraftRecovery] = useState<{ transcript: TranscriptEntry[]; startedAt: string } | null>(null);
   const startedAtRef = useRef(new Date().toISOString());
@@ -308,11 +311,14 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     // startListening are stable callback refs that never change identity, so
     // omitting them from the dep array is intentional — re-running this effect
     // would restart the timer and mic mid-call.
+    dgSpeakerMapRef.current = null; // reset speaker map for fresh call
     setCallStatus('active');
     startTimer();
-    startListening();
+    startListening().catch(() => setMicWarning(true));
     if (recordingSupported) startRecording();
-    return () => {};
+    return () => {
+      if (flipDebounceRef.current) clearTimeout(flipDebounceRef.current);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -388,6 +394,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       };
       onEndCall(session);
     } catch {
+      toast.error('Summary generation failed — call saved without AI coaching');
       const totalWords = repWordsRef.current + prospectWordsRef.current;
       onEndCall({
         config, transcript, suggestions,
@@ -461,6 +468,11 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
             objectionsCount={objectionsCount}
             closeProbability={closeProbability}
           />
+          {micWarning && (
+            <div className="livecall__mic-warning">
+              ⚠ Microphone unavailable — transcription disabled
+            </div>
+          )}
           <div className="live-call__panels" data-mobile={mobilePanel}>
             <TranscriptPanel
               entries={transcript}

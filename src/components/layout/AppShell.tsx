@@ -27,6 +27,7 @@ interface AppShellProps {
   totalCallCount: number;
   profilePic: string | null;
   onProfilePicChange: (dataUrl: string) => void;
+  onProfilePicError?: () => void;
   children: React.ReactNode;
 }
 
@@ -41,7 +42,7 @@ export function AppShell({
   appLanguage, onChangeLanguage, currentLangLabel,
   userName, userEmail, theme, onToggleTheme,
   totalCallSeconds, totalCallCount,
-  profilePic, onProfilePicChange,
+  profilePic, onProfilePicChange, onProfilePicError,
   children,
 }: AppShellProps) {
   const t = useTranslations();
@@ -144,7 +145,7 @@ export function AppShell({
                     src={profilePic}
                     alt="Profile"
                     className="app-shell__avatar-img"
-                    onError={e => { e.currentTarget.style.display = 'none'; }}
+                    onError={() => onProfilePicError?.()}
                   />
                 : getInitials(userName || userEmail)
               }
