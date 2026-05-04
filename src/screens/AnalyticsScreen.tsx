@@ -723,7 +723,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
       {/* ── Call Intel ─────────────────────────────────────────────────────── */}
       {!detailView && tab === 'intel' && (
-        <div className="analytics__content">
+        <div className="analytics__content" key="intel">
 
           {/* 1. Top Objections */}
           <div className="analytics__insight-card" style={an(80)}>
@@ -734,7 +734,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                 { label: t.analytics.objNotRightTime,  count: 3, technique: t.analytics.techFuturePace, successRate: 48 },
                 { label: t.analytics.objAlreadyVendor, count: 2, technique: t.analytics.techContrast,   successRate: 35 },
               ] as typeof objInsights).map((o, i) => (
-                <div key={i} className="analytics__obj-item">
+                <div key={i} className="analytics__obj-item" style={an(120 + i * 80)}>
                   <div className="analytics__obj-top">
                     <span className="analytics__obj-rank">#{i + 1}</span>
                     <span className="analytics__obj-label">{o.label}</span>
@@ -743,7 +743,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                   <div className="analytics__obj-technique">{o.technique}</div>
                   <div className="analytics__obj-rate">
                     <div className="analytics__obj-bar-track">
-                      <div className="analytics__obj-bar" style={{ width: `${o.successRate}%` }} />
+                      <div className="analytics__obj-bar" style={{ width: `${o.successRate}%`, ...an(200 + i * 80) }} />
                     </div>
                     <span className="analytics__obj-rate-val">{t.analytics.successWhenHandled(o.successRate)}</span>
                   </div>
@@ -761,7 +761,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                 { icon: '◎', stat: '0.8 obj', label: t.analytics.winPatternObjections('2.3') },
                 { icon: '◈', stat: '76%',     label: t.analytics.winPatternCloseStage(41) },
               ]).map((p, i) => (
-                <div key={i} className="analytics__pattern-item">
+                <div key={i} className="analytics__pattern-item" style={an(200 + i * 80)}>
                   <span className="analytics__pattern-icon">{p.icon}</span>
                   <div>
                     <span className="analytics__pattern-stat">{p.stat}</span>{' '}
@@ -821,7 +821,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                 { label: t.analytics.objOne,     count: 5, avgClose: 57, tier: 'medium' as const },
                 { label: t.analytics.objTwoPlus, count: 4, avgClose: 33, tier: 'low'    as const },
               ]).map((g, i) => (
-                <div key={i} className="analytics__obj-close-item">
+                <div key={i} className="analytics__obj-close-item" style={an(440 + i * 80)}>
                   <div className="analytics__obj-close-top">
                     <span className="analytics__obj-close-label">{g.label}</span>
                     <span className="analytics__obj-close-count">{g.count} {t.analytics.callsUnit}</span>

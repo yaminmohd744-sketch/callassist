@@ -898,9 +898,13 @@ export function generateSessionSummary(
   const objectionHandlers = suggestions.filter(s => s.type === 'objection-response').length;
   const totalEntries = transcript.length;
 
-  let sentiment = 'neutral';
-  if (closeProbability >= 70) sentiment = 'positive';
-  else if (closeProbability <= 35) sentiment = 'negative';
+  const prospect       = config.prospectName || 'the prospect';
+  const company        = config.company || 'their company';
+  const repEntries     = transcript.filter(e => e.speaker === 'rep');
+  const prospectEntries = transcript.filter(e => e.speaker === 'prospect');
+  const talkRatio      = transcript.length > 0 ? repEntries.length / transcript.length : 0.5;
+  const lastTimestamp  = transcript.length > 0 ? transcript[transcript.length - 1].timestampSeconds : 0;
+  const reachedCloseStage = lastTimestamp > 200;
 
   // ── What went well (factual, not coaching) ───────────────────────────────
   const wentWellLines: string[] = [];
