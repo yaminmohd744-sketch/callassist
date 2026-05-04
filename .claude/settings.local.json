@@ -131,7 +131,16 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
       "Bash(findstr :5173)",
       "Bash(taskkill /PID 17276 /F)",
-      "PowerShell(Stop-Process -Id 17276 -Force)"
+      "PowerShell(Stop-Process -Id 17276 -Force)",
+      "Bash(node electron/launch.cjs)",
+      "Bash(taskkill /PID 51560 /F)",
+      "PowerShell(Stop-Process -Id 51560 -Force)",
+      "Bash(taskkill /PID 34660 /F)",
+      "PowerShell(Stop-Process -Id 34660 -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Id 51560 -Force -ErrorAction SilentlyContinue)",
+      "WebFetch(domain:www.fontshare.com)",
+      "Bash(node .agents/skills/impeccable/scripts/load-context.mjs)",
+      "Bash(node c:/Users/yamin/callassist/callassist/.agents/skills/impeccable/scripts/load-context.mjs)"
     ]
   }
 }
