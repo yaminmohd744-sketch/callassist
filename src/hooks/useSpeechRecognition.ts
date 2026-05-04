@@ -5,7 +5,7 @@ import { FUNCTIONS_BASE, ANON_KEY, getAuthToken } from '../lib/api';
 let _deepgramTokenCache: { value: string; expiresAt: number } | null = null;
 
 async function fetchDeepgramKey(): Promise<string | null> {
-  if (_deepgramTokenCache && Date.now() < _deepgramTokenCache.expiresAt) {
+  if (_deepgramTokenCache && Date.now() + 5_000 < _deepgramTokenCache.expiresAt) {
     return _deepgramTokenCache.value;
   }
   try {
@@ -348,6 +348,11 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         streamRef.current?.getTracks().forEach(t => t.stop());
         streamRef.current = null;
         setIsListening(false);
+        // Auth error — token is invalid; clear cache so next call fetches a fresh one.
+        if (e.code === 4001) {
+          _deepgramTokenCache = null;
+          console.warn('[Pitchbase] Deepgram auth error (4001), token cache cleared');
+        }
         // Unexpected close → fall back to browser speech.
         if (e.code !== 1000 && e.code !== 1001 && activeRef.current) {
           tryFallback();

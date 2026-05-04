@@ -461,11 +461,14 @@
   font-family: var(--font-display);
   font-size: clamp(26px, 3.8vw, 44px);
   font-weight: 700;
-  letter-spacing: -0.03em;
+  font-style: normal;
+  letter-spacing: -0.01em;
+  word-spacing: 0.08em;
   line-height: 1.12;
   margin-bottom: var(--space-4);
 }
 .lp__section-h2--left { text-align: left; }
+.lp__section-h2 em { font-style: normal; }
 
 .lp__section-sub {
   font-size: var(--font-size-lg);
@@ -958,7 +961,7 @@
 .lp__ftab-title {
   font-size: clamp(18px, 2vw, 24px);
   font-weight: 800;
-  color: var(--color-accent-purple);
+  color: var(--color-text-primary);
   line-height: 1.25;
   letter-spacing: -0.02em;
   margin: 0;
@@ -1547,6 +1550,23 @@
   background-clip: text;
 }
 
+.lp__sv-h2--solid {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.lp__sv--pricing .lp__sv-h2 {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: #ffffff;
+  background-clip: unset;
+  color: #ffffff;
+}
+
 .lp__sv-sub {
   font-size: var(--font-size-lg);
   color: var(--color-text-secondary);
@@ -1579,57 +1599,115 @@
   padding: var(--space-1) var(--space-4) !important;
 }
 
-/* ─── Features section ──────────────────────────────────────── */
+/* ─── Features hero (split layout) ─────────────────────────── */
 
-.lp__sv-features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-5);
+.lp__sv-hero--features {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-8);
+  text-align: left;
+  max-width: 960px;
   width: 100%;
-  max-width: 1000px;
 }
 
-.lp__sv-fcard {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: var(--border-radius-lg);
-  padding: var(--space-8);
+.lp__sv-sub--aside {
+  flex: 0 0 200px;
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin: 0;
+  padding-bottom: 6px;
+}
+
+/* ─── Features section: numbered row list ───────────────────── */
+
+@keyframes lp-frow-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.lp__sv-flist {
+  width: 100%;
+  max-width: 960px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.lp__sv-frow {
+  display: grid;
+  grid-template-columns: 52px 1fr 300px;
+  gap: var(--space-10);
+  align-items: center;
+  padding: var(--space-10) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  transition: background 0.18s ease-out;
+  animation: lp-frow-in 0.5s calc(0.05s + var(--row-i, 0) * 0.08s) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lp__sv-frow-num {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.5vw, 3.2rem);
+  font-weight: 700;
+  color: rgba(240, 235, 255, 0.1);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  user-select: none;
+  transition: color 0.18s ease-out;
+}
+.lp__sv-frow:hover .lp__sv-frow-num {
+  color: rgba(124, 58, 237, 0.4);
+}
+
+.lp__sv-frow-body {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
-}
-.lp__sv-fcard:hover {
-  border-color: rgba(124, 58, 237, 0.45);
-  box-shadow: 0 0 30px rgba(124, 58, 237, 0.08);
 }
 
-.lp__sv-fcard--tl { animation: lp-card-tl 0.55s 0.05s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.lp__sv-fcard--tc { animation: lp-card-tc 0.55s 0.10s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.lp__sv-fcard--tr { animation: lp-card-tr 0.55s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.lp__sv-fcard--bl { animation: lp-card-bl 0.55s 0.20s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.lp__sv-fcard--bc { animation: lp-card-bc 0.55s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.lp__sv-fcard--br { animation: lp-card-br 0.55s 0.30s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.lp__sv-frow-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
 
-.lp__sv-fcard-bullets {
-  margin: var(--space-2) 0 0;
-  padding: 0;
+.lp__sv-frow-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.65;
+  margin: 0;
+  max-width: 50ch;
+}
+
+.lp__sv-frow-bullets {
   list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 5px;
 }
-.lp__sv-fcard-bullets li {
-  font-size: var(--font-size-sm);
+.lp__sv-frow-bullets li {
+  font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   padding-left: var(--space-4);
   position: relative;
+  letter-spacing: 0.01em;
 }
-.lp__sv-fcard-bullets li::before {
+.lp__sv-frow-bullets li::before {
   content: '›';
   position: absolute;
   left: 0;
   color: var(--color-accent-purple);
+}
+
+.lp__sv-frow-demo {
+  margin-top: 0;
+  flex-shrink: 0;
 }
 
 .lp__sv-diffs {
@@ -2061,17 +2139,20 @@
 /* ─── Section view responsive ───────────────────────────────── */
 
 @media (max-width: 768px) {
-  .lp__sv-features-grid { grid-template-columns: 1fr 1fr; }
   .lp__sv-training-grid { grid-template-columns: 1fr; }
   .lp__sv-howto { grid-template-columns: 1fr; }
   .lp__sv-lang-features { grid-template-columns: 1fr; }
   .lp__sv-diffs { flex-direction: column; align-items: center; }
   .lp__nav-links--sections { gap: 0; }
+  .lp__sv-hero--features { flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+  .lp__sv-sub--aside { flex: none; }
+  .lp__sv-frow { grid-template-columns: 40px 1fr; gap: var(--space-5); }
+  .lp__sv-frow-demo { display: none; }
 }
 
 @media (max-width: 480px) {
-  .lp__sv-features-grid { grid-template-columns: 1fr; }
   .lp__sv { padding: var(--space-8) var(--space-4) var(--space-12); gap: var(--space-8); }
+  .lp__sv-frow { grid-template-columns: 36px 1fr; gap: var(--space-4); padding: var(--space-8) 0; }
 }
 
 /* ─── Feature demo windows ───────────────────────────────────── */

@@ -7,7 +7,7 @@ import type { CallConfig, CallType, Lead } from '../types';
 import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
 
-type StringConfigField = 'callGoal' | 'callType' | 'language';
+type StringConfigField = 'callGoal' | 'callType' | 'language' | 'prospectName';
 type StringConfigErrors = Partial<Record<StringConfigField, string>>;
 
 interface PreCallScreenProps {
@@ -118,11 +118,13 @@ export function PreCallScreen({
 
   function handleSelectLead(lead: Lead) {
     setSelectedLead(lead);
+    if (errors.prospectName) setErrors(e => ({ ...e, prospectName: '' }));
   }
 
   function handleSubmit() {
     const newErrors: StringConfigErrors = {};
     if (!callGoal.trim()) newErrors.callGoal = 'Required';
+    if (inCrm === true && !selectedLead) newErrors.prospectName = 'Please select a lead from your CRM';
     if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
 
     const filledPerks = perks.filter(p => p.trim());
@@ -207,7 +209,7 @@ export function PreCallScreen({
 
           {/* ── CRM lead picker ── */}
           {inCrm === true && (
-            <div className="precall__crm-picker">
+            <div className={`precall__crm-picker${errors.prospectName ? ' precall__crm-picker--error' : ''}`}>
               {selectedLead ? (
                 <div className="precall__crm-selected">
                   <div className="precall__crm-selected-info">
@@ -254,6 +256,7 @@ export function PreCallScreen({
                   </div>
                 </>
               )}
+              {errors.prospectName && <span className="precall__error">{errors.prospectName}</span>}
             </div>
           )}
 

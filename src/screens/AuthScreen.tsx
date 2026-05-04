@@ -17,7 +17,7 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
   const [loading, setLoading]     = useState(false);
   const [message, setMessage]     = useState<string | null>(null);
 
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const EMAIL_RE = /^[^\s@]+@[^\s@]{2,}\.[a-zA-Z]{2,}$/;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -12,22 +12,29 @@ import { FUNCTIONS_BASE, ANON_KEY, getAuthToken, fetchWithTimeout } from './api'
 
 export { detectStage, STAGE_TIPS, getQuickActionSuggestion, type Memory };
 
-async function callFunction(name: string, body: unknown): Promise<unknown> {
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+
+async function callFunction(name: string, body: unknown, retries = 3): Promise<unknown> {
   const authToken = await getAuthToken();
-  const res = await fetchWithTimeout(`${FUNCTIONS_BASE}/${name}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': ANON_KEY,
-      'Authorization': `Bearer ${authToken}`,
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`${name} returned ${res.status}: ${text}`);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const res = await fetchWithTimeout(`${FUNCTIONS_BASE}/${name}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': `Bearer ${authToken}`,
+      },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) return res.json();
+    // Retry on transient server errors; bail immediately on client errors.
+    if (res.status < 500 || attempt === retries) {
+      const text = await res.text();
+      throw new Error(`${name} returned ${res.status}: ${text}`);
+    }
+    await sleep(300 * 2 ** attempt + Math.random() * 100);
   }
-  return res.json();
+  throw new Error(`${name}: exhausted retries`);
 }
 
 import { genId } from './id';
@@ -271,9 +278,21 @@ export async function classifySignalAI(text: string, language: string, abortSign
     const signal = data.signal as string;
     if (signal === 'objection' || signal === 'buying-signal' || signal === 'neutral') return signal;
     return 'neutral';
-  } catch {
+  } catch (err) {
+    console.error('[Pitchbase] classifySignalAI failed:', err instanceof Error ? err.message : err);
+    Sentry.captureException(err, { tags: { section: 'classify-signal' } });
     return 'neutral';
   }
+}
+
+function isCoachingWalkthrough(v: unknown): v is import('../types').CoachingWalkthrough {
+  return (
+    !!v &&
+    typeof v === 'object' &&
+    typeof (v as Record<string, unknown>).overallVerdict === 'string' &&
+    Array.isArray((v as Record<string, unknown>).whatWentWell) &&
+    Array.isArray((v as Record<string, unknown>).areasToImprove)
+  );
 }
 
 export async function generateSessionSummary(
@@ -290,11 +309,12 @@ export async function generateSessionSummary(
       language: config.language ?? 'en-US',
     }) as Record<string, unknown>;
 
+    const coaching = isCoachingWalkthrough(data.coaching) ? data.coaching : fallback.coaching;
     return {
       aiSummary: (data.aiSummary as string) ?? '',
       followUpEmail: (data.followUpEmail as string) ?? '',
       leadScore: typeof data.leadScore === 'number' ? clamp(data.leadScore, 0, 100) : 50,
-      coaching: fallback.coaching,
+      coaching,
     };
   } catch (err) {
     console.error('[Pitchbase] Summary call failed, using fallback:', err instanceof Error ? err.message : err);
@@ -326,7 +346,9 @@ export async function generateBattleCard(
     }) as Record<string, unknown>;
     if (Array.isArray(data.likelyObjections)) return data as unknown as BattleCard;
     return fallback;
-  } catch {
+  } catch (err) {
+    console.error('[Pitchbase] generateBattleCard failed:', err instanceof Error ? err.message : err);
+    Sentry.captureException(err, { tags: { section: 'generate-battle-card' } });
     return fallback;
   }
 }
@@ -345,7 +367,9 @@ export async function generateProspectSummary(
       durationSeconds: session.durationSeconds,
     }) as Record<string, unknown>;
     return typeof data.summary === 'string' ? data.summary : fallback;
-  } catch {
+  } catch (err) {
+    console.error('[Pitchbase] generateProspectSummary failed:', err instanceof Error ? err.message : err);
+    Sentry.captureException(err, { tags: { section: 'generate-prospect-summary' } });
     return fallback;
   }
 }

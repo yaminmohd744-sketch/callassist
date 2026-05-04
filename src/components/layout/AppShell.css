@@ -24,6 +24,24 @@
   border-bottom: 1px solid var(--color-border-subtle);
 }
 
+/* Gradient shimmer line at bottom */
+.app-shell__topnav::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(124,58,237,0.6) 25%,
+    rgba(192,38,211,0.7) 55%,
+    rgba(124,58,237,0.4) 80%,
+    transparent 100%
+  );
+}
+
 /* ─── Logo ── */
 
 .app-shell__logo {

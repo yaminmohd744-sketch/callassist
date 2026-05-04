@@ -140,7 +140,9 @@
       "PowerShell(Stop-Process -Id 51560 -Force -ErrorAction SilentlyContinue)",
       "WebFetch(domain:www.fontshare.com)",
       "Bash(node .agents/skills/impeccable/scripts/load-context.mjs)",
-      "Bash(node c:/Users/yamin/callassist/callassist/.agents/skills/impeccable/scripts/load-context.mjs)"
+      "Bash(node c:/Users/yamin/callassist/callassist/.agents/skills/impeccable/scripts/load-context.mjs)",
+      "Bash(git add *)",
+      "Bash(npm uninstall *)"
     ]
   }
 }

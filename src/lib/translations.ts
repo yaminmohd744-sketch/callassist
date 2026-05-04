@@ -402,6 +402,43 @@ export interface T {
     fileRead: string;
     transcriptParse: string;
   };
+  leads: {
+    title: string;
+    importCRM: string;
+    importCSV: string;
+    newPackage: string;
+    create: string;
+    allLeads: string;
+    leadCount: (n: number) => string;
+    packageNamePlaceholder: string;
+    packageHint: string;
+    addLead: string;
+    namePlaceholder: string;
+    jobTitle: string;
+    phone: string;
+    contextPlaceholder: string;
+    nameRequired: string;
+    saving: string;
+    saveLead: string;
+    searchPlaceholder: string;
+    failedToLoad: string;
+    checkConnection: string;
+    noLeadsInPackage: string;
+    noLeadsHint: (pkg: string) => string;
+    csvHint: string;
+    noMatchQuery: (q: string) => string;
+    titleCol: string;
+    lastCalled: string;
+    callsCol: string;
+    callBtn: string;
+    callNow: string;
+    phoneLabel: string;
+    emailLabel: string;
+    contextLabel: string;
+    noCallsYet: string;
+    closeLabel: (n: number) => string;
+    scoreLabel: (n: number) => string;
+  };
 }
 
 // ─── Translation data ─────────────────────────────────────────────────────────
@@ -724,6 +761,43 @@ const en: T = {
     fileRead: 'Could not read file. Please try another file.',
     transcriptParse: 'Could not parse the transcript. Check the format and try again.',
   },
+  leads: {
+    title: 'CRM',
+    importCRM: '↑ Import CRM',
+    importCSV: '↑ Import CSV',
+    newPackage: '+ New Package',
+    create: 'Create',
+    allLeads: 'All Leads',
+    leadCount: n => `${n} lead${n !== 1 ? 's' : ''}`,
+    packageNamePlaceholder: 'Package name (e.g. Q2 Prospects)',
+    packageHint: 'Create a package to organise your leads — then import a CSV from your CRM or add leads manually.',
+    addLead: '+ Add Lead',
+    namePlaceholder: 'Name *',
+    jobTitle: 'Job title',
+    phone: 'Phone',
+    contextPlaceholder: 'Prior context / notes (optional)',
+    nameRequired: 'Name is required.',
+    saving: 'Saving...',
+    saveLead: 'Save Lead',
+    searchPlaceholder: 'Search by name, company, or title...',
+    failedToLoad: 'Failed to load leads',
+    checkConnection: 'Check your connection and try again.',
+    noLeadsInPackage: 'No leads in this package',
+    noLeadsHint: pkg => `Import a CSV or add leads manually — they'll be automatically assigned to ${pkg}.`,
+    csvHint: 'CSV headers: name, company, title, phone, email, notes',
+    noMatchQuery: q => `No leads match "${q}"`,
+    titleCol: 'Title',
+    lastCalled: 'Last Called',
+    callsCol: 'Calls',
+    callBtn: 'Call →',
+    callNow: '▶ Call Now',
+    phoneLabel: 'PHONE',
+    emailLabel: 'EMAIL',
+    contextLabel: 'CONTEXT',
+    noCallsYet: 'No calls recorded for this contact yet.',
+    closeLabel: n => `${n}% close`,
+    scoreLabel: n => `score ${n}`,
+  },
 };
 
 const es: T = {
@@ -742,6 +816,7 @@ const es: T = {
   auth: { signIn: 'Iniciar sesión', signUp: 'Registrarse', email: 'Correo electrónico', password: 'Contraseña', forgotPassword: '¿Olvidaste tu contraseña?', continueWithGoogle: 'Continuar con Google', alreadyHaveAccount: '¿Ya tienes cuenta?', dontHaveAccount: '¿No tienes cuenta?', backToHome: 'Volver al inicio' },
   onboarding: { welcome: 'Bienvenido a Pitchbase', yourName: 'Tu Nombre', yourNamePlaceholder: 'p.ej. Alex García', yourRole: 'Tu Rol', yourRolePlaceholder: 'p.ej. Ejecutivo de Cuentas', whatYouSell: '¿Qué vendes?', whatYouSellPlaceholder: 'p.ej. SaaS, consultoría, seguros...', language: 'Idioma Preferido', letsGo: 'Vamos →' },
   upload: { title: 'Subir Grabación', subtitle: 'Sube una grabación para obtener coaching de IA y un resumen completo.', dropzone: 'Suelta tu archivo de audio aquí', analyzing: 'Analizando tu llamada...', browseFiles: 'Buscar archivos' },
+  leads: { title: 'CRM', importCRM: '↑ Importar CRM', importCSV: '↑ Importar CSV', newPackage: '+ Nuevo Paquete', create: 'Crear', allLeads: 'Todos los Clientes', leadCount: n => `${n} cliente${n !== 1 ? 's' : ''}`, packageNamePlaceholder: 'Nombre del paquete (ej. Q2 Empresas)', packageHint: 'Crea un paquete para organizar tus clientes — luego importa un CSV de tu CRM o añádelos manualmente.', addLead: '+ Añadir Cliente', namePlaceholder: 'Nombre *', jobTitle: 'Cargo', phone: 'Teléfono', contextPlaceholder: 'Contexto previo / notas (opcional)', nameRequired: 'El nombre es obligatorio.', saving: 'Guardando...', saveLead: 'Guardar Cliente', searchPlaceholder: 'Buscar por nombre, empresa o cargo...', failedToLoad: 'Error al cargar clientes', checkConnection: 'Comprueba tu conexión e inténtalo de nuevo.', noLeadsInPackage: 'Sin clientes en este paquete', noLeadsHint: pkg => `Importa un CSV o añade clientes manualmente — se asignarán automáticamente a ${pkg}.`, csvHint: 'Cabeceras CSV: nombre, empresa, cargo, teléfono, email, notas', noMatchQuery: q => `Sin resultados para "${q}"`, titleCol: 'Cargo', lastCalled: 'Última Llamada', callsCol: 'Llamadas', callBtn: 'Llamar →', callNow: '▶ Llamar Ahora', phoneLabel: 'TELÉFONO', emailLabel: 'EMAIL', contextLabel: 'CONTEXTO', noCallsYet: 'No hay llamadas registradas para este contacto aún.', closeLabel: n => `${n}% cierre`, scoreLabel: n => `puntuación ${n}` },
 };
 
 const fr: T = {
@@ -760,6 +835,7 @@ const fr: T = {
   auth: { signIn: 'Se connecter', signUp: 'S\'inscrire', email: 'E-mail', password: 'Mot de passe', forgotPassword: 'Mot de passe oublié ?', continueWithGoogle: 'Continuer avec Google', alreadyHaveAccount: 'Vous avez déjà un compte ?', dontHaveAccount: 'Vous n\'avez pas de compte ?', backToHome: 'Retour à l\'accueil' },
   onboarding: { welcome: 'Bienvenue sur Pitchbase', yourName: 'Votre Nom', yourNamePlaceholder: 'ex. Alex Martin', yourRole: 'Votre Rôle', yourRolePlaceholder: 'ex. Responsable Commercial', whatYouSell: 'Que vendez-vous ?', whatYouSellPlaceholder: 'ex. SaaS, conseil, assurance...', language: 'Langue Préférée', letsGo: 'C\'est parti →' },
   upload: { title: 'Importer un Enregistrement', subtitle: 'Importez un enregistrement pour obtenir un coaching IA et un compte-rendu complet.', dropzone: 'Déposez votre fichier audio ici', analyzing: 'Analyse de votre appel...', browseFiles: 'Parcourir les fichiers' },
+  leads: { title: 'CRM', importCRM: '↑ Importer CRM', importCSV: '↑ Importer CSV', newPackage: '+ Nouveau Paquet', create: 'Créer', allLeads: 'Tous les Prospects', leadCount: n => `${n} prospect${n !== 1 ? 's' : ''}`, packageNamePlaceholder: 'Nom du paquet (ex. Q2 Entreprises)', packageHint: 'Créez un paquet pour organiser vos prospects — puis importez un CSV depuis votre CRM ou ajoutez des prospects manuellement.', addLead: '+ Ajouter un Prospect', namePlaceholder: 'Nom *', jobTitle: 'Intitulé du poste', phone: 'Téléphone', contextPlaceholder: 'Contexte / notes (optionnel)', nameRequired: 'Le nom est obligatoire.', saving: 'Enregistrement...', saveLead: 'Enregistrer le Prospect', searchPlaceholder: 'Rechercher par nom, entreprise ou poste...', failedToLoad: 'Échec du chargement des prospects', checkConnection: 'Vérifiez votre connexion et réessayez.', noLeadsInPackage: 'Aucun prospect dans ce paquet', noLeadsHint: pkg => `Importez un CSV ou ajoutez des prospects manuellement — ils seront automatiquement assignés à ${pkg}.`, csvHint: 'En-têtes CSV : nom, entreprise, poste, téléphone, email, notes', noMatchQuery: q => `Aucun résultat pour "${q}"`, titleCol: 'Poste', lastCalled: 'Dernier Appel', callsCol: 'Appels', callBtn: 'Appeler →', callNow: '▶ Appeler Maintenant', phoneLabel: 'TÉLÉPHONE', emailLabel: 'EMAIL', contextLabel: 'CONTEXTE', noCallsYet: 'Aucun appel enregistré pour ce contact.', closeLabel: n => `${n}% de clôture`, scoreLabel: n => `score ${n}` },
 };
 
 const pt: T = {
@@ -778,6 +854,7 @@ const pt: T = {
   auth: { signIn: 'Entrar', signUp: 'Cadastrar', email: 'E-mail', password: 'Senha', forgotPassword: 'Esqueceu a senha?', continueWithGoogle: 'Continuar com o Google', alreadyHaveAccount: 'Já tem uma conta?', dontHaveAccount: 'Não tem uma conta?', backToHome: 'Voltar ao início' },
   onboarding: { welcome: 'Bem-vindo ao Pitchbase', yourName: 'Seu Nome', yourNamePlaceholder: 'ex. Alex Santos', yourRole: 'Seu Cargo', yourRolePlaceholder: 'ex. Executivo de Contas', whatYouSell: 'O que você vende?', whatYouSellPlaceholder: 'ex. SaaS, consultoria, seguros...', language: 'Idioma Preferido', letsGo: 'Vamos →' },
   upload: { title: 'Enviar Gravação', subtitle: 'Envie uma gravação para obter coaching de IA e um resumo completo.', dropzone: 'Solte seu arquivo de áudio aqui', analyzing: 'Analisando sua chamada...', browseFiles: 'Procurar arquivos' },
+  leads: { title: 'CRM', importCRM: '↑ Importar CRM', importCSV: '↑ Importar CSV', newPackage: '+ Novo Pacote', create: 'Criar', allLeads: 'Todos os Leads', leadCount: n => `${n} lead${n !== 1 ? 's' : ''}`, packageNamePlaceholder: 'Nome do pacote (ex. Q2 Empresas)', packageHint: 'Crie um pacote para organizar seus leads — depois importe um CSV do seu CRM ou adicione leads manualmente.', addLead: '+ Adicionar Lead', namePlaceholder: 'Nome *', jobTitle: 'Cargo', phone: 'Telefone', contextPlaceholder: 'Contexto / notas (opcional)', nameRequired: 'O nome é obrigatório.', saving: 'Salvando...', saveLead: 'Salvar Lead', searchPlaceholder: 'Buscar por nome, empresa ou cargo...', failedToLoad: 'Falha ao carregar leads', checkConnection: 'Verifique sua conexão e tente novamente.', noLeadsInPackage: 'Sem leads neste pacote', noLeadsHint: pkg => `Importe um CSV ou adicione leads manualmente — eles serão atribuídos automaticamente a ${pkg}.`, csvHint: 'Cabeçalhos CSV: nome, empresa, cargo, telefone, email, notas', noMatchQuery: q => `Nenhum lead encontrado para "${q}"`, titleCol: 'Cargo', lastCalled: 'Última Ligação', callsCol: 'Ligações', callBtn: 'Ligar →', callNow: '▶ Ligar Agora', phoneLabel: 'TELEFONE', emailLabel: 'EMAIL', contextLabel: 'CONTEXTO', noCallsYet: 'Nenhuma ligação registrada para este contato.', closeLabel: n => `${n}% de fechamento`, scoreLabel: n => `pontuação ${n}` },
 };
 
 const de: T = {
@@ -796,6 +873,7 @@ const de: T = {
   auth: { signIn: 'Anmelden', signUp: 'Registrieren', email: 'E-Mail', password: 'Passwort', forgotPassword: 'Passwort vergessen?', continueWithGoogle: 'Mit Google fortfahren', alreadyHaveAccount: 'Haben Sie bereits ein Konto?', dontHaveAccount: 'Noch kein Konto?', backToHome: 'Zurück zur Startseite' },
   onboarding: { welcome: 'Willkommen bei Pitchbase', yourName: 'Ihr Name', yourNamePlaceholder: 'z.B. Alex Müller', yourRole: 'Ihre Position', yourRolePlaceholder: 'z.B. Account Executive', whatYouSell: 'Was verkaufen Sie?', whatYouSellPlaceholder: 'z.B. SaaS, Beratung, Versicherung...', language: 'Bevorzugte Sprache', letsGo: 'Los geht\'s →' },
   upload: { title: 'Aufnahme Hochladen', subtitle: 'Laden Sie eine Aufnahme hoch für KI-Coaching und ein vollständiges Debriefing.', dropzone: 'Audiodatei hier ablegen', analyzing: 'Anruf wird analysiert...', browseFiles: 'Dateien durchsuchen' },
+  leads: { title: 'CRM', importCRM: '↑ CRM Importieren', importCSV: '↑ CSV Importieren', newPackage: '+ Neues Paket', create: 'Erstellen', allLeads: 'Alle Leads', leadCount: n => `${n} Lead${n !== 1 ? 's' : ''}`, packageNamePlaceholder: 'Paketname (z.B. Q2 Unternehmen)', packageHint: 'Erstellen Sie ein Paket, um Ihre Leads zu organisieren — importieren Sie dann eine CSV aus Ihrem CRM oder fügen Sie Leads manuell hinzu.', addLead: '+ Lead Hinzufügen', namePlaceholder: 'Name *', jobTitle: 'Berufsbezeichnung', phone: 'Telefon', contextPlaceholder: 'Vorheriger Kontext / Notizen (optional)', nameRequired: 'Name ist erforderlich.', saving: 'Speichern...', saveLead: 'Lead Speichern', searchPlaceholder: 'Nach Name, Unternehmen oder Titel suchen...', failedToLoad: 'Leads konnten nicht geladen werden', checkConnection: 'Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.', noLeadsInPackage: 'Keine Leads in diesem Paket', noLeadsHint: pkg => `Importieren Sie eine CSV oder fügen Sie Leads manuell hinzu — sie werden automatisch ${pkg} zugewiesen.`, csvHint: 'CSV-Kopfzeilen: name, company, title, phone, email, notes', noMatchQuery: q => `Keine Leads für "${q}" gefunden`, titleCol: 'Titel', lastCalled: 'Zuletzt Angerufen', callsCol: 'Anrufe', callBtn: 'Anrufen →', callNow: '▶ Jetzt Anrufen', phoneLabel: 'TELEFON', emailLabel: 'EMAIL', contextLabel: 'KONTEXT', noCallsYet: 'Noch keine Anrufe für diesen Kontakt aufgezeichnet.', closeLabel: n => `${n}% Abschluss`, scoreLabel: n => `Bewertung ${n}` },
 };
 
 const it: T = {
@@ -814,6 +892,7 @@ const it: T = {
   auth: { signIn: 'Accedi', signUp: 'Registrati', email: 'Email', password: 'Password', forgotPassword: 'Password dimenticata?', continueWithGoogle: 'Continua con Google', alreadyHaveAccount: 'Hai già un account?', dontHaveAccount: 'Non hai un account?', backToHome: 'Torna alla home' },
   onboarding: { welcome: 'Benvenuto su Pitchbase', yourName: 'Il Tuo Nome', yourNamePlaceholder: 'es. Alex Rossi', yourRole: 'Il Tuo Ruolo', yourRolePlaceholder: 'es. Account Executive', whatYouSell: 'Cosa vendi?', whatYouSellPlaceholder: 'es. SaaS, consulenza, assicurazione...', language: 'Lingua Preferita', letsGo: 'Andiamo →' },
   upload: { title: 'Carica Registrazione', subtitle: 'Carica una registrazione per ottenere coaching IA e un debriefing completo.', dropzone: 'Trascina il tuo file audio qui', analyzing: 'Analisi della chiamata in corso...', browseFiles: 'Sfoglia file' },
+  leads: { title: 'CRM', importCRM: '↑ Importa CRM', importCSV: '↑ Importa CSV', newPackage: '+ Nuovo Pacchetto', create: 'Crea', allLeads: 'Tutti i Lead', leadCount: n => `${n} lead`, packageNamePlaceholder: 'Nome del pacchetto (es. Q2 Imprese)', packageHint: 'Crea un pacchetto per organizzare i tuoi lead — poi importa un CSV dal tuo CRM o aggiungi lead manualmente.', addLead: '+ Aggiungi Lead', namePlaceholder: 'Nome *', jobTitle: 'Qualifica', phone: 'Telefono', contextPlaceholder: 'Contesto / note (opzionale)', nameRequired: 'Il nome è obbligatorio.', saving: 'Salvataggio...', saveLead: 'Salva Lead', searchPlaceholder: 'Cerca per nome, azienda o qualifica...', failedToLoad: 'Caricamento lead non riuscito', checkConnection: 'Controlla la connessione e riprova.', noLeadsInPackage: 'Nessun lead in questo pacchetto', noLeadsHint: pkg => `Importa un CSV o aggiungi lead manualmente — saranno assegnati automaticamente a ${pkg}.`, csvHint: 'Intestazioni CSV: nome, azienda, qualifica, telefono, email, note', noMatchQuery: q => `Nessun lead trovato per "${q}"`, titleCol: 'Qualifica', lastCalled: 'Ultima Chiamata', callsCol: 'Chiamate', callBtn: 'Chiama →', callNow: '▶ Chiama Ora', phoneLabel: 'TELEFONO', emailLabel: 'EMAIL', contextLabel: 'CONTESTO', noCallsYet: 'Nessuna chiamata registrata per questo contatto.', closeLabel: n => `${n}% chiusura`, scoreLabel: n => `punteggio ${n}` },
 };
 
 const nl: T = {
@@ -832,6 +911,7 @@ const nl: T = {
   auth: { signIn: 'Inloggen', signUp: 'Registreren', email: 'E-mail', password: 'Wachtwoord', forgotPassword: 'Wachtwoord vergeten?', continueWithGoogle: 'Doorgaan met Google', alreadyHaveAccount: 'Heeft u al een account?', dontHaveAccount: 'Heeft u nog geen account?', backToHome: 'Terug naar home' },
   onboarding: { welcome: 'Welkom bij Pitchbase', yourName: 'Uw Naam', yourNamePlaceholder: 'bijv. Alex de Vries', yourRole: 'Uw Functie', yourRolePlaceholder: 'bijv. Account Executive', whatYouSell: 'Wat verkoopt u?', whatYouSellPlaceholder: 'bijv. SaaS, advies, verzekering...', language: 'Voorkeurstaal', letsGo: 'Aan de slag →' },
   upload: { title: 'Opname Uploaden', subtitle: 'Upload een opname voor AI-coaching en een volledig debriefing.', dropzone: 'Sleep uw audiobestand hier', analyzing: 'Gesprek analyseren...', browseFiles: 'Bestanden zoeken' },
+  leads: { title: 'CRM', importCRM: '↑ CRM Importeren', importCSV: '↑ CSV Importeren', newPackage: '+ Nieuw Pakket', create: 'Aanmaken', allLeads: 'Alle Leads', leadCount: n => `${n} lead${n !== 1 ? 's' : ''}`, packageNamePlaceholder: 'Pakketnaam (bijv. Q2 Bedrijven)', packageHint: 'Maak een pakket aan om uw leads te organiseren — importeer dan een CSV uit uw CRM of voeg leads handmatig toe.', addLead: '+ Lead Toevoegen', namePlaceholder: 'Naam *', jobTitle: 'Functietitel', phone: 'Telefoon', contextPlaceholder: 'Eerdere context / notities (optioneel)', nameRequired: 'Naam is vereist.', saving: 'Opslaan...', saveLead: 'Lead Opslaan', searchPlaceholder: 'Zoeken op naam, bedrijf of functie...', failedToLoad: 'Leads laden mislukt', checkConnection: 'Controleer uw verbinding en probeer het opnieuw.', noLeadsInPackage: 'Geen leads in dit pakket', noLeadsHint: pkg => `Importeer een CSV of voeg leads handmatig toe — ze worden automatisch toegewezen aan ${pkg}.`, csvHint: 'CSV-headers: naam, bedrijf, titel, telefoon, email, notities', noMatchQuery: q => `Geen leads gevonden voor "${q}"`, titleCol: 'Functie', lastCalled: 'Laatst Gebeld', callsCol: 'Gesprekken', callBtn: 'Bellen →', callNow: '▶ Nu Bellen', phoneLabel: 'TELEFOON', emailLabel: 'EMAIL', contextLabel: 'CONTEXT', noCallsYet: 'Nog geen gesprekken geregistreerd voor dit contact.', closeLabel: n => `${n}% afsluiting`, scoreLabel: n => `score ${n}` },
 };
 
 const zh: T = {
@@ -850,6 +930,7 @@ const zh: T = {
   auth: { signIn: '登录', signUp: '注册', email: '邮箱', password: '密码', forgotPassword: '忘记密码？', continueWithGoogle: '使用Google继续', alreadyHaveAccount: '已有账户？', dontHaveAccount: '没有账户？', backToHome: '返回首页' },
   onboarding: { welcome: '欢迎使用Pitchbase', yourName: '您的姓名', yourNamePlaceholder: '例如：张三', yourRole: '您的职位', yourRolePlaceholder: '例如：客户经理', whatYouSell: '您销售什么？', whatYouSellPlaceholder: '例如：SaaS、咨询、保险...', language: '偏好语言', letsGo: '开始 →' },
   upload: { title: '上传录音', subtitle: '上传通话录音，获取AI辅导和完整分析报告。', dropzone: '将音频文件拖放到此处', analyzing: '正在分析您的通话...', browseFiles: '浏览文件' },
+  leads: { title: 'CRM', importCRM: '↑ 导入CRM', importCSV: '↑ 导入CSV', newPackage: '+ 新建分组', create: '创建', allLeads: '全部线索', leadCount: n => `${n} 条线索`, packageNamePlaceholder: '分组名称（如：Q2企业客户）', packageHint: '创建分组以整理您的线索 — 然后从CRM导入CSV或手动添加线索。', addLead: '+ 添加线索', namePlaceholder: '姓名 *', jobTitle: '职位', phone: '电话', contextPlaceholder: '背景信息/备注（可选）', nameRequired: '姓名不能为空。', saving: '保存中...', saveLead: '保存线索', searchPlaceholder: '按姓名、公司或职位搜索...', failedToLoad: '线索加载失败', checkConnection: '请检查网络连接后重试。', noLeadsInPackage: '该分组中暂无线索', noLeadsHint: pkg => `导入CSV或手动添加线索 — 将自动分配到 ${pkg}。`, csvHint: 'CSV列标题：姓名、公司、职位、电话、邮箱、备注', noMatchQuery: q => `未找到匹配"${q}"的线索`, titleCol: '职位', lastCalled: '上次通话', callsCol: '通话', callBtn: '拨打 →', callNow: '▶ 立即拨打', phoneLabel: '电话', emailLabel: '邮箱', contextLabel: '背景', noCallsYet: '该联系人暂无通话记录。', closeLabel: n => `${n}% 成交`, scoreLabel: n => `评分 ${n}` },
 };
 
 const ja: T = {
@@ -868,6 +949,7 @@ const ja: T = {
   auth: { signIn: 'サインイン', signUp: 'サインアップ', email: 'メールアドレス', password: 'パスワード', forgotPassword: 'パスワードを忘れた？', continueWithGoogle: 'Googleで続ける', alreadyHaveAccount: 'すでにアカウントをお持ちですか？', dontHaveAccount: 'アカウントをお持ちでない方?', backToHome: 'ホームに戻る' },
   onboarding: { welcome: 'Pitchbaseへようこそ', yourName: 'お名前', yourNamePlaceholder: '例: 田中 太郎', yourRole: '役職', yourRolePlaceholder: '例: アカウントエグゼクティブ', whatYouSell: '何を販売していますか？', whatYouSellPlaceholder: '例: SaaS、コンサルティング、保険...', language: '使用言語', letsGo: 'はじめる →' },
   upload: { title: '録音をアップロード', subtitle: '録音をアップロードしてAIコーチングと完全なレポートを取得してください。', dropzone: 'ここに音声ファイルをドロップ', analyzing: '通話を分析中...', browseFiles: 'ファイルを参照' },
+  leads: { title: 'CRM', importCRM: '↑ CRMインポート', importCSV: '↑ CSVインポート', newPackage: '+ 新しいパッケージ', create: '作成', allLeads: 'すべてのリード', leadCount: n => `${n} 件のリード`, packageNamePlaceholder: 'パッケージ名（例：Q2エンタープライズ）', packageHint: 'パッケージを作成してリードを整理しましょう — CRMからCSVをインポートするか、手動でリードを追加してください。', addLead: '+ リードを追加', namePlaceholder: '名前 *', jobTitle: '役職', phone: '電話番号', contextPlaceholder: '事前コンテキスト / メモ（任意）', nameRequired: '名前は必須です。', saving: '保存中...', saveLead: 'リードを保存', searchPlaceholder: '名前、会社、役職で検索...', failedToLoad: 'リードの読み込みに失敗しました', checkConnection: '接続を確認して再試行してください。', noLeadsInPackage: 'このパッケージにリードがありません', noLeadsHint: pkg => `CSVをインポートするか手動でリードを追加してください — 自動的に${pkg}に割り当てられます。`, csvHint: 'CSVヘッダー: 名前、会社、役職、電話番号、メール、メモ', noMatchQuery: q => `"${q}"に一致するリードはありません`, titleCol: '役職', lastCalled: '最終通話', callsCol: '通話数', callBtn: '電話する →', callNow: '▶ 今すぐ電話', phoneLabel: '電話番号', emailLabel: 'メール', contextLabel: 'コンテキスト', noCallsYet: 'このコンタクトの通話記録はまだありません。', closeLabel: n => `${n}% 成約`, scoreLabel: n => `スコア ${n}` },
 };
 
 const ar: T = {
@@ -886,6 +968,7 @@ const ar: T = {
   auth: { signIn: 'تسجيل الدخول', signUp: 'إنشاء حساب', email: 'البريد الإلكتروني', password: 'كلمة المرور', forgotPassword: 'نسيت كلمة المرور؟', continueWithGoogle: 'المتابعة مع Google', alreadyHaveAccount: 'لديك حساب بالفعل؟', dontHaveAccount: 'ليس لديك حساب؟', backToHome: 'العودة للرئيسية' },
   onboarding: { welcome: 'مرحبًا بك في Pitchbase', yourName: 'اسمك', yourNamePlaceholder: 'مثال: محمد علي', yourRole: 'مسماك الوظيفي', yourRolePlaceholder: 'مثال: مدير حسابات', whatYouSell: 'ماذا تبيع؟', whatYouSellPlaceholder: 'مثال: برمجيات، استشارات، تأمين...', language: 'اللغة المفضلة', letsGo: 'لنبدأ →' },
   upload: { title: 'رفع تسجيل', subtitle: 'ارفع تسجيل مكالمة للحصول على تدريب ذكاء اصطناعي وتقرير كامل.', dropzone: 'اسحب ملف الصوت هنا', analyzing: 'جار تحليل مكالمتك...', browseFiles: 'استعراض الملفات' },
+  leads: { title: 'CRM', importCRM: '↑ استيراد CRM', importCSV: '↑ استيراد CSV', newPackage: '+ حزمة جديدة', create: 'إنشاء', allLeads: 'جميع العملاء', leadCount: n => `${n} عميل`, packageNamePlaceholder: 'اسم الحزمة (مثال: مبيعات الربع الثاني)', packageHint: 'أنشئ حزمة لتنظيم عملائك — ثم استورد CSV من CRM أو أضف العملاء يدوياً.', addLead: '+ إضافة عميل', namePlaceholder: 'الاسم *', jobTitle: 'المسمى الوظيفي', phone: 'الهاتف', contextPlaceholder: 'السياق السابق / ملاحظات (اختياري)', nameRequired: 'الاسم مطلوب.', saving: 'جار الحفظ...', saveLead: 'حفظ العميل', searchPlaceholder: 'ابحث بالاسم أو الشركة أو المسمى الوظيفي...', failedToLoad: 'فشل تحميل العملاء', checkConnection: 'تحقق من اتصالك وحاول مجدداً.', noLeadsInPackage: 'لا عملاء في هذه الحزمة', noLeadsHint: pkg => `استورد CSV أو أضف عملاء يدوياً — سيتم تعيينهم تلقائياً إلى ${pkg}.`, csvHint: 'رؤوس CSV: الاسم، الشركة، المسمى، الهاتف، البريد، الملاحظات', noMatchQuery: q => `لا نتائج لـ "${q}"`, titleCol: 'المسمى الوظيفي', lastCalled: 'آخر اتصال', callsCol: 'المكالمات', callBtn: 'اتصال →', callNow: '▶ اتصل الآن', phoneLabel: 'الهاتف', emailLabel: 'البريد الإلكتروني', contextLabel: 'السياق', noCallsYet: 'لم يتم تسجيل مكالمات لهذا الاتصال بعد.', closeLabel: n => `${n}% إغلاق`, scoreLabel: n => `النتيجة ${n}` },
 };
 
 // ─── Map ──────────────────────────────────────────────────────────────────────

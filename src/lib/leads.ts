@@ -15,6 +15,11 @@ interface LeadRow {
   created_at: string;
 }
 
+function assertLeadRow(r: unknown): asserts r is LeadRow {
+  if (!r || typeof r !== 'object') throw new Error('Invalid lead row');
+  if (typeof (r as Record<string, unknown>).id !== 'string') throw new Error('Missing lead id');
+}
+
 export function rowToLead(r: LeadRow): Lead {
   return {
     id:           r.id,
@@ -37,7 +42,7 @@ export async function loadLeads(userId: string): Promise<Lead[]> {
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
-  return (data ?? []).map(r => rowToLead(r as LeadRow));
+  return (data ?? []).map(r => { assertLeadRow(r); return rowToLead(r); });
 }
 
 export async function saveLead(
@@ -85,7 +90,7 @@ export async function importLeads(
   }));
   const { data, error } = await supabase.from('leads').insert(rows).select();
   if (error) throw new Error(error.message);
-  return (data ?? []).map(r => rowToLead(r as LeadRow));
+  return (data ?? []).map(r => { assertLeadRow(r); return rowToLead(r); });
 }
 
 export async function updateLeadAfterCall(id: string, userId: string, callCount: number): Promise<void> {

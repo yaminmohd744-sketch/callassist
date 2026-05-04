@@ -23,8 +23,11 @@ interface SessionRow {
 }
 
 export function rowToSession(row: SessionRow): CallSession {
+  const config: CallConfig = row.config && typeof row.config === 'object'
+    ? (row.config as CallConfig)
+    : { prospectName: '', company: '', callGoal: '', callType: 'cold', language: 'en-US', yourPitch: '' };
   return {
-    config:                (row.config as CallConfig) ?? ({} as CallConfig),
+    config,
     transcript:            Array.isArray(row.transcript) ? row.transcript as TranscriptEntry[] : [],
     suggestions:           Array.isArray(row.suggestions) ? row.suggestions as AISuggestion[] : [],
     durationSeconds:       typeof row.duration_seconds === 'number' ? row.duration_seconds : 0,
@@ -68,7 +71,8 @@ export async function loadSessions(userId: string): Promise<CallSession[]> {
     .from('call_sessions')
     .select('*')
     .eq('user_id', userId)
-    .order('ended_at', { ascending: false });
+    .order('ended_at', { ascending: false })
+    .limit(200);
   if (error) throw new Error(error.message);
   const real = data ? data.map(r => rowToSession(r as SessionRow)) : [];
   return real.length > 0 ? real : MOCK_SESSIONS;

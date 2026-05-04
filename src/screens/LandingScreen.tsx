@@ -444,75 +444,81 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
       <div className="lp">
         {nav}
         <div className="lp__sv lp__sv--features">
-          <div className="lp__sv-hero">
-            <div className="lp__sv-label">FEATURES</div>
-            <h2 className="lp__sv-h2">Everything you need<br />to win more deals</h2>
-            <p className="lp__sv-sub">Four tools that work together, live on every call.</p>
+          <div className="lp__sv-hero lp__sv-hero--features">
+            <div>
+              <div className="lp__sv-label">FEATURES</div>
+              <h2 className="lp__sv-h2 lp__sv-h2--solid">Everything you need<br />to win more deals</h2>
+            </div>
+            <p className="lp__sv-sub lp__sv-sub--aside">Four tools that work together, live on every call.</p>
           </div>
 
-          <div className="lp__sv-features-grid">
+          <div className="lp__sv-flist">
 
-            {/* 0 Real-time coaching */}
-            <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[0]}`}>
-              <div className="lp__feature-icon">{FEATURES[0].icon}</div>
-              <div className="lp__feature-title">{FEATURES[0].title}</div>
-              <div className="lp__feature-desc">{FEATURES[0].desc}</div>
-              <div className="lp__sv-demo">
-                <div className="demo-coach-prospect">PROSPECT: "We already have a tool for that..."</div>
+            {/* 01 Real-time coaching */}
+            <div className="lp__sv-frow" style={{ '--row-i': 0 } as React.CSSProperties}>
+              <span className="lp__sv-frow-num">01</span>
+              <div className="lp__sv-frow-body">
+                <h3 className="lp__sv-frow-title">{FEATURES[0].title}</h3>
+                <p className="lp__sv-frow-desc">{FEATURES[0].desc}</p>
+                <ul className="lp__sv-frow-bullets">
+                  {FEATURES[0].bullets.map((b, i) => <li key={i}>{b}</li>)}
+                </ul>
+              </div>
+              <div className="lp__sv-demo lp__sv-frow-demo">
+                <div className="demo-coach-prospect">PROSPECT: &quot;We already have a tool for that...&quot;</div>
                 <div className="demo-coach-ai">
                   <span className="demo-coach-badge">OBJECTION DETECTED</span>
-                  <span className="demo-coach-text">"What do you love most about it? And what's the one thing you'd change?"</span>
+                  <span className="demo-coach-text">&quot;What do you love most about it? And what&apos;s the one thing you&apos;d change?&quot;</span>
                 </div>
               </div>
             </div>
 
-            {/* 1 10 languages */}
-            <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[1]}`}>
-              <div className="lp__feature-icon">{FEATURES[1].icon}</div>
-              <div className="lp__feature-title">{FEATURES[1].title}</div>
-              <div className="lp__feature-desc">{FEATURES[1].desc}</div>
-              <div className="lp__sv-demo">
+            {/* 02 10 languages */}
+            <div className="lp__sv-frow" style={{ '--row-i': 1 } as React.CSSProperties}>
+              <span className="lp__sv-frow-num">02</span>
+              <div className="lp__sv-frow-body">
+                <h3 className="lp__sv-frow-title">{FEATURES[1].title}</h3>
+                <p className="lp__sv-frow-desc">{FEATURES[1].desc}</p>
+                <ul className="lp__sv-frow-bullets">
+                  {FEATURES[1].bullets.map((b, i) => <li key={i}>{b}</li>)}
+                </ul>
+              </div>
+              <div className="lp__sv-demo lp__sv-frow-demo">
                 <div className="demo-lang-header">AI COACHING IN</div>
-                <div className="demo-lang-flag-row">
-                  {LANG_PHRASES[langIdx].flag} {LANG_PHRASES[langIdx].lang}
-                </div>
-                <div key={langIdx} className="demo-lang-phrase">
-                  {LANG_PHRASES[langIdx].text}
-                </div>
+                <div className="demo-lang-flag-row">{LANG_PHRASES[langIdx].flag} {LANG_PHRASES[langIdx].lang}</div>
+                <div key={langIdx} className="demo-lang-phrase">{LANG_PHRASES[langIdx].text}</div>
               </div>
             </div>
 
-            {/* 2 Built-in CRM */}
-            <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[2]}`}>
-              <div className="lp__feature-icon">{FEATURES[2].icon}</div>
-              <div className="lp__feature-title">{FEATURES[2].title}</div>
-              <div className="lp__feature-desc">{FEATURES[2].desc}</div>
-              <div className="lp__sv-demo">
-                <div className="demo-crm-row">
-                  <span className="demo-crm-key">Name</span>
-                  <span className="demo-crm-val demo-crm-val--1">Sarah Mitchell</span>
-                </div>
-                <div className="demo-crm-row">
-                  <span className="demo-crm-key">Company</span>
-                  <span className="demo-crm-val demo-crm-val--2">Acme Corp</span>
-                </div>
-                <div className="demo-crm-row">
-                  <span className="demo-crm-key">Score</span>
-                  <span className="demo-crm-val demo-crm-val--3 demo-crm-score">78</span>
-                </div>
-                <div className="demo-crm-row">
-                  <span className="demo-crm-key">Status</span>
-                  <span className="demo-crm-val demo-crm-val--4 demo-crm-hot">● HOT LEAD</span>
-                </div>
+            {/* 03 Built-in CRM */}
+            <div className="lp__sv-frow" style={{ '--row-i': 2 } as React.CSSProperties}>
+              <span className="lp__sv-frow-num">03</span>
+              <div className="lp__sv-frow-body">
+                <h3 className="lp__sv-frow-title">{FEATURES[2].title}</h3>
+                <p className="lp__sv-frow-desc">{FEATURES[2].desc}</p>
+                <ul className="lp__sv-frow-bullets">
+                  {FEATURES[2].bullets.map((b, i) => <li key={i}>{b}</li>)}
+                </ul>
+              </div>
+              <div className="lp__sv-demo lp__sv-frow-demo">
+                <div className="demo-crm-row"><span className="demo-crm-key">Name</span><span className="demo-crm-val demo-crm-val--1">Sarah Mitchell</span></div>
+                <div className="demo-crm-row"><span className="demo-crm-key">Company</span><span className="demo-crm-val demo-crm-val--2">Acme Corp</span></div>
+                <div className="demo-crm-row"><span className="demo-crm-key">Score</span><span className="demo-crm-val demo-crm-val--3 demo-crm-score">78</span></div>
+                <div className="demo-crm-row"><span className="demo-crm-key">Status</span><span className="demo-crm-val demo-crm-val--4 demo-crm-hot">● HOT LEAD</span></div>
               </div>
             </div>
 
-            {/* 3 Post-call analysis */}
-            <div className={`lp__sv-fcard lp__sv-fcard--${CARD_ANIMS[3]}`}>
-              <div className="lp__feature-icon">{FEATURES[3].icon}</div>
-              <div className="lp__feature-title">{FEATURES[3].title}</div>
-              <div className="lp__feature-desc">{FEATURES[3].desc}</div>
-              <div className="lp__sv-demo">
+            {/* 04 Post-call analysis */}
+            <div className="lp__sv-frow" style={{ '--row-i': 3 } as React.CSSProperties}>
+              <span className="lp__sv-frow-num">04</span>
+              <div className="lp__sv-frow-body">
+                <h3 className="lp__sv-frow-title">{FEATURES[3].title}</h3>
+                <p className="lp__sv-frow-desc">{FEATURES[3].desc}</p>
+                <ul className="lp__sv-frow-bullets">
+                  {FEATURES[3].bullets.map((b, i) => <li key={i}>{b}</li>)}
+                </ul>
+              </div>
+              <div className="lp__sv-demo lp__sv-frow-demo">
                 <div className="demo-prob">
                   <div className="demo-prob-header">
                     <span className="demo-prob-label">Close probability</span>
@@ -1799,7 +1805,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
       {/* ── Live Demo ── */}
       <section id="features" className="lp__section lp__section--demo-scene">
         <div className="lp__section-label reveal">SEE IT IN ACTION</div>
-        <h2 className="lp__section-h2 reveal" data-delay="0.1">The AI that works <em>during</em> the call</h2>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">The AI that works during the call</h2>
         <p className="lp__section-sub reveal" data-delay="0.18">
           The moment your prospect speaks, Pitchbase detects objections and buying signals — and surfaces exactly what to say before the silence gets awkward.
         </p>

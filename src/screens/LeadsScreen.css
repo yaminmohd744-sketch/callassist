@@ -1,10 +1,57 @@
-﻿.leads-screen {
+﻿/* ── Keyframes ── */
+
+@keyframes ls-screen-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ls-item-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ls-row-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Screen shell ── */
+
+.leads-screen {
   display: flex;
   flex-direction: column;
   height: 100%;
   padding: var(--space-6);
   gap: var(--space-4);
   overflow: hidden;
+  animation: ls-screen-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Stagger helpers ── */
+
+.leads-screen__header {
+  animation: ls-item-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 40ms;
+}
+
+.leads-screen__pkg-grid {
+  animation: ls-item-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 80ms;
+}
+
+.leads-screen__search-row {
+  animation: ls-item-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 80ms;
+}
+
+.leads-screen__table-wrap {
+  animation: ls-item-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 110ms;
+}
+
+.leads-screen__detail-wrap {
+  animation: ls-item-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 60ms;
 }
 
 /* ── Header ── */
@@ -248,6 +295,8 @@
 
 .leads-screen__row {
   transition: background var(--transition-fast);
+  animation: ls-row-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(110ms + var(--i, 0) * 28ms);
 }
 
 .leads-screen__row:hover { background: var(--color-bg-elevated); }
@@ -507,13 +556,16 @@
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-md);
   cursor: pointer;
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
   position: relative;
+  animation: ls-item-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(80ms + var(--i, 0) * 50ms);
 }
 
 .leads-screen__pkg-card:hover {
   border-color: var(--color-accent-purple);
   background: var(--color-bg-surface);
+  transform: translateY(-2px);
 }
 
 .leads-screen__pkg-card--all {

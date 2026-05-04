@@ -202,6 +202,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   const { appLanguage } = useAppLanguage();
   const [tab, setTab] = useState<AnalyticsTab>('performance');
   const [detailView, setDetailView] = useState<string | null>(null);
+  const [showAllCalls, setShowAllCalls] = useState(false);
   const [teamCode, setTeamCode] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [joinedTeam, setJoinedTeam] = useState('');
@@ -517,7 +518,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
               <table className="analytics__detail-table">
                 <thead><tr><th>{t.analytics.colDate.toUpperCase()}</th><th>{t.analytics.colDuration.toUpperCase()}</th><th>{t.analytics.colClosePercent.toUpperCase()}</th><th>{t.analytics.colLeadScore.toUpperCase()}</th><th>{t.analytics.colStage.toUpperCase()}</th>{useMockPerf && <th>{t.analytics.colObjections.toUpperCase()}</th>}</tr></thead>
                 <tbody>
-                  {perfDetail.map((r, i) => (
+                  {(showAllCalls ? perfDetail : perfDetail.slice(0, 50)).map((r, i) => (
                     <tr key={i}>
                       <td>{r.date}</td><td>{r.dur}</td>
                       <td className={`analytics__detail-val--${r.probTier}`}>{r.prob}%</td>
@@ -528,6 +529,14 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                   ))}
                 </tbody>
               </table>
+              {perfDetail.length > 50 && (
+                <button
+                  className="analytics__show-all-btn"
+                  onClick={() => setShowAllCalls(v => !v)}
+                >
+                  {showAllCalls ? 'Show less' : `Show all ${perfDetail.length} calls`}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -743,7 +752,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                   <div className="analytics__obj-technique">{o.technique}</div>
                   <div className="analytics__obj-rate">
                     <div className="analytics__obj-bar-track">
-                      <div className="analytics__obj-bar" style={{ width: `${o.successRate}%`, ...an(200 + i * 80) }} />
+                      <div className="analytics__obj-bar" style={{ width: '100%', ...an(200 + i * 80) }} />
                     </div>
                     <span className="analytics__obj-rate-val">{t.analytics.successWhenHandled(o.successRate)}</span>
                   </div>

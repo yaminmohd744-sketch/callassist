@@ -440,6 +440,23 @@
   max-height: 420px;
 }
 
+.analytics__show-all-btn {
+  display: block;
+  margin: 12px auto 0;
+  padding: 6px 20px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.analytics__show-all-btn:hover {
+  border-color: var(--color-accent-purple);
+  color: var(--color-accent-purple);
+}
+
 /* ── Larger activity grid in detail view ─────────────────────────────────────*/
 
 .analytics__activity-grid--large {
