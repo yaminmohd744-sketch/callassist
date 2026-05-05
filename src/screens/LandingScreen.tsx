@@ -1805,75 +1805,120 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
       {/* ── Live Demo ── */}
       <section id="features" className="lp__section lp__section--demo-scene">
         <div className="lp__section-label reveal">SEE IT IN ACTION</div>
-        <h2 className="lp__section-h2 reveal" data-delay="0.1">The AI that works during the call</h2>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Your AI co-pilot, live on every call</h2>
         <p className="lp__section-sub reveal" data-delay="0.18">
-          The moment your prospect speaks, Pitchbase detects objections and buying signals — and surfaces exactly what to say before the silence gets awkward.
+          Pitchbase listens in real time, transcribes every word, and surfaces the right response the moment your prospect speaks — objection handlers, close prompts, and buying signal alerts.
         </p>
 
-        <div className="lp__mcall reveal" data-delay="0.28">
-          {/* Window chrome */}
-          <div className="lp__mcall-chrome">
+        <div className="lp__ui reveal" data-delay="0.28">
+          {/* App chrome */}
+          <div className="lp__ui-chrome">
             <div className="lp__mcall-dots">
               <span className="lp__mcall-dot lp__mcall-dot--r" />
               <span className="lp__mcall-dot lp__mcall-dot--y" />
               <span className="lp__mcall-dot lp__mcall-dot--g" />
             </div>
-            <span className="lp__mcall-chrome-title">Zoom · Q4 Discovery Call</span>
-            <span className="lp__mcall-chrome-timer">04:32</span>
-          </div>
-
-          {/* Video tiles + floating AI panel */}
-          <div className="lp__mcall-video">
-            {/* Prospect tile */}
-            <div className="lp__mcall-tile lp__mcall-tile--prospect">
-              <div className="lp__mcall-silhouette">
-                <div className="lp__mcall-sil-head" />
-                <div className="lp__mcall-sil-body" />
-              </div>
-              <div className="lp__mcall-tile-name">Sarah Chen · Prospect</div>
-              <div className={`lp__mcall-speech${demoShowAI ? '' : ' lp__mcall-speech--show'}`}>
-                <span className="lp__mcall-speech-label">PROSPECT SAID</span>
-                <span className="lp__mcall-speech-text">{DEMO_SCENES[demoSceneIdx].prospect}</span>
-              </div>
-            </div>
-
-            {/* Rep tile */}
-            <div className="lp__mcall-tile lp__mcall-tile--rep">
-              <div className="lp__mcall-silhouette lp__mcall-silhouette--rep">
-                <div className="lp__mcall-sil-head" />
-                <div className="lp__mcall-sil-body" />
-              </div>
-              <div className="lp__mcall-tile-name">You</div>
-              <div className={`lp__mcall-prob${demoShowAI ? ' lp__mcall-prob--show' : ''}`}>
-                <span className="lp__mcall-prob-label">CLOSE PROB</span>
-                <span className="lp__mcall-prob-val">{DEMO_SCENES[demoSceneIdx].prob}%</span>
-              </div>
-            </div>
-
-            {/* Floating AI coaching panel */}
-            <div className={`lp__mcall-ai${demoShowAI ? ' lp__mcall-ai--show' : ''}`}>
-              <div className="lp__mcall-ai-header">
-                <span className={`lp__mcall-ai-badge lp__mcall-ai-badge--${DEMO_SCENES[demoSceneIdx].badgeType}`}>
-                  {DEMO_SCENES[demoSceneIdx].badge}
-                </span>
-                <span className="lp__mcall-ai-brand">PITCHBASE</span>
-              </div>
-              <p className="lp__mcall-ai-text">
-                &ldquo;{DEMO_SCENES[demoSceneIdx].suggestion}&rdquo;
-              </p>
-              <div className="lp__mcall-ai-tabs">
-                <button className="lp__mcall-ai-tab lp__mcall-ai-tab--active">✦ Coaching</button>
-                <button className="lp__mcall-ai-tab">◎ Objections</button>
-                <button className="lp__mcall-ai-tab">↗ Follow-up</button>
-              </div>
+            <span className="lp__ui-chrome-title">PITCHBASE — Sarah Chen · CloudBridge Inc.</span>
+            <div className="lp__ui-chrome-meta">
+              <span className="lp__ui-live-dot" />
+              <span className="lp__ui-timer">07:14</span>
             </div>
           </div>
 
-          {/* Call controls */}
-          <div className="lp__mcall-controls">
-            <button className="lp__mcall-ctrl">🎙 Mute</button>
-            <button className="lp__mcall-ctrl">📷 Stop Video</button>
-            <button className="lp__mcall-ctrl lp__mcall-ctrl--end">End</button>
+          {/* Status bar */}
+          <div className="lp__ui-statusbar">
+            <span className="lp__ui-stage lp__ui-stage--discovery">DISCOVERY</span>
+            <span className="lp__ui-status-sep">·</span>
+            <span className="lp__ui-status-item">2 objections</span>
+            <span className="lp__ui-status-sep">·</span>
+            <span className="lp__ui-status-item">
+              Close prob <strong className={`lp__ui-prob lp__ui-prob--${DEMO_SCENES[demoSceneIdx].badgeType}`}>{DEMO_SCENES[demoSceneIdx].prob}%</strong>
+            </span>
+          </div>
+
+          {/* 3-panel layout */}
+          <div className="lp__ui-panels">
+
+            {/* Left: transcript */}
+            <div className="lp__ui-panel lp__ui-panel--transcript">
+              <div className="lp__ui-panel-header">TRANSCRIPT</div>
+              <div className="lp__ui-transcript">
+                <div className="lp__ui-entry lp__ui-entry--rep">
+                  <span className="lp__ui-entry-who">You</span>
+                  <span className="lp__ui-entry-text">What's your biggest challenge with your current reporting setup?</span>
+                </div>
+                <div className={`lp__ui-entry lp__ui-entry--prospect${demoShowAI ? '' : ' lp__ui-entry--active'}`}>
+                  <span className="lp__ui-entry-who">Sarah</span>
+                  <span className="lp__ui-entry-text">{DEMO_SCENES[demoSceneIdx].prospect}</span>
+                </div>
+                {demoShowAI && (
+                  <div className="lp__ui-entry lp__ui-entry--rep lp__ui-entry--typing">
+                    <span className="lp__ui-entry-who">You</span>
+                    <span className="lp__ui-entry-cursor" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Middle: AI coaching */}
+            <div className="lp__ui-panel lp__ui-panel--ai">
+              <div className="lp__ui-panel-header">AI INTELLIGENCE</div>
+              <div className={`lp__ui-suggestion${demoShowAI ? ' lp__ui-suggestion--show' : ''}`}>
+                <div className="lp__ui-suggestion-top">
+                  <span className={`lp__ui-badge lp__ui-badge--${DEMO_SCENES[demoSceneIdx].badgeType}`}>
+                    {DEMO_SCENES[demoSceneIdx].badge}
+                  </span>
+                  <span className="lp__ui-suggestion-conf">94% match</span>
+                </div>
+                <p className="lp__ui-suggestion-text">&ldquo;{DEMO_SCENES[demoSceneIdx].suggestion}&rdquo;</p>
+                <div className="lp__ui-suggestion-actions">
+                  <button className="lp__ui-use-btn">Use this</button>
+                  <button className="lp__ui-skip-btn">Skip</button>
+                </div>
+              </div>
+              <div className="lp__ui-prob-meter">
+                <div className="lp__ui-prob-label">Close probability</div>
+                <div className="lp__ui-prob-bar-wrap">
+                  <div
+                    className={`lp__ui-prob-bar lp__ui-prob-bar--${DEMO_SCENES[demoSceneIdx].badgeType}`}
+                    style={{ width: `${DEMO_SCENES[demoSceneIdx].prob}%` }}
+                  />
+                </div>
+                <div className={`lp__ui-prob-num lp__ui-prob--${DEMO_SCENES[demoSceneIdx].badgeType}`}>
+                  {DEMO_SCENES[demoSceneIdx].prob}%
+                </div>
+              </div>
+            </div>
+
+            {/* Right: lead profile */}
+            <div className="lp__ui-panel lp__ui-panel--lead">
+              <div className="lp__ui-panel-header">LEAD PROFILE</div>
+              <div className="lp__ui-lead-card">
+                <div className="lp__ui-lead-avatar">SC</div>
+                <div className="lp__ui-lead-info">
+                  <div className="lp__ui-lead-name">Sarah Chen</div>
+                  <div className="lp__ui-lead-company">CloudBridge Inc.</div>
+                </div>
+              </div>
+              <div className="lp__ui-lead-rows">
+                <div className="lp__ui-lead-row">
+                  <span className="lp__ui-lead-key">Goal</span>
+                  <span className="lp__ui-lead-val">Book a demo</span>
+                </div>
+                <div className="lp__ui-lead-row">
+                  <span className="lp__ui-lead-key">Stage</span>
+                  <span className="lp__ui-lead-val lp__ui-stage--discovery">Discovery</span>
+                </div>
+                <div className="lp__ui-lead-row">
+                  <span className="lp__ui-lead-key">Objections</span>
+                  <span className="lp__ui-lead-val" style={{ color: 'var(--color-accent-red)' }}>2 raised</span>
+                </div>
+                <div className="lp__ui-lead-row">
+                  <span className="lp__ui-lead-key">Score</span>
+                  <span className="lp__ui-lead-val" style={{ color: 'var(--color-accent-green)' }}>74 / 100</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
