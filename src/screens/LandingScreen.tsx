@@ -277,7 +277,6 @@ const NAV_SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'pricing',   label: 'Pricing'   },
 ];
 
-const CARD_ANIMS = ['tl', 'tc', 'tr', 'bl', 'bc', 'br'] as const;
 
 const LANG_PHRASES = [
   { flag: '🇺🇸', lang: 'English',    text: '"What specifically would you change?"' },
@@ -311,7 +310,9 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   const [langIdx, setLangIdx]                   = useState(0);
   const [navCtaVisible, setNavCtaVisible]       = useState(false);
   const [demoSceneIdx, setDemoSceneIdx]         = useState(0);
-  const [demoShowAI, setDemoShowAI]             = useState(false);
+  const [demoPhase, setDemoPhase]               = useState<'expanded' | 'clicking' | 'minimized'>('expanded');
+  const [desktopSceneIdx, setDesktopSceneIdx]   = useState(0);
+  const [desktopShowSuggestion, setDesktopShowSuggestion] = useState(false);
 
   useEffect(() => {
     if (visibleFrames >= DEMO_FRAMES.length) return;
@@ -320,11 +321,22 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   }, [visibleFrames]);
 
   useEffect(() => {
-    setDemoShowAI(false);
-    const t1 = setTimeout(() => setDemoShowAI(true), 1400);
     const t2 = setTimeout(() => setDemoSceneIdx(i => (i + 1) % DEMO_SCENES.length), 4200);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    return () => { clearTimeout(t2); };
   }, [demoSceneIdx]);
+
+  // Desktop demo loop: expanded (5s) → clicking (1.2s) → minimized (5s) → reset
+  useEffect(() => {
+    setDemoPhase('expanded');
+    setDesktopShowSuggestion(false);
+    const tSug  = setTimeout(() => setDesktopShowSuggestion(true), 1800);
+    const tClick = setTimeout(() => setDemoPhase('clicking'), 5000);
+    const tMin  = setTimeout(() => setDemoPhase('minimized'), 6200);
+    const tNext  = setTimeout(() => {
+      setDesktopSceneIdx(i => (i + 1) % DEMO_SCENES.length);
+    }, 12000);
+    return () => { clearTimeout(tSug); clearTimeout(tClick); clearTimeout(tMin); clearTimeout(tNext); };
+  }, [desktopSceneIdx]);
 
   useEffect(() => {
     if (activeSection !== 'features') return;
@@ -350,6 +362,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
       { threshold: 0, rootMargin: '0px 0px -60px 0px', root }
     );
     els.forEach(el => observer.observe(el));
+
     return () => observer.disconnect();
   }, [activeSection]);
 
@@ -1810,116 +1823,99 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
           Pitchbase listens in real time, transcribes every word, and surfaces the right response the moment your prospect speaks — objection handlers, close prompts, and buying signal alerts.
         </p>
 
-        <div className="lp__ui reveal" data-delay="0.28">
-          {/* App chrome */}
-          <div className="lp__ui-chrome">
-            <div className="lp__mcall-dots">
-              <span className="lp__mcall-dot lp__mcall-dot--r" />
-              <span className="lp__mcall-dot lp__mcall-dot--y" />
-              <span className="lp__mcall-dot lp__mcall-dot--g" />
+        {/* ── Desktop demo ── */}
+        <div className={`lp__desktop-demo lp__desktop-demo--${demoPhase}`}>
+
+          {/* Fake desktop wallpaper */}
+          <div className="lp__desktop-bg" />
+
+          {/* Fake system bar */}
+          <div className="lp__desktop-bar">
+            <div className="lp__desktop-bar-left">
+              <span className="lp__desktop-bar-dot" />
+              <span className="lp__desktop-bar-dot" />
+              <span className="lp__desktop-bar-dot" />
+              <span className="lp__desktop-bar-icon">⊞</span>
             </div>
-            <span className="lp__ui-chrome-title">PITCHBASE — Sarah Chen · CloudBridge Inc.</span>
-            <div className="lp__ui-chrome-meta">
-              <span className="lp__ui-live-dot" />
-              <span className="lp__ui-timer">07:14</span>
+            <div className="lp__desktop-bar-right">
+              <span className="lp__desktop-bar-time">2:47 PM</span>
             </div>
           </div>
 
-          {/* Status bar */}
-          <div className="lp__ui-statusbar">
-            <span className="lp__ui-stage lp__ui-stage--discovery">DISCOVERY</span>
-            <span className="lp__ui-status-sep">·</span>
-            <span className="lp__ui-status-item">2 objections</span>
-            <span className="lp__ui-status-sep">·</span>
-            <span className="lp__ui-status-item">
-              Close prob <strong className={`lp__ui-prob lp__ui-prob--${DEMO_SCENES[demoSceneIdx].badgeType}`}>{DEMO_SCENES[demoSceneIdx].prob}%</strong>
+          {/* Pitchbase minimized pill (visible when minimized) */}
+          <div className="lp__mini-pill">
+            <span className="lp__mini-pill-logo">✦</span>
+            <span className="lp__mini-pill-sep">›</span>
+            <span className="lp__mini-pill-hide">Hide</span>
+            <span className="lp__mini-pill-stop">◼</span>
+          </div>
+
+          {/* Minimized suggestion banner */}
+          <div className="lp__mini-suggestion">
+            <span className={`lp__mini-badge lp__mini-badge--${DEMO_SCENES[desktopSceneIdx].badgeType}`}>
+              {DEMO_SCENES[desktopSceneIdx].badge}
             </span>
+            <span className="lp__mini-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].suggestion.slice(0, 72)}…&rdquo;</span>
           </div>
 
-          {/* 3-panel layout */}
-          <div className="lp__ui-panels">
-
-            {/* Left: transcript */}
-            <div className="lp__ui-panel lp__ui-panel--transcript">
-              <div className="lp__ui-panel-header">TRANSCRIPT</div>
-              <div className="lp__ui-transcript">
-                <div className="lp__ui-entry lp__ui-entry--rep">
-                  <span className="lp__ui-entry-who">You</span>
-                  <span className="lp__ui-entry-text">What's your biggest challenge with your current reporting setup?</span>
-                </div>
-                <div className={`lp__ui-entry lp__ui-entry--prospect${demoShowAI ? '' : ' lp__ui-entry--active'}`}>
-                  <span className="lp__ui-entry-who">Sarah</span>
-                  <span className="lp__ui-entry-text">{DEMO_SCENES[demoSceneIdx].prospect}</span>
-                </div>
-                {demoShowAI && (
-                  <div className="lp__ui-entry lp__ui-entry--rep lp__ui-entry--typing">
-                    <span className="lp__ui-entry-who">You</span>
-                    <span className="lp__ui-entry-cursor" />
-                  </div>
-                )}
+          {/* Video call window */}
+          <div className="lp__vc-window">
+            {/* Video tiles */}
+            <div className="lp__vc-tiles">
+              <div className="lp__vc-tile lp__vc-tile--a">
+                <div className="lp__vc-avatar">JD</div>
+                <span className="lp__vc-name">You</span>
+              </div>
+              <div className="lp__vc-tile lp__vc-tile--b">
+                <div className="lp__vc-avatar lp__vc-avatar--b">SC</div>
+                <span className="lp__vc-name">Sarah Chen</span>
               </div>
             </div>
 
-            {/* Middle: AI coaching */}
-            <div className="lp__ui-panel lp__ui-panel--ai">
-              <div className="lp__ui-panel-header">AI INTELLIGENCE</div>
-              <div className={`lp__ui-suggestion${demoShowAI ? ' lp__ui-suggestion--show' : ''}`}>
-                <div className="lp__ui-suggestion-top">
-                  <span className={`lp__ui-badge lp__ui-badge--${DEMO_SCENES[demoSceneIdx].badgeType}`}>
-                    {DEMO_SCENES[demoSceneIdx].badge}
-                  </span>
-                  <span className="lp__ui-suggestion-conf">94% match</span>
-                </div>
-                <p className="lp__ui-suggestion-text">&ldquo;{DEMO_SCENES[demoSceneIdx].suggestion}&rdquo;</p>
-                <div className="lp__ui-suggestion-actions">
-                  <button className="lp__ui-use-btn">Use this</button>
-                  <button className="lp__ui-skip-btn">Skip</button>
-                </div>
+            {/* Pitchbase overlay panel (expanded state) */}
+            <div className="lp__pb-overlay">
+              <div className="lp__pb-overlay-header">
+                <span className="lp__pb-overlay-logo">✦ Pitchbase</span>
+                <span className={`lp__pb-overlay-badge lp__pb-overlay-badge--${DEMO_SCENES[desktopSceneIdx].badgeType}`}>
+                  {DEMO_SCENES[desktopSceneIdx].badge}
+                </span>
               </div>
-              <div className="lp__ui-prob-meter">
-                <div className="lp__ui-prob-label">Close probability</div>
-                <div className="lp__ui-prob-bar-wrap">
-                  <div
-                    className={`lp__ui-prob-bar lp__ui-prob-bar--${DEMO_SCENES[demoSceneIdx].badgeType}`}
-                    style={{ width: `${DEMO_SCENES[demoSceneIdx].prob}%` }}
-                  />
-                </div>
-                <div className={`lp__ui-prob-num lp__ui-prob--${DEMO_SCENES[demoSceneIdx].badgeType}`}>
-                  {DEMO_SCENES[demoSceneIdx].prob}%
-                </div>
+              <p className={`lp__pb-overlay-text${desktopShowSuggestion ? ' lp__pb-overlay-text--show' : ''}`}>
+                &ldquo;{DEMO_SCENES[desktopSceneIdx].suggestion}&rdquo;
+              </p>
+              <div className="lp__pb-overlay-tabs">
+                <span className="lp__pb-tab lp__pb-tab--active">Assist</span>
+                <span className="lp__pb-tab-sep">·</span>
+                <span className="lp__pb-tab">What should I say?</span>
+                <span className="lp__pb-tab-sep">·</span>
+                <span className="lp__pb-tab">Recap</span>
+              </div>
+              <div className="lp__pb-overlay-input">
+                <span className="lp__pb-input-placeholder">Ask about your screen or conversation…</span>
+                <button className="lp__pb-send">▶</button>
               </div>
             </div>
 
-            {/* Right: lead profile */}
-            <div className="lp__ui-panel lp__ui-panel--lead">
-              <div className="lp__ui-panel-header">LEAD PROFILE</div>
-              <div className="lp__ui-lead-card">
-                <div className="lp__ui-lead-avatar">SC</div>
-                <div className="lp__ui-lead-info">
-                  <div className="lp__ui-lead-name">Sarah Chen</div>
-                  <div className="lp__ui-lead-company">CloudBridge Inc.</div>
-                </div>
-              </div>
-              <div className="lp__ui-lead-rows">
-                <div className="lp__ui-lead-row">
-                  <span className="lp__ui-lead-key">Goal</span>
-                  <span className="lp__ui-lead-val">Book a demo</span>
-                </div>
-                <div className="lp__ui-lead-row">
-                  <span className="lp__ui-lead-key">Stage</span>
-                  <span className="lp__ui-lead-val lp__ui-stage--discovery">Discovery</span>
-                </div>
-                <div className="lp__ui-lead-row">
-                  <span className="lp__ui-lead-key">Objections</span>
-                  <span className="lp__ui-lead-val" style={{ color: 'var(--color-accent-red)' }}>2 raised</span>
-                </div>
-                <div className="lp__ui-lead-row">
-                  <span className="lp__ui-lead-key">Score</span>
-                  <span className="lp__ui-lead-val" style={{ color: 'var(--color-accent-green)' }}>74 / 100</span>
-                </div>
-              </div>
+            {/* Call toolbar */}
+            <div className="lp__vc-toolbar">
+              <button className="lp__vc-btn">
+                <span className="lp__vc-btn-icon">🎤</span>
+                <span className="lp__vc-btn-label">Mute</span>
+              </button>
+              <button className="lp__vc-btn">
+                <span className="lp__vc-btn-icon">📷</span>
+                <span className="lp__vc-btn-label">Video</span>
+              </button>
+              <button className={`lp__vc-btn lp__vc-btn--share${demoPhase === 'clicking' ? ' lp__vc-btn--hovered' : ''}`}>
+                <span className="lp__vc-btn-icon">⬆</span>
+                <span className="lp__vc-btn-label">Share Screen</span>
+              </button>
+              <button className="lp__vc-btn lp__vc-btn--end">End</button>
             </div>
           </div>
+
+          {/* Animated cursor */}
+          <div className={`lp__cursor-dot lp__cursor-dot--${demoPhase}`} />
         </div>
       </section>
 

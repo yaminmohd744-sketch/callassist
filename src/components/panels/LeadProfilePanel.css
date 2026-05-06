@@ -3,7 +3,9 @@
   flex-direction: column;
   width: var(--panel-right-width);
   flex-shrink: 0;
-  background: var(--color-bg-surface);
+  background: rgba(10, 7, 20, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   overflow-y: auto;
 }
 
