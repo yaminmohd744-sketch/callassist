@@ -21,12 +21,5 @@ export default defineConfig({
     watch: {
       ignored: ['**/release/**', '**/dist/**'],
     },
-    proxy: {
-      '/api/apollo': {
-        target: 'https://api.apollo.io',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/apollo/, ''),
-      },
-    },
   },
 })

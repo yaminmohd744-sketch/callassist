@@ -1,3 +1,4 @@
 export function genId(): string {
-  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
+  if (!crypto.randomUUID) throw new Error('crypto.randomUUID not available');
+  return crypto.randomUUID();
 }

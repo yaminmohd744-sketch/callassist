@@ -106,8 +106,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const flipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const speakerLockedRef = useRef(false);
   const dgSpeakerMapRef = useRef<Map<number, TranscriptSpeaker> | null>(null);
-  const repWordsRef = useRef(0);
-  const prospectWordsRef = useRef(0);
+  const repSecondsRef = useRef(0);
+  const prospectSecondsRef = useRef(0);
+  const speechStartRef = useRef<number | null>(null);
   const [, setFillerCount] = useState(0);
 
   const handleBubbleDragStart = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
@@ -231,16 +232,24 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     transcriptRef.current = newTranscript;
     setTranscript(newTranscript);
 
-    // Track talk time (word counts per speaker)
+    // Accumulate speaking duration per speaker.
+    // speechStartRef was set when interim text first appeared; if not set (e.g. Deepgram
+    // speech_final with no prior interim), fall back to a word-rate estimate (150 wpm).
     const wordCount = text.trim().split(/\s+/).length;
+    const now = Date.now();
+    const durationSec = speechStartRef.current !== null
+      ? (now - speechStartRef.current) / 1000
+      : wordCount / 2.5; // ~150 wpm fallback
+    speechStartRef.current = null;
+
     if (speaker === 'rep') {
-      repWordsRef.current += wordCount;
+      repSecondsRef.current += durationSec;
       // Track filler words
       const lower = text.toLowerCase();
       const fillers = FILLER_WORDS.filter(f => lower.includes(f)).length;
       if (fillers > 0) setFillerCount(c => c + fillers);
     } else if (speaker === 'prospect') {
-      prospectWordsRef.current += wordCount;
+      prospectSecondsRef.current += durationSec;
     }
 
     if (speaker === 'prospect') {
@@ -255,6 +264,15 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     onFinalTranscript: handleFinalTranscript,
     language: config.language ?? 'en-US',
   });
+
+  // Record when speech starts so we can measure utterance duration accurately.
+  const prevInterimRef = useRef('');
+  useEffect(() => {
+    if (interimText && !prevInterimRef.current) {
+      speechStartRef.current = Date.now();
+    }
+    prevInterimRef.current = interimText;
+  }, [interimText]);
 
   useEffect(() => {
     // Reset AI coach so each new call starts with a clean slate.
@@ -372,8 +390,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       localStorage.setItem('pitchbase:nextCallTip', coaching.nextCallTip);
       clearDraft().catch(() => { /* silent */ });
 
-      const totalWords = repWordsRef.current + prospectWordsRef.current;
-      const talkRatio = totalWords > 0 ? repWordsRef.current / totalWords : 0.5;
+      const totalSeconds = repSecondsRef.current + prospectSecondsRef.current;
+      const talkRatio = totalSeconds > 0 ? repSecondsRef.current / totalSeconds : 0.5;
 
       const session: CallSession = {
         config,
@@ -395,7 +413,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       onEndCall(session);
     } catch {
       toast.error('Summary generation failed — call saved without AI coaching');
-      const totalWords = repWordsRef.current + prospectWordsRef.current;
+      const totalSeconds = repSecondsRef.current + prospectSecondsRef.current;
       onEndCall({
         config, transcript, suggestions,
         durationSeconds: elapsedSeconds,
@@ -404,7 +422,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         endedAt: new Date().toISOString(),
         aiSummary: '', followUpEmail: '', leadScore: 0,
         notes,
-        talkRatio: totalWords > 0 ? repWordsRef.current / totalWords : 0.5,
+        talkRatio: totalSeconds > 0 ? repSecondsRef.current / totalSeconds : 0.5,
         coaching: undefined,
       });
     } finally {
@@ -486,6 +504,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
               callStage={callStage}
               phaseLabel={phaseLabel}
               prospectTone={prospectTone}
+              elapsedSeconds={elapsedSeconds}
             />
             <LeadProfilePanel
               config={config}
@@ -517,7 +536,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
             <div className="live-call__bubble-brand">
               <span className="live-call__bubble-dot" />
               <span className="live-call__bubble-logo">
-                PITCH<span className="lp__logo-plus">PLUS</span>
+                PITCHBASE
               </span>
               {config.prospectName && (
                 <span className="live-call__bubble-prospect">· {config.prospectName}</span>

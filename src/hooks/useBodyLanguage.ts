@@ -171,6 +171,8 @@ export function useBodyLanguage({ isActive, elapsedSeconds, currentScript, onSug
 
     init();
 
+    // cancelled=true stops the animation loop and all async callbacks above from
+    // touching state after unmount. Stream/video/model teardown follows so nothing leaks.
     return () => {
       cancelled = true;
       if (animFrame !== null) cancelAnimationFrame(animFrame);

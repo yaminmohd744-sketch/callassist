@@ -50,28 +50,29 @@ export function useAICoach() {
 
     // Called on every streaming chunk and on final completion.
     const onStream = (partial: AISuggestion) => {
+      const stamped = { ...partial, createdAt: partial.createdAt ?? elapsedSeconds };
       setSuggestions(prev => {
-        const exists = prev.some(s => s.id === partial.id);
+        const exists = prev.some(s => s.id === stamped.id);
         if (exists) {
           // Streaming ended with no content (shouldShow: false) — remove placeholder.
-          if (!partial.streaming && !partial.body) {
-            return prev.filter(s => s.id !== partial.id);
+          if (!stamped.streaming && !stamped.body) {
+            return prev.filter(s => s.id !== stamped.id);
           }
-          return prev.map(s => s.id === partial.id ? partial : s);
+          return prev.map(s => s.id === stamped.id ? stamped : s);
         }
         // Only add to list if it has visible content (avoid showing empty card briefly)
-        if (!partial.body && partial.streaming) return prev;
+        if (!stamped.body && stamped.streaming) return prev;
         // Dedup: if this body opens identically to an existing card, replace it.
         const dupIdx = prev.findIndex(s =>
-          s.body.length > 10 && partial.body.length > 10 &&
-          s.body.slice(0, 40) === partial.body.slice(0, 40)
+          s.body.length > 10 && stamped.body.length > 10 &&
+          s.body.slice(0, 60) === stamped.body.slice(0, 60)
         );
         if (dupIdx !== -1) {
           const next = [...prev];
-          next[dupIdx] = partial;
+          next[dupIdx] = stamped;
           return next;
         }
-        return [partial, ...prev].slice(0, 8);
+        return [stamped, ...prev].slice(0, 8);
       });
     };
 
@@ -105,7 +106,7 @@ export function useAICoach() {
     if (result.prospectTone) setProspectTone(result.prospectTone);
 
     if (result.suggestions.length > 0) {
-      const primary = result.suggestions[0];
+      const primary = { ...result.suggestions[0], createdAt: result.suggestions[0].createdAt ?? elapsedSeconds };
       memoryRef.current = {
         lastLabel: primary.headline,
         lastObjectionType: primary.type === 'objection-response'
@@ -119,7 +120,7 @@ export function useAICoach() {
         if (prev.some(s => s.id === primary.id)) return prev;
         const dupIdx = prev.findIndex(s =>
           s.body.length > 10 && primary.body.length > 10 &&
-          s.body.slice(0, 40) === primary.body.slice(0, 40)
+          s.body.slice(0, 60) === primary.body.slice(0, 60)
         );
         if (dupIdx !== -1) {
           const next = [...prev];

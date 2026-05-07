@@ -23,13 +23,14 @@ function openDB(): Promise<IDBDatabase> {
 
 export async function saveDraft(draft: CallDraft): Promise<boolean> {
   if ('storage' in navigator) {
-    try {
-      const { quota, usage } = await navigator.storage.estimate();
-      if (quota && usage && (quota - usage) < 10_000_000) {
-        console.warn('[Pitchbase] Storage low (<10 MB free), skipping draft save');
-        return false;
-      }
-    } catch { /* estimate not available — proceed */ }
+    // quota=0 on error means unknown — skip the check rather than blocking the save.
+    const est = await navigator.storage.estimate().catch((): StorageEstimate => ({ usage: 0, quota: 0 }));
+    const { usage = 0, quota = 0 } = est;
+    const free = quota === 0 ? Infinity : quota - usage;
+    if (free < 10_000_000) {
+      console.warn('[Pitchbase] Storage low (<10 MB free), skipping draft save');
+      return false;
+    }
   }
 
   const db = await openDB();

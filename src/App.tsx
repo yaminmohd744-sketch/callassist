@@ -162,8 +162,13 @@ export function App() {
   useEffect(() => {
     if (!user) { setPastSessions([]); return; }
     async function load() {
-      // Migrate legacy localStorage outcomes to Supabase (no-op if already migrated)
-      await migrateOutcomes(user!.id);
+      // Migrate legacy localStorage outcomes to Supabase — guarded by a per-user flag
+      // so it only runs once even if the user logs out and back in mid-migration.
+      const MIGRATED_KEY = `pp-migrated-v1-${user!.id}`;
+      if (!localStorage.getItem(MIGRATED_KEY)) {
+        await migrateOutcomes(user!.id);
+        try { localStorage.setItem(MIGRATED_KEY, '1'); } catch { /* storage full — retries next login */ }
+      }
       try {
         const sessions = await loadSessions(user!.id);
         setPastSessions(sessions);

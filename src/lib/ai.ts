@@ -176,6 +176,10 @@ export async function analyzeTranscript(
     }
 
     if (typeof data !== 'object' || data === null) throw new Error('Malformed AI response structure');
+    // Require the two fields that drive all downstream state — anything else we can default.
+    if (typeof data.shouldShow !== 'boolean' || typeof data.body !== 'string') {
+      throw new Error('AI response missing required fields (shouldShow, body)');
+    }
 
     const VALID_STAGES: CallStage[] = ['opener', 'discovery', 'pitch', 'close'];
     const aiDetectedStage = VALID_STAGES.includes(data.detectedStage as CallStage)

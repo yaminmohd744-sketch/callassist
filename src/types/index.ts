@@ -38,6 +38,7 @@ export interface AISuggestion {
   body: string;
   triggeredBy: string;
   timestampSeconds: number;
+  createdAt?: number;
   streaming?: boolean;
   isFallback?: boolean;
   physicalAction?: string;

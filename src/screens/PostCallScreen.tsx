@@ -15,6 +15,8 @@ function isValidWebhookUrl(url: string): boolean {
     const h = u.hostname;
     if (h === 'localhost' || h === '127.0.0.1' || h === '169.254.169.254') return false;
     if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(h)) return false;
+    // IPv6 loopback and private ranges (ULA fc00::/7, link-local fe80::/10)
+    if (h === '::1' || /^(fc|fd)[0-9a-f]{2}:/i.test(h) || /^fe80:/i.test(h)) return false;
     return true;
   } catch {
     return false;

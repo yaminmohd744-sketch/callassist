@@ -16,11 +16,14 @@ const TONE_COLOR: Record<ProspectTone, string> = {
   Neutral:     '#94a3b8',
 };
 
+const SUGGESTION_TTL = 90; // seconds before a suggestion is considered stale
+
 interface AIIntelligencePanelProps {
   suggestions: AISuggestion[];
   callStage: CallStage;
   phaseLabel?: string;
   prospectTone?: ProspectTone | null;
+  elapsedSeconds?: number;
 }
 
 export function AIIntelligencePanel({
@@ -28,6 +31,7 @@ export function AIIntelligencePanel({
   callStage,
   phaseLabel,
   prospectTone,
+  elapsedSeconds = 0,
 }: AIIntelligencePanelProps) {
   const t = useTranslations();
 
@@ -38,7 +42,11 @@ export function AIIntelligencePanel({
     close:     t.liveCall.stageClose,
   };
 
-  const activeCard = suggestions.length > 0 ? suggestions[suggestions.length - 1] : null;
+  // Filter out suggestions older than 90 seconds so stale coaching doesn't linger.
+  const fresh = suggestions.filter(s =>
+    s.createdAt === undefined || elapsedSeconds - s.createdAt <= SUGGESTION_TTL
+  );
+  const activeCard = fresh.length > 0 ? fresh[fresh.length - 1] : null;
 
   return (
     <div className="ai-panel">
@@ -65,7 +73,7 @@ export function AIIntelligencePanel({
         </div>
       </div>
 
-      <div className="ai-panel__body">
+      <div className="ai-panel__body" aria-live="polite" aria-atomic="false">
         {!activeCard ? (
           <div className="ai-panel__empty">
             <div className="ai-panel__empty-icon">◎</div>

@@ -1,4 +1,7 @@
 ﻿import { useState, useEffect } from 'react';
+import { PrivacyPolicy } from './legal/PrivacyPolicy';
+import { TermsOfService } from './legal/TermsOfService';
+import { CookiePolicy } from './legal/CookiePolicy';
 import './LandingScreen.css';
 
 interface LandingScreenProps {
@@ -21,25 +24,34 @@ const DEMO_FRAMES = [
 
 const DEMO_SCENES = [
   {
-    badge: 'OBJECTION DETECTED',
+    cardBadge: 'HANDLE OBJECTION',
     badgeType: 'red',
+    stage: 'DISCOVERY',
+    tone: 'DEFENSIVE',
     prospect: '"We already have a tool for that..."',
-    suggestion: 'What do you love most about it? And what\'s the one thing you wish it did better?',
-    prob: 68,
+    say: 'What do you love most about it? And what\'s the one thing you wish it did better?',
+    why: 'Turns the competitor into a pain-finder — they name the gap for you.',
+    time: '04:32',
   },
   {
-    badge: 'BUYING SIGNAL',
+    cardBadge: 'GO DEEPER',
     badgeType: 'green',
+    stage: 'DISCOVERY',
+    tone: 'CURIOUS',
     prospect: '"Honestly, the reporting could be better..."',
-    suggestion: 'Pain confirmed — "So if I showed you exactly how we fix that, would you be open to a 20-min demo this week?"',
-    prob: 81,
+    say: 'So if I showed you exactly how we fix that, would you be open to a 20-min demo this week?',
+    why: 'Pain confirmed — bridge directly to the next step while urgency is live.',
+    time: '06:17',
   },
   {
-    badge: 'CLOSE PROMPT',
+    cardBadge: 'CLOSE',
     badgeType: 'purple',
+    stage: 'CLOSE',
+    tone: 'WARM',
     prospect: '"That actually sounds really interesting..."',
-    suggestion: 'Trial close — "Based on what we\'ve covered, does this solve the problem you described at the start?"',
-    prob: 89,
+    say: 'Based on what we\'ve covered, does this solve the problem you described at the start?',
+    why: 'Trial close while intent is high — gets a yes or surfaces a final objection.',
+    time: '09:04',
   },
 ];
 
@@ -309,7 +321,6 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   const [billingCycle, setBillingCycle]         = useState<'monthly' | 'yearly'>('monthly');
   const [langIdx, setLangIdx]                   = useState(0);
   const [navCtaVisible, setNavCtaVisible]       = useState(false);
-  const [demoSceneIdx, setDemoSceneIdx]         = useState(0);
   const [demoPhase, setDemoPhase]               = useState<'expanded' | 'clicking' | 'minimized'>('expanded');
   const [desktopSceneIdx, setDesktopSceneIdx]   = useState(0);
   const [desktopShowSuggestion, setDesktopShowSuggestion] = useState(false);
@@ -319,11 +330,6 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
     const t = setTimeout(() => setVisibleFrames(v => v + 1), 1400);
     return () => clearTimeout(t);
   }, [visibleFrames]);
-
-  useEffect(() => {
-    const t2 = setTimeout(() => setDemoSceneIdx(i => (i + 1) % DEMO_SCENES.length), 4200);
-    return () => { clearTimeout(t2); };
-  }, [demoSceneIdx]);
 
   // Desktop demo loop: expanded (5s) → clicking (1.2s) → minimized (5s) → reset
   useEffect(() => {
@@ -1193,556 +1199,19 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   // ─── Privacy Policy section view ───────────────────────────────────────────
 
   if (activeSection === 'privacy') {
-    const toc = [
-      { id: 'pp-1',  label: '1. Who we are' },
-      { id: 'pp-2',  label: '2. Information we collect' },
-      { id: 'pp-3',  label: '3. Legal bases for processing' },
-      { id: 'pp-4',  label: '4. How we use your data' },
-      { id: 'pp-5',  label: '5. Sharing & disclosure' },
-      { id: 'pp-6',  label: '6. International transfers' },
-      { id: 'pp-7',  label: '7. Data retention' },
-      { id: 'pp-8',  label: '8. Security' },
-      { id: 'pp-9',  label: '9. Your rights' },
-      { id: 'pp-10', label: '10. Children\'s privacy' },
-      { id: 'pp-11', label: '11. Cookies' },
-      { id: 'pp-12', label: '12. Changes to this policy' },
-      { id: 'pp-13', label: '13. Contact & complaints' },
-    ];
-    return (
-      <div className="lp">
-        {nav}
-        <div className="lp__legal-page">
-          <div className="lp__legal-header">
-            <div className="lp__sv-label">LEGAL</div>
-            <h1 className="lp__legal-title">Privacy Policy</h1>
-            <p className="lp__legal-meta">Effective date: 1 April 2025 &nbsp;·&nbsp; Last updated: 6 April 2026</p>
-            <p className="lp__legal-intro">
-              Pitchbase ("we", "us", "our") is committed to protecting your personal data. This Privacy Policy explains what information we collect, why we collect it, how we use it, and what rights you have in relation to it. It applies to all users of <strong>pitchbase.ai</strong> and the Pitchbase desktop and web application.
-            </p>
-            <div className="lp__legal-links">
-              <button className="lp__legal-sibling" onClick={() => goSection('terms')}>Terms of Service →</button>
-              <button className="lp__legal-sibling" onClick={() => goSection('cookies')}>Cookie Policy →</button>
-            </div>
-          </div>
-
-          <div className="lp__legal-layout">
-            <aside className="lp__legal-toc">
-              <div className="lp__legal-toc-label">On this page</div>
-              {toc.map(item => (
-                <a key={item.id} className="lp__legal-toc-link" href={`#${item.id}`}>{item.label}</a>
-              ))}
-            </aside>
-
-            <div className="lp__legal-content">
-
-              <section id="pp-1" className="lp__legal-section">
-                <h2>1. Who we are</h2>
-                <p>Pitchbase is operated by <strong>Pitchbase Ltd</strong>, a company incorporated in England and Wales. We are the data controller for the personal data described in this policy. Our registered address is available upon written request to <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a>.</p>
-              </section>
-
-              <section id="pp-2" className="lp__legal-section">
-                <h2>2. Information we collect</h2>
-                <p><strong>Account data.</strong> When you create an account, we collect your name, email address, and (for paid plans) payment information. Payment card details are never stored by us — they are handled directly by Stripe, our PCI-DSS Level 1 certified payment processor.</p>
-                <p><strong>Call and session data.</strong> During live calls and training sessions, speech recognition is performed locally in your browser using the Web Speech API. Raw audio is <em>never</em> transmitted to our servers. We receive only the transcribed text output. This text, along with AI suggestions, lead scores, call duration, and call stage, is saved to your account after each session.</p>
-                <p><strong>Usage and technical data.</strong> We automatically collect standard technical information including your IP address, browser type and version, operating system, referring URL, pages visited within the application, feature interactions, session duration, and error logs. This information is used exclusively for product improvement and security monitoring.</p>
-                <p><strong>Support communications.</strong> If you contact us for support, we retain the content of that communication and any information you choose to share to resolve your query.</p>
-                <p><strong>Cookies and local storage.</strong> We use session cookies, local storage, and similar browser technologies. See Section 11 and our Cookie Policy for full details.</p>
-
-                <div className="lp__privacy-summary">
-                  <div className="lp__privacy-summary-title">◉ At a glance — what we store per call</div>
-                  <div className="lp__privacy-summary-row lp__privacy-summary-row--safe">
-                    <span className="lp__privacy-summary-icon">✓</span>
-                    <span>Transcript text &amp; AI suggestions — stored per session, linked to your account only</span>
-                  </div>
-                  <div className="lp__privacy-summary-row lp__privacy-summary-row--safe">
-                    <span className="lp__privacy-summary-icon">✓</span>
-                    <span>Session stats (duration, objection count, close probability) — used for your Analytics</span>
-                  </div>
-                  <div className="lp__privacy-summary-row lp__privacy-summary-row--neutral">
-                    <span className="lp__privacy-summary-icon">◎</span>
-                    <span>Call config (prospect name, company, pitch) — stored locally in your browser &amp; in Supabase</span>
-                  </div>
-                  <div className="lp__privacy-summary-row lp__privacy-summary-row--never">
-                    <span className="lp__privacy-summary-icon">✕</span>
-                    <span>Audio — <strong>never</strong> recorded, never transmitted. Speech-to-text runs entirely in your browser</span>
-                  </div>
-                  <div className="lp__privacy-summary-row lp__privacy-summary-row--never">
-                    <span className="lp__privacy-summary-icon">✕</span>
-                    <span>Your data is <strong>never</strong> sold or shared with third parties for any commercial purpose</span>
-                  </div>
-                </div>
-              </section>
-
-              <section id="pp-3" className="lp__legal-section">
-                <h2>3. Legal bases for processing (GDPR / UK GDPR)</h2>
-                <p>For users in the European Economic Area (EEA) and the United Kingdom, we rely on the following legal bases under Article 6 of the GDPR / UK GDPR:</p>
-                <ul className="lp__legal-list">
-                  <li><strong>Contract (Art. 6(1)(b)):</strong> Processing your account data, call sessions, and CRM data is necessary to perform the contract (our Terms of Service) you have with us.</li>
-                  <li><strong>Legitimate interests (Art. 6(1)(f)):</strong> We process technical and usage data to detect fraud, secure our systems, and improve the product. Our legitimate interests do not override your rights where they would cause you harm.</li>
-                  <li><strong>Legal obligation (Art. 6(1)(c)):</strong> We may process data where required to comply with applicable law, including tax and financial record-keeping obligations.</li>
-                  <li><strong>Consent (Art. 6(1)(a)):</strong> Where we rely on consent (e.g., optional analytics cookies or marketing communications), you may withdraw that consent at any time without affecting the lawfulness of processing before withdrawal.</li>
-                </ul>
-              </section>
-
-              <section id="pp-4" className="lp__legal-section">
-                <h2>4. How we use your data</h2>
-                <ul className="lp__legal-list">
-                  <li>To provide, operate, and maintain the Pitchbase service.</li>
-                  <li>To process payments and send transactional communications (receipts, billing alerts, password resets).</li>
-                  <li>To generate and display AI-powered coaching suggestions, post-call analysis, lead scores, and follow-up emails within your account.</li>
-                  <li>To provide customer support and respond to queries.</li>
-                  <li>To detect, investigate, and prevent fraudulent transactions and other illegal activities.</li>
-                  <li>To monitor and improve the performance, security, and reliability of the service.</li>
-                  <li>To send product update emails where you have opted in.</li>
-                </ul>
-                <p><strong>We do not sell your personal data.</strong> We do not share your call transcripts, CRM data, or any personally identifiable information with third parties for marketing or advertising purposes. We do not use your call transcripts to train our own or third-party AI models without your explicit, freely given consent.</p>
-              </section>
-
-              <section id="pp-5" className="lp__legal-section">
-                <h2>5. Sharing & disclosure</h2>
-                <p>We share data only in the following limited circumstances:</p>
-                <ul className="lp__legal-list">
-                  <li><strong>Service providers (processors).</strong> We use third-party vendors who act as data processors on our behalf: <strong>Supabase</strong> (database, authentication, and storage), <strong>Stripe</strong> (payment processing), and <strong>OpenAI</strong> (AI-generated coaching suggestions, post-call analysis, and follow-up email generation). Each vendor is bound by a Data Processing Agreement (DPA) and may not use your data for their own purposes. A full list of sub-processors is available on request.</li>
-                  <li><strong>Legal requirements.</strong> We may disclose your data where required by law, court order, or to cooperate with law enforcement agencies, provided we are legally permitted to notify you before doing so.</li>
-                  <li><strong>Business transfers.</strong> If Pitchbase Ltd is acquired by or merges with another company, your data may be transferred as part of that transaction. We will notify you via email and/or a prominent notice on our website before any transfer and before your data becomes subject to a different privacy policy.</li>
-                  <li><strong>With your consent.</strong> We may share information for any other purpose with your explicit prior consent.</li>
-                </ul>
-              </section>
-
-              <section id="pp-6" className="lp__legal-section">
-                <h2>6. International data transfers</h2>
-                <p>Your data may be stored or processed in countries outside the EEA and UK, including the United States, where our service providers operate infrastructure. Where such transfers occur, we ensure they are protected by appropriate safeguards:</p>
-                <ul className="lp__legal-list">
-                  <li>Standard Contractual Clauses (SCCs) approved by the European Commission and/or the UK Information Commissioner's Office (ICO).</li>
-                  <li>Adequacy decisions where applicable.</li>
-                  <li>Binding corporate rules where applicable.</li>
-                </ul>
-                <p>You may request a copy of the relevant transfer mechanism by contacting <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a>.</p>
-              </section>
-
-              <section id="pp-7" className="lp__legal-section">
-                <h2>7. Data retention</h2>
-                <p>We retain your personal data only for as long as necessary to fulfil the purposes described in this policy, or as required by law. Specifically:</p>
-                <ul className="lp__legal-list">
-                  <li><strong>Account and CRM data:</strong> Retained for the duration of your active account.</li>
-                  <li><strong>Call transcripts and session data:</strong> Retained for the duration of your active account. You may delete individual sessions at any time from your dashboard.</li>
-                  <li><strong>Post-cancellation:</strong> Following account cancellation, your data remains accessible for 30 days to allow data export. After 30 days, all personal data is permanently and irreversibly deleted from our systems, except where retention is required by applicable law (e.g., financial records required for 7 years under UK law).</li>
-                  <li><strong>Support communications:</strong> Retained for 3 years from the date of last interaction.</li>
-                  <li><strong>Anonymised usage analytics:</strong> May be retained indefinitely as they cannot be linked to you personally.</li>
-                </ul>
-              </section>
-
-              <section id="pp-8" className="lp__legal-section">
-                <h2>8. Security</h2>
-                <p>We implement industry-standard technical and organisational measures to protect your data against accidental or unlawful destruction, loss, alteration, and unauthorised disclosure or access. These measures include:</p>
-                <ul className="lp__legal-list">
-                  <li>Encryption at rest using AES-256.</li>
-                  <li>Encryption in transit using TLS 1.2 or higher (TLS 1.3 preferred).</li>
-                  <li>Role-based access controls: only authorised personnel can access personal data, on a need-to-know basis.</li>
-                  <li>Regular security reviews and dependency audits.</li>
-                  <li>Supabase Row-Level Security (RLS) ensuring each user can only access their own data.</li>
-                </ul>
-                <p>In the event of a personal data breach that is likely to result in a high risk to your rights and freedoms, we will notify you without undue delay and in any event within 72 hours of becoming aware of it, in accordance with applicable law.</p>
-              </section>
-
-              <section id="pp-9" className="lp__legal-section">
-                <h2>9. Your rights</h2>
-                <p>Depending on your location, you have the following rights regarding your personal data. We will respond to all verified requests within <strong>30 days</strong> (extendable by a further two months for complex requests, with notice).</p>
-                <ul className="lp__legal-list">
-                  <li><strong>Right of access (Art. 15 GDPR):</strong> You may request a copy of all personal data we hold about you.</li>
-                  <li><strong>Right to rectification (Art. 16 GDPR):</strong> You may ask us to correct inaccurate or incomplete data.</li>
-                  <li><strong>Right to erasure / "right to be forgotten" (Art. 17 GDPR):</strong> You may request deletion of your data where it is no longer necessary, you withdraw consent, or you object to processing.</li>
-                  <li><strong>Right to data portability (Art. 20 GDPR):</strong> You may request your data in a structured, commonly used, machine-readable format (JSON/CSV).</li>
-                  <li><strong>Right to restriction of processing (Art. 18 GDPR):</strong> You may ask us to restrict processing of your data in certain circumstances.</li>
-                  <li><strong>Right to object (Art. 21 GDPR):</strong> You may object to processing based on legitimate interests at any time. We will cease processing unless we demonstrate compelling legitimate grounds that override your interests.</li>
-                  <li><strong>Rights related to automated decision-making (Art. 22 GDPR):</strong> Our AI-generated lead scores and coaching suggestions are tools to assist you — they do not constitute automated decisions that produce legal or similarly significant effects about you.</li>
-                  <li><strong>California residents (CCPA/CPRA):</strong> You have the right to know what personal information is collected, disclosed, or sold, the right to delete, the right to opt out of sale (we do not sell data), and the right to non-discrimination for exercising these rights.</li>
-                </ul>
-                <p>To exercise any of these rights, email <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a> from the email address associated with your account, or use the data export/deletion tools in your account settings.</p>
-              </section>
-
-              <section id="pp-10" className="lp__legal-section">
-                <h2>10. Children's privacy</h2>
-                <p>Pitchbase is a business-to-business sales tool. We do not knowingly collect personal data from anyone under the age of 16. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a> and we will delete the information promptly.</p>
-              </section>
-
-              <section id="pp-11" className="lp__legal-section">
-                <h2>11. Cookies</h2>
-                <p>We use cookies and similar tracking technologies to operate the service and, with your consent, to understand how it is used. Please see our <button className="lp__legal-inline-link" onClick={() => goSection('cookies')}>Cookie Policy</button> for a full list of cookies, their purposes, and instructions on how to control them.</p>
-              </section>
-
-              <section id="pp-12" className="lp__legal-section">
-                <h2>12. Changes to this policy</h2>
-                <p>We may update this Privacy Policy from time to time. When we make material changes, we will notify you by email (to the address associated with your account) and by posting a notice in the application at least 14 days before the changes take effect. The "Last updated" date at the top of this page will always reflect the most recent revision. Your continued use of Pitchbase after changes take effect constitutes acceptance of the updated policy.</p>
-              </section>
-
-              <section id="pp-13" className="lp__legal-section">
-                <h2>13. Contact & complaints</h2>
-                <p>For any questions, concerns, or requests relating to this Privacy Policy or your personal data, please contact us at:</p>
-                <div className="lp__legal-contact-block">
-                  <div><strong>Email:</strong> <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a></div>
-                  <div><strong>Response time:</strong> Within 5 business days for general queries; within 30 days for formal rights requests.</div>
-                </div>
-                <p>If you are in the EEA or UK and are not satisfied with our response, you have the right to lodge a complaint with your local data protection supervisory authority. In the UK, this is the <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">Information Commissioner's Office (ICO)</a>. In Ireland, it is the <a href="https://www.dataprotection.ie" target="_blank" rel="noopener noreferrer">Data Protection Commission (DPC)</a>.</p>
-              </section>
-
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <PrivacyPolicy nav={nav} goSection={id => goSection(id as SectionId)} />;
   }
 
   // ─── Terms of Service section view ─────────────────────────────────────────
 
   if (activeSection === 'terms') {
-    const toc = [
-      { id: 'tos-1',  label: '1. Acceptance & eligibility' },
-      { id: 'tos-2',  label: '2. Description of service' },
-      { id: 'tos-3',  label: '3. Account registration' },
-      { id: 'tos-4',  label: '4. Subscription & billing' },
-      { id: 'tos-5',  label: '5. Free plan' },
-      { id: 'tos-6',  label: '6. Cancellation & refunds' },
-      { id: 'tos-7',  label: '7. Acceptable use' },
-      { id: 'tos-8',  label: '8. Prohibited conduct' },
-      { id: 'tos-9',  label: '9. Intellectual property' },
-      { id: 'tos-10', label: '10. User content & data' },
-      { id: 'tos-11', label: '11. Third-party integrations' },
-      { id: 'tos-12', label: '12. Disclaimers' },
-      { id: 'tos-13', label: '13. Limitation of liability' },
-      { id: 'tos-14', label: '14. Indemnification' },
-      { id: 'tos-15', label: '15. Dispute resolution' },
-      { id: 'tos-16', label: '16. Governing law' },
-      { id: 'tos-17', label: '17. General provisions' },
-      { id: 'tos-18', label: '18. Changes to these terms' },
-      { id: 'tos-19', label: '19. Contact' },
-    ];
-    return (
-      <div className="lp">
-        {nav}
-        <div className="lp__legal-page">
-          <div className="lp__legal-header">
-            <div className="lp__sv-label">LEGAL</div>
-            <h1 className="lp__legal-title">Terms of Service</h1>
-            <p className="lp__legal-meta">Effective date: 1 April 2025 &nbsp;·&nbsp; Last updated: 6 April 2026</p>
-            <p className="lp__legal-intro">
-              These Terms of Service ("Terms") form a legally binding agreement between <strong>Pitchbase Ltd</strong> ("Pitchbase", "we", "us") and you ("User", "you"). Please read them carefully before using the service. By creating an account or using Pitchbase, you agree to be bound by these Terms and our Privacy Policy.
-            </p>
-            <div className="lp__legal-links">
-              <button className="lp__legal-sibling" onClick={() => goSection('privacy')}>Privacy Policy →</button>
-              <button className="lp__legal-sibling" onClick={() => goSection('cookies')}>Cookie Policy →</button>
-            </div>
-          </div>
-
-          <div className="lp__legal-layout">
-            <aside className="lp__legal-toc">
-              <div className="lp__legal-toc-label">On this page</div>
-              {toc.map(item => (
-                <a key={item.id} className="lp__legal-toc-link" href={`#${item.id}`}>{item.label}</a>
-              ))}
-            </aside>
-
-            <div className="lp__legal-content">
-
-              <section id="tos-1" className="lp__legal-section">
-                <h2>1. Acceptance & eligibility</h2>
-                <p>By accessing or using Pitchbase, you confirm that: (a) you are at least 18 years of age; (b) you have the legal capacity to enter into binding contracts; and (c) your use of the service complies with all applicable laws and regulations in your jurisdiction.</p>
-                <p>If you are using Pitchbase on behalf of an organisation, you represent and warrant that you have the authority to bind that organisation to these Terms, and references to "you" shall include that organisation.</p>
-              </section>
-
-              <section id="tos-2" className="lp__legal-section">
-                <h2>2. Description of service</h2>
-                <p>Pitchbase is an AI-powered sales coaching platform that provides real-time coaching suggestions during sales calls, training scenarios, post-call analysis, CRM functionality, and related tools ("Service"). The Service is provided via a web application and optional desktop client.</p>
-                <p>We reserve the right to modify, suspend, or discontinue any feature or aspect of the Service at any time with reasonable notice, except where immediate action is required for security, legal, or operational reasons.</p>
-              </section>
-
-              <section id="tos-3" className="lp__legal-section">
-                <h2>3. Account registration & security</h2>
-                <p>You must register for an account to use the Service. You agree to: (a) provide accurate, current, and complete registration information; (b) maintain and promptly update your information; (c) keep your password confidential and not share it with any third party; and (d) notify us immediately at <a href="mailto:support@pitchbase.ai">support@pitchbase.ai</a> if you suspect unauthorised access to your account.</p>
-                <p>You are responsible for all activity that occurs under your account. Pitchbase will not be liable for any loss or damage arising from your failure to comply with these security obligations.</p>
-              </section>
-
-              <section id="tos-4" className="lp__legal-section">
-                <h2>4. Subscription plans & billing</h2>
-                <p><strong>Billing cycle.</strong> Paid plans are billed monthly in advance on the anniversary of your subscription start date. Prices are displayed in USD. All fees are exclusive of applicable taxes (VAT, GST, etc.), which are added at checkout where required by law.</p>
-                <p><strong>Payment.</strong> You authorise us (via Stripe) to charge your designated payment method for all fees due. If payment fails, we will retry and may suspend your account after 7 days of non-payment, with prior notice.</p>
-                <p><strong>Price changes.</strong> We may change subscription prices with at least 30 days' advance notice by email. Continued use of the Service after the notice period constitutes acceptance of the new pricing. If you do not accept the new price, you may cancel before the new pricing takes effect.</p>
-                <p><strong>Taxes.</strong> You are responsible for all taxes associated with your purchase except those based on Pitchbase's net income. Where we are legally required to collect taxes, they will appear on your invoice.</p>
-              </section>
-
-              <section id="tos-5" className="lp__legal-section">
-                <h2>5. Free plan</h2>
-                <p>We may offer a free tier with limited functionality. Free plans are provided "as is" without service level commitments, and we reserve the right to modify or discontinue free tiers at any time with 30 days' notice. Accounts that are inactive for 12 consecutive months on the free plan may be deleted after notice.</p>
-              </section>
-
-              <section id="tos-6" className="lp__legal-section">
-                <h2>6. Cancellation & refunds</h2>
-                <p><strong>Cancellation.</strong> You may cancel your subscription at any time from your account settings. Cancellation takes effect at the end of the current billing period. You will retain access to paid features until the end of the period for which you have already paid.</p>
-                <p><strong>Money-back guarantee.</strong> Paid plans include a <strong>7-day money-back guarantee</strong> from the date of your first paid payment. To request a refund under this guarantee, email <a href="mailto:support@pitchbase.ai">support@pitchbase.ai</a> within 7 days of your initial charge. Refunds are not available after this period except where required by applicable consumer protection law (including UK Consumer Contracts Regulations 2013).</p>
-                <p><strong>No partial refunds.</strong> We do not provide prorated refunds for unused time within a billing period, except where required by law.</p>
-              </section>
-
-              <section id="tos-7" className="lp__legal-section">
-                <h2>7. Acceptable use</h2>
-                <p>You agree to use Pitchbase only for lawful business sales and communication purposes and in accordance with these Terms. In particular:</p>
-                <ul className="lp__legal-list">
-                  <li>You must obtain all legally required consents before recording or processing any call or conversation involving a third party, in compliance with applicable wiretapping, recording, and data protection laws in your jurisdiction (including but not limited to the Electronic Communications Privacy Act (ECPA) in the US, the Regulation of Investigatory Powers Act (RIPA) in the UK, and equivalent laws elsewhere).</li>
-                  <li>You must not use the Service to make misleading, deceptive, or fraudulent representations to prospects in violation of applicable consumer protection, telemarketing, or unfair commercial practices law.</li>
-                  <li>You must not use the Service to contact individuals on Do Not Call registries in any jurisdiction where such registries apply.</li>
-                </ul>
-              </section>
-
-              <section id="tos-8" className="lp__legal-section">
-                <h2>8. Prohibited conduct</h2>
-                <p>You must not, directly or indirectly:</p>
-                <ul className="lp__legal-list">
-                  <li>Reverse engineer, decompile, disassemble, or attempt to derive the source code of the Service.</li>
-                  <li>Copy, modify, distribute, sell, resell, or sublicense access to the Service.</li>
-                  <li>Use automated scripts, bots, scrapers, or crawlers to access or extract data from the Service.</li>
-                  <li>Attempt to probe, scan, or test the vulnerability of the Service or any related infrastructure.</li>
-                  <li>Circumvent or disable any security, rate-limiting, or access control mechanism.</li>
-                  <li>Upload, transmit, or store any content that is unlawful, harmful, threatening, abusive, defamatory, or that infringes third-party intellectual property rights.</li>
-                  <li>Use the Service in any way that could damage, disable, overburden, or impair our infrastructure or interfere with other users.</li>
-                  <li>Impersonate any person or entity, or falsely claim affiliation with any person or entity.</li>
-                </ul>
-                <p>Violation of this section may result in immediate account termination without refund and, where applicable, referral to law enforcement authorities.</p>
-              </section>
-
-              <section id="tos-9" className="lp__legal-section">
-                <h2>9. Intellectual property</h2>
-                <p><strong>Our IP.</strong> Pitchbase, its logo, software, design, code, algorithms, text, graphics, and all other content comprising the Service are owned by or licensed to Pitchbase Ltd and protected by copyright, trade mark, and other intellectual property laws. No rights are granted to you except as expressly set out in these Terms.</p>
-                <p><strong>Feedback.</strong> If you provide us with feedback, suggestions, or ideas about the Service, you grant us an irrevocable, perpetual, royalty-free, worldwide licence to use that feedback for any purpose without compensation to you.</p>
-              </section>
-
-              <section id="tos-10" className="lp__legal-section">
-                <h2>10. User content & data</h2>
-                <p><strong>Ownership.</strong> You retain full ownership of all data you generate using the Service, including call transcripts, notes, CRM records, and follow-up emails ("User Data").</p>
-                <p><strong>Licence to us.</strong> You grant Pitchbase a limited, non-exclusive, royalty-free licence to store, process, and display your User Data solely to the extent necessary to provide the Service to you. This licence terminates when you delete your account or the relevant data.</p>
-                <p><strong>No training use.</strong> We will not use your User Data to train or fine-tune any AI model without your explicit, separately obtained written consent.</p>
-                <p><strong>Data export.</strong> You may export your data at any time from your account settings in JSON format. Following account deletion, data is permanently deleted within 30 days as described in our Privacy Policy.</p>
-              </section>
-
-              <section id="tos-11" className="lp__legal-section">
-                <h2>11. Third-party integrations</h2>
-                <p>The Service uses third-party providers including OpenAI (AI model inference), Supabase (data storage), and Stripe (payment processing). These providers have their own terms and privacy policies. Pitchbase is not responsible for the acts or omissions of third-party providers. We select third-party processors carefully and hold them to strict data processing standards, but we cannot guarantee their continuous availability or service quality.</p>
-                <p>Service availability may be affected by the availability of third-party APIs. We do not guarantee uninterrupted service and will not be liable for downtime caused by third-party dependencies.</p>
-              </section>
-
-              <section id="tos-12" className="lp__legal-section">
-                <h2>12. Disclaimers & warranties</h2>
-                <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.</p>
-                <p>In particular, we make no warranty that: (a) speech recognition will be accurate or error-free; (b) AI coaching suggestions will be appropriate for every sales situation; (c) the Service will improve your individual sales results; or (d) the Service will be uninterrupted, timely, secure, or free from errors.</p>
-                <p>Nothing in these Terms limits or excludes any warranties that cannot be excluded under applicable law (including the UK Consumer Rights Act 2015 where applicable).</p>
-              </section>
-
-              <section id="tos-13" className="lp__legal-section">
-                <h2>13. Limitation of liability</h2>
-                <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, PITCHBASE SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES (INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, REVENUE, DATA, OR BUSINESS OPPORTUNITIES) ARISING OUT OF OR RELATED TO THESE TERMS OR THE SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
-                <p>OUR AGGREGATE LIABILITY TO YOU FOR ALL CLAIMS ARISING OUT OF OR RELATED TO THESE TERMS OR THE SERVICE SHALL NOT EXCEED THE TOTAL AMOUNT YOU PAID TO US IN THE <strong>12 MONTHS</strong> PRECEDING THE EVENT GIVING RISE TO THE CLAIM, OR £100 (GBP), WHICHEVER IS GREATER.</p>
-                <p>Nothing in these Terms limits our liability for: (a) death or personal injury caused by our negligence; (b) fraud or fraudulent misrepresentation; or (c) any other liability that cannot be limited or excluded by law.</p>
-              </section>
-
-              <section id="tos-14" className="lp__legal-section">
-                <h2>14. Indemnification</h2>
-                <p>You agree to indemnify, defend, and hold harmless Pitchbase Ltd, its officers, directors, employees, and agents from and against any third-party claims, liabilities, damages, judgments, awards, losses, costs, and expenses (including reasonable legal fees) arising out of or relating to: (a) your violation of these Terms; (b) your use of the Service in breach of applicable law; or (c) any content you submit to or transmit through the Service that infringes third-party rights.</p>
-              </section>
-
-              <section id="tos-15" className="lp__legal-section">
-                <h2>15. Dispute resolution</h2>
-                <p><strong>Good faith resolution.</strong> Before initiating formal proceedings, you agree to contact us at <a href="mailto:legal@pitchbase.ai">legal@pitchbase.ai</a> and give us 30 days to attempt to resolve the dispute informally.</p>
-                <p><strong>Consumer ADR.</strong> If you are a consumer located in the UK or EU and your dispute cannot be resolved informally, you may be entitled to use an Alternative Dispute Resolution (ADR) scheme. We are willing to participate in ADR proceedings conducted by the Centre for Effective Dispute Resolution (CEDR) or equivalent EU ADR entity.</p>
-                <p><strong>Class action waiver.</strong> To the extent permitted by applicable law, you and Pitchbase agree that any dispute resolution proceedings will be conducted on an individual basis only, and not as a class, consolidated, or representative action.</p>
-              </section>
-
-              <section id="tos-16" className="lp__legal-section">
-                <h2>16. Governing law & jurisdiction</h2>
-                <p>These Terms are governed by and construed in accordance with the laws of <strong>England and Wales</strong>, without regard to its conflict of law principles. Subject to Section 15, each party submits to the exclusive jurisdiction of the courts of England and Wales.</p>
-                <p>If you are a consumer residing in the EU, you may also bring proceedings in the courts of your country of residence under applicable EU consumer protection law. If you are a consumer residing in the UK, the mandatory consumer protection provisions of UK law apply regardless of the governing law chosen here.</p>
-              </section>
-
-              <section id="tos-17" className="lp__legal-section">
-                <h2>17. General provisions</h2>
-                <p><strong>Entire agreement.</strong> These Terms (together with the Privacy Policy and Cookie Policy) constitute the entire agreement between you and Pitchbase regarding the Service and supersede all prior agreements and understandings.</p>
-                <p><strong>Severability.</strong> If any provision of these Terms is held invalid or unenforceable, the remaining provisions will continue in full force and effect.</p>
-                <p><strong>No waiver.</strong> Our failure to enforce any provision of these Terms will not be construed as a waiver of our right to enforce that or any other provision in the future.</p>
-                <p><strong>Assignment.</strong> You may not assign your rights or obligations under these Terms without our prior written consent. We may assign our rights to any affiliate or successor in connection with a merger, acquisition, or sale of assets.</p>
-                <p><strong>Force majeure.</strong> Neither party shall be liable for failure or delay in performance caused by circumstances beyond its reasonable control, including natural disasters, government actions, or third-party network failures.</p>
-              </section>
-
-              <section id="tos-18" className="lp__legal-section">
-                <h2>18. Changes to these Terms</h2>
-                <p>We may modify these Terms at any time. For material changes, we will provide at least <strong>14 days' notice</strong> via email and/or an in-app notification before changes take effect. Your continued use of the Service after the notice period constitutes your acceptance of the revised Terms. If you do not accept the changes, you must stop using the Service and cancel your subscription before they take effect.</p>
-              </section>
-
-              <section id="tos-19" className="lp__legal-section">
-                <h2>19. Contact</h2>
-                <p>For legal queries, please contact us at:</p>
-                <div className="lp__legal-contact-block">
-                  <div><strong>Legal matters:</strong> <a href="mailto:legal@pitchbase.ai">legal@pitchbase.ai</a></div>
-                  <div><strong>Support:</strong> <a href="mailto:support@pitchbase.ai">support@pitchbase.ai</a></div>
-                  <div><strong>Privacy matters:</strong> <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a></div>
-                </div>
-              </section>
-
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <TermsOfService nav={nav} goSection={id => goSection(id as SectionId)} />;
   }
 
   // ─── Cookie Policy section view ────────────────────────────────────────────
 
   if (activeSection === 'cookies') {
-    const toc = [
-      { id: 'cp-1', label: '1. What are cookies?' },
-      { id: 'cp-2', label: '2. Cookies we use' },
-      { id: 'cp-3', label: '3. Cookie table' },
-      { id: 'cp-4', label: '4. Third-party cookies' },
-      { id: 'cp-5', label: '5. How to control cookies' },
-      { id: 'cp-6', label: '6. Changes to this policy' },
-      { id: 'cp-7', label: '7. Contact' },
-    ];
-    return (
-      <div className="lp">
-        {nav}
-        <div className="lp__legal-page">
-          <div className="lp__legal-header">
-            <div className="lp__sv-label">LEGAL</div>
-            <h1 className="lp__legal-title">Cookie Policy</h1>
-            <p className="lp__legal-meta">Effective date: 1 April 2025 &nbsp;·&nbsp; Last updated: 6 April 2026</p>
-            <p className="lp__legal-intro">
-              This Cookie Policy explains what cookies are, which cookies Pitchbase uses, why we use them, and how you can control them. It should be read alongside our <button className="lp__legal-inline-link" onClick={() => goSection('privacy')}>Privacy Policy</button>.
-            </p>
-            <div className="lp__legal-links">
-              <button className="lp__legal-sibling" onClick={() => goSection('privacy')}>Privacy Policy →</button>
-              <button className="lp__legal-sibling" onClick={() => goSection('terms')}>Terms of Service →</button>
-            </div>
-          </div>
-
-          <div className="lp__legal-layout">
-            <aside className="lp__legal-toc">
-              <div className="lp__legal-toc-label">On this page</div>
-              {toc.map(item => (
-                <a key={item.id} className="lp__legal-toc-link" href={`#${item.id}`}>{item.label}</a>
-              ))}
-            </aside>
-
-            <div className="lp__legal-content">
-
-              <section id="cp-1" className="lp__legal-section">
-                <h2>1. What are cookies?</h2>
-                <p>Cookies are small text files placed on your device by websites you visit. They are widely used to make websites work, improve user experience, and provide information to site owners. Alongside cookies, we may also use similar technologies such as local storage and session storage, which are governed by this same policy.</p>
-                <p>Cookies can be "session" cookies (deleted when you close your browser) or "persistent" cookies (remaining on your device for a set period or until you delete them). They can be set by us ("first-party") or by third-party services we embed.</p>
-              </section>
-
-              <section id="cp-2" className="lp__legal-section">
-                <h2>2. Cookies we use</h2>
-                <p>We use three categories of cookies:</p>
-                <ul className="lp__legal-list">
-                  <li><strong>Strictly necessary cookies</strong> — essential for the Service to function. These cannot be disabled without breaking core functionality (authentication, security). They do not require your consent under applicable law.</li>
-                  <li><strong>Functional cookies</strong> — remember your preferences (theme, language) to improve your experience. These are set only if you have not disabled them in your browser.</li>
-                  <li><strong>Analytics cookies</strong> — help us understand how users interact with the Service (pages visited, features used, session duration). These are set only with your consent, expressed when you first use the Service.</li>
-                </ul>
-                <p>We do <strong>not</strong> use advertising, behavioural targeting, or cross-site tracking cookies.</p>
-              </section>
-
-              <section id="cp-3" className="lp__legal-section">
-                <h2>3. Cookie table</h2>
-                <div className="lp__cookie-table-wrap">
-                  <table className="lp__cookie-table">
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Purpose</th>
-                        <th>Duration</th>
-                        <th>Party</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><code>sb-access-token</code></td>
-                        <td><span className="lp__cookie-tag lp__cookie-tag--necessary">Necessary</span></td>
-                        <td>Supabase authentication JWT — keeps you logged in</td>
-                        <td>1 hour (auto-refreshed)</td>
-                        <td>First-party</td>
-                      </tr>
-                      <tr>
-                        <td><code>sb-refresh-token</code></td>
-                        <td><span className="lp__cookie-tag lp__cookie-tag--necessary">Necessary</span></td>
-                        <td>Supabase long-lived refresh token for session renewal</td>
-                        <td>60 days</td>
-                        <td>First-party</td>
-                      </tr>
-                      <tr>
-                        <td><code>pp-theme</code></td>
-                        <td><span className="lp__cookie-tag lp__cookie-tag--functional">Functional</span></td>
-                        <td>Stores your dark/light mode preference (localStorage)</td>
-                        <td>Persistent</td>
-                        <td>First-party</td>
-                      </tr>
-                      <tr>
-                        <td><code>pp-lang</code></td>
-                        <td><span className="lp__cookie-tag lp__cookie-tag--functional">Functional</span></td>
-                        <td>Stores your preferred coaching language (localStorage)</td>
-                        <td>Persistent</td>
-                        <td>First-party</td>
-                      </tr>
-                      <tr>
-                        <td><code>pp-streak</code></td>
-                        <td><span className="lp__cookie-tag lp__cookie-tag--functional">Functional</span></td>
-                        <td>Tracks your daily practice streak (localStorage)</td>
-                        <td>Persistent</td>
-                        <td>First-party</td>
-                      </tr>
-                      <tr>
-                        <td><code>_pp_analytics</code></td>
-                        <td><span className="lp__cookie-tag lp__cookie-tag--analytics">Analytics</span></td>
-                        <td>Aggregated, anonymised session analytics (feature usage, error rates). Set only with consent.</td>
-                        <td>13 months</td>
-                        <td>First-party</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-
-              <section id="cp-4" className="lp__legal-section">
-                <h2>4. Third-party cookies</h2>
-                <p>Our payment provider <strong>Stripe</strong> may set cookies during checkout to prevent fraud and ensure payment security. These are strictly necessary for the transaction and are governed by <a href="https://stripe.com/cookies-policy/legal" target="_blank" rel="noopener noreferrer">Stripe's Cookie Policy</a>.</p>
-                <p>We do not embed any social media widgets, advertising networks, or other third-party tracking scripts that would set their own cookies on our domain.</p>
-              </section>
-
-              <section id="cp-5" className="lp__legal-section">
-                <h2>5. How to control cookies</h2>
-                <p><strong>Browser settings.</strong> You can control or delete cookies through your browser settings. Note that disabling strictly necessary cookies (Supabase session tokens) will prevent you from logging in. Disabling analytics or functional cookies will not affect the core service.</p>
-                <p>Instructions for the most common browsers:</p>
-                <ul className="lp__legal-list">
-                  <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer">Google Chrome</a></li>
-                  <li><a href="https://support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-desktop" target="_blank" rel="noopener noreferrer">Mozilla Firefox</a></li>
-                  <li><a href="https://support.apple.com/en-gb/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer">Apple Safari</a></li>
-                  <li><a href="https://support.microsoft.com/en-us/microsoft-edge/delete-cookies-in-microsoft-edge" target="_blank" rel="noopener noreferrer">Microsoft Edge</a></li>
-                </ul>
-                <p><strong>Analytics opt-out.</strong> You may withdraw consent for analytics cookies at any time by clearing the <code>_pp_analytics</code> cookie in your browser and declining when prompted. This will not affect data collected before withdrawal.</p>
-                <p><strong>Do Not Track.</strong> Some browsers allow you to set a "Do Not Track" signal. We respect this signal and do not set analytics cookies when it is active.</p>
-              </section>
-
-              <section id="cp-6" className="lp__legal-section">
-                <h2>6. Changes to this policy</h2>
-                <p>We may update this Cookie Policy when we add or remove cookies. Changes will be reflected with an updated "Last updated" date. For significant changes (e.g., adding new third-party cookies), we will provide in-app notice and, where required by law, ask for fresh consent.</p>
-              </section>
-
-              <section id="cp-7" className="lp__legal-section">
-                <h2>7. Contact</h2>
-                <p>Questions about our use of cookies? Email <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a>. We aim to respond within 5 business days.</p>
-              </section>
-
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <CookiePolicy nav={nav} goSection={id => goSection(id as SectionId)} />;
   }
 
   // ─── Landing page (home) ───────────────────────────────────────────────────
@@ -1826,96 +1295,202 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         {/* ── Desktop demo ── */}
         <div className={`lp__desktop-demo lp__desktop-demo--${demoPhase}`}>
 
-          {/* Fake desktop wallpaper */}
-          <div className="lp__desktop-bg" />
+          {/* ── EXPANDED: exact replica of real live-call UI ── */}
+          <div className="lp__dd-expanded">
 
-          {/* Fake system bar */}
-          <div className="lp__desktop-bar">
-            <div className="lp__desktop-bar-left">
-              <span className="lp__desktop-bar-dot" />
-              <span className="lp__desktop-bar-dot" />
-              <span className="lp__desktop-bar-dot" />
-              <span className="lp__desktop-bar-icon">⊞</span>
+            {/* Header — exact match of real Header component */}
+            <div className="lp__dd-header">
+              <div className="lp__dd-header-left">
+                <span className="lp__dd-logo">PITCH<span className="lp__dd-logo-plus">PLUS</span><span className="lp__dd-logo-sym">+</span></span>
+                <span className="lp__dd-prospect">Sarah Chen</span>
+                <span className="lp__dd-prospect-sep">@</span>
+                <span className="lp__dd-prospect-co">CloudBridge Inc.</span>
+              </div>
+              <div className="lp__dd-header-center">● LIVE MODE</div>
+              <div className="lp__dd-header-right">
+                <button className={`lp__dd-share-btn${demoPhase === 'clicking' ? ' lp__dd-share-btn--active' : ''}`}>
+                  <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                    <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+                    <path d="M4 9.5L7 6.5L10 9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M7 6.5V11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                  Share Screen
+                </button>
+                <button className="lp__dd-end-btn">■ END CALL</button>
+              </div>
             </div>
-            <div className="lp__desktop-bar-right">
-              <span className="lp__desktop-bar-time">2:47 PM</span>
+
+            {/* Status bar — exact match of real StatusBar component */}
+            <div className="lp__dd-statusbar">
+              <div className="lp__dd-statusbar-left">
+                <span className="lp__dd-status-dot" />
+                <span className="lp__dd-status-label">ACTIVE</span>
+                <span className="lp__dd-status-time">{DEMO_SCENES[desktopSceneIdx].time}</span>
+              </div>
+              <div className="lp__dd-statusbar-right">
+                <span className="lp__dd-stat">OBJECTIONS <span className={`lp__dd-stat-val${desktopSceneIdx > 0 ? ' lp__dd-stat-val--red' : ''}`}>{desktopSceneIdx === 0 ? 0 : desktopSceneIdx === 1 ? 1 : 2}</span></span>
+                <span className="lp__dd-stat-sep">·</span>
+                <span className="lp__dd-stat">CLOSE PROB <span className={`lp__dd-stat-val lp__dd-stat-val--${desktopSceneIdx === 0 ? 'yellow' : desktopSceneIdx === 1 ? 'green' : 'green'}`}>{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span></span>
+              </div>
+            </div>
+
+            {/* 3-panel layout */}
+            <div className="lp__dd-panels">
+
+              {/* Left: Transcript Feed */}
+              <div className="lp__dd-panel lp__dd-panel--transcript">
+                <div className="lp__dd-panel-hdr">
+                  <div className="lp__dd-panel-hdr-left">
+                    <span className="lp__dd-panel-hdr-dot lp__dd-panel-hdr-dot--active" />
+                    TRANSCRIPT FEED
+                  </div>
+                  {desktopShowSuggestion && <span className="lp__dd-panel-hdr-live">● LIVE</span>}
+                </div>
+                {desktopSceneIdx === 0 && !desktopShowSuggestion && (
+                  <div className="lp__dd-transcript-error">Speech service unavailable — use the text input below.</div>
+                )}
+                <div className="lp__dd-transcript">
+                  {desktopShowSuggestion ? (
+                    <>
+                      <div className="lp__dd-entry lp__dd-entry--rep">
+                        <div className="lp__dd-entry-meta">
+                          <span className="lp__dd-entry-who lp__dd-entry-who--rep">You</span>
+                          <span className="lp__dd-entry-time">00:08</span>
+                        </div>
+                        <div className="lp__dd-entry-text">What's your biggest challenge with your current reporting setup?</div>
+                      </div>
+                      <div className="lp__dd-entry lp__dd-entry--prospect">
+                        <div className="lp__dd-entry-meta">
+                          <span className="lp__dd-entry-who lp__dd-entry-who--prospect">Prospect</span>
+                          <span className="lp__dd-entry-time">00:15</span>
+                        </div>
+                        <div className="lp__dd-entry-text">{DEMO_SCENES[desktopSceneIdx].prospect}</div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="lp__dd-transcript-empty">
+                      Mic starting… or type prospect dialogue below.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Middle: AI Intelligence Feed */}
+              <div className="lp__dd-panel lp__dd-panel--ai">
+                <div className="lp__dd-panel-hdr lp__dd-panel-hdr--ai">
+                  <div className="lp__dd-panel-hdr-left">
+                    AI INTELLIGENCE FEED<span className="lp__dd-ai-cursor">▋</span>
+                  </div>
+                  <span className={`lp__dd-stage-badge lp__dd-stage-badge--${DEMO_SCENES[desktopSceneIdx].stage.toLowerCase()}`}>
+                    {DEMO_SCENES[desktopSceneIdx].stage}
+                  </span>
+                </div>
+                <div className="lp__dd-ai-body">
+                  {desktopShowSuggestion ? (
+                    <div className="lp__dd-suggestion lp__dd-suggestion--show">
+                      <div className="lp__dd-suggestion-top">
+                        <span className={`lp__dd-badge lp__dd-badge--${DEMO_SCENES[desktopSceneIdx].badgeType}`}>
+                          {DEMO_SCENES[desktopSceneIdx].cardBadge}
+                        </span>
+                        <span className="lp__dd-suggestion-time">{DEMO_SCENES[desktopSceneIdx].time}</span>
+                      </div>
+                      <div className="lp__dd-suggestion-say">
+                        <span className="lp__dd-say-label">SAY</span>
+                        <span className="lp__dd-say-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].say}&rdquo;</span>
+                      </div>
+                      <div className="lp__dd-suggestion-why">
+                        <span className="lp__dd-why-label">WHY</span>
+                        <span className="lp__dd-why-text">{DEMO_SCENES[desktopSceneIdx].why}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="lp__dd-ai-empty">
+                      <div className="lp__dd-ai-empty-icon">◎</div>
+                      <div className="lp__dd-ai-empty-title">Ready to Assist</div>
+                      <div className="lp__dd-ai-empty-desc">Click Listen in the transcript panel to start your mic. I'll detect objections, buying signals, and coach you in real-time.</div>
+                      <div className="lp__dd-ai-empty-dots"><span /><span /><span /></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right: Lead Panel — exact match of real LeadProfilePanel */}
+              <div className="lp__dd-panel lp__dd-panel--lead">
+                <div className="lp__dd-lead-body">
+                  {/* This Call section */}
+                  <div className="lp__dd-lead-section">
+                    <div className="lp__dd-lead-section-title">THIS CALL</div>
+                    <div className="lp__dd-lead-fields">
+                      <div className="lp__dd-field"><span className="lp__dd-field-k">GOAL</span><span className="lp__dd-field-v lp__dd-field-v--muted">Book a demo</span></div>
+                    </div>
+                  </div>
+                  <div className="lp__dd-lead-divider" />
+                  {/* Close Probability */}
+                  <div className="lp__dd-lead-section">
+                    <div className="lp__dd-lead-prob-row">
+                      <span className="lp__dd-lead-section-title">CLOSE PROB</span>
+                      <span className={`lp__dd-lead-prob-pct lp__dd-lead-prob-pct--${desktopSceneIdx === 0 ? 'yellow' : 'green'}`}>{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span>
+                    </div>
+                    <div className="lp__dd-lead-section-title lp__dd-lead-section-title--sub">CLOSE PROB</div>
+                    <div className="lp__dd-lead-prob-row lp__dd-lead-prob-row--bar">
+                      <span className={`lp__dd-lead-prob-pct lp__dd-lead-prob-pct--${desktopSceneIdx === 0 ? 'yellow' : 'green'}`}>{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span>
+                    </div>
+                    <div className="lp__dd-prob-bar">
+                      <div className={`lp__dd-prob-fill lp__dd-prob-fill--${desktopSceneIdx === 0 ? 'yellow' : 'green'}`} style={{ width: `${desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%` }} />
+                    </div>
+                  </div>
+                  <div className="lp__dd-lead-divider" />
+                  {/* Call Notes */}
+                  <div className="lp__dd-lead-section lp__dd-lead-section--notes">
+                    <div className="lp__dd-lead-section-title">CALL NOTES</div>
+                    <div className="lp__dd-notes-empty">
+                      Notes will appear here automatically when the prospect mentions dates, commitments, tools, or next steps.
+                    </div>
+                    <div className="lp__dd-note-input-row">
+                      <span className="lp__dd-note-input-fake">Add note…</span>
+                      <span className="lp__dd-note-btn">+</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Pitchbase minimized pill (visible when minimized) */}
-          <div className="lp__mini-pill">
-            <span className="lp__mini-pill-logo">✦</span>
-            <span className="lp__mini-pill-sep">›</span>
-            <span className="lp__mini-pill-hide">Hide</span>
-            <span className="lp__mini-pill-stop">◼</span>
-          </div>
-
-          {/* Minimized suggestion banner */}
-          <div className="lp__mini-suggestion">
-            <span className={`lp__mini-badge lp__mini-badge--${DEMO_SCENES[desktopSceneIdx].badgeType}`}>
-              {DEMO_SCENES[desktopSceneIdx].badge}
-            </span>
-            <span className="lp__mini-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].suggestion.slice(0, 72)}…&rdquo;</span>
-          </div>
-
-          {/* Video call window */}
-          <div className="lp__vc-window">
-            {/* Video tiles */}
-            <div className="lp__vc-tiles">
-              <div className="lp__vc-tile lp__vc-tile--a">
-                <div className="lp__vc-avatar">JD</div>
-                <span className="lp__vc-name">You</span>
+          {/* ── MINIMIZED: bubble bar floating on dark desktop bg ── */}
+          <div className="lp__dd-minimized">
+            <div className="lp__dd-bubble">
+              {/* Drag handle row */}
+              <div className="lp__dd-bubble-bar">
+                <div className="lp__dd-bubble-brand">
+                  <span className="lp__dd-bubble-dot" />
+                  <span className="lp__dd-bubble-logo">PITCH<span className="lp__dd-bubble-logo-plus">BASE</span></span>
+                  <span className="lp__dd-bubble-prospect">Sarah Chen · CloudBridge Inc.</span>
+                </div>
+                <div className="lp__dd-bubble-stats">
+                  <span className="lp__dd-bubble-stage">DISCOVERY</span>
+                  <span className="lp__dd-bubble-prob">{DEMO_SCENES[desktopSceneIdx].stage}</span>
+                </div>
+                <div className="lp__dd-bubble-actions">
+                  <button className="lp__dd-bubble-restore">↗</button>
+                  <button className="lp__dd-bubble-end">End</button>
+                </div>
               </div>
-              <div className="lp__vc-tile lp__vc-tile--b">
-                <div className="lp__vc-avatar lp__vc-avatar--b">SC</div>
-                <span className="lp__vc-name">Sarah Chen</span>
+              {/* Suggestion row */}
+              <div className="lp__dd-bubble-suggestion">
+                <div className="lp__dd-bubble-do">
+                  <span className="lp__dd-bubble-do-label">DO</span>
+                  <span className="lp__dd-bubble-do-text">{DEMO_SCENES[desktopSceneIdx].cardBadge}</span>
+                </div>
+                <div className="lp__dd-bubble-say">
+                  <span className="lp__dd-bubble-say-label">SAY</span>
+                  <span className="lp__dd-bubble-say-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].say}&rdquo;</span>
+                </div>
               </div>
-            </div>
-
-            {/* Pitchbase overlay panel (expanded state) */}
-            <div className="lp__pb-overlay">
-              <div className="lp__pb-overlay-header">
-                <span className="lp__pb-overlay-logo">✦ Pitchbase</span>
-                <span className={`lp__pb-overlay-badge lp__pb-overlay-badge--${DEMO_SCENES[desktopSceneIdx].badgeType}`}>
-                  {DEMO_SCENES[desktopSceneIdx].badge}
-                </span>
-              </div>
-              <p className={`lp__pb-overlay-text${desktopShowSuggestion ? ' lp__pb-overlay-text--show' : ''}`}>
-                &ldquo;{DEMO_SCENES[desktopSceneIdx].suggestion}&rdquo;
-              </p>
-              <div className="lp__pb-overlay-tabs">
-                <span className="lp__pb-tab lp__pb-tab--active">Assist</span>
-                <span className="lp__pb-tab-sep">·</span>
-                <span className="lp__pb-tab">What should I say?</span>
-                <span className="lp__pb-tab-sep">·</span>
-                <span className="lp__pb-tab">Recap</span>
-              </div>
-              <div className="lp__pb-overlay-input">
-                <span className="lp__pb-input-placeholder">Ask about your screen or conversation…</span>
-                <button className="lp__pb-send">▶</button>
-              </div>
-            </div>
-
-            {/* Call toolbar */}
-            <div className="lp__vc-toolbar">
-              <button className="lp__vc-btn">
-                <span className="lp__vc-btn-icon">🎤</span>
-                <span className="lp__vc-btn-label">Mute</span>
-              </button>
-              <button className="lp__vc-btn">
-                <span className="lp__vc-btn-icon">📷</span>
-                <span className="lp__vc-btn-label">Video</span>
-              </button>
-              <button className={`lp__vc-btn lp__vc-btn--share${demoPhase === 'clicking' ? ' lp__vc-btn--hovered' : ''}`}>
-                <span className="lp__vc-btn-icon">⬆</span>
-                <span className="lp__vc-btn-label">Share Screen</span>
-              </button>
-              <button className="lp__vc-btn lp__vc-btn--end">End</button>
             </div>
           </div>
 
           {/* Animated cursor */}
-          <div className={`lp__cursor-dot lp__cursor-dot--${demoPhase}`} />
+          <div className={`lp__dd-cursor lp__dd-cursor--${demoPhase}`} />
         </div>
       </section>
 

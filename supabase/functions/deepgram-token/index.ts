@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const DEEPGRAM_API_KEY   = Deno.env.get("DEEPGRAM_API_KEY")!;
+const DEEPGRAM_API_KEY    = Deno.env.get("DEEPGRAM_API_KEY")!;
 const DEEPGRAM_PROJECT_ID = Deno.env.get("DEEPGRAM_PROJECT_ID")!;
 
 const CORS_HEADERS = {
@@ -13,9 +14,14 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { headers: CORS_HEADERS });
   }
 
-  // Require a valid Authorization header so the key is only given to signed-in users.
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  // Verify the JWT is a real Supabase session — not just any Bearer value.
+  const jwt = req.headers.get("Authorization")?.replace("Bearer ", "") ?? "";
+  const { data: { user } } = await createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  ).auth.getUser(jwt);
+
+  if (!user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
