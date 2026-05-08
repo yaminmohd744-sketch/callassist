@@ -4160,8 +4160,9 @@
 /* ── Outer wrapper ── */
 .lp__desktop-demo {
   position: relative;
-  max-width: 900px;
+  max-width: 960px;
   width: 100%;
+  aspect-ratio: 16 / 10;
   margin: 0 auto;
   border-radius: 14px;
   overflow: hidden;
@@ -4179,11 +4180,11 @@
   flex-direction: column;
   background: var(--color-bg-base, #000);
   transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22,1,0.36,1);
-  min-height: 380px;
+  position: absolute;
+  inset: 0;
 }
 
-.lp__desktop-demo--clicking .lp__dd-expanded,
-.lp__desktop-demo--minimized .lp__dd-expanded {
+.lp__dd-expanded--hiding {
   opacity: 0;
   transform: scale(0.98);
   pointer-events: none;
@@ -4348,7 +4349,8 @@
 .lp__dd-panels {
   display: grid;
   grid-template-columns: 1fr 1.15fr 0.85fr;
-  height: 300px;
+  flex: 1;
+  min-height: 0;
 }
 
 .lp__dd-panel {
@@ -4848,10 +4850,9 @@
   z-index: 2;
 }
 
-.lp__desktop-demo--minimized .lp__dd-minimized {
+.lp__dd-minimized--visible {
   opacity: 1;
   pointer-events: auto;
-  transition: opacity 0.35s ease 0.3s;
 }
 
 /* Bubble — exact copy of live-call__bubble styles at landing-page scale */
@@ -4866,7 +4867,18 @@
     0 0 0 1px rgba(124,58,237,0.14),
     0 0 32px rgba(124,58,237,0.16);
   overflow: hidden;
-  animation: dd-bubble-in 0.4s cubic-bezier(0.22,1,0.36,1) both;
+  animation:
+    dd-bubble-in 0.4s cubic-bezier(0.22,1,0.36,1) both,
+    dd-bubble-drag 5.5s cubic-bezier(0.4,0,0.2,1) 0.9s infinite;
+}
+
+@keyframes dd-bubble-drag {
+  0%   { transform: translateX(0); }
+  18%  { transform: translateX(0); }         /* cursor arrives, slight delay */
+  35%  { transform: translateX(-88px); }     /* dragged far left */
+  50%  { transform: translateX(40px); }      /* dragged right */
+  64%  { transform: translateX(0); }         /* back to centre */
+  100% { transform: translateX(0); }
 }
 
 /* Drag handle row — mirrors live-call__bubble-bar */
@@ -4877,6 +4889,7 @@
   padding: 9px 12px;
   background: rgba(124,58,237,0.07);
   border-bottom: 1px solid rgba(124,58,237,0.2);
+  cursor: grab;
 }
 
 .lp__dd-bubble-brand {
@@ -5052,9 +5065,21 @@
 }
 
 .lp__dd-cursor--minimized {
-  top: 22%;
+  /* Start at centre, move to bubble bar to grab it, drag around, release */
+  top: 58%;
   left: 50%;
-  animation: dd-cursor-idle 4s ease-in-out 0.6s infinite;
+  animation: dd-cursor-drag 5.5s cubic-bezier(0.4,0,0.2,1) 0.4s infinite;
+}
+
+@keyframes dd-cursor-drag {
+  0%   { top: 58%; left: 50%; transform: scale(1); }           /* idle centre */
+  12%  { top: 58%; left: 50%; transform: scale(0.85); }        /* press down */
+  18%  { top: 56%; left: 44%; transform: scale(0.85); }        /* start drag left */
+  35%  { top: 54%; left: 28%; transform: scale(0.85); }        /* drag far left */
+  50%  { top: 56%; left: 55%; transform: scale(0.85); }        /* drag right */
+  64%  { top: 58%; left: 50%; transform: scale(0.85); }        /* back to centre */
+  72%  { top: 58%; left: 50%; transform: scale(1); }           /* release */
+  100% { top: 58%; left: 50%; transform: scale(1); }           /* hold */
 }
 
 /* Responsive */

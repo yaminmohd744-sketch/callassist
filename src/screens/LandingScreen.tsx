@@ -1296,7 +1296,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         <div className={`lp__desktop-demo lp__desktop-demo--${demoPhase}`}>
 
           {/* ── EXPANDED: exact replica of real live-call UI ── */}
-          <div className="lp__dd-expanded">
+          <div className={`lp__dd-expanded${demoPhase !== 'expanded' ? ' lp__dd-expanded--hiding' : ''}`}>
 
             {/* Header — exact match of real Header component */}
             <div className="lp__dd-header">
@@ -1457,7 +1457,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
           </div>
 
           {/* ── MINIMIZED: bubble bar floating on dark desktop bg ── */}
-          <div className="lp__dd-minimized">
+          <div className={`lp__dd-minimized${demoPhase === 'minimized' ? ' lp__dd-minimized--visible' : ''}`}>
             <div className="lp__dd-bubble" key={desktopSceneIdx}>
               {/* Drag handle row */}
               <div className="lp__dd-bubble-bar">
