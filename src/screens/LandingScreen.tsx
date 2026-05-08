@@ -1458,17 +1458,17 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
           {/* ── MINIMIZED: bubble bar floating on dark desktop bg ── */}
           <div className="lp__dd-minimized">
-            <div className="lp__dd-bubble">
+            <div className="lp__dd-bubble" key={desktopSceneIdx}>
               {/* Drag handle row */}
               <div className="lp__dd-bubble-bar">
                 <div className="lp__dd-bubble-brand">
                   <span className="lp__dd-bubble-dot" />
-                  <span className="lp__dd-bubble-logo">PITCH<span className="lp__dd-bubble-logo-plus">BASE</span></span>
+                  <span className="lp__dd-bubble-logo">PITCH<span className="lp__dd-bubble-logo-plus">PLUS</span>+</span>
                   <span className="lp__dd-bubble-prospect">Sarah Chen · CloudBridge Inc.</span>
                 </div>
                 <div className="lp__dd-bubble-stats">
-                  <span className="lp__dd-bubble-stage">DISCOVERY</span>
-                  <span className="lp__dd-bubble-prob">{DEMO_SCENES[desktopSceneIdx].stage}</span>
+                  <span className="lp__dd-bubble-stage">{DEMO_SCENES[desktopSceneIdx].stage}</span>
+                  <span className="lp__dd-bubble-prob">{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span>
                 </div>
                 <div className="lp__dd-bubble-actions">
                   <button className="lp__dd-bubble-restore">↗</button>
