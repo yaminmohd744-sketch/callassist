@@ -2,6 +2,8 @@
 import {
   analyzeTranscript as mockAnalyzeTranscript,
   generateSessionSummary as mockGenerateSessionSummary,
+  mockGenerateBattleCard,
+  mockGenerateProspectSummary,
   detectStage,
   STAGE_TIPS,
   getQuickActionSuggestion,
@@ -378,4 +380,3 @@ export async function generateProspectSummary(
   }
 }
 
-import { mockGenerateBattleCard, mockGenerateProspectSummary } from './mockAI';

@@ -3,6 +3,7 @@ import { MOCK_SESSIONS } from './mockSessions';
 import type { CallConfig, CallSession, CallStage, CallOutcome, TranscriptEntry, AISuggestion, CoachingWalkthrough } from '../types';
 
 interface SessionRow {
+  id?: string;
   user_id: string;
   config: unknown;
   transcript: unknown;
@@ -19,6 +20,7 @@ interface SessionRow {
   talk_ratio: number | null;
   coaching: unknown;
   outcome: string | null;
+  recording_key?: string | null;
   created_at?: string;
 }
 
@@ -27,6 +29,7 @@ export function rowToSession(row: SessionRow): CallSession {
     ? (row.config as CallConfig)
     : { prospectName: '', company: '', callGoal: '', callType: 'cold', language: 'en-US', yourPitch: '' };
   return {
+    id:                    typeof row.id === 'string' ? row.id : undefined,
     config,
     transcript:            Array.isArray(row.transcript) ? row.transcript as TranscriptEntry[] : [],
     suggestions:           Array.isArray(row.suggestions) ? row.suggestions as AISuggestion[] : [],
@@ -42,6 +45,7 @@ export function rowToSession(row: SessionRow): CallSession {
     talkRatio:             typeof row.talk_ratio === 'number' ? row.talk_ratio : undefined,
     coaching:              row.coaching as CoachingWalkthrough ?? undefined,
     outcome:               (row.outcome as CallOutcome) ?? null,
+    recordingKey:          typeof row.recording_key === 'string' ? row.recording_key : undefined,
   };
 }
 
@@ -63,6 +67,7 @@ export function sessionToRow(s: CallSession, userId: string) {
     talk_ratio:       s.talkRatio ?? null,
     coaching:         s.coaching ?? null,
     outcome:          s.outcome ?? null,
+    recording_key:    s.recordingKey ?? null,
   };
 }
 
@@ -97,11 +102,11 @@ export async function updateOutcome(userId: string, endedAt: string, outcome: Ca
   if (error) throw new Error(error.message);
 }
 
-export async function deleteSession(userId: string, endedAt: string): Promise<void> {
+export async function deleteSession(userId: string, id: string): Promise<void> {
   const { error } = await supabase
     .from('call_sessions')
     .delete()
     .eq('user_id', userId)
-    .eq('ended_at', endedAt);
+    .eq('id', id);
   if (error) throw new Error(error.message);
 }

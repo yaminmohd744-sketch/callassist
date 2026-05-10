@@ -81,6 +81,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [summaryCopied, setSummaryCopied] = useState(false);
   const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
+  const recordingUrlRef = useRef<string | null>(null);
   const [replayCurrentTime, setReplayCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [emailDraft, setEmailDraft] = useState(session.followUpEmail);
@@ -110,9 +111,18 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
   useEffect(() => {
     if (activeTab !== 'replay' || !session.recordingKey || recordingUrl) return;
     loadRecording(session.recordingKey).then(blob => {
-      if (blob) setRecordingUrl(URL.createObjectURL(blob));
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        setRecordingUrl(url);
+        recordingUrlRef.current = url;
+      }
     }).catch(() => {});
-    return () => { if (recordingUrl) URL.revokeObjectURL(recordingUrl); };
+    return () => {
+      if (recordingUrlRef.current) {
+        URL.revokeObjectURL(recordingUrlRef.current);
+        recordingUrlRef.current = null;
+      }
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, session.recordingKey]);
 

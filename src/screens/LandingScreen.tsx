@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
 import { PrivacyPolicy } from './legal/PrivacyPolicy';
 import { TermsOfService } from './legal/TermsOfService';
 import { CookiePolicy } from './legal/CookiePolicy';
@@ -324,7 +324,61 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   const [demoPhase, setDemoPhase]               = useState<'expanded' | 'clicking' | 'minimized' | 'endclicking' | 'postcall'>('expanded');
   const [desktopSceneIdx, setDesktopSceneIdx]   = useState(0);
   const [desktopShowSuggestion, setDesktopShowSuggestion] = useState(false);
-  const [postcallTab, setPostcallTab]           = useState<'summary' | 'transcript' | 'email' | 'scorecard'>('summary');
+  const [postcallTab, setPostcallTab]           = useState<'summary' | 'transcript' | 'email' | 'scorecard' | 'share'>('summary');
+
+  // Named demo steps — step 0 is the live-call screen; suggestion fades in automatically after 1.8s
+  type DemoStep = { phase: typeof demoPhase; tab: typeof postcallTab };
+  const DEMO_STEPS: DemoStep[] = [
+    { phase: 'expanded',  tab: 'summary' },    // live call (suggestion auto-appears within)
+    { phase: 'minimized', tab: 'summary' },    // minimized bubble
+    { phase: 'postcall',  tab: 'summary' },
+    { phase: 'postcall',  tab: 'transcript' },
+    { phase: 'postcall',  tab: 'email' },
+    { phase: 'postcall',  tab: 'scorecard' },
+    { phase: 'postcall',  tab: 'share' },
+  ];
+  const [demoStep, setDemoStep] = useState(0);
+  const autoTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sugTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const applyStep = useCallback((idx: number) => {
+    const s = DEMO_STEPS[idx];
+    setDemoPhase(s.phase);
+    setPostcallTab(s.tab);
+    setDemoStep(idx);
+    // Step 0: start with no suggestion, auto-show it after 1.8s
+    if (idx === 0) {
+      setDesktopShowSuggestion(false);
+      if (sugTimer.current) clearTimeout(sugTimer.current);
+      sugTimer.current = setTimeout(() => setDesktopShowSuggestion(true), 1800);
+    } else {
+      setDesktopShowSuggestion(true);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const scheduleNext = useCallback((fromIdx: number) => {
+    if (autoTimer.current) clearTimeout(autoTimer.current);
+    const nextIdx = (fromIdx + 1) % DEMO_STEPS.length;
+    const isLastOfScene = nextIdx === 0;
+    autoTimer.current = setTimeout(() => {
+      if (isLastOfScene) {
+        setDesktopSceneIdx(i => (i + 1) % DEMO_SCENES.length);
+      } else {
+        applyStep(nextIdx);
+        scheduleNext(nextIdx);
+      }
+    }, 3500);
+  }, [applyStep]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reset to step 0 whenever the scene changes
+  useEffect(() => {
+    applyStep(0);
+    scheduleNext(0);
+    return () => {
+      if (autoTimer.current) clearTimeout(autoTimer.current);
+      if (sugTimer.current)  clearTimeout(sugTimer.current);
+    };
+  }, [desktopSceneIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (visibleFrames >= DEMO_FRAMES.length) return;
@@ -332,31 +386,13 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
     return () => clearTimeout(t);
   }, [visibleFrames]);
 
-  // Full demo loop:
-  // expanded(5s) → clicking share(1.2s) → minimized/drag(9s) → endclicking(1.2s) → postcall tour(16s) → next scene
-  useEffect(() => {
-    setDemoPhase('expanded');
-    setDesktopShowSuggestion(false);
-    setPostcallTab('summary');
-    const tSug       = setTimeout(() => setDesktopShowSuggestion(true), 1800);
-    const tClick     = setTimeout(() => setDemoPhase('clicking'), 5000);
-    const tMin       = setTimeout(() => setDemoPhase('minimized'), 6200);
-    const tEndClick  = setTimeout(() => setDemoPhase('endclicking'), 15200);
-    const tPostcall  = setTimeout(() => setDemoPhase('postcall'), 16400);
-    // tour the tabs
-    const tTab1 = setTimeout(() => setPostcallTab('transcript'), 20000);
-    const tTab2 = setTimeout(() => setPostcallTab('email'),      23500);
-    const tTab3 = setTimeout(() => setPostcallTab('scorecard'),  27000);
-    const tNext = setTimeout(() => {
-      setDesktopSceneIdx(i => (i + 1) % DEMO_SCENES.length);
-    }, 32000);
-    return () => {
-      clearTimeout(tSug); clearTimeout(tClick); clearTimeout(tMin);
-      clearTimeout(tEndClick); clearTimeout(tPostcall);
-      clearTimeout(tTab1); clearTimeout(tTab2); clearTimeout(tTab3);
-      clearTimeout(tNext);
-    };
-  }, [desktopSceneIdx]);
+  function handleDemoNav(dir: -1 | 1) {
+    if (autoTimer.current) clearTimeout(autoTimer.current);
+    if (sugTimer.current)  clearTimeout(sugTimer.current);
+    const next = (demoStep + dir + DEMO_STEPS.length) % DEMO_STEPS.length;
+    applyStep(next);
+    scheduleNext(next);
+  }
 
   useEffect(() => {
     if (activeSection !== 'features') return;
@@ -1546,17 +1582,16 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                 <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--stage">CLOSE</div><div className="lp__dd-pc-stat-label">Stage Reached</div></div>
               </div>
 
-              {/* Tabs */}
+              {/* Tabs — exact match of real app */}
               <div className="lp__dd-pc-tabs">
-                {(['summary','transcript','email','scorecard'] as const).map(tab => (
+                {(['summary','transcript','email','scorecard','share'] as const).map(tab => (
                   <button key={tab} className={`lp__dd-pc-tab${postcallTab === tab ? ' lp__dd-pc-tab--active' : ''}`}>
-                    {tab === 'summary' ? 'Summary' : tab === 'transcript' ? 'Transcript' : tab === 'email' ? 'Follow-up Email' : 'Scorecard'}
+                    {tab === 'summary' ? 'Summary' : tab === 'transcript' ? 'Transcript' : tab === 'email' ? 'Follow-up Email' : tab === 'scorecard' ? 'Scorecard' : '↗ Share'}
                   </button>
                 ))}
-                <button className="lp__dd-pc-tab">↗ Share</button>
               </div>
 
-              {/* Content */}
+              {/* Tab content — pixel-perfect match of real PostCallScreen */}
               <div className="lp__dd-pc-content">
 
                 {postcallTab === 'summary' && (
@@ -1569,9 +1604,6 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                     <div className="lp__dd-pc-s-heading">AREAS TO IMPROVE:</div>
                     <div className="lp__dd-pc-s-bullet">• No timeline established — should have asked "When do you need this solved by?"</div>
                     <div className="lp__dd-pc-s-bullet">• Pricing was mentioned before value was fully anchored — next time reverse the order.</div>
-                    <div className="lp__dd-pc-s-heading">KEY SIGNALS DETECTED:</div>
-                    <div className="lp__dd-pc-s-bullet">• "Honestly, the reporting could be better" → pain confirmed at 06:17.</div>
-                    <div className="lp__dd-pc-s-bullet">• "That actually sounds really interesting" → buying signal, close probability jumped to 81%.</div>
                     <div className="lp__dd-pc-s-heading">NEXT STEPS:</div>
                     <div className="lp__dd-pc-s-bullet">1. Send follow-up email with demo booking link within the hour.</div>
                     <div className="lp__dd-pc-s-bullet">2. Reference the reporting gap they described — personalise the subject line.</div>
@@ -1585,14 +1617,14 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                   <div className="lp__dd-pc-transcript">
                     <button className="lp__dd-pc-dl-btn">↓ DOWNLOAD .TXT</button>
                     {[
-                      { who: 'YOU',      time: '00:04', text: "Hi Sarah, this is Alex from Pitchbase — do you have a couple of minutes?", cls: '' },
-                      { who: 'PROSPECT', time: '00:11', text: "Sure, a couple. What's this about?", cls: '' },
-                      { who: 'YOU',      time: '00:18', text: "We build AI coaching software for sales teams. Is rep performance consistency something you're working on?", cls: '' },
-                      { who: 'PROSPECT', time: '00:38', text: "Yeah, our top two are crushing it but the other six are all over the place.", cls: ' lp__dd-pc-entry--buying-signal' },
-                      { who: 'YOU',      time: '01:04', text: "That's classic 80/20. They usually have the knowledge — they just can't execute under pressure.", cls: '' },
-                      { who: 'PROSPECT', time: '01:13', text: "Exactly. When someone says 'too expensive' they fold or go into a panic pitch.", cls: ' lp__dd-pc-entry--buying-signal' },
-                      { who: 'YOU',      time: '01:38', text: "So the problem isn't knowledge — it's execution under pressure. That's specifically what we built for.", cls: '' },
+                      { who: 'YOU',      time: '00:05', text: "Hi Sarah, this is Alex from Pitchbase — do you have about two minutes?", cls: '' },
+                      { who: 'PROSPECT', time: '00:12', text: "Yeah, sure, go ahead.", cls: '' },
+                      { who: 'YOU',      time: '00:18', text: "We work with growth-stage firms to help reps close more consistently using real-time AI coaching.", cls: '' },
+                      { who: 'PROSPECT', time: '00:42', text: "Our top two are crushing it but the other six are all over the place.", cls: ' lp__dd-pc-entry--buying-signal' },
+                      { who: 'YOU',      time: '01:04', text: "That's classic 80/20. They have the knowledge — they just can't execute under pressure.", cls: '' },
                       { who: 'PROSPECT', time: '01:58', text: "We already have a tool for that, though.", cls: ' lp__dd-pc-entry--objection' },
+                      { who: 'YOU',      time: '02:14', text: "Totally fair — what does it do when someone says 'too expensive' mid-call?", cls: '' },
+                      { who: 'PROSPECT', time: '02:38', text: "That actually sounds really interesting. Can you send me more?", cls: ' lp__dd-pc-entry--buying-signal' },
                     ].map((e, i) => (
                       <div key={i} className={`lp__dd-pc-entry${e.cls}`}>
                         <div className="lp__dd-pc-entry-meta">
@@ -1618,7 +1650,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                       <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Hi Sarah,</div>
                       <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Really enjoyed our conversation — it's clear you've thought carefully about what systematic coaching needs to look like as CloudBridge scales.</div>
                       <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">As promised, Friday at 10am is confirmed. I've sent a calendar invite with the Zoom link.</div>
-                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Here's exactly what I'll cover, tailored to what you shared: new rep onboarding in practice, the manager dashboard, and how it handles objections in real time.</div>
+                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Here's what I'll cover, tailored to what you shared: real-time objection handling, new rep onboarding, and the manager dashboard.</div>
                       <div className="lp__dd-pc-email-line">Best, Alex</div>
                     </div>
                     <div className="lp__dd-pc-email-integrations">
@@ -1677,14 +1709,53 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                   </div>
                 )}
 
+                {postcallTab === 'share' && (
+                  <div className="lp__dd-pc-share">
+                    <div className="lp__dd-pc-share-title">Prospect Summary</div>
+                    <div className="lp__dd-pc-share-desc">A clean, context-aware recap written for Sarah Chen. Copy it and send via email, WhatsApp, or however you follow up.</div>
+                    <div className="lp__dd-pc-share-body">
+                      <div className="lp__dd-pc-share-line">Hi Sarah — great speaking with you today.</div>
+                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">You mentioned your top two reps are crushing it while the rest are inconsistent under pressure. That's exactly the gap Pitchbase closes — it surfaces the right response the moment an objection lands, so every rep performs like your best one.</div>
+                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">Friday at 10am I'll show you exactly how it handles the "too expensive" moment in real time.</div>
+                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">— Alex</div>
+                    </div>
+                    <div className="lp__dd-pc-share-actions">
+                      <button className="lp__dd-pc-share-copy-btn">⎘ Copy to clipboard</button>
+                      <button className="lp__dd-pc-share-regen-btn">↺ Regenerate</button>
+                    </div>
+                    <div className="lp__dd-pc-share-hint">Paste this anywhere — email, LinkedIn DM, WhatsApp, Notion, your CRM notes.</div>
+                  </div>
+                )}
+
               </div>
             </div>
 
-            {/* Touring cursor */}
+            {/* Cursor auto-clicks tabs */}
             <div className={`lp__dd-cursor lp__dd-cursor--pc lp__dd-cursor--pc-${postcallTab}`} />
           </div>
 
         </div>
+
+        {/* ── Demo nav ── */}
+        <div className="lp__demo-nav">
+          <button className="lp__demo-nav-btn" onClick={() => handleDemoNav(-1)} aria-label="Previous step">
+            ← PREV
+          </button>
+          <div className="lp__demo-nav-dots">
+            {DEMO_STEPS.map((_, i) => (
+              <button
+                key={i}
+                className={`lp__demo-nav-dot${demoStep === i ? ' lp__demo-nav-dot--active' : ''}`}
+                onClick={() => { if (autoTimer.current) clearTimeout(autoTimer.current); applyStep(i); scheduleNext(i); }}
+                aria-label={`Go to step ${i + 1}`}
+              />
+            ))}
+          </div>
+          <button className="lp__demo-nav-btn" onClick={() => handleDemoNav(1)} aria-label="Next step">
+            NEXT →
+          </button>
+        </div>
+
       </section>
 
       {/* ── How it works ── */}

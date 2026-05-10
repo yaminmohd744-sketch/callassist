@@ -11,7 +11,7 @@ interface DashboardScreenProps {
   onStartCall: () => void;
   onUploadCall: () => void;
   onViewSession: (session: CallSession) => void;
-  onDeleteSession: (endedAt: string) => void;
+  onDeleteSession: (id: string) => void;
   userName: string;
 }
 
@@ -95,7 +95,7 @@ export function DashboardScreen({
               {sortedSessions.map((session) => {
                 const probLevel = session.finalCloseProbability >= 61 ? 'high' : session.finalCloseProbability >= 31 ? 'medium' : 'low';
                 return (
-                  <div key={session.endedAt} className="dashboard__call-row" onClick={() => onViewSession(session)} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && onViewSession(session)}>
+                  <div key={session.id ?? session.endedAt} className="dashboard__call-row" onClick={() => onViewSession(session)} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && onViewSession(session)}>
                     <div className="dashboard__call-prospect">
                       <div className="dashboard__call-name">
                         {session.config.prospectName || 'Unknown prospect'}
@@ -124,7 +124,7 @@ export function DashboardScreen({
                       <button
                         className="dashboard__call-delete"
                         title={t.dashboard.deleteSession}
-                        onClick={e => { e.stopPropagation(); onDeleteSession(session.endedAt); }}
+                        onClick={e => { e.stopPropagation(); onDeleteSession(session.id ?? session.endedAt); }}
                       >
                         ✕
                       </button>

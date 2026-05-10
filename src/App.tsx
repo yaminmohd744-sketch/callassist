@@ -208,11 +208,11 @@ export function App() {
     setScreen('post-call');
   }
 
-  async function handleDeleteSession(endedAt: string) {
+  async function handleDeleteSession(id: string) {
     // Optimistic update — roll back on failure
-    setPastSessions(prev => prev.filter(s => s.endedAt !== endedAt));
+    setPastSessions(prev => prev.filter(s => (s.id ?? s.endedAt) !== id));
     if (user) {
-      deleteSession(user.id, endedAt).catch(() => {
+      deleteSession(user.id, id).catch(() => {
         toast.error('Failed to delete session.');
         loadSessions(user.id)
           .then(sessions => setPastSessions(sessions))

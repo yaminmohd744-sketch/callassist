@@ -180,6 +180,7 @@ export interface Lead {
 }
 
 export interface CallSession {
+  id?: string;
   config: CallConfig;
   transcript: TranscriptEntry[];
   suggestions: AISuggestion[];
