@@ -66,7 +66,7 @@ function renderSummary(text: string) {
   const lines = text.split('\n');
   return lines.map((line, i) => {
     const trimmed = line.trim();
-    const isHeading = /^[A-Z][A-Z\s]+$/.test(trimmed) && trimmed.length > 2;
+    const isHeading = /^[A-Z][A-Z\s]+:?$/.test(trimmed) && trimmed.length > 2;
     if (isHeading) return <div key={i} className="postcall__summary-heading">{trimmed}</div>;
     if (trimmed === '') return <div key={i} className="postcall__summary-spacer" />;
     if (trimmed.startsWith('•')) return <div key={i} className="postcall__summary-bullet">{trimmed}</div>;

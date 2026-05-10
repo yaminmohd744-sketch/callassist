@@ -321,9 +321,10 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   const [billingCycle, setBillingCycle]         = useState<'monthly' | 'yearly'>('monthly');
   const [langIdx, setLangIdx]                   = useState(0);
   const [navCtaVisible, setNavCtaVisible]       = useState(false);
-  const [demoPhase, setDemoPhase]               = useState<'expanded' | 'clicking' | 'minimized'>('expanded');
+  const [demoPhase, setDemoPhase]               = useState<'expanded' | 'clicking' | 'minimized' | 'endclicking' | 'postcall'>('expanded');
   const [desktopSceneIdx, setDesktopSceneIdx]   = useState(0);
   const [desktopShowSuggestion, setDesktopShowSuggestion] = useState(false);
+  const [postcallTab, setPostcallTab]           = useState<'summary' | 'transcript' | 'email' | 'scorecard'>('summary');
 
   useEffect(() => {
     if (visibleFrames >= DEMO_FRAMES.length) return;
@@ -331,17 +332,30 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
     return () => clearTimeout(t);
   }, [visibleFrames]);
 
-  // Desktop demo loop: expanded (5s) → clicking (1.2s) → minimized (5s) → reset
+  // Full demo loop:
+  // expanded(5s) → clicking share(1.2s) → minimized/drag(9s) → endclicking(1.2s) → postcall tour(16s) → next scene
   useEffect(() => {
     setDemoPhase('expanded');
     setDesktopShowSuggestion(false);
-    const tSug  = setTimeout(() => setDesktopShowSuggestion(true), 1800);
-    const tClick = setTimeout(() => setDemoPhase('clicking'), 5000);
-    const tMin  = setTimeout(() => setDemoPhase('minimized'), 6200);
-    const tNext  = setTimeout(() => {
+    setPostcallTab('summary');
+    const tSug       = setTimeout(() => setDesktopShowSuggestion(true), 1800);
+    const tClick     = setTimeout(() => setDemoPhase('clicking'), 5000);
+    const tMin       = setTimeout(() => setDemoPhase('minimized'), 6200);
+    const tEndClick  = setTimeout(() => setDemoPhase('endclicking'), 15200);
+    const tPostcall  = setTimeout(() => setDemoPhase('postcall'), 16400);
+    // tour the tabs
+    const tTab1 = setTimeout(() => setPostcallTab('transcript'), 20000);
+    const tTab2 = setTimeout(() => setPostcallTab('email'),      23500);
+    const tTab3 = setTimeout(() => setPostcallTab('scorecard'),  27000);
+    const tNext = setTimeout(() => {
       setDesktopSceneIdx(i => (i + 1) % DEMO_SCENES.length);
-    }, 12000);
-    return () => { clearTimeout(tSug); clearTimeout(tClick); clearTimeout(tMin); clearTimeout(tNext); };
+    }, 32000);
+    return () => {
+      clearTimeout(tSug); clearTimeout(tClick); clearTimeout(tMin);
+      clearTimeout(tEndClick); clearTimeout(tPostcall);
+      clearTimeout(tTab1); clearTimeout(tTab2); clearTimeout(tTab3);
+      clearTimeout(tNext);
+    };
   }, [desktopSceneIdx]);
 
   useEffect(() => {
@@ -1456,41 +1470,220 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             </div>
           </div>
 
-          {/* ── MINIMIZED: bubble bar floating on dark desktop bg ── */}
+          {/* ── MINIMIZED: bubble + cursor in one sled so they always move together ── */}
           <div className={`lp__dd-minimized${demoPhase === 'minimized' ? ' lp__dd-minimized--visible' : ''}`}>
-            <div className="lp__dd-bubble" key={desktopSceneIdx}>
-              {/* Drag handle row */}
-              <div className="lp__dd-bubble-bar">
-                <div className="lp__dd-bubble-brand">
-                  <span className="lp__dd-bubble-dot" />
-                  <span className="lp__dd-bubble-logo">PITCH<span className="lp__dd-bubble-logo-plus">PLUS</span>+</span>
-                  <span className="lp__dd-bubble-prospect">Sarah Chen · CloudBridge Inc.</span>
+            {/* Sled: single element that slides left/right — bubble and cursor ride inside it */}
+            <div className="lp__dd-sled" key={desktopSceneIdx}>
+              <div className="lp__dd-bubble">
+                {/* Drag handle row */}
+                <div className="lp__dd-bubble-bar">
+                  <div className="lp__dd-bubble-brand">
+                    <span className="lp__dd-bubble-dot" />
+                    <span className="lp__dd-bubble-logo">PITCH<span className="lp__dd-bubble-logo-plus">PLUS</span>+</span>
+                    <span className="lp__dd-bubble-prospect">Sarah Chen · CloudBridge Inc.</span>
+                  </div>
+                  <div className="lp__dd-bubble-stats">
+                    <span className="lp__dd-bubble-stage">{DEMO_SCENES[desktopSceneIdx].stage}</span>
+                    <span className="lp__dd-bubble-prob">{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span>
+                  </div>
+                  <div className="lp__dd-bubble-actions">
+                    <button className="lp__dd-bubble-restore">↗</button>
+                    <button className="lp__dd-bubble-end">End</button>
+                  </div>
                 </div>
-                <div className="lp__dd-bubble-stats">
-                  <span className="lp__dd-bubble-stage">{DEMO_SCENES[desktopSceneIdx].stage}</span>
-                  <span className="lp__dd-bubble-prob">{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span>
-                </div>
-                <div className="lp__dd-bubble-actions">
-                  <button className="lp__dd-bubble-restore">↗</button>
-                  <button className="lp__dd-bubble-end">End</button>
+                {/* Suggestion row */}
+                <div className="lp__dd-bubble-suggestion">
+                  <div className="lp__dd-bubble-do">
+                    <span className="lp__dd-bubble-do-label">DO</span>
+                    <span className="lp__dd-bubble-do-text">{DEMO_SCENES[desktopSceneIdx].cardBadge}</span>
+                  </div>
+                  <div className="lp__dd-bubble-say">
+                    <span className="lp__dd-bubble-say-label">SAY</span>
+                    <span className="lp__dd-bubble-say-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].say}&rdquo;</span>
+                  </div>
                 </div>
               </div>
-              {/* Suggestion row */}
-              <div className="lp__dd-bubble-suggestion">
-                <div className="lp__dd-bubble-do">
-                  <span className="lp__dd-bubble-do-label">DO</span>
-                  <span className="lp__dd-bubble-do-text">{DEMO_SCENES[desktopSceneIdx].cardBadge}</span>
-                </div>
-                <div className="lp__dd-bubble-say">
-                  <span className="lp__dd-bubble-say-label">SAY</span>
-                  <span className="lp__dd-bubble-say-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].say}&rdquo;</span>
-                </div>
-              </div>
+              {/* Cursor sits on the drag bar — moves with the sled, never drifts */}
+              <div className="lp__dd-cursor lp__dd-cursor--grab" />
             </div>
           </div>
 
-          {/* Animated cursor */}
-          <div className={`lp__dd-cursor lp__dd-cursor--${demoPhase}`} />
+          {/* ── END-CLICKING: cursor moves to End button and clicks ── */}
+          {(demoPhase === 'endclicking') && (
+            <div className="lp__dd-cursor lp__dd-cursor--endclick" />
+          )}
+
+          {/* ── POSTCALL: self-contained pixel-perfect replica ── */}
+          <div className={`lp__dd-postcall${demoPhase === 'postcall' ? ' lp__dd-postcall--visible' : ''}`}>
+            <div className="lp__dd-pc-wrap">
+
+              {/* Header */}
+              <div className="lp__dd-pc-hdr">
+                <div className="lp__dd-pc-back">← Back to Dashboard</div>
+                <div className="lp__dd-pc-title-block">
+                  <div className="lp__dd-pc-title">Call Review</div>
+                  <div className="lp__dd-pc-meta">
+                    <span>Sarah Chen</span>
+                    <span className="lp__dd-pc-meta-sep">@</span>
+                    <span>CloudBridge Inc.</span>
+                    <span className="lp__dd-pc-meta-sep">·</span>
+                    <span>Sat, May 9, 2026, 9:04 AM</span>
+                  </div>
+                </div>
+                <div className="lp__dd-pc-hdr-right">
+                  <div className="lp__dd-pc-crm-badge">✓ Saved to CRM</div>
+                  <button className="lp__dd-pc-newcall-btn">▶ NEW CALL</button>
+                </div>
+              </div>
+
+              {/* Stats row — horizontal with border dividers */}
+              <div className="lp__dd-pc-stats">
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val">9m 4s</div><div className="lp__dd-pc-stat-label">Duration</div></div>
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--red">2</div><div className="lp__dd-pc-stat-label">Objections</div></div>
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--medium">81%</div><div className="lp__dd-pc-stat-label">Close Score</div></div>
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--medium">74</div><div className="lp__dd-pc-stat-label">Lead Score</div></div>
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val">14</div><div className="lp__dd-pc-stat-label">Entries</div></div>
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--stage">CLOSE</div><div className="lp__dd-pc-stat-label">Stage Reached</div></div>
+              </div>
+
+              {/* Tabs */}
+              <div className="lp__dd-pc-tabs">
+                {(['summary','transcript','email','scorecard'] as const).map(tab => (
+                  <button key={tab} className={`lp__dd-pc-tab${postcallTab === tab ? ' lp__dd-pc-tab--active' : ''}`}>
+                    {tab === 'summary' ? 'Summary' : tab === 'transcript' ? 'Transcript' : tab === 'email' ? 'Follow-up Email' : 'Scorecard'}
+                  </button>
+                ))}
+                <button className="lp__dd-pc-tab">↗ Share</button>
+              </div>
+
+              {/* Content */}
+              <div className="lp__dd-pc-content">
+
+                {postcallTab === 'summary' && (
+                  <div className="lp__dd-pc-summary">
+                    <div className="lp__dd-pc-s-outcome">CALL OUTCOME: Strong prospect — demo booked. Follow up within the hour.</div>
+                    <div className="lp__dd-pc-s-heading">WHAT WENT WELL:</div>
+                    <div className="lp__dd-pc-s-bullet">• Outstanding discovery — prospect self-diagnosed the exact problem before the product was presented.</div>
+                    <div className="lp__dd-pc-s-bullet">• Competitor objection handled cleanly — redirected to a pain-finder question that named the gap.</div>
+                    <div className="lp__dd-pc-s-bullet">• Closed on a specific next step (20-min demo) while intent was live — no vague "I'll send info."</div>
+                    <div className="lp__dd-pc-s-heading">AREAS TO IMPROVE:</div>
+                    <div className="lp__dd-pc-s-bullet">• No timeline established — should have asked "When do you need this solved by?"</div>
+                    <div className="lp__dd-pc-s-bullet">• Pricing was mentioned before value was fully anchored — next time reverse the order.</div>
+                    <div className="lp__dd-pc-s-heading">KEY SIGNALS DETECTED:</div>
+                    <div className="lp__dd-pc-s-bullet">• "Honestly, the reporting could be better" → pain confirmed at 06:17.</div>
+                    <div className="lp__dd-pc-s-bullet">• "That actually sounds really interesting" → buying signal, close probability jumped to 81%.</div>
+                    <div className="lp__dd-pc-s-heading">NEXT STEPS:</div>
+                    <div className="lp__dd-pc-s-bullet">1. Send follow-up email with demo booking link within the hour.</div>
+                    <div className="lp__dd-pc-s-bullet">2. Reference the reporting gap they described — personalise the subject line.</div>
+                    <div className="lp__dd-pc-s-heading">CALL NOTES</div>
+                    <div className="lp__dd-pc-s-bullet">• 04:32 Competitor objection — "we already have a tool for that"</div>
+                    <div className="lp__dd-pc-s-bullet">• 06:17 Pain confirmed — reporting gap identified</div>
+                  </div>
+                )}
+
+                {postcallTab === 'transcript' && (
+                  <div className="lp__dd-pc-transcript">
+                    <button className="lp__dd-pc-dl-btn">↓ DOWNLOAD .TXT</button>
+                    {[
+                      { who: 'YOU',      time: '00:04', text: "Hi Sarah, this is Alex from Pitchbase — do you have a couple of minutes?", cls: '' },
+                      { who: 'PROSPECT', time: '00:11', text: "Sure, a couple. What's this about?", cls: '' },
+                      { who: 'YOU',      time: '00:18', text: "We build AI coaching software for sales teams. Is rep performance consistency something you're working on?", cls: '' },
+                      { who: 'PROSPECT', time: '00:38', text: "Yeah, our top two are crushing it but the other six are all over the place.", cls: ' lp__dd-pc-entry--buying-signal' },
+                      { who: 'YOU',      time: '01:04', text: "That's classic 80/20. They usually have the knowledge — they just can't execute under pressure.", cls: '' },
+                      { who: 'PROSPECT', time: '01:13', text: "Exactly. When someone says 'too expensive' they fold or go into a panic pitch.", cls: ' lp__dd-pc-entry--buying-signal' },
+                      { who: 'YOU',      time: '01:38', text: "So the problem isn't knowledge — it's execution under pressure. That's specifically what we built for.", cls: '' },
+                      { who: 'PROSPECT', time: '01:58', text: "We already have a tool for that, though.", cls: ' lp__dd-pc-entry--objection' },
+                    ].map((e, i) => (
+                      <div key={i} className={`lp__dd-pc-entry${e.cls}`}>
+                        <div className="lp__dd-pc-entry-meta">
+                          <span className={`lp__dd-pc-entry-who lp__dd-pc-entry-who--${e.who === 'YOU' ? 'rep' : 'prospect'}`}>{e.who}</span>
+                          <span className="lp__dd-pc-entry-time">{e.time}</span>
+                        </div>
+                        <div className="lp__dd-pc-entry-text">{e.text}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {postcallTab === 'email' && (
+                  <div className="lp__dd-pc-email">
+                    <div className="lp__dd-pc-email-actions">
+                      <button className="lp__dd-pc-action-btn">⎘ COPY EMAIL</button>
+                      <button className="lp__dd-pc-action-btn">↓ DOWNLOAD .TXT</button>
+                      <button className="lp__dd-pc-action-btn">✉ OPEN IN EMAIL</button>
+                      <button className="lp__dd-pc-action-btn">⎘ COPY JSON</button>
+                    </div>
+                    <div className="lp__dd-pc-email-body">
+                      <div className="lp__dd-pc-email-subject">Subject: Friday 10am confirmed — your personalised Pitchbase demo</div>
+                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Hi Sarah,</div>
+                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Really enjoyed our conversation — it's clear you've thought carefully about what systematic coaching needs to look like as CloudBridge scales.</div>
+                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">As promised, Friday at 10am is confirmed. I've sent a calendar invite with the Zoom link.</div>
+                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Here's exactly what I'll cover, tailored to what you shared: new rep onboarding in practice, the manager dashboard, and how it handles objections in real time.</div>
+                      <div className="lp__dd-pc-email-line">Best, Alex</div>
+                    </div>
+                    <div className="lp__dd-pc-email-integrations">
+                      <span>▶</span> Integrations (Zapier / Webhook)
+                    </div>
+                  </div>
+                )}
+
+                {postcallTab === 'scorecard' && (
+                  <div className="lp__dd-pc-scorecard">
+                    <div className="lp__dd-pc-sc-ring-wrap">
+                      <div className="lp__dd-pc-sc-ring">
+                        <div className="lp__dd-pc-sc-score-num">74</div>
+                        <div className="lp__dd-pc-sc-score-label">REP SCORE</div>
+                      </div>
+                    </div>
+                    <div className="lp__dd-pc-sc-metric">
+                      <div className="lp__dd-pc-sc-metric-hdr">
+                        <span className="lp__dd-pc-sc-metric-name">TALK RATIO</span>
+                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--green">You 48% · Prospect 52%</span>
+                      </div>
+                      <div className="lp__dd-pc-sc-gauge">
+                        <div className="lp__dd-pc-sc-gauge-rep" style={{width:'48%'}} />
+                        <div className="lp__dd-pc-sc-gauge-prospect" style={{width:'52%'}} />
+                      </div>
+                      <div className="lp__dd-pc-sc-hint">✓ Good — you let the prospect talk more than half the time</div>
+                    </div>
+                    <div className="lp__dd-pc-sc-metric">
+                      <div className="lp__dd-pc-sc-metric-hdr">
+                        <span className="lp__dd-pc-sc-metric-name">OBJECTION HANDLING RATE</span>
+                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--green">2/2 handled (100%)</span>
+                      </div>
+                      <div className="lp__dd-pc-sc-gauge">
+                        <div className="lp__dd-pc-sc-gauge-fill lp__dd-pc-sc-gauge-fill--green" style={{width:'100%'}} />
+                      </div>
+                    </div>
+                    <div className="lp__dd-pc-sc-metric">
+                      <div className="lp__dd-pc-sc-metric-hdr">
+                        <span className="lp__dd-pc-sc-metric-name">BUYING SIGNALS DETECTED</span>
+                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--green">2 signals</span>
+                      </div>
+                      <div className="lp__dd-pc-sc-pills">
+                        <span className="lp__dd-pc-sc-pill">Demo booked</span>
+                        <span className="lp__dd-pc-sc-pill">Pain confirmed</span>
+                      </div>
+                    </div>
+                    <div className="lp__dd-pc-sc-metric">
+                      <div className="lp__dd-pc-sc-metric-hdr">
+                        <span className="lp__dd-pc-sc-metric-name">CLOSE PROBABILITY</span>
+                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--green">81%</span>
+                      </div>
+                      <div className="lp__dd-pc-sc-gauge">
+                        <div className="lp__dd-pc-sc-gauge-fill lp__dd-pc-sc-gauge-fill--green" style={{width:'81%'}} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+
+            {/* Touring cursor */}
+            <div className={`lp__dd-cursor lp__dd-cursor--pc lp__dd-cursor--pc-${postcallTab}`} />
+          </div>
+
         </div>
       </section>
 

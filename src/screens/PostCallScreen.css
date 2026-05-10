@@ -34,6 +34,7 @@
 }
 
 .postcall__title {
+  font-family: 'Clash Display', system-ui, sans-serif;
   font-size: var(--font-size-xl);
   font-weight: 600;
   margin-bottom: 2px;
@@ -43,6 +44,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  font-family: 'Clash Display', system-ui, sans-serif;
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
@@ -75,6 +77,7 @@
 .postcall__outcome-btn {
   padding: 5px 14px;
   border-radius: var(--border-radius-pill);
+  font-family: 'Clash Display', system-ui, sans-serif;
   font-size: var(--font-size-xs);
   font-weight: 600;
   cursor: pointer;
@@ -128,6 +131,7 @@
 }
 
 .postcall__stat-val {
+  font-family: 'Clash Display', system-ui, sans-serif;
   font-size: var(--font-size-xl);
   font-weight: 700;
   margin-bottom: var(--space-1);
@@ -141,11 +145,13 @@
 .postcall__stat-val--default { color: var(--color-accent-green); }
 
 .postcall__stat-stage {
+  font-family: 'Clash Display', system-ui, sans-serif;
   font-size: var(--font-size-md);
   color: var(--color-accent-cyan);
 }
 
 .postcall__stat-label {
+  font-family: 'Clash Display', system-ui, sans-serif;
   font-size: var(--font-size-xs);
   letter-spacing: 0.08em;
   color: var(--color-text-muted);
@@ -160,9 +166,11 @@
 }
 
 .postcall__tab {
-  font-family: var(--font-display);
+  font-family: 'Clash Display', system-ui, sans-serif;
   font-size: var(--font-size-xs);
+  font-weight: 600;
   letter-spacing: 0.1em;
+  text-transform: uppercase;
   padding: var(--space-3) var(--space-5);
   color: var(--color-text-muted);
   border: none;
@@ -207,13 +215,14 @@
 }
 
 .postcall__summary-heading {
-  font-size: var(--font-size-xs);
+  font-family: 'Clash Display', system-ui, sans-serif;
+  font-size: var(--font-size-sm);
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: var(--color-text-muted);
+  color: var(--color-text-primary);
   text-transform: uppercase;
-  margin-top: var(--space-6);
-  margin-bottom: var(--space-2);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-1);
 }
 .postcall__summary-heading:first-child {
   margin-top: 0;
@@ -479,15 +488,15 @@
 .scorecard__score-num {
   font-size: var(--font-size-2xl);
   font-weight: 700;
-  color: var(--color-text-primary);
+  color: #ffffff;
   line-height: 1;
 }
 
 .scorecard__score-label {
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.12em;
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.7);
   margin-top: 2px;
 }
 
@@ -785,6 +794,7 @@
 /* ─── Header actions ───────────────────────────────────────── */
 
 .postcall__crm-badge {
+  font-family: 'Clash Display', system-ui, sans-serif;
   font-size: var(--font-size-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
