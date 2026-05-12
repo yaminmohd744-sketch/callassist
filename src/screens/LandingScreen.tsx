@@ -28,10 +28,11 @@ const DEMO_SCENES = [
     badgeType: 'red',
     stage: 'DISCOVERY',
     tone: 'DEFENSIVE',
-    prospect: '"We already have a tool for that..."',
-    say: 'What do you love most about it? And what\'s the one thing you wish it did better?',
-    why: 'Turns the competitor into a pain-finder — they name the gap for you.',
-    time: '04:32',
+    prospect: '"Honestly it\'s probably not a priority until Q3 — we\'re heads-down on a product launch right now."',
+    physicalAction: 'Stay quiet — let them finish.',
+    say: 'That makes sense. If the manual reporting is costing your team two hours a week, what\'s the cost of waiting another quarter?',
+    why: 'Reframes delay as an active cost — makes the status quo more painful than the change.',
+    time: '02:03',
   },
   {
     cardBadge: 'GO DEEPER',
@@ -39,6 +40,7 @@ const DEMO_SCENES = [
     stage: 'DISCOVERY',
     tone: 'CURIOUS',
     prospect: '"Honestly, the reporting could be better..."',
+    physicalAction: 'Lean in — buying signal.',
     say: 'So if I showed you exactly how we fix that, would you be open to a 20-min demo this week?',
     why: 'Pain confirmed — bridge directly to the next step while urgency is live.',
     time: '06:17',
@@ -49,6 +51,7 @@ const DEMO_SCENES = [
     stage: 'CLOSE',
     tone: 'WARM',
     prospect: '"That actually sounds really interesting..."',
+    physicalAction: 'Slow down, smile.',
     say: 'Based on what we\'ve covered, does this solve the problem you described at the start?',
     why: 'Trial close while intent is high — gets a yes or surfaces a final objection.',
     time: '09:04',
@@ -311,6 +314,7 @@ function WinLogo() {
   );
 }
 
+
 export function LandingScreen({ onDownload }: LandingScreenProps) {
   const [visibleFrames, setVisibleFrames]       = useState(1);
   const [menuOpen, setMenuOpen]                 = useState(false);
@@ -325,6 +329,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   const [desktopSceneIdx, setDesktopSceneIdx]   = useState(0);
   const [desktopShowSuggestion, setDesktopShowSuggestion] = useState(false);
   const [postcallTab, setPostcallTab]           = useState<'summary' | 'transcript' | 'email' | 'scorecard' | 'share'>('summary');
+  const [spotlight, setSpotlight]               = useState<'transcript' | 'ai' | 'notes' | null>(null);
 
   // Named demo steps — step 0 is the live-call screen; suggestion fades in automatically after 1.8s
   type DemoStep = { phase: typeof demoPhase; tab: typeof postcallTab };
@@ -340,26 +345,40 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   const [demoStep, setDemoStep] = useState(0);
   const autoTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sugTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const spotTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const clearSpotTimers = useCallback(() => {
+    spotTimers.current.forEach(t => clearTimeout(t));
+    spotTimers.current = [];
+  }, []);
 
   const applyStep = useCallback((idx: number) => {
     const s = DEMO_STEPS[idx];
     setDemoPhase(s.phase);
     setPostcallTab(s.tab);
     setDemoStep(idx);
-    // Step 0: start with no suggestion, auto-show it after 1.8s
+    clearSpotTimers();
     if (idx === 0) {
+      // Spotlight sequence: transcript → ai → notes → suggestion
       setDesktopShowSuggestion(false);
+      setSpotlight('transcript');
       if (sugTimer.current) clearTimeout(sugTimer.current);
-      sugTimer.current = setTimeout(() => setDesktopShowSuggestion(true), 1800);
+      const t1 = setTimeout(() => setSpotlight('ai'),        1400);
+      const t2 = setTimeout(() => setSpotlight('notes'),     2800);
+      const t3 = setTimeout(() => { setSpotlight(null); setDesktopShowSuggestion(true); }, 4200);
+      spotTimers.current = [t1, t2, t3];
     } else {
+      setSpotlight(null);
       setDesktopShowSuggestion(true);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [clearSpotTimers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const scheduleNext = useCallback((fromIdx: number) => {
     if (autoTimer.current) clearTimeout(autoTimer.current);
     const nextIdx = (fromIdx + 1) % DEMO_STEPS.length;
     const isLastOfScene = nextIdx === 0;
+    // Step 0 gets extra time for the spotlight sequence (4.2s) + suggestion (2s) = 6.5s total
+    const delay = fromIdx === 0 ? 6500 : 3500;
     autoTimer.current = setTimeout(() => {
       if (isLastOfScene) {
         setDesktopSceneIdx(i => (i + 1) % DEMO_SCENES.length);
@@ -367,7 +386,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         applyStep(nextIdx);
         scheduleNext(nextIdx);
       }
-    }, 3500);
+    }, delay);
   }, [applyStep]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset to step 0 whenever the scene changes
@@ -377,6 +396,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
     return () => {
       if (autoTimer.current) clearTimeout(autoTimer.current);
       if (sugTimer.current)  clearTimeout(sugTimer.current);
+      clearSpotTimers();
     };
   }, [desktopSceneIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -417,7 +437,16 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
       },
       { threshold: 0, rootMargin: '0px 0px -60px 0px', root }
     );
-    els.forEach(el => observer.observe(el));
+    // Immediately reveal anything already in the viewport
+    els.forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        el.style.transitionDelay = '0s';
+        el.classList.add('revealed');
+      } else {
+        observer.observe(el);
+      }
+    });
 
     return () => observer.disconnect();
   }, [activeSection]);
@@ -1334,430 +1363,6 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         <div className="lp__trust-item">✓ 10 languages supported</div>
       </div>
 
-      {/* ── Live Demo ── */}
-      <section id="features" className="lp__section lp__section--demo-scene">
-        <div className="lp__section-label reveal">SEE IT IN ACTION</div>
-        <h2 className="lp__section-h2 reveal" data-delay="0.1">Your AI co-pilot, live on every call</h2>
-        <p className="lp__section-sub reveal" data-delay="0.18">
-          Pitchbase listens in real time, transcribes every word, and surfaces the right response the moment your prospect speaks — objection handlers, close prompts, and buying signal alerts.
-        </p>
-
-        {/* ── Desktop demo ── */}
-        <div className={`lp__desktop-demo lp__desktop-demo--${demoPhase}`}>
-
-          {/* ── EXPANDED: exact replica of real live-call UI ── */}
-          <div className={`lp__dd-expanded${demoPhase !== 'expanded' ? ' lp__dd-expanded--hiding' : ''}`}>
-
-            {/* Header — exact match of real Header component */}
-            <div className="lp__dd-header">
-              <div className="lp__dd-header-left">
-                <span className="lp__dd-logo">PITCH<span className="lp__dd-logo-plus">PLUS</span><span className="lp__dd-logo-sym">+</span></span>
-                <span className="lp__dd-prospect">Sarah Chen</span>
-                <span className="lp__dd-prospect-sep">@</span>
-                <span className="lp__dd-prospect-co">CloudBridge Inc.</span>
-              </div>
-              <div className="lp__dd-header-center">● LIVE MODE</div>
-              <div className="lp__dd-header-right">
-                <button className={`lp__dd-share-btn${demoPhase === 'clicking' ? ' lp__dd-share-btn--active' : ''}`}>
-                  <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-                    <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.4"/>
-                    <path d="M4 9.5L7 6.5L10 9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M7 6.5V11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-                  </svg>
-                  Share Screen
-                </button>
-                <button className="lp__dd-end-btn">■ END CALL</button>
-              </div>
-            </div>
-
-            {/* Status bar — exact match of real StatusBar component */}
-            <div className="lp__dd-statusbar">
-              <div className="lp__dd-statusbar-left">
-                <span className="lp__dd-status-dot" />
-                <span className="lp__dd-status-label">ACTIVE</span>
-                <span className="lp__dd-status-time">{DEMO_SCENES[desktopSceneIdx].time}</span>
-              </div>
-              <div className="lp__dd-statusbar-right">
-                <span className="lp__dd-stat">OBJECTIONS <span className={`lp__dd-stat-val${desktopSceneIdx > 0 ? ' lp__dd-stat-val--red' : ''}`}>{desktopSceneIdx === 0 ? 0 : desktopSceneIdx === 1 ? 1 : 2}</span></span>
-                <span className="lp__dd-stat-sep">·</span>
-                <span className="lp__dd-stat">CLOSE PROB <span className={`lp__dd-stat-val lp__dd-stat-val--${desktopSceneIdx === 0 ? 'yellow' : desktopSceneIdx === 1 ? 'green' : 'green'}`}>{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span></span>
-              </div>
-            </div>
-
-            {/* 3-panel layout */}
-            <div className="lp__dd-panels">
-
-              {/* Left: Transcript Feed */}
-              <div className="lp__dd-panel lp__dd-panel--transcript">
-                <div className="lp__dd-panel-hdr">
-                  <div className="lp__dd-panel-hdr-left">
-                    <span className="lp__dd-panel-hdr-dot lp__dd-panel-hdr-dot--active" />
-                    TRANSCRIPT FEED
-                  </div>
-                  {desktopShowSuggestion && <span className="lp__dd-panel-hdr-live">● LIVE</span>}
-                </div>
-                {desktopSceneIdx === 0 && !desktopShowSuggestion && (
-                  <div className="lp__dd-transcript-error">Speech service unavailable — use the text input below.</div>
-                )}
-                <div className="lp__dd-transcript">
-                  {desktopShowSuggestion ? (
-                    <>
-                      <div className="lp__dd-entry lp__dd-entry--rep">
-                        <div className="lp__dd-entry-meta">
-                          <span className="lp__dd-entry-who lp__dd-entry-who--rep">You</span>
-                          <span className="lp__dd-entry-time">00:08</span>
-                        </div>
-                        <div className="lp__dd-entry-text">What's your biggest challenge with your current reporting setup?</div>
-                      </div>
-                      <div className="lp__dd-entry lp__dd-entry--prospect">
-                        <div className="lp__dd-entry-meta">
-                          <span className="lp__dd-entry-who lp__dd-entry-who--prospect">Prospect</span>
-                          <span className="lp__dd-entry-time">00:15</span>
-                        </div>
-                        <div className="lp__dd-entry-text">{DEMO_SCENES[desktopSceneIdx].prospect}</div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="lp__dd-transcript-empty">
-                      Mic starting… or type prospect dialogue below.
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Middle: AI Intelligence Feed */}
-              <div className="lp__dd-panel lp__dd-panel--ai">
-                <div className="lp__dd-panel-hdr lp__dd-panel-hdr--ai">
-                  <div className="lp__dd-panel-hdr-left">
-                    AI INTELLIGENCE FEED<span className="lp__dd-ai-cursor">▋</span>
-                  </div>
-                  <span className={`lp__dd-stage-badge lp__dd-stage-badge--${DEMO_SCENES[desktopSceneIdx].stage.toLowerCase()}`}>
-                    {DEMO_SCENES[desktopSceneIdx].stage}
-                  </span>
-                </div>
-                <div className="lp__dd-ai-body">
-                  {desktopShowSuggestion ? (
-                    <div className="lp__dd-suggestion lp__dd-suggestion--show">
-                      <div className="lp__dd-suggestion-top">
-                        <span className={`lp__dd-badge lp__dd-badge--${DEMO_SCENES[desktopSceneIdx].badgeType}`}>
-                          {DEMO_SCENES[desktopSceneIdx].cardBadge}
-                        </span>
-                        <span className="lp__dd-suggestion-time">{DEMO_SCENES[desktopSceneIdx].time}</span>
-                      </div>
-                      <div className="lp__dd-suggestion-say">
-                        <span className="lp__dd-say-label">SAY</span>
-                        <span className="lp__dd-say-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].say}&rdquo;</span>
-                      </div>
-                      <div className="lp__dd-suggestion-why">
-                        <span className="lp__dd-why-label">WHY</span>
-                        <span className="lp__dd-why-text">{DEMO_SCENES[desktopSceneIdx].why}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="lp__dd-ai-empty">
-                      <div className="lp__dd-ai-empty-icon">◎</div>
-                      <div className="lp__dd-ai-empty-title">Ready to Assist</div>
-                      <div className="lp__dd-ai-empty-desc">Click Listen in the transcript panel to start your mic. I'll detect objections, buying signals, and coach you in real-time.</div>
-                      <div className="lp__dd-ai-empty-dots"><span /><span /><span /></div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Right: Lead Panel — exact match of real LeadProfilePanel */}
-              <div className="lp__dd-panel lp__dd-panel--lead">
-                <div className="lp__dd-lead-body">
-                  {/* This Call section */}
-                  <div className="lp__dd-lead-section">
-                    <div className="lp__dd-lead-section-title">THIS CALL</div>
-                    <div className="lp__dd-lead-fields">
-                      <div className="lp__dd-field"><span className="lp__dd-field-k">GOAL</span><span className="lp__dd-field-v lp__dd-field-v--muted">Book a demo</span></div>
-                    </div>
-                  </div>
-                  <div className="lp__dd-lead-divider" />
-                  {/* Close Probability */}
-                  <div className="lp__dd-lead-section">
-                    <div className="lp__dd-lead-prob-row">
-                      <span className="lp__dd-lead-section-title">CLOSE PROB</span>
-                      <span className={`lp__dd-lead-prob-pct lp__dd-lead-prob-pct--${desktopSceneIdx === 0 ? 'yellow' : 'green'}`}>{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span>
-                    </div>
-                    <div className="lp__dd-lead-section-title lp__dd-lead-section-title--sub">CLOSE PROB</div>
-                    <div className="lp__dd-lead-prob-row lp__dd-lead-prob-row--bar">
-                      <span className={`lp__dd-lead-prob-pct lp__dd-lead-prob-pct--${desktopSceneIdx === 0 ? 'yellow' : 'green'}`}>{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span>
-                    </div>
-                    <div className="lp__dd-prob-bar">
-                      <div className={`lp__dd-prob-fill lp__dd-prob-fill--${desktopSceneIdx === 0 ? 'yellow' : 'green'}`} style={{ width: `${desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%` }} />
-                    </div>
-                  </div>
-                  <div className="lp__dd-lead-divider" />
-                  {/* Call Notes */}
-                  <div className="lp__dd-lead-section lp__dd-lead-section--notes">
-                    <div className="lp__dd-lead-section-title">CALL NOTES</div>
-                    <div className="lp__dd-notes-empty">
-                      Notes will appear here automatically when the prospect mentions dates, commitments, tools, or next steps.
-                    </div>
-                    <div className="lp__dd-note-input-row">
-                      <span className="lp__dd-note-input-fake">Add note…</span>
-                      <span className="lp__dd-note-btn">+</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── MINIMIZED: bubble + cursor in one sled so they always move together ── */}
-          <div className={`lp__dd-minimized${demoPhase === 'minimized' ? ' lp__dd-minimized--visible' : ''}`}>
-            {/* Sled: single element that slides left/right — bubble and cursor ride inside it */}
-            <div className="lp__dd-sled" key={desktopSceneIdx}>
-              <div className="lp__dd-bubble">
-                {/* Drag handle row */}
-                <div className="lp__dd-bubble-bar">
-                  <div className="lp__dd-bubble-brand">
-                    <span className="lp__dd-bubble-dot" />
-                    <span className="lp__dd-bubble-logo">PITCH<span className="lp__dd-bubble-logo-plus">PLUS</span>+</span>
-                    <span className="lp__dd-bubble-prospect">Sarah Chen · CloudBridge Inc.</span>
-                  </div>
-                  <div className="lp__dd-bubble-stats">
-                    <span className="lp__dd-bubble-stage">{DEMO_SCENES[desktopSceneIdx].stage}</span>
-                    <span className="lp__dd-bubble-prob">{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span>
-                  </div>
-                  <div className="lp__dd-bubble-actions">
-                    <button className="lp__dd-bubble-restore">↗</button>
-                    <button className="lp__dd-bubble-end">End</button>
-                  </div>
-                </div>
-                {/* Suggestion row */}
-                <div className="lp__dd-bubble-suggestion">
-                  <div className="lp__dd-bubble-do">
-                    <span className="lp__dd-bubble-do-label">DO</span>
-                    <span className="lp__dd-bubble-do-text">{DEMO_SCENES[desktopSceneIdx].cardBadge}</span>
-                  </div>
-                  <div className="lp__dd-bubble-say">
-                    <span className="lp__dd-bubble-say-label">SAY</span>
-                    <span className="lp__dd-bubble-say-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].say}&rdquo;</span>
-                  </div>
-                </div>
-              </div>
-              {/* Cursor sits on the drag bar — moves with the sled, never drifts */}
-              <div className="lp__dd-cursor lp__dd-cursor--grab" />
-            </div>
-          </div>
-
-          {/* ── END-CLICKING: cursor moves to End button and clicks ── */}
-          {(demoPhase === 'endclicking') && (
-            <div className="lp__dd-cursor lp__dd-cursor--endclick" />
-          )}
-
-          {/* ── POSTCALL: self-contained pixel-perfect replica ── */}
-          <div className={`lp__dd-postcall${demoPhase === 'postcall' ? ' lp__dd-postcall--visible' : ''}`}>
-            <div className="lp__dd-pc-wrap">
-
-              {/* Header */}
-              <div className="lp__dd-pc-hdr">
-                <div className="lp__dd-pc-back">← Back to Dashboard</div>
-                <div className="lp__dd-pc-title-block">
-                  <div className="lp__dd-pc-title">Call Review</div>
-                  <div className="lp__dd-pc-meta">
-                    <span>Sarah Chen</span>
-                    <span className="lp__dd-pc-meta-sep">@</span>
-                    <span>CloudBridge Inc.</span>
-                    <span className="lp__dd-pc-meta-sep">·</span>
-                    <span>Sat, May 9, 2026, 9:04 AM</span>
-                  </div>
-                </div>
-                <div className="lp__dd-pc-hdr-right">
-                  <div className="lp__dd-pc-crm-badge">✓ Saved to CRM</div>
-                  <button className="lp__dd-pc-newcall-btn">▶ NEW CALL</button>
-                </div>
-              </div>
-
-              {/* Stats row — horizontal with border dividers */}
-              <div className="lp__dd-pc-stats">
-                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val">9m 4s</div><div className="lp__dd-pc-stat-label">Duration</div></div>
-                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--red">2</div><div className="lp__dd-pc-stat-label">Objections</div></div>
-                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--medium">81%</div><div className="lp__dd-pc-stat-label">Close Score</div></div>
-                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--medium">74</div><div className="lp__dd-pc-stat-label">Lead Score</div></div>
-                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val">14</div><div className="lp__dd-pc-stat-label">Entries</div></div>
-                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--stage">CLOSE</div><div className="lp__dd-pc-stat-label">Stage Reached</div></div>
-              </div>
-
-              {/* Tabs — exact match of real app */}
-              <div className="lp__dd-pc-tabs">
-                {(['summary','transcript','email','scorecard','share'] as const).map(tab => (
-                  <button key={tab} className={`lp__dd-pc-tab${postcallTab === tab ? ' lp__dd-pc-tab--active' : ''}`}>
-                    {tab === 'summary' ? 'Summary' : tab === 'transcript' ? 'Transcript' : tab === 'email' ? 'Follow-up Email' : tab === 'scorecard' ? 'Scorecard' : '↗ Share'}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab content — pixel-perfect match of real PostCallScreen */}
-              <div className="lp__dd-pc-content">
-
-                {postcallTab === 'summary' && (
-                  <div className="lp__dd-pc-summary">
-                    <div className="lp__dd-pc-s-outcome">CALL OUTCOME: Strong prospect — demo booked. Follow up within the hour.</div>
-                    <div className="lp__dd-pc-s-heading">WHAT WENT WELL:</div>
-                    <div className="lp__dd-pc-s-bullet">• Outstanding discovery — prospect self-diagnosed the exact problem before the product was presented.</div>
-                    <div className="lp__dd-pc-s-bullet">• Competitor objection handled cleanly — redirected to a pain-finder question that named the gap.</div>
-                    <div className="lp__dd-pc-s-bullet">• Closed on a specific next step (20-min demo) while intent was live — no vague "I'll send info."</div>
-                    <div className="lp__dd-pc-s-heading">AREAS TO IMPROVE:</div>
-                    <div className="lp__dd-pc-s-bullet">• No timeline established — should have asked "When do you need this solved by?"</div>
-                    <div className="lp__dd-pc-s-bullet">• Pricing was mentioned before value was fully anchored — next time reverse the order.</div>
-                    <div className="lp__dd-pc-s-heading">NEXT STEPS:</div>
-                    <div className="lp__dd-pc-s-bullet">1. Send follow-up email with demo booking link within the hour.</div>
-                    <div className="lp__dd-pc-s-bullet">2. Reference the reporting gap they described — personalise the subject line.</div>
-                    <div className="lp__dd-pc-s-heading">CALL NOTES</div>
-                    <div className="lp__dd-pc-s-bullet">• 04:32 Competitor objection — "we already have a tool for that"</div>
-                    <div className="lp__dd-pc-s-bullet">• 06:17 Pain confirmed — reporting gap identified</div>
-                  </div>
-                )}
-
-                {postcallTab === 'transcript' && (
-                  <div className="lp__dd-pc-transcript">
-                    <button className="lp__dd-pc-dl-btn">↓ DOWNLOAD .TXT</button>
-                    {[
-                      { who: 'YOU',      time: '00:05', text: "Hi Sarah, this is Alex from Pitchbase — do you have about two minutes?", cls: '' },
-                      { who: 'PROSPECT', time: '00:12', text: "Yeah, sure, go ahead.", cls: '' },
-                      { who: 'YOU',      time: '00:18', text: "We work with growth-stage firms to help reps close more consistently using real-time AI coaching.", cls: '' },
-                      { who: 'PROSPECT', time: '00:42', text: "Our top two are crushing it but the other six are all over the place.", cls: ' lp__dd-pc-entry--buying-signal' },
-                      { who: 'YOU',      time: '01:04', text: "That's classic 80/20. They have the knowledge — they just can't execute under pressure.", cls: '' },
-                      { who: 'PROSPECT', time: '01:58', text: "We already have a tool for that, though.", cls: ' lp__dd-pc-entry--objection' },
-                      { who: 'YOU',      time: '02:14', text: "Totally fair — what does it do when someone says 'too expensive' mid-call?", cls: '' },
-                      { who: 'PROSPECT', time: '02:38', text: "That actually sounds really interesting. Can you send me more?", cls: ' lp__dd-pc-entry--buying-signal' },
-                    ].map((e, i) => (
-                      <div key={i} className={`lp__dd-pc-entry${e.cls}`}>
-                        <div className="lp__dd-pc-entry-meta">
-                          <span className={`lp__dd-pc-entry-who lp__dd-pc-entry-who--${e.who === 'YOU' ? 'rep' : 'prospect'}`}>{e.who}</span>
-                          <span className="lp__dd-pc-entry-time">{e.time}</span>
-                        </div>
-                        <div className="lp__dd-pc-entry-text">{e.text}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {postcallTab === 'email' && (
-                  <div className="lp__dd-pc-email">
-                    <div className="lp__dd-pc-email-actions">
-                      <button className="lp__dd-pc-action-btn">⎘ COPY EMAIL</button>
-                      <button className="lp__dd-pc-action-btn">↓ DOWNLOAD .TXT</button>
-                      <button className="lp__dd-pc-action-btn">✉ OPEN IN EMAIL</button>
-                      <button className="lp__dd-pc-action-btn">⎘ COPY JSON</button>
-                    </div>
-                    <div className="lp__dd-pc-email-body">
-                      <div className="lp__dd-pc-email-subject">Subject: Friday 10am confirmed — your personalised Pitchbase demo</div>
-                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Hi Sarah,</div>
-                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Really enjoyed our conversation — it's clear you've thought carefully about what systematic coaching needs to look like as CloudBridge scales.</div>
-                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">As promised, Friday at 10am is confirmed. I've sent a calendar invite with the Zoom link.</div>
-                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Here's what I'll cover, tailored to what you shared: real-time objection handling, new rep onboarding, and the manager dashboard.</div>
-                      <div className="lp__dd-pc-email-line">Best, Alex</div>
-                    </div>
-                    <div className="lp__dd-pc-email-integrations">
-                      <span>▶</span> Integrations (Zapier / Webhook)
-                    </div>
-                  </div>
-                )}
-
-                {postcallTab === 'scorecard' && (
-                  <div className="lp__dd-pc-scorecard">
-                    <div className="lp__dd-pc-sc-ring-wrap">
-                      <div className="lp__dd-pc-sc-ring">
-                        <div className="lp__dd-pc-sc-score-num">74</div>
-                        <div className="lp__dd-pc-sc-score-label">REP SCORE</div>
-                      </div>
-                    </div>
-                    <div className="lp__dd-pc-sc-metric">
-                      <div className="lp__dd-pc-sc-metric-hdr">
-                        <span className="lp__dd-pc-sc-metric-name">TALK RATIO</span>
-                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--green">You 48% · Prospect 52%</span>
-                      </div>
-                      <div className="lp__dd-pc-sc-gauge">
-                        <div className="lp__dd-pc-sc-gauge-rep" style={{width:'48%'}} />
-                        <div className="lp__dd-pc-sc-gauge-prospect" style={{width:'52%'}} />
-                      </div>
-                      <div className="lp__dd-pc-sc-hint">✓ Good — you let the prospect talk more than half the time</div>
-                    </div>
-                    <div className="lp__dd-pc-sc-metric">
-                      <div className="lp__dd-pc-sc-metric-hdr">
-                        <span className="lp__dd-pc-sc-metric-name">OBJECTION HANDLING RATE</span>
-                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--green">2/2 handled (100%)</span>
-                      </div>
-                      <div className="lp__dd-pc-sc-gauge">
-                        <div className="lp__dd-pc-sc-gauge-fill lp__dd-pc-sc-gauge-fill--green" style={{width:'100%'}} />
-                      </div>
-                    </div>
-                    <div className="lp__dd-pc-sc-metric">
-                      <div className="lp__dd-pc-sc-metric-hdr">
-                        <span className="lp__dd-pc-sc-metric-name">BUYING SIGNALS DETECTED</span>
-                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--green">2 signals</span>
-                      </div>
-                      <div className="lp__dd-pc-sc-pills">
-                        <span className="lp__dd-pc-sc-pill">Demo booked</span>
-                        <span className="lp__dd-pc-sc-pill">Pain confirmed</span>
-                      </div>
-                    </div>
-                    <div className="lp__dd-pc-sc-metric">
-                      <div className="lp__dd-pc-sc-metric-hdr">
-                        <span className="lp__dd-pc-sc-metric-name">CLOSE PROBABILITY</span>
-                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--green">81%</span>
-                      </div>
-                      <div className="lp__dd-pc-sc-gauge">
-                        <div className="lp__dd-pc-sc-gauge-fill lp__dd-pc-sc-gauge-fill--green" style={{width:'81%'}} />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {postcallTab === 'share' && (
-                  <div className="lp__dd-pc-share">
-                    <div className="lp__dd-pc-share-title">Prospect Summary</div>
-                    <div className="lp__dd-pc-share-desc">A clean, context-aware recap written for Sarah Chen. Copy it and send via email, WhatsApp, or however you follow up.</div>
-                    <div className="lp__dd-pc-share-body">
-                      <div className="lp__dd-pc-share-line">Hi Sarah — great speaking with you today.</div>
-                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">You mentioned your top two reps are crushing it while the rest are inconsistent under pressure. That's exactly the gap Pitchbase closes — it surfaces the right response the moment an objection lands, so every rep performs like your best one.</div>
-                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">Friday at 10am I'll show you exactly how it handles the "too expensive" moment in real time.</div>
-                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">— Alex</div>
-                    </div>
-                    <div className="lp__dd-pc-share-actions">
-                      <button className="lp__dd-pc-share-copy-btn">⎘ Copy to clipboard</button>
-                      <button className="lp__dd-pc-share-regen-btn">↺ Regenerate</button>
-                    </div>
-                    <div className="lp__dd-pc-share-hint">Paste this anywhere — email, LinkedIn DM, WhatsApp, Notion, your CRM notes.</div>
-                  </div>
-                )}
-
-              </div>
-            </div>
-
-            {/* Cursor auto-clicks tabs */}
-            <div className={`lp__dd-cursor lp__dd-cursor--pc lp__dd-cursor--pc-${postcallTab}`} />
-          </div>
-
-        </div>
-
-        {/* ── Demo nav ── */}
-        <div className="lp__demo-nav">
-          <button className="lp__demo-nav-btn" onClick={() => handleDemoNav(-1)} aria-label="Previous step">
-            ← PREV
-          </button>
-          <div className="lp__demo-nav-dots">
-            {DEMO_STEPS.map((_, i) => (
-              <button
-                key={i}
-                className={`lp__demo-nav-dot${demoStep === i ? ' lp__demo-nav-dot--active' : ''}`}
-                onClick={() => { if (autoTimer.current) clearTimeout(autoTimer.current); applyStep(i); scheduleNext(i); }}
-                aria-label={`Go to step ${i + 1}`}
-              />
-            ))}
-          </div>
-          <button className="lp__demo-nav-btn" onClick={() => handleDemoNav(1)} aria-label="Next step">
-            NEXT →
-          </button>
-        </div>
-
-      </section>
-
       {/* ── How it works ── */}
       <section id="how-it-works" className="lp__section lp__section--alt">
         <div className="lp__section-label reveal">HOW IT WORKS</div>
@@ -1789,39 +1394,6 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
               <span>{l.label}</span>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ── Comparison ── */}
-      <section className="lp__section">
-        <div className="lp__section-label reveal">COMPARISON</div>
-        <h2 className="lp__section-h2 reveal" data-delay="0.1">Why Pitchbase over the alternatives?</h2>
-        <div className="lp__compare-wrap reveal" data-delay="0.18">
-          <table className="lp__compare">
-            <thead>
-              <tr>
-                <th className="lp__compare-feature-col">Feature</th>
-                <th className="lp__compare-us-col">Pitchbase</th>
-                <th className="lp__compare-them-col">Other Tools</th>
-              </tr>
-            </thead>
-            <tbody>
-              {COMPARE_ROWS.map((row, i) => (
-                <tr key={i} className="lp__compare-row">
-                  <td className="lp__compare-feature">{row.feature}</td>
-                  <td className="lp__compare-us">
-                    <span className="lp__check lp__check--yes">✓</span>
-                  </td>
-                  <td className="lp__compare-them">
-                    {row.them
-                      ? <span className="lp__check lp__check--yes">✓</span>
-                      : <span className="lp__check lp__check--no" title={row.note}>✗ {row.note && <span className="lp__compare-note">{row.note}</span>}</span>
-                    }
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </section>
 
@@ -1877,6 +1449,547 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
           </div>
 
         </div>
+      </section>
+
+      {/* ── Comparison ── */}
+      <section className="lp__section">
+        <div className="lp__section-label reveal">COMPARISON</div>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Why Pitchbase over the alternatives?</h2>
+        <div className="lp__compare-wrap reveal" data-delay="0.18">
+          <table className="lp__compare">
+            <thead>
+              <tr>
+                <th className="lp__compare-feature-col">Feature</th>
+                <th className="lp__compare-us-col">Pitchbase</th>
+                <th className="lp__compare-them-col">Other Tools</th>
+              </tr>
+            </thead>
+            <tbody>
+              {COMPARE_ROWS.map((row, i) => (
+                <tr key={i} className="lp__compare-row">
+                  <td className="lp__compare-feature">{row.feature}</td>
+                  <td className="lp__compare-us">
+                    <span className="lp__check lp__check--yes">✓</span>
+                  </td>
+                  <td className="lp__compare-them">
+                    {row.them
+                      ? <span className="lp__check lp__check--yes">✓</span>
+                      : <span className="lp__check lp__check--no" title={row.note}>✗ {row.note && <span className="lp__compare-note">{row.note}</span>}</span>
+                    }
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* ── Live Demo ── */}
+      <section id="features" className="lp__section lp__section--demo-scene">
+        <div className="lp__section-label reveal">SEE IT IN ACTION</div>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Your AI co-pilot, live on every call</h2>
+        <p className="lp__section-sub reveal" data-delay="0.18">
+          Pitchbase listens in real time, transcribes every word, and surfaces the right response the moment your prospect speaks — objection handlers, close prompts, and buying signal alerts.
+        </p>
+
+        {/* ── Desktop demo ── */}
+        <div className={`lp__desktop-demo lp__desktop-demo--${demoPhase}`}>
+
+          {/* ── EXPANDED: exact replica of real live-call UI ── */}
+          <div className={`lp__dd-expanded${demoPhase !== 'expanded' ? ' lp__dd-expanded--hiding' : ''}`}>
+
+            {/* Header — exact match of real Header component */}
+            <div className="lp__dd-header">
+              <div className="lp__dd-header-left">
+                <span className="lp__dd-logo">PITCH<span className="lp__dd-logo-plus">PLUS</span><span className="lp__dd-logo-sym">+</span></span>
+                <span className="lp__dd-prospect">Sarah Chen</span>
+                <span className="lp__dd-prospect-sep">@</span>
+                <span className="lp__dd-prospect-co">CloudBridge Inc.</span>
+              </div>
+              <div className="lp__dd-header-center">● LIVE MODE</div>
+              <div className="lp__dd-header-right">
+                <button className={`lp__dd-share-btn${demoPhase === 'clicking' ? ' lp__dd-share-btn--active' : ''}`}>
+                  <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                    <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+                    <path d="M4 9.5L7 6.5L10 9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M7 6.5V11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                  Share Screen
+                </button>
+                <button className="lp__dd-end-btn">■ END CALL</button>
+              </div>
+            </div>
+
+            {/* Status bar — exact match of real StatusBar component */}
+            <div className="lp__dd-statusbar">
+              <div className="lp__dd-statusbar-left">
+                <span className="lp__dd-status-dot" />
+                <span className="lp__dd-status-label">ACTIVE</span>
+                <span className="lp__dd-status-time">{DEMO_SCENES[desktopSceneIdx].time}</span>
+              </div>
+              <div className="lp__dd-statusbar-right">
+                <span className="lp__dd-stat">OBJECTIONS <span className={`lp__dd-stat-val${desktopSceneIdx > 0 ? ' lp__dd-stat-val--red' : ''}`}>{desktopSceneIdx === 0 ? 0 : desktopSceneIdx === 1 ? 1 : 2}</span></span>
+                <span className="lp__dd-stat-sep">·</span>
+                <span className="lp__dd-stat">CLOSE PROB <span className={`lp__dd-stat-val lp__dd-stat-val--${desktopSceneIdx === 0 ? 'yellow' : desktopSceneIdx === 1 ? 'green' : 'green'}`}>{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span></span>
+              </div>
+            </div>
+
+            {/* 3-panel layout */}
+            <div className="lp__dd-panels">
+
+              {/* Left: Transcript Feed */}
+              <div className={`lp__dd-panel lp__dd-panel--transcript${spotlight === 'transcript' ? ' lp__dd-panel--spotlight' : spotlight !== null ? ' lp__dd-panel--dimmed' : ''}`}>
+                {spotlight === 'transcript' && <div className="lp__dd-spotlight-label">Live transcript — every word captured</div>}
+                <div className="lp__dd-panel-hdr">
+                  <div className="lp__dd-panel-hdr-left">
+                    <span className="lp__dd-panel-hdr-dot lp__dd-panel-hdr-dot--active" />
+                    TRANSCRIPT FEED
+                  </div>
+                  {desktopShowSuggestion && <span className="lp__dd-panel-hdr-live">● LIVE</span>}
+                </div>
+                <div className="lp__dd-transcript">
+                  <div className="lp__dd-entry lp__dd-entry--rep">
+                    <div className="lp__dd-entry-meta">
+                      <span className="lp__dd-entry-who lp__dd-entry-who--rep">You</span>
+                      <span className="lp__dd-entry-time">00:48</span>
+                    </div>
+                    <div className="lp__dd-entry-text">Walk me through how your team currently handles pipeline reporting — who owns it and how often it changes.</div>
+                  </div>
+                  <div className="lp__dd-entry lp__dd-entry--prospect">
+                    <div className="lp__dd-entry-meta">
+                      <span className="lp__dd-entry-who lp__dd-entry-who--prospect">Prospect</span>
+                      <span className="lp__dd-entry-time">01:04</span>
+                    </div>
+                    <div className="lp__dd-entry-text">Right now it's mostly manual — our RevOps guy exports from Salesforce every Monday, cleans it up in Sheets, then shares it. By Wednesday it's already outdated.</div>
+                  </div>
+                  <div className="lp__dd-entry lp__dd-entry--rep">
+                    <div className="lp__dd-entry-meta">
+                      <span className="lp__dd-entry-who lp__dd-entry-who--rep">You</span>
+                      <span className="lp__dd-entry-time">01:22</span>
+                    </div>
+                    <div className="lp__dd-entry-text">And when leadership asks for a pipeline update mid-week, what happens?</div>
+                  </div>
+                  <div className="lp__dd-entry lp__dd-entry--prospect">
+                    <div className="lp__dd-entry-meta">
+                      <span className="lp__dd-entry-who lp__dd-entry-who--prospect">Prospect</span>
+                      <span className="lp__dd-entry-time">01:35</span>
+                    </div>
+                    <div className="lp__dd-entry-text">Someone has to pull it again. It's maybe two hours of work each time just to get a number. It's frustrating.</div>
+                  </div>
+                  <div className="lp__dd-entry lp__dd-entry--rep">
+                    <div className="lp__dd-entry-meta">
+                      <span className="lp__dd-entry-who lp__dd-entry-who--rep">You</span>
+                      <span className="lp__dd-entry-time">01:48</span>
+                    </div>
+                    <div className="lp__dd-entry-text">Two hours every time leadership asks — that adds up fast. Is there pressure to fix that before the end of Q2, or is it more of a Q3 conversation?</div>
+                  </div>
+                  {desktopShowSuggestion && (
+                    <div className="lp__dd-entry lp__dd-entry--prospect lp__dd-entry--live">
+                      <div className="lp__dd-entry-meta">
+                        <span className="lp__dd-entry-who lp__dd-entry-who--prospect">Prospect</span>
+                        <span className="lp__dd-entry-time">02:03</span>
+                      </div>
+                      <div className="lp__dd-entry-text">{DEMO_SCENES[desktopSceneIdx].prospect}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Middle: AI Intelligence Feed */}
+              <div className={`lp__dd-panel lp__dd-panel--ai${spotlight === 'ai' ? ' lp__dd-panel--spotlight' : spotlight !== null ? ' lp__dd-panel--dimmed' : ''}`}>
+                {spotlight === 'ai' && <div className="lp__dd-spotlight-label">AI coaching — fires the moment your prospect speaks</div>}
+                <div className="lp__dd-panel-hdr lp__dd-panel-hdr--ai">
+                  <div className="lp__dd-panel-hdr-left">
+                    AI INTELLIGENCE FEED<span className="lp__dd-ai-cursor">▋</span>
+                  </div>
+                  <span className={`lp__dd-stage-badge lp__dd-stage-badge--${DEMO_SCENES[desktopSceneIdx].stage.toLowerCase()}`}>
+                    {DEMO_SCENES[desktopSceneIdx].stage}
+                  </span>
+                </div>
+                <div className="lp__dd-ai-body">
+                  {(desktopShowSuggestion || spotlight === 'ai') ? (
+                    <div className={`lp__dd-suggestion lp__dd-suggestion--show${spotlight === 'ai' ? ' lp__dd-suggestion--spotlight-fade' : ''}`}>
+                      <div className="lp__dd-suggestion-top">
+                        <span className={`lp__dd-badge lp__dd-badge--${DEMO_SCENES[desktopSceneIdx].badgeType}`}>
+                          {DEMO_SCENES[desktopSceneIdx].cardBadge}
+                        </span>
+                        <span className="lp__dd-suggestion-time">{DEMO_SCENES[desktopSceneIdx].time}</span>
+                      </div>
+                      <div className="lp__dd-suggestion-do">
+                        <span className="lp__dd-do-label">DO</span>
+                        <span className="lp__dd-do-text">{DEMO_SCENES[desktopSceneIdx].physicalAction}</span>
+                      </div>
+                      <div className="lp__dd-suggestion-say">
+                        <span className="lp__dd-say-label">SAY</span>
+                        <span className="lp__dd-say-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].say}&rdquo;</span>
+                      </div>
+                      <div className="lp__dd-suggestion-why">
+                        <span className="lp__dd-why-label">WHY</span>
+                        <span className="lp__dd-why-text">{DEMO_SCENES[desktopSceneIdx].why}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="lp__dd-ai-empty">
+                      <div className="lp__dd-ai-empty-icon">◎</div>
+                      <div className="lp__dd-ai-empty-title">Ready to Assist</div>
+                      <div className="lp__dd-ai-empty-desc">Click Listen in the transcript panel to start your mic. I'll detect objections, buying signals, and coach you in real-time.</div>
+                      <div className="lp__dd-ai-empty-dots"><span /><span /><span /></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right: Lead Panel — exact match of real LeadProfilePanel */}
+              <div className={`lp__dd-panel lp__dd-panel--lead${spotlight === 'notes' ? ' lp__dd-panel--spotlight' : spotlight !== null ? ' lp__dd-panel--dimmed' : ''}`}>
+                {spotlight === 'notes' && <div className="lp__dd-spotlight-label">Auto call notes — dates, pain, objections saved</div>}
+                <div className="lp__dd-lead-body">
+                  {/* This Call section */}
+                  <div className="lp__dd-lead-section">
+                    <div className="lp__dd-lead-section-title">THIS CALL</div>
+                    <div className="lp__dd-lead-fields">
+                      <div className="lp__dd-field"><span className="lp__dd-field-k">GOAL</span><span className="lp__dd-field-v lp__dd-field-v--muted">Book a demo</span></div>
+                    </div>
+                  </div>
+                  <div className="lp__dd-lead-divider" />
+                  {/* Close Probability */}
+                  <div className="lp__dd-lead-section">
+                    <div className="lp__dd-lead-prob-row">
+                      <span className="lp__dd-lead-section-title">CLOSE PROB</span>
+                      <span className={`lp__dd-lead-prob-pct lp__dd-lead-prob-pct--${desktopSceneIdx === 0 ? 'yellow' : 'green'}`}>{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span>
+                    </div>
+                    <div className="lp__dd-lead-section-title lp__dd-lead-section-title--sub">CLOSE PROB</div>
+                    <div className="lp__dd-lead-prob-row lp__dd-lead-prob-row--bar">
+                      <span className={`lp__dd-lead-prob-pct lp__dd-lead-prob-pct--${desktopSceneIdx === 0 ? 'yellow' : 'green'}`}>{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span>
+                    </div>
+                    <div className="lp__dd-prob-bar">
+                      <div className={`lp__dd-prob-fill lp__dd-prob-fill--${desktopSceneIdx === 0 ? 'yellow' : 'green'}`} style={{ width: `${desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%` }} />
+                    </div>
+                  </div>
+                  <div className="lp__dd-lead-divider" />
+                  {/* Call Notes */}
+                  <div className="lp__dd-lead-section lp__dd-lead-section--notes">
+                    <div className="lp__dd-lead-section-title">CALL NOTES</div>
+                    <div className="lp__dd-note-item">
+                      <span className="lp__dd-note-ts">0:48</span>
+                      <span className="lp__dd-note-body">Uses Salesforce → manual Sheets export every Monday. Outdated by Wed.</span>
+                    </div>
+                    <div className="lp__dd-note-item">
+                      <span className="lp__dd-note-ts">1:35</span>
+                      <span className="lp__dd-note-body">~2 hrs wasted per mid-week leadership update. RevOps owns it.</span>
+                    </div>
+                    <div className="lp__dd-note-item lp__dd-note-item--objection">
+                      <span className="lp__dd-note-ts">2:03</span>
+                      <span className="lp__dd-note-body">Objection: Q3 priority freeze — product launch in the way.</span>
+                    </div>
+                    <div className="lp__dd-note-input-row">
+                      <span className="lp__dd-note-input-fake">Add note…</span>
+                      <span className="lp__dd-note-btn">+</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── MINIMIZED: bubble + cursor in one sled so they always move together ── */}
+          <div className={`lp__dd-minimized${demoPhase === 'minimized' ? ' lp__dd-minimized--visible' : ''}`}>
+            {/* Sled: single element that slides left/right — bubble and cursor ride inside it */}
+            <div className="lp__dd-sled" key={`${desktopSceneIdx}-${demoStep}`}>
+              {demoPhase === 'minimized' && (
+                <div className="lp__dd-min-explain">
+                  <div className="lp__dd-min-label lp__dd-min-label--1">Minimize to keep AI coaching visible while you talk</div>
+                  <div className="lp__dd-min-label lp__dd-min-label--2">Drag it anywhere on screen</div>
+                  <div className="lp__dd-min-label-caret" />
+                </div>
+              )}
+              <div className="lp__dd-bubble">
+                {/* Drag handle row */}
+                <div className="lp__dd-bubble-bar">
+                  <div className="lp__dd-bubble-brand">
+                    <span className="lp__dd-bubble-dot" />
+                    <span className="lp__dd-bubble-logo">PITCH<span className="lp__dd-bubble-logo-plus">PLUS</span>+</span>
+                    <span className="lp__dd-bubble-prospect">Sarah Chen · CloudBridge Inc.</span>
+                  </div>
+                  <div className="lp__dd-bubble-stats">
+                    <span className="lp__dd-bubble-stage">{DEMO_SCENES[desktopSceneIdx].stage}</span>
+                    <span className="lp__dd-bubble-prob">{desktopSceneIdx === 0 ? 50 : desktopSceneIdx === 1 ? 68 : 81}%</span>
+                  </div>
+                  <div className="lp__dd-bubble-actions">
+                    <button className="lp__dd-bubble-restore">↗</button>
+                    <button className="lp__dd-bubble-end">End</button>
+                  </div>
+                </div>
+                {/* Suggestion row */}
+                <div className="lp__dd-bubble-suggestion">
+                  <div className="lp__dd-bubble-do">
+                    <span className="lp__dd-bubble-do-label">DO</span>
+                    <span className="lp__dd-bubble-do-text">{DEMO_SCENES[desktopSceneIdx].physicalAction}</span>
+                  </div>
+                  <div className="lp__dd-bubble-say">
+                    <span className="lp__dd-bubble-say-label">SAY</span>
+                    <span className="lp__dd-bubble-say-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].say}&rdquo;</span>
+                  </div>
+                </div>
+              </div>
+              {/* Cursor sits on the drag bar — moves with the sled, never drifts */}
+              <div className="lp__dd-cursor lp__dd-cursor--grab" />
+            </div>
+          </div>
+
+          {/* ── END-CLICKING: cursor moves to End button and clicks ── */}
+          {(demoPhase === 'endclicking') && (
+            <div className="lp__dd-cursor lp__dd-cursor--endclick" />
+          )}
+
+          {/* ── POSTCALL: Amara Osei @ Meridian Growth — exact data from mock session ── */}
+          <div className={`lp__dd-postcall${demoPhase === 'postcall' ? ' lp__dd-postcall--visible' : ''}`}>
+            <div className="lp__dd-pc-wrap">
+
+              {/* Header */}
+              <div className="lp__dd-pc-hdr">
+                <div className="lp__dd-pc-back">← Back to Dashboard</div>
+                <div className="lp__dd-pc-title-block">
+                  <div className="lp__dd-pc-title">Call Review</div>
+                  <div className="lp__dd-pc-meta">
+                    <span>Amara Osei</span>
+                    <span className="lp__dd-pc-meta-sep">@</span>
+                    <span>Meridian Growth</span>
+                    <span className="lp__dd-pc-meta-sep">·</span>
+                    <span>Tue, Apr 28, 2026, 09:38 PM</span>
+                  </div>
+                </div>
+                <div className="lp__dd-pc-hdr-right">
+                  <div className="lp__dd-pc-crm-badge">✓ Saved to CRM</div>
+                  <button className="lp__dd-pc-newcall-btn">▶ NEW CALL</button>
+                </div>
+              </div>
+
+              {/* Stats — Amara: 9m 11s, 2 objections, 61%, 65 lead score, 17 entries, PITCH */}
+              <div className="lp__dd-pc-stats">
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val">9m 11s</div><div className="lp__dd-pc-stat-label">Duration</div></div>
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--red">2</div><div className="lp__dd-pc-stat-label">Objections</div></div>
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--medium">61%</div><div className="lp__dd-pc-stat-label">Close Score</div></div>
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--medium">65</div><div className="lp__dd-pc-stat-label">Lead Score</div></div>
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val">17</div><div className="lp__dd-pc-stat-label">Entries</div></div>
+                <div className="lp__dd-pc-stat"><div className="lp__dd-pc-stat-val lp__dd-pc-stat-val--stage">PITCH</div><div className="lp__dd-pc-stat-label">Stage Reached</div></div>
+              </div>
+
+              {/* Tabs */}
+              <div className="lp__dd-pc-tabs">
+                {(['summary','transcript','email','scorecard','share'] as const).map(tab => (
+                  <button key={tab} className={`lp__dd-pc-tab${postcallTab === tab ? ' lp__dd-pc-tab--active' : ''}`}>
+                    {tab === 'summary' ? 'Summary' : tab === 'transcript' ? 'Transcript' : tab === 'email' ? 'Follow-up Email' : tab === 'scorecard' ? 'Scorecard' : '↗ Share'}
+                  </button>
+                ))}
+              </div>
+
+              <div className="lp__dd-pc-content">
+
+                {/* ── Tab annotations — unique animation per tab ── */}
+                {demoPhase === 'postcall' && postcallTab === 'summary' && (
+                  <div key="ann-summary" className="lp__dd-pc-ann lp__dd-pc-ann--summary">
+                    <div className="lp__dd-pc-ann-icon">◎</div>
+                    <div className="lp__dd-pc-ann-text">Full AI summary — what went well, gaps, and next steps</div>
+                  </div>
+                )}
+                {demoPhase === 'postcall' && postcallTab === 'transcript' && (
+                  <div key="ann-transcript" className="lp__dd-pc-ann lp__dd-pc-ann--transcript">
+                    <div className="lp__dd-pc-ann-text">Every word timestamped — search, review, share</div>
+                    <div className="lp__dd-pc-ann-bar" />
+                  </div>
+                )}
+                {demoPhase === 'postcall' && postcallTab === 'email' && (
+                  <div key="ann-email" className="lp__dd-pc-ann lp__dd-pc-ann--email">
+                    <div className="lp__dd-pc-ann-stamp">READY TO SEND</div>
+                    <div className="lp__dd-pc-ann-text">Personalised follow-up drafted instantly — just hit send</div>
+                  </div>
+                )}
+                {demoPhase === 'postcall' && postcallTab === 'scorecard' && (
+                  <div key="ann-scorecard" className="lp__dd-pc-ann lp__dd-pc-ann--scorecard">
+                    <div className="lp__dd-pc-ann-text">Your performance scored — talk ratio, objections, close probability</div>
+                  </div>
+                )}
+                {demoPhase === 'postcall' && postcallTab === 'share' && (
+                  <div key="ann-share" className="lp__dd-pc-ann lp__dd-pc-ann--share">
+                    <div className="lp__dd-pc-ann-text">Share the call summary with your team in one click</div>
+                    <div className="lp__dd-pc-ann-line" />
+                  </div>
+                )}
+
+                {postcallTab === 'summary' && (
+                  <div className="lp__dd-pc-summary">
+                    <div className="lp__dd-pc-s-outcome">CALL OUTCOME: Strong prospect — VP of Sales sign-off required before close. Three-way call to be scheduled.</div>
+                    <div className="lp__dd-pc-s-heading">WHAT WENT WELL:</div>
+                    <div className="lp__dd-pc-s-bullet">• Outstanding discovery — prospect self-diagnosed the exact problem (reps fold under pressure) before the product was presented.</div>
+                    <div className="lp__dd-pc-s-bullet">• ROI reframe was effective: prospect independently calculated that one extra deal per month covers the cost.</div>
+                    <div className="lp__dd-pc-s-bullet">• Handled VP objection constructively — offered a joint call rather than just materials.</div>
+                    <div className="lp__dd-pc-s-heading">AREAS TO IMPROVE:</div>
+                    <div className="lp__dd-pc-s-bullet">• VP's priorities were not explored — should have asked what he cares about most before agreeing to the three-way call.</div>
+                    <div className="lp__dd-pc-s-bullet">• No timeline established — when does Meridian need a decision by?</div>
+                    <div className="lp__dd-pc-s-bullet">• Pricing was quoted before value was fully anchored — next time reverse the order.</div>
+                    <div className="lp__dd-pc-s-heading">KEY SIGNALS DETECTED:</div>
+                    <div className="lp__dd-pc-s-bullet">• "They fold or go into a panic pitch" → rep explicitly described the product's core use case unprompted.</div>
+                    <div className="lp__dd-pc-s-bullet">• "Most relevant call I've had about this problem in months" → exceptionally high disposition.</div>
+                    <div className="lp__dd-pc-s-heading">NEXT STEPS:</div>
+                    <div className="lp__dd-pc-s-bullet">1. Send summary and one-pager within the hour as promised.</div>
+                    <div className="lp__dd-pc-s-bullet">2. One-pager addressed to VP — focus on ROI, implementation risk, time-to-value.</div>
+                    <div className="lp__dd-pc-s-bullet">3. Before three-way call: ask Amara "What's your VP's biggest concern about new tooling?"</div>
+                    <div className="lp__dd-pc-s-heading">CALL NOTES</div>
+                    <div className="lp__dd-pc-s-bullet">• 0:38 Pain: top 2 reps crushing it, bottom 6 inconsistent — 80/20 problem</div>
+                    <div className="lp__dd-pc-s-bullet">• 2:34 ROI: $8K avg deal — 1 extra close/month covers cost, prospect self-calculated</div>
+                    <div className="lp__dd-pc-s-bullet">• 3:12 VP of Sales needs to sign off — three-way call being scheduled</div>
+                    <div className="lp__dd-pc-s-bullet">• 4:14 "Most relevant call I've had about this problem in months"</div>
+                  </div>
+                )}
+
+                {postcallTab === 'transcript' && (
+                  <div className="lp__dd-pc-transcript">
+                    <button className="lp__dd-pc-dl-btn">↓ DOWNLOAD .TXT</button>
+                    {[
+                      { who: 'YOU',      time: '00:04', text: "Hi Amara, this is Alex from Pitchbase — do you have a couple of minutes?", cls: '' },
+                      { who: 'PROSPECT', time: '00:11', text: "Sure, a couple. What's this about?", cls: '' },
+                      { who: 'YOU',      time: '00:18', text: "We build AI coaching software for sales teams. I noticed Meridian Growth has been scaling outbound — is rep performance consistency something you're actively working on?", cls: '' },
+                      { who: 'PROSPECT', time: '00:38', text: "Yeah, actually. We've got eight reps and the spread is massive — our top two are crushing it but the other six are all over the place.", cls: ' lp__dd-pc-entry--buying-signal' },
+                      { who: 'YOU',      time: '01:04', text: "That's classic 80/20. The other six usually have the knowledge — they just can't execute it under pressure when a prospect pushes back. Is that what you're seeing?", cls: '' },
+                      { who: 'PROSPECT', time: '01:18', text: "Exactly. They know the answers in theory but when a prospect says 'too expensive' or 'not now,' they either fold or go into a panic pitch.", cls: ' lp__dd-pc-entry--buying-signal' },
+                      { who: 'YOU',      time: '01:36', text: "So the problem isn't knowledge — it's execution under pressure. When a rep hears 'too expensive,' the platform surfaces the right rebuttal on their screen in real time.", cls: '' },
+                      { who: 'PROSPECT', time: '01:56', text: "Yes, I'd like to see that. What does it cost though? We're growing but budget isn't unlimited.", cls: ' lp__dd-pc-entry--buying-signal' },
+                      { who: 'PROSPECT', time: '03:12', text: "My concern is I'm not the only decision maker — my VP of Sales would need to sign off on any new tooling.", cls: ' lp__dd-pc-entry--objection' },
+                      { who: 'YOU',      time: '03:28', text: "That makes complete sense. Would it be better to get him on a call together?", cls: '' },
+                      { who: 'PROSPECT', time: '03:44', text: "Probably a call together. And honestly this is the most relevant call I've had about this problem in months — I'll make sure he makes time.", cls: ' lp__dd-pc-entry--buying-signal' },
+                    ].map((e, i) => (
+                      <div key={i} className={`lp__dd-pc-entry${e.cls}`}>
+                        <div className="lp__dd-pc-entry-meta">
+                          <span className={`lp__dd-pc-entry-who lp__dd-pc-entry-who--${e.who === 'YOU' ? 'rep' : 'prospect'}`}>{e.who}</span>
+                          <span className="lp__dd-pc-entry-time">{e.time}</span>
+                        </div>
+                        <div className="lp__dd-pc-entry-text">{e.text}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {postcallTab === 'email' && (
+                  <div className="lp__dd-pc-email">
+                    <div className="lp__dd-pc-email-actions">
+                      <button className="lp__dd-pc-action-btn">⎘ COPY EMAIL</button>
+                      <button className="lp__dd-pc-action-btn">↓ DOWNLOAD .TXT</button>
+                      <button className="lp__dd-pc-action-btn">✉ OPEN IN EMAIL</button>
+                      <button className="lp__dd-pc-action-btn">⎘ COPY JSON</button>
+                    </div>
+                    <div className="lp__dd-pc-email-body">
+                      <div className="lp__dd-pc-email-subject">Subject: Summary from our call + one-pager for your VP</div>
+                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Hi Amara,</div>
+                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">As promised — here's a summary of what we covered, plus a one-pager for your VP to review ahead of our three-way call.</div>
+                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">The core problem: your top 2 reps are performing strongly, but the remaining 6 fold under pressure on objections like "too expensive" or "not now." They know the answers — they just can't execute in the moment.</div>
+                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">The math we ran: 8 reps × $8K avg deal. If the bottom 6 close just 1 extra deal per month, that's $48K in additional monthly revenue — a fraction of the Pitchbase Growth plan cost.</div>
+                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Before the three-way call: what's your VP's biggest concern when evaluating a new sales tool — ROI, implementation risk, or something else?</div>
+                      <div className="lp__dd-pc-email-line">Best, Alex · Pitchbase</div>
+                    </div>
+                    <div className="lp__dd-pc-email-integrations">
+                      <span>▶</span> Integrations (Zapier / Webhook)
+                    </div>
+                  </div>
+                )}
+
+                {postcallTab === 'scorecard' && (
+                  <div className="lp__dd-pc-scorecard">
+                    <div className="lp__dd-pc-sc-ring-wrap">
+                      {/* Rep score: computed from 61% close prob, 2 objections handled, 3 buying signals */}
+                      <div className="lp__dd-pc-sc-ring" style={{background:'conic-gradient(#814ac8 calc(59% * 1), rgba(255,255,255,0.06) 0)'}}>
+                        <div className="lp__dd-pc-sc-score-num">59</div>
+                        <div className="lp__dd-pc-sc-score-label">REP SCORE</div>
+                      </div>
+                    </div>
+                    <div className="lp__dd-pc-sc-metric">
+                      <div className="lp__dd-pc-sc-metric-hdr">
+                        <span className="lp__dd-pc-sc-metric-name">TALK RATIO</span>
+                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--green">You 50% · Prospect 50%</span>
+                      </div>
+                      <div className="lp__dd-pc-sc-gauge">
+                        <div className="lp__dd-pc-sc-gauge-rep" style={{width:'50%'}} />
+                        <div className="lp__dd-pc-sc-gauge-prospect" style={{width:'50%'}} />
+                      </div>
+                      <div className="lp__dd-pc-sc-hint">✓ Good — you let the prospect talk more than half the time</div>
+                    </div>
+                    <div className="lp__dd-pc-sc-metric">
+                      <div className="lp__dd-pc-sc-metric-hdr">
+                        <span className="lp__dd-pc-sc-metric-name">OBJECTION HANDLING RATE</span>
+                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--medium">1/2 handled (50%)</span>
+                      </div>
+                      <div className="lp__dd-pc-sc-gauge">
+                        <div className="lp__dd-pc-sc-gauge-fill" style={{width:'50%', background:'#f0c040'}} />
+                      </div>
+                    </div>
+                    <div className="lp__dd-pc-sc-metric">
+                      <div className="lp__dd-pc-sc-metric-hdr">
+                        <span className="lp__dd-pc-sc-metric-name">BUYING SIGNALS DETECTED</span>
+                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--green">1 signal</span>
+                      </div>
+                      <div className="lp__dd-pc-sc-pills">
+                        <span className="lp__dd-pc-sc-pill">VP stakeholder surfaced — multi-thread the deal now</span>
+                      </div>
+                    </div>
+                    <div className="lp__dd-pc-sc-metric">
+                      <div className="lp__dd-pc-sc-metric-hdr">
+                        <span className="lp__dd-pc-sc-metric-name">CLOSE PROBABILITY</span>
+                        <span className="lp__dd-pc-sc-metric-val lp__dd-pc-sc-metric-val--medium">61%</span>
+                      </div>
+                      <div className="lp__dd-pc-sc-gauge">
+                        <div className="lp__dd-pc-sc-gauge-fill" style={{width:'61%', background:'#814ac8'}} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {postcallTab === 'share' && (
+                  <div className="lp__dd-pc-share">
+                    <div className="lp__dd-pc-share-title">Prospect Summary</div>
+                    <div className="lp__dd-pc-share-desc">A clean, context-aware recap written for Amara Osei. Copy it and send via email, WhatsApp, or however you follow up.</div>
+                    <div className="lp__dd-pc-share-body">
+                      <div className="lp__dd-pc-share-line">Hi Amara — great speaking with you today.</div>
+                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">You mentioned your top 2 reps are crushing it while the other 6 fold under pressure when objections come up. That's exactly the gap Pitchbase closes — when a rep hears "too expensive," the right rebuttal appears on their screen instantly. No hesitation. No panic pitch.</div>
+                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">Based on your $8K average deal, closing just one extra deal per month per rep more than covers the cost — you worked that out yourself on the call.</div>
+                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">Looking forward to the three-way call with your VP. I'll make sure it's worth his time.</div>
+                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">— Alex</div>
+                    </div>
+                    <div className="lp__dd-pc-share-actions">
+                      <button className="lp__dd-pc-share-copy-btn">⎘ Copy to clipboard</button>
+                      <button className="lp__dd-pc-share-regen-btn">↺ Regenerate</button>
+                    </div>
+                    <div className="lp__dd-pc-share-hint">Paste this anywhere — email, LinkedIn DM, WhatsApp, Notion, your CRM notes.</div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+
+            {/* Cursor auto-clicks tabs */}
+            <div className={`lp__dd-cursor lp__dd-cursor--pc lp__dd-cursor--pc-${postcallTab}`} />
+          </div>
+
+        </div>
+
+        {/* ── Demo nav ── */}
+        <div className="lp__demo-nav">
+          <button className="lp__demo-nav-btn" onClick={() => handleDemoNav(-1)} aria-label="Previous step">
+            ← PREV
+          </button>
+          <div className="lp__demo-nav-dots">
+            {DEMO_STEPS.map((_, i) => (
+              <button
+                key={i}
+                className={`lp__demo-nav-dot${demoStep === i ? ' lp__demo-nav-dot--active' : ''}`}
+                onClick={() => { if (autoTimer.current) clearTimeout(autoTimer.current); applyStep(i); scheduleNext(i); }}
+                aria-label={`Go to step ${i + 1}`}
+              />
+            ))}
+          </div>
+          <button className="lp__demo-nav-btn" onClick={() => handleDemoNav(1)} aria-label="Next step">
+            NEXT →
+          </button>
+        </div>
+
       </section>
 
       {/* ── Pricing ── */}

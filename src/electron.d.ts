@@ -9,6 +9,7 @@ export interface OverlayData {
 
 export interface ElectronAPI {
   isElectron: true;
+  openExternal:        (url: string) => void;
   launchOverlay:       () => void;
   closeOverlay:        () => void;
   minimizeMain:        () => void;
@@ -18,6 +19,7 @@ export interface ElectronAPI {
   onSuggestionsUpdate: (callback: (data: OverlayData) => void) => () => void;
   onOverlayClosed:     (callback: () => void) => () => void;
   onTriggerEndCall:    (callback: () => void) => () => void;
+  onOAuthCallback:     (callback: (url: string) => void) => () => void;
 }
 
 declare global {

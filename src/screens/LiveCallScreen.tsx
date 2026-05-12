@@ -450,10 +450,10 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     opener: 'OPENER', discovery: 'DISCOVERY', pitch: 'PITCH', close: 'CLOSE',
   };
   const suggestionTypeLabel: Record<string, string> = {
-    'objection-response': 'HANDLE',
-    'close-attempt': 'CLOSE',
-    'tip': 'NEXT',
-    'discovery': 'DEEPER',
+    'objection-response': 'HANDLE OBJECTION',
+    'close-attempt':      'CLOSE',
+    'tip':                'NEXT MOVE',
+    'discovery':          'GO DEEPER',
   };
 
   return (

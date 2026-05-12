@@ -7,4 +7,10 @@ if (!url || !key) {
   throw new Error('[Pitchbase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY — check your .env file');
 }
 
-export const supabase = createClient(url, key);
+export const supabase = createClient(url, key, {
+  auth: {
+    // Detect OAuth callback tokens in the URL hash/query and exchange them automatically.
+    detectSessionInUrl: true,
+    flowType: 'implicit',
+  },
+});

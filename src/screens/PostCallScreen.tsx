@@ -8,20 +8,6 @@ import { computeRepScore } from '../lib/repScore';
 import { generateProspectSummary } from '../lib/ai';
 import './PostCallScreen.css';
 
-function isValidWebhookUrl(url: string): boolean {
-  try {
-    const u = new URL(url.trim());
-    if (u.protocol !== 'https:') return false;
-    const h = u.hostname;
-    if (h === 'localhost' || h === '127.0.0.1' || h === '169.254.169.254') return false;
-    if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(h)) return false;
-    // IPv6 loopback and private ranges (ULA fc00::/7, link-local fe80::/10)
-    if (h === '::1' || /^(fc|fd)[0-9a-f]{2}:/i.test(h) || /^fe80:/i.test(h)) return false;
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 function downloadFile(filename: string, content: string) {
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -89,13 +75,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
   // Phase 4: CRM export state
   const [jsonCopied, setJsonCopied] = useState(false);
-  const [webhookUrl, setWebhookUrl] = useState(() => localStorage.getItem('pitchbase:zapier-webhook') ?? '');
-  const [webhookStatus, setWebhookStatus] = useState<'idle' | 'sending' | 'ok' | 'error'>('idle');
-  const [webhookUrlError, setWebhookUrlError] = useState<string | null>(null);
-  const isSendingRef = useRef(false);
-  const [integrationsOpen, setIntegrationsOpen] = useState(false);
-
-  const t = useTranslations();
+const t = useTranslations();
   const slug = (session.config.prospectName || 'call').toLowerCase().replace(/\s+/g, '-');
 
   // Phase 3: scorecard metrics
@@ -192,45 +172,6 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
   }
 
-  async function handleSendZapier() {
-    if (isSendingRef.current) return;
-    if (!webhookUrl.trim()) return;
-    if (!isValidWebhookUrl(webhookUrl)) {
-      setWebhookStatus('error');
-      setTimeout(() => setWebhookStatus('idle'), 3000);
-      return;
-    }
-    isSendingRef.current = true;
-    setWebhookStatus('sending');
-    try {
-      const payload = {
-        prospect: session.config.prospectName,
-        company: session.config.company,
-        date: session.endedAt,
-        duration: session.durationSeconds,
-        closeProbability: session.finalCloseProbability,
-        leadScore: session.leadScore,
-        repScore,
-        objectionsCount: session.objectionsCount,
-        aiSummary: session.aiSummary,
-        followUpEmail: emailDraft,
-      };
-      const res = await fetch(webhookUrl.trim(), {
-        method: 'POST',
-        signal: AbortSignal.timeout(10_000),
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(`Webhook returned ${res.status}`);
-      setWebhookStatus('ok');
-      setTimeout(() => setWebhookStatus('idle'), 3000);
-    } catch {
-      setWebhookStatus('error');
-      setTimeout(() => setWebhookStatus('idle'), 3000);
-    } finally {
-      isSendingRef.current = false;
-    }
-  }
 
   const probLevel = session.finalCloseProbability >= 61 ? 'high' : session.finalCloseProbability >= 31 ? 'medium' : 'low';
   const scoreLevel = session.leadScore >= 70 ? 'high' : session.leadScore >= 40 ? 'medium' : 'low';
@@ -417,59 +358,6 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
               spellCheck={false}
             />
 
-            {/* Integrations / Zapier */}
-            <div className="postcall__integrations">
-              <button className="postcall__integrations-toggle" onClick={() => setIntegrationsOpen(v => !v)}>
-                <span style={{ transform: integrationsOpen ? 'rotate(90deg)' : undefined, display: 'inline-block', transition: 'transform 0.15s' }}>▶</span>
-                Integrations (Zapier / Webhook)
-              </button>
-              {integrationsOpen && (
-                <div className="postcall__integrations-body">
-                  <p className="postcall__integrations-desc">
-                    Paste a Zapier Webhook URL to push this call summary to your CRM, Slack, or any connected app.
-                  </p>
-                  <p className="postcall__integrations-disclaimer">
-                    ⚠ Call data sent to this URL includes prospect name, company, and AI summary. Only use trusted endpoints.
-                  </p>
-                  {webhookUrlError && (
-                    <p className="postcall__webhook-status postcall__webhook-status--error">{webhookUrlError}</p>
-                  )}
-                  <div className="postcall__webhook-row">
-                    <input
-                      className="postcall__webhook-input"
-                      type="url"
-                      placeholder="https://hooks.zapier.com/hooks/catch/..."
-                      value={webhookUrl}
-                      onChange={e => { setWebhookUrl(e.target.value); setWebhookUrlError(null); }}
-                      onBlur={e => {
-                        const val = e.target.value.trim();
-                        if (!val) { setWebhookUrlError(null); return; }
-                        if (!isValidWebhookUrl(val)) {
-                          setWebhookUrlError('Must be a valid https:// URL');
-                        } else {
-                          setWebhookUrlError(null);
-                          try { localStorage.setItem('pitchbase:zapier-webhook', val); } catch { /* storage full */ }
-                        }
-                      }}
-                    />
-                    <button
-                      className="postcall__webhook-btn"
-                      onClick={handleSendZapier}
-                      disabled={!webhookUrl.trim() || webhookStatus === 'sending'}
-                    >
-                      {webhookStatus === 'sending' ? 'Sending…' : 'Send'}
-                    </button>
-                  </div>
-                  {webhookStatus !== 'idle' && (
-                    <p className={`postcall__webhook-status postcall__webhook-status--${webhookStatus}`}>
-                      {webhookStatus === 'ok' && '✓ Sent successfully'}
-                      {webhookStatus === 'error' && '✕ Send failed — check the URL and try again'}
-                      {webhookStatus === 'sending' && '…'}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
           </div>
         )}
 

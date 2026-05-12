@@ -1,5 +1,4 @@
 import { supabase } from './supabase';
-import { MOCK_SESSIONS } from './mockSessions';
 import type { CallConfig, CallSession, CallStage, CallOutcome, TranscriptEntry, AISuggestion, CoachingWalkthrough } from '../types';
 
 interface SessionRow {
@@ -80,7 +79,7 @@ export async function loadSessions(userId: string): Promise<CallSession[]> {
     .limit(200);
   if (error) throw new Error(error.message);
   const real = data ? data.map(r => rowToSession(r as SessionRow)) : [];
-  return real.length > 0 ? real : MOCK_SESSIONS;
+  return real;
 }
 
 export async function saveSession(session: CallSession, userId: string): Promise<CallSession> {

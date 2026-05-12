@@ -62,11 +62,34 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
 
   async function handleGoogle() {
     setError(null);
-    const { error: err } = await supabase.auth.signInWithOAuth({
+    const { data, error: err } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: {
+        redirectTo: 'pitchbase://auth',
+        skipBrowserRedirect: true,
+      },
     });
-    if (err) setError(err.message);
+    if (err) { setError(err.message); return; }
+    if (data?.url) {
+      // Open in system browser so the user's saved Google accounts are visible
+      if (window.electronAPI?.openExternal) {
+        window.electronAPI.openExternal(data.url);
+      } else {
+        window.open(data.url, '_blank');
+      }
+      // Poll for session — user completes OAuth in browser, Supabase session
+      // becomes available once they sign in. Poll every 2s for up to 3 minutes.
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          clearInterval(poll);
+        } else if (attempts >= 90) {
+          clearInterval(poll);
+        }
+      }, 2000);
+    }
   }
 
   function switchMode() {

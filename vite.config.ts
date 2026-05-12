@@ -6,6 +6,8 @@ export default defineConfig({
   plugins: [react()],
   // base './' ensures file:// paths work when Electron loads the built app
   base: './',
+  // 'inline' source maps don't use eval, avoiding CSP blocks in browser dev
+  esbuild: { sourcemap: 'inline' },
   build: {
     rollupOptions: {
       output: {

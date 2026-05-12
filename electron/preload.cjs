@@ -12,6 +12,7 @@ function isValidOverlayData(data) {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   isElectron: true,
+  openExternal:     (url) => ipcRenderer.send('open-external', url),
   launchOverlay:    () => ipcRenderer.send('launch-overlay'),
   closeOverlay:     () => ipcRenderer.send('close-overlay'),
   minimizeMain:     () => ipcRenderer.send('minimize-main'),
@@ -44,5 +45,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const handler = () => callback();
     ipcRenderer.on('trigger-end-call', handler);
     return () => ipcRenderer.removeListener('trigger-end-call', handler);
+  },
+  onOAuthCallback: (callback) => {
+    const handler = (_, url) => callback(url);
+    ipcRenderer.on('oauth-callback', handler);
+    return () => ipcRenderer.removeListener('oauth-callback', handler);
   },
 });

@@ -148,15 +148,20 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
     recognition.onerror = (e) => {
       if (!activeRef.current || wsrRef.current !== recognition) return;
-      setIsListening(false);
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        setIsListening(false);
         setErrorMessage('Microphone access denied — allow mic in your OS settings.');
       } else if (e.error === 'audio-capture') {
+        setIsListening(false);
         setErrorMessage('No microphone found — plug one in and try again.');
       } else if (e.error === 'network') {
-        setErrorMessage('Speech service unavailable — use the text input below.');
+        // Network errors are transient — the onend handler will auto-restart.
+        // Don't kill isListening or show an error; let it silently retry.
+      } else if (e.error === 'aborted') {
+        // Aborted by us (stopListening) — ignore.
       } else {
-        setErrorMessage(`Speech error (${e.error}) — use the text input below.`);
+        // Unknown error — still let onend restart it, but show a soft warning.
+        setErrorMessage(`Speech error (${e.error}) — retrying…`);
       }
     };
 

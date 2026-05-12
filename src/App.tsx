@@ -139,15 +139,19 @@ export function App() {
   const totalCallSeconds = pastSessions.reduce((sum, s) => sum + s.durationSeconds, 0);
   const totalCallCount = pastSessions.length;
 
-  const currentScreen: Screen = (user && (screen === 'landing' || screen === 'auth'))
-    ? 'dashboard'
-    : screen;
+  // In the browser (non-Electron), always stay on the landing page regardless of auth state.
+  // The full app only runs inside Electron.
+  const currentScreen: Screen = (!isElectron && screen === 'landing')
+    ? 'landing'
+    : (user && (screen === 'landing' || screen === 'auth'))
+      ? 'dashboard'
+      : screen;
 
   useEffect(() => {
     if (user) Sentry.setUser({ id: user.id, email: user.email ?? undefined });
     else Sentry.setUser(null);
 
-    if (!authLoading && user && !transitionShown.current) {
+    if (!authLoading && user && !transitionShown.current && isElectron) {
       const hasOnboarded = !!localStorage.getItem('pp-onboarding');
       if (!hasOnboarded) {
         setShowOnboarding(true);
@@ -222,7 +226,8 @@ export function App() {
   }
 
   // ── Auth gate ──────────────────────────────────────────────────────────────
-  if (authLoading) return <div className="app-loading">LOADING...</div>;
+  // In the browser, never block on auth — just show the landing page immediately.
+  if (authLoading && isElectron) return <div className="app-loading" />;
 
   if (!user) {
     if (isElectron || screen === 'auth') return (
@@ -262,24 +267,28 @@ export function App() {
   const onboardingData = getOnboardingData();
   const loginUserName = getDisplayName(user, onboardingData.name);
 
+  if (showOnboarding) {
+    return (
+      <Suspense fallback={<div className="app-loading" />}>
+        <OnboardingScreen onDone={data => {
+          try { localStorage.setItem('pp-onboarding', JSON.stringify(data)); } catch { /* storage full */ }
+          setAppLanguage(data.language as LanguageCode);
+          setShowOnboarding(false);
+          setShowTransition(true);
+        }} />
+      </Suspense>
+    );
+  }
+
   return (
     <>
-      {showOnboarding && (
-        <Suspense fallback={<div className="app-loading" />}>
-          <OnboardingScreen onDone={data => {
-            try { localStorage.setItem('pp-onboarding', JSON.stringify(data)); } catch { /* storage full */ }
-            setAppLanguage(data.language as LanguageCode);
-            setShowOnboarding(false);
-            setShowTransition(true);
-          }} />
-        </Suspense>
-      )}
-      {showTransition && !showOnboarding && (
+      {showTransition && (
         <LoginTransitionOverlay
           userName={loginUserName}
           onDone={() => setShowTransition(false)}
         />
       )}
+
       {!isShell && <ThemeToggle theme={theme} onToggle={toggleTheme} />}
 
       {isShell && (
