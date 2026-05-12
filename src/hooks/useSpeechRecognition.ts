@@ -284,6 +284,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         if (didFallback) return;
         didFallback = true;
         if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
+        setErrorMessage(null);
         startWebSpeechFallback();
       };
 

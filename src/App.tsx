@@ -271,7 +271,7 @@ export function App() {
     return (
       <Suspense fallback={<div className="app-loading" />}>
         <OnboardingScreen onDone={data => {
-          try { localStorage.setItem('pp-onboarding', JSON.stringify(data)); } catch { /* storage full */ }
+          try { localStorage.setItem('pp-onboarding', JSON.stringify(data)); } catch { toast.error('Storage full — your preferences may not be saved.'); }
           setAppLanguage(data.language as LanguageCode);
           setShowOnboarding(false);
           setShowTransition(true);

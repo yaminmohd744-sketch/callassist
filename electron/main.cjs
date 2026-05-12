@@ -128,9 +128,30 @@ function createMainWindow() {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     show: false,
+  });
+
+  // Restrict what the renderer can load/execute.
+  const { session: electronSession } = require('electron');
+  electronSession.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self' https://*.supabase.co https://api.fontshare.com https://cdn.fontshare.com;" +
+          "script-src 'self' 'unsafe-inline';" +
+          "style-src 'self' 'unsafe-inline' https://api.fontshare.com https://cdn.fontshare.com;" +
+          "font-src 'self' https://api.fontshare.com https://cdn.fontshare.com;" +
+          "img-src 'self' data: blob: https:;" +
+          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.deepgram.com wss://api.deepgram.com https://sentry.io https://o*.ingest.sentry.io;" +
+          "media-src 'self' blob:;" +
+          "worker-src blob:;"
+        ],
+      },
+    });
   });
 
   mainWindow.loadURL(BASE_URL);
@@ -145,12 +166,16 @@ function createMainWindow() {
 }
 
 // Windows: a second instance was launched via the protocol URL.
-// If it carries an OAuth callback (pitchbase://auth#access_token=...), forward
-// the raw URL to the renderer so Supabase can exchange the session.
+// Extract tokens immediately and send only the hash fragment — never the full
+// token-bearing URL — so raw credentials don't linger in IPC message history.
 app.on('second-instance', (_event, argv) => {
   const url = argv.find(arg => arg.startsWith('pitchbase://'));
   if (url && mainWindow) {
-    mainWindow.webContents.send('oauth-callback', url);
+    const hashIndex = url.indexOf('#');
+    const fragment = hashIndex !== -1 ? url.slice(hashIndex + 1) : '';
+    if (fragment.includes('access_token')) {
+      mainWindow.webContents.send('oauth-callback', fragment);
+    }
   }
   focusOrCreateWindow();
 });
@@ -159,7 +184,11 @@ app.on('second-instance', (_event, argv) => {
 app.on('open-url', (event, url) => {
   event.preventDefault();
   if (mainWindow && url.startsWith('pitchbase://')) {
-    mainWindow.webContents.send('oauth-callback', url);
+    const hashIndex = url.indexOf('#');
+    const fragment = hashIndex !== -1 ? url.slice(hashIndex + 1) : '';
+    if (fragment.includes('access_token')) {
+      mainWindow.webContents.send('oauth-callback', fragment);
+    }
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.focus();
   }

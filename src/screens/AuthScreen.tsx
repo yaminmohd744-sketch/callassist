@@ -50,7 +50,7 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
     if (mode === 'sign-up') {
       const { error: err } = await supabase.auth.signUp({ email, password });
       if (err) { setError(err.message); }
-      else { setMessage('Check your email to confirm your account.'); }
+      else { setConfirm(''); setMessage('Check your email to confirm your account.'); }
     } else {
       const { error: err } = await supabase.auth.signInWithPassword({ email, password });
       if (err) setError(err.message);
@@ -71,24 +71,15 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
     });
     if (err) { setError(err.message); return; }
     if (data?.url) {
-      // Open in system browser so the user's saved Google accounts are visible
+      // Open in system browser so the user's saved Google accounts are visible.
       if (window.electronAPI?.openExternal) {
         window.electronAPI.openExternal(data.url);
       } else {
         window.open(data.url, '_blank');
       }
-      // Poll for session — user completes OAuth in browser, Supabase session
-      // becomes available once they sign in. Poll every 2s for up to 3 minutes.
-      let attempts = 0;
-      const poll = setInterval(async () => {
-        attempts++;
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          clearInterval(poll);
-        } else if (attempts >= 90) {
-          clearInterval(poll);
-        }
-      }, 2000);
+      // Session is picked up automatically: Electron forwards the pitchbase://
+      // deep-link fragment to useAuth via IPC → setSession → onAuthStateChange fires.
+      // No polling needed.
     }
   }
 

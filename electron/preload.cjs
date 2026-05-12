@@ -21,6 +21,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
       console.error('[preload] pushOverlayData: invalid payload', data);
       return;
     }
+    // Guard against oversized payloads that could hang the overlay process
+    const size = JSON.stringify(data).length;
+    if (size > 512_000) {
+      console.error('[preload] pushOverlayData: payload too large', size);
+      return;
+    }
     ipcRenderer.send('push-overlay-data', data);
   },
   restoreMain:      () => ipcRenderer.send('restore-main'),

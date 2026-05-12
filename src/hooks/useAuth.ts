@@ -9,31 +9,30 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
 
-    function handleOAuthUrl(url: string) {
-      // Extract tokens from pitchbase://auth#access_token=...&refresh_token=...
-      const hashIndex = url.indexOf('#');
-      if (hashIndex === -1) return;
-      const params = new URLSearchParams(url.slice(hashIndex + 1));
+    // Receives a URL query fragment (everything after #) with access_token & refresh_token.
+    // Validates basic JWT shape before calling setSession.
+    function handleOAuthFragment(fragment: string) {
+      const params = new URLSearchParams(fragment);
       const accessToken  = params.get('access_token');
       const refreshToken = params.get('refresh_token');
-      if (accessToken && refreshToken) {
+      // Minimal JWT structure check: three base64url segments separated by dots
+      const isJwt = (t: string) => /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(t);
+      if (accessToken && refreshToken && isJwt(accessToken)) {
         supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
       }
     }
 
-    // If the URL has OAuth tokens in the hash (fallback: redirect landed in browser),
-    // extract and set the session, then clean the URL.
+    // Fallback: redirect landed in browser — extract fragment and clean URL immediately.
     const hash = window.location.hash;
     if (hash && hash.includes('access_token')) {
-      handleOAuthUrl('pitchbase://auth' + hash);
+      handleOAuthFragment(hash.slice(1));
       window.history.replaceState(null, '', window.location.pathname);
     }
 
-    // Listen for OAuth callback forwarded from Electron main process
-    // (pitchbase:// deep-link intercepted via second-instance handler)
+    // Listen for OAuth fragment forwarded from Electron main process.
     let removeOAuthListener: (() => void) | undefined;
     if (window.electronAPI?.onOAuthCallback) {
-      removeOAuthListener = window.electronAPI.onOAuthCallback(handleOAuthUrl);
+      removeOAuthListener = window.electronAPI.onOAuthCallback(handleOAuthFragment);
     }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -50,8 +49,7 @@ export function useAuth() {
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
-      removeOAuthListener?.();
+      try { removeOAuthListener?.(); } finally { subscription.unsubscribe(); }
     };
   }, []);
 

@@ -266,6 +266,7 @@ export function PreCallScreen({
               className="precall__input"
               placeholder={goalPlaceholder}
               value={callGoal}
+              maxLength={300}
               onChange={e => { setCallGoal(e.target.value); if (errors.callGoal) setErrors(e2 => ({ ...e2, callGoal: '' })); }}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
             />
