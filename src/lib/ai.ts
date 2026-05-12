@@ -10,6 +10,7 @@ import {
   type Memory,
 } from './mockAI';
 import type { TranscriptEntry, CallStage, CallConfig, AISuggestion, AIAnalysisResult, TranscriptSignal, CoachingWalkthrough } from '../types';
+import { isCoachingWalkthrough } from '../types';
 import { FUNCTIONS_BASE, ANON_KEY, getAuthToken, fetchWithTimeout } from './api';
 
 export { detectStage, STAGE_TIPS, getQuickActionSuggestion, type Memory };
@@ -31,7 +32,8 @@ async function callFunction(name: string, body: unknown, retries = 3): Promise<u
     if (res.ok) return res.json();
     // Retry on transient server errors; bail immediately on client errors.
     if (res.status < 500 || attempt === retries) {
-      const text = await res.text();
+      let text = '';
+      try { text = await res.text(); } catch { /* body unreadable */ }
       throw new Error(`${name} returned ${res.status}: ${text}`);
     }
     await sleep(300 * 2 ** attempt + Math.random() * 100);
@@ -228,11 +230,13 @@ export async function analyzeTranscript(
 
     if (onStream) onStream(suggestion);
 
+    const probDelta = typeof data.probabilityDelta === 'number' ? data.probabilityDelta : 0;
+    const objDelta  = typeof data.objectionsCountDelta === 'number' ? data.objectionsCountDelta : 0;
     return {
       suggestions: [suggestion],
-      updatedProbability: clamp(currentProbability + ((data.probabilityDelta as number) ?? 0), 5, 95),
+      updatedProbability: clamp(currentProbability + probDelta, 5, 95),
       updatedStage: aiDetectedStage,
-      updatedObjectionsCount: currentObjectionsCount + ((data.objectionsCountDelta as number) ?? 0),
+      updatedObjectionsCount: currentObjectionsCount + objDelta,
       phaseLabel: aiPhaseLabel,
       prospectTone: aiProspectTone,
     };
@@ -289,16 +293,6 @@ export async function classifySignalAI(text: string, language: string, abortSign
     Sentry.captureException(err, { tags: { section: 'classify-signal' } });
     return 'neutral';
   }
-}
-
-function isCoachingWalkthrough(v: unknown): v is import('../types').CoachingWalkthrough {
-  return (
-    !!v &&
-    typeof v === 'object' &&
-    typeof (v as Record<string, unknown>).overallVerdict === 'string' &&
-    Array.isArray((v as Record<string, unknown>).whatWentWell) &&
-    Array.isArray((v as Record<string, unknown>).areasToImprove)
-  );
 }
 
 export async function generateSessionSummary(

@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
-import type { CallConfig, CallSession, CallStage, CallOutcome, TranscriptEntry, AISuggestion, CoachingWalkthrough } from '../types';
+import type { CallConfig, CallSession, CallStage, CallOutcome, TranscriptEntry, AISuggestion } from '../types';
+import { isCoachingWalkthrough } from '../types';
 
 interface SessionRow {
   id?: string;
@@ -42,7 +43,7 @@ export function rowToSession(row: SessionRow): CallSession {
     leadScore:             typeof row.lead_score === 'number' ? row.lead_score : 0,
     notes:                 Array.isArray(row.notes) ? row.notes as string[] : [],
     talkRatio:             typeof row.talk_ratio === 'number' ? row.talk_ratio : undefined,
-    coaching:              row.coaching as CoachingWalkthrough ?? undefined,
+    coaching:              isCoachingWalkthrough(row.coaching) ? row.coaching : undefined,
     outcome:               (row.outcome as CallOutcome) ?? null,
     recordingKey:          typeof row.recording_key === 'string' ? row.recording_key : undefined,
   };

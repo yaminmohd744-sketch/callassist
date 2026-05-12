@@ -10,6 +10,7 @@ import { useToast }         from './lib/toast';
 import type { LanguageCode } from './lib/languages';
 import { supabase }         from './lib/supabase';
 import { loadSessions, saveSession, deleteSession, updateOutcome } from './lib/sessions';
+import { saveProfilePic, loadProfilePic, deleteProfilePic } from './lib/profilePic';
 import { clearDeepgramTokenCache } from './hooks/useSpeechRecognition';
 import { updateLeadAfterCall } from './lib/leads';
 import type { CallConfig, CallSession, CallOutcome, Lead } from './types';
@@ -41,8 +42,6 @@ async function migrateOutcomes(userId: string): Promise<void> {
   }
   if (allSucceeded) localStorage.removeItem(OUTCOMES_LEGACY_KEY);
 }
-
-const PROFILE_PIC_KEY = 'pp-profile-pic';
 
 interface OnboardingData {
   name?: string;
@@ -124,16 +123,25 @@ export function App() {
   const [showTransition, setShowTransition] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const transitionShown = useRef(false);
-  const [profilePic, setProfilePic] = useState<string | null>(
-    () => localStorage.getItem(PROFILE_PIC_KEY)
-  );
+  const [profilePic, setProfilePic] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+
+  // Load profile pic from IndexedDB on mount
+  useEffect(() => {
+    loadProfilePic()
+      .then(pic => { if (pic) setProfilePic(pic); })
+      .catch(() => { /* IndexedDB unavailable — no pic shown */ });
+  }, []);
+
+  const ALLOWED_IMAGE_TYPES = ['data:image/png;', 'data:image/jpeg;', 'data:image/webp;', 'data:image/gif;'];
   function handleProfilePicChange(dataUrl: string) {
-    if (!dataUrl.startsWith('data:image/')) { toast.error('Invalid image format'); return; }
+    if (!ALLOWED_IMAGE_TYPES.some(prefix => dataUrl.startsWith(prefix))) {
+      toast.error('Invalid image format — use PNG, JPEG, WebP or GIF');
+      return;
+    }
     if (dataUrl.length > 500_000) { toast.error('Image too large (max ~375 KB)'); return; }
     setProfilePic(dataUrl);
-    try { localStorage.setItem(PROFILE_PIC_KEY, dataUrl); }
-    catch { toast.error('Storage full — photo not saved'); }
+    saveProfilePic(dataUrl).catch(() => toast.error('Storage full — photo not saved'));
   }
 
   const totalCallSeconds = pastSessions.reduce((sum, s) => sum + s.durationSeconds, 0);
@@ -213,8 +221,10 @@ export function App() {
   }
 
   async function handleDeleteSession(id: string) {
-    // Optimistic update — roll back on failure
-    setPastSessions(prev => prev.filter(s => (s.id ?? s.endedAt) !== id));
+    // Optimistic update — roll back on failure.
+    // Only match by the Supabase-assigned id (never endedAt) to avoid accidentally
+    // removing the wrong session when two calls end in the same second.
+    setPastSessions(prev => prev.filter(s => s.id !== id));
     if (user) {
       deleteSession(user.id, id).catch(() => {
         toast.error('Failed to delete session.');
@@ -310,7 +320,7 @@ export function App() {
           totalCallCount={totalCallCount}
           profilePic={profilePic}
           onProfilePicChange={handleProfilePicChange}
-          onProfilePicError={() => { setProfilePic(null); localStorage.removeItem(PROFILE_PIC_KEY); }}
+          onProfilePicError={() => { setProfilePic(null); deleteProfilePic().catch(() => {}); }}
         >
           {currentScreen === 'dashboard' && (
             <ErrorBoundary>

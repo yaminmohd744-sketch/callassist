@@ -48,6 +48,7 @@ export function useCallRecorder() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef        = useRef<Blob[]>([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingError, setRecordingError] = useState<string | null>(null);
   const [isSupported]    = useState(() => !!(navigator.mediaDevices && 'getUserMedia' in navigator.mediaDevices && 'MediaRecorder' in window));
 
   const startRecording = useCallback(async (): Promise<void> => {
@@ -63,8 +64,11 @@ export function useCallRecorder() {
       mr.start(1000);
       mediaRecorderRef.current = mr;
       setIsRecording(true);
-    } catch {
-      // Mic permission denied or unavailable — silent, recording just won't happen
+      setRecordingError(null);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const isPermission = msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('notallowed') || msg.toLowerCase().includes('denied');
+      setRecordingError(isPermission ? 'Microphone permission denied — call recording disabled.' : 'Microphone unavailable — call recording disabled.');
     }
   }, [isSupported]);
 
@@ -86,5 +90,5 @@ export function useCallRecorder() {
     });
   }, []);
 
-  return { startRecording, stopRecording, isRecording, isSupported };
+  return { startRecording, stopRecording, isRecording, isSupported, recordingError };
 }

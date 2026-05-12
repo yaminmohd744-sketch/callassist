@@ -317,11 +317,13 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         if (data.type !== 'Results') return;
         const alt = data.channel?.alternatives?.[0];
         const transcript = alt?.transcript;
-        // Extract majority speaker from word-level diarization when available
+        // Extract majority speaker from word-level diarization when available.
+        // Sort descending by count so the highest-count speaker is always first (ties broken by lower speaker index).
         if (alt?.words && alt.words.length > 0) {
           const counts = new Map<number, number>();
           for (const w of alt.words) counts.set(w.speaker, (counts.get(w.speaker) ?? 0) + 1);
-          dgCurrentSpeakerRef.current = [...counts.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0];
+          const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0]);
+          dgCurrentSpeakerRef.current = sorted[0][0];
         }
         if (!transcript) return;
         if (data.is_final) {

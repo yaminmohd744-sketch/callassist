@@ -11,6 +11,6 @@ export const supabase = createClient(url, key, {
   auth: {
     // Detect OAuth callback tokens in the URL hash/query and exchange them automatically.
     detectSessionInUrl: true,
-    flowType: 'implicit',
+    flowType: 'pkce',
   },
 });

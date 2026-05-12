@@ -41,9 +41,10 @@ export async function saveDraft(draft: CallDraft): Promise<boolean> {
     tx.onerror    = () => {
       const err = tx.error;
       if (err?.name === 'QuotaExceededError') {
-        console.error('[Pitchbase] IndexedDB quota exceeded — draft not saved. Free up browser storage.');
+        reject(new Error('QuotaExceededError'));
+      } else {
+        reject(err);
       }
-      reject(err);
     };
   });
 }

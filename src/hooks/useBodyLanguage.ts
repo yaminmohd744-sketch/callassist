@@ -30,6 +30,7 @@ export function useBodyLanguage({ isActive, elapsedSeconds, currentScript, onSug
     noseYHistory: [] as number[],
     cooldowns: new Map<BodySignalKey, number>(),
     poseFrame: 0,
+    faceFrame: 0,
   });
 
   useEffect(() => {
@@ -51,6 +52,7 @@ export function useBodyLanguage({ isActive, elapsedSeconds, currentScript, onSug
     st.noseYHistory = [];
     st.cooldowns.clear();
     st.poseFrame = 0;
+    st.faceFrame = 0;
 
     function canFire(key: BodySignalKey, cooldownSec: number): boolean {
       const last = st.cooldowns.get(key) ?? -cooldownSec;
@@ -63,7 +65,8 @@ export function useBodyLanguage({ isActive, elapsedSeconds, currentScript, onSug
     }
 
     function detect(face: NL[] | null, pose: NL[] | null) {
-      if (face && face.length > 454) {
+      st.faceFrame++;
+      if (face && face.length > 454 && st.faceFrame % 3 === 0) {
         const nose = face[1];
         const lCheek = face[234];
         const rCheek = face[454];
@@ -148,18 +151,23 @@ export function useBodyLanguage({ isActive, elapsedSeconds, currentScript, onSug
         setCameraReady(true);
 
         let lastMs = -1;
+        let inferring = false; // guard: skip frame if previous inference is still running
         function loop() {
           if (cancelled || !video) return;
+          animFrame = requestAnimationFrame(loop);
+          if (inferring) return;
           const nowMs = performance.now();
           if (nowMs !== lastMs && video.readyState >= 2) {
             lastMs = nowMs;
+            inferring = true;
             try {
               const fr = faceLandmarker?.detectForVideo(video, nowMs);
               const pr = poseLandmarker?.detectForVideo(video, nowMs);
               detect(fr?.faceLandmarks?.[0] ?? null, pr?.landmarks?.[0] ?? null);
-            } catch { /* silent — frame errors are non-fatal */ }
+            } catch { /* silent — frame errors are non-fatal */ } finally {
+              inferring = false;
+            }
           }
-          animFrame = requestAnimationFrame(loop);
         }
         animFrame = requestAnimationFrame(loop);
       } catch (err) {

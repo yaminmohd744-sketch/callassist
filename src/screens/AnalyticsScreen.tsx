@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { useAppLanguage } from '../hooks/useAppLanguage';
 import type { CallSession } from '../types';
@@ -209,9 +209,10 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   const [teamMsg, setTeamMsg] = useState('');
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTeamCode(localStorage.getItem('pitchbase_team_code') ?? '');
-    setJoinedTeam(localStorage.getItem('pitchbase_joined_team') ?? '');
+    // Team codes are session-scoped — use sessionStorage so they don't persist across
+    // browser sessions or leak to other users sharing the same device.
+    setTeamCode(sessionStorage.getItem('pitchbase_team_code') ?? '');
+    setJoinedTeam(sessionStorage.getItem('pitchbase_joined_team') ?? '');
   }, []);
 
   async function copyTeamCode() {
@@ -221,8 +222,9 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   }
 
   function generateTeamCode() {
-    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
-    localStorage.setItem('pitchbase_team_code', code);
+    const bytes = crypto.getRandomValues(new Uint8Array(4));
+    const code = Array.from(bytes, b => b.toString(36).padStart(2, '0')).join('').slice(0, 6).toUpperCase();
+    sessionStorage.setItem('pitchbase_team_code', code);
     setTeamCode(code);
     setTeamMsg(t.analytics.teamCodeCreated);
   }
@@ -230,7 +232,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   function handleJoinTeam() {
     const code = joinCode.trim().toUpperCase();
     if (!code) return;
-    localStorage.setItem('pitchbase_joined_team', code);
+    sessionStorage.setItem('pitchbase_joined_team', code);
     setJoinedTeam(code);
     setJoinCode('');
     setTeamMsg(t.analytics.joinedTeamMsg(code));
@@ -356,7 +358,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
   // ── Insight 1: Top objections ─────────────────────────────────────────────
   interface ObjInsight { label: string; count: number; technique: string; successRate: number; }
-  const objInsights: ObjInsight[] = (() => {
+  const objInsights: ObjInsight[] = useMemo(() => {
     const cats: Record<string, { count: number; techniques: string[]; won: number }> = {};
     const classify = (text: string) => {
       const tx = text.toLowerCase();
@@ -386,10 +388,11 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
-  })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pastSessions]);
 
   // ── Insight 2: Winning patterns ───────────────────────────────────────────
-  const winningPatterns = (() => {
+  const winningPatterns = useMemo(() => {
     if (pastSessions.length < 2) return [];
     const sorted = [...pastSessions].sort((a, b) => b.finalCloseProbability - a.finalCloseProbability);
     const half = Math.ceil(sorted.length / 2);
@@ -411,7 +414,8 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
     if (closeS.length > 0 && avgCloseP > avgOtherP + 5)
       out.push({ icon: '◈', stat: `${avgCloseP}%`, label: t.analytics.winPatternCloseStage(avgOtherP) });
     return out.slice(0, 3);
-  })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pastSessions]);
 
   // ── Insight 3: Stage distribution (%) ────────────────────────────────────
   const totalCallsForStage = Object.values(stageCount).reduce((a, b) => a + b, 0) || 1;
@@ -422,7 +426,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   }));
 
   // ── Insight 4: Best call time (by day of week) ────────────────────────────
-  const callsByDay = (() => {
+  const callsByDay = useMemo(() => {
     const src = useMockPerf
       ? MOCK_CALLS.map(c => ({ date: c.date, prob: c.prob }))
       : pastSessions.map(s => ({ date: s.endedAt, prob: s.finalCloseProbability }));
@@ -435,12 +439,13 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
     return DAY_NAMES.map((name, i) =>
       map[i] ? { name, avgProb: Math.round(map[i].total / map[i].count), count: map[i].count } : null
     ).filter(Boolean) as { name: string; avgProb: number; count: number }[];
-  })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pastSessions, useMockPerf]);
   const bestDay  = callsByDay.length ? callsByDay.reduce((a, b) => b.avgProb > a.avgProb ? b : a) : null;
   const maxDayProb = callsByDay.length ? Math.max(...callsByDay.map(d => d.avgProb)) : 100;
 
   // ── Insight 5: Objection-to-close rate ────────────────────────────────────
-  const objCloseGroups = (() => {
+  const objCloseGroups = useMemo(() => {
     const src = useMockPerf
       ? MOCK_CALLS.map(c => ({ objections: c.objections, prob: c.prob }))
       : pastSessions.map(s => ({ objections: s.objectionsCount, prob: s.finalCloseProbability }));
@@ -453,7 +458,8 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
       const ap = m.length ? Math.round(avg(m.map(s => s.prob))) : null;
       return { label: g.label, count: m.length, avgClose: ap, tier: ap ? scoreTier(ap) : 'low' as Tier };
     }).filter(g => g.count > 0);
-  })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pastSessions, useMockPerf]);
 
   return (
     <div className="analytics">

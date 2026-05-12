@@ -179,6 +179,16 @@ export interface Lead {
   createdAt: string;
 }
 
+export function isCoachingWalkthrough(v: unknown): v is CoachingWalkthrough {
+  return (
+    !!v &&
+    typeof v === 'object' &&
+    typeof (v as Record<string, unknown>).overallVerdict === 'string' &&
+    Array.isArray((v as Record<string, unknown>).whatWentWell) &&
+    Array.isArray((v as Record<string, unknown>).areasToImprove)
+  );
+}
+
 export interface CallSession {
   id?: string;
   config: CallConfig;

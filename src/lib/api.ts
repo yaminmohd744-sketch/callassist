@@ -10,7 +10,14 @@ export async function getAuthToken(): Promise<string> {
 
 export function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 30_000): Promise<Response> {
   const controller = new AbortController();
+  const callerSignal = init.signal as AbortSignal | undefined;
+  // Check already-aborted state before attaching the listener to avoid the race
+  // where the caller's signal fires before the listener is registered.
+  if (callerSignal?.aborted) {
+    controller.abort();
+  } else {
+    callerSignal?.addEventListener('abort', () => controller.abort(), { once: true });
+  }
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-  (init.signal as AbortSignal | undefined)?.addEventListener('abort', () => controller.abort(), { once: true });
   return fetch(url, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
 }

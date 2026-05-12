@@ -98,7 +98,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [draftRecovery, setDraftRecovery] = useState<{ transcript: TranscriptEntry[]; startedAt: string } | null>(null);
   const startedAtRef = useRef(new Date().toISOString());
   const recordingKeyRef = useRef(startedAtRef.current);
-  const { startRecording, stopRecording, isSupported: recordingSupported } = useCallRecorder();
+  const { startRecording, stopRecording, isSupported: recordingSupported, recordingError } = useCallRecorder();
   const [bodySuggestions, setBodySuggestions] = useState<AISuggestion[]>([]);
 
   const bubbleRef = useRef<HTMLDivElement>(null);
@@ -109,7 +109,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const repSecondsRef = useRef(0);
   const prospectSecondsRef = useRef(0);
   const speechStartRef = useRef<number | null>(null);
-  const [, setFillerCount] = useState(0);
+  const fillerCountRef = useRef(0);
 
   const handleBubbleDragStart = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
     if (!bubbleRef.current) return;
@@ -247,7 +247,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       // Track filler words
       const lower = text.toLowerCase();
       const fillers = FILLER_WORDS.filter(f => lower.includes(f)).length;
-      if (fillers > 0) setFillerCount(c => c + fillers);
+      if (fillers > 0) fillerCountRef.current += fillers;
     } else if (speaker === 'prospect') {
       prospectSecondsRef.current += durationSec;
     }
@@ -299,7 +299,11 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         suggestions,
         startedAt: startedAtRef.current,
         savedAt: new Date().toISOString(),
-      }).catch(() => { /* silent */ });
+      }).catch((err: unknown) => {
+        if (err instanceof Error && err.message === 'QuotaExceededError') {
+          toast.error('Storage full — auto-save draft paused. Free up browser storage.');
+        }
+      });
     }, 10_000);
     return () => clearInterval(id);
   }, [callStatus, config, suggestions]);
@@ -373,21 +377,29 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   }, [noteInput, elapsedSeconds]);
 
   const handleEndCall = useCallback(async () => {
+    // Ignore accidental clicks before any speech has been captured.
+    if (transcriptRef.current.length === 0) {
+      toast.error('No transcript yet — start speaking before ending the call.');
+      return;
+    }
     stopListening();
     stopTimer();
     await stopRecording(recordingKeyRef.current);
     window.electronAPI?.closeOverlay();
     setIsSummarising(true);
+    // Use the ref so we always get the latest transcript entries, even if a final
+    // speech chunk arrived in the same tick as the "End Call" click.
+    const finalTranscript = transcriptRef.current;
     try {
       const { aiSummary, followUpEmail, leadScore, coaching } = await generateSessionSummary(
         config,
-        transcript,
+        finalTranscript,
         suggestions,
         closeProbability,
         objectionsCount
       );
 
-      localStorage.setItem('pitchbase:nextCallTip', coaching.nextCallTip);
+      try { localStorage.setItem('pitchbase:nextCallTip', coaching.nextCallTip); } catch { /* storage full */ }
       clearDraft().catch(() => { /* silent */ });
 
       const totalSeconds = repSecondsRef.current + prospectSecondsRef.current;
@@ -395,7 +407,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
       const session: CallSession = {
         config,
-        transcript,
+        transcript: finalTranscript,
         suggestions,
         durationSeconds: elapsedSeconds,
         finalCloseProbability: closeProbability,
@@ -415,7 +427,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       toast.error('Summary generation failed — call saved without AI coaching');
       const totalSeconds = repSecondsRef.current + prospectSecondsRef.current;
       onEndCall({
-        config, transcript, suggestions,
+        config, transcript: finalTranscript, suggestions,
         durationSeconds: elapsedSeconds,
         finalCloseProbability: closeProbability,
         objectionsCount, callStage,
@@ -428,7 +440,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     } finally {
       setIsSummarising(false);
     }
-  }, [stopListening, stopTimer, config, transcript, suggestions, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);
+  }, [stopListening, stopTimer, config, suggestions, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);
 
   // Keep a stable ref so the overlay's trigger-end-call listener always calls the latest version.
   const handleEndCallRef = useRef(handleEndCall);
@@ -489,6 +501,11 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           {micWarning && (
             <div className="livecall__mic-warning">
               ⚠ Microphone unavailable — transcription disabled
+            </div>
+          )}
+          {recordingError && (
+            <div className="livecall__mic-warning">
+              ⚠ {recordingError}
             </div>
           )}
           <div className="live-call__panels" data-mobile={mobilePanel}>
