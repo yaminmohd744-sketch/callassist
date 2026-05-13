@@ -15,8 +15,7 @@ import { clearDeepgramTokenCache } from './hooks/useSpeechRecognition';
 import { updateLeadAfterCall } from './lib/leads';
 import type { CallConfig, CallSession, CallOutcome, Lead } from './types';
 
-const LandingScreen    = lazy(() => import('./screens/LandingScreen').then(m => ({ default: m.LandingScreen })));
-const IntroScreen      = lazy(() => import('./screens/IntroScreen').then(m => ({ default: m.IntroScreen })));
+import { LandingScreen } from './screens/LandingScreen';
 const DashboardScreen  = lazy(() => import('./screens/DashboardScreen').then(m => ({ default: m.DashboardScreen })));
 const PreCallScreen    = lazy(() => import('./screens/PreCallScreen').then(m => ({ default: m.PreCallScreen })));
 const LiveCallScreen   = lazy(() => import('./screens/LiveCallScreen').then(m => ({ default: m.LiveCallScreen })));
@@ -116,7 +115,6 @@ export function App() {
   }
 
   const [screen, setScreen]             = useState<Screen>(isElectron ? 'auth' : 'landing');
-  const [showIntro, setShowIntro]       = useState(true);
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
@@ -239,18 +237,12 @@ export function App() {
   // In the browser, never block on auth — just show the landing page immediately.
   if (authLoading && isElectron) return <div className="app-loading" />;
 
-  if (!user) {
-    if (isElectron || screen === 'auth') return (
-      <>
-        <Suspense fallback={<div className="app-loading" />}>
-          <AuthScreen onBack={isElectron ? () => {} : () => setScreen('landing')} />
-        </Suspense>
-        <ThemeToggle theme={theme} onToggle={toggleTheme} />
-      </>
-    );
+  // In the web app, always show the landing page regardless of auth state.
+  // The full app (dashboard, calls, etc.) only runs inside the Electron desktop app.
+  if (!isElectron && screen === 'landing') {
     return (
       <>
-        <Suspense fallback={<div className="app-loading" />}>
+        <ErrorBoundary>
           <LandingScreen onDownload={() => {
             // Internal deep-link only — never route user-supplied input through here
             const DESKTOP_PROTOCOL = 'pitchbase://open' as const;
@@ -261,12 +253,18 @@ export function App() {
             setTimeout(() => document.body.removeChild(iframe), 2000);
             setTimeout(() => setScreen('auth'), 1800);
           }} />
+        </ErrorBoundary>
+        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      </>
+    );
+  }
+
+  if (!user) {
+    return (
+      <>
+        <Suspense fallback={<div className="app-loading" />}>
+          <AuthScreen onBack={isElectron ? () => {} : () => setScreen('landing')} />
         </Suspense>
-        {showIntro && (
-          <Suspense fallback={null}>
-            <IntroScreen onDone={() => setShowIntro(false)} />
-          </Suspense>
-        )}
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </>
     );
