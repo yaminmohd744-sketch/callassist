@@ -12,13 +12,17 @@ export interface CallDraft {
   savedAt: string;
 }
 
+let _db: Promise<IDBDatabase> | null = null;
 function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => req.result.createObjectStore(STORE);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror   = () => reject(req.error);
-  });
+  if (!_db) {
+    _db = new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(STORE);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror   = () => { _db = null; reject(req.error); };
+    });
+  }
+  return _db;
 }
 
 export async function saveDraft(draft: CallDraft): Promise<boolean> {

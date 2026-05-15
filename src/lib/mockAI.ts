@@ -637,6 +637,7 @@ function analyzeWithPresets(
 
 // ─── Main Analysis Function ───────────────────────────────────────────────────
 
+// async to match the ai.ts interface; no awaits needed in the mock path
 export async function analyzeTranscript(
   newEntry: TranscriptEntry,
   fullTranscript: TranscriptEntry[],
@@ -667,7 +668,8 @@ export function generateCoaching(
   transcript: TranscriptEntry[],
   suggestions: AISuggestion[],
   closeProbability: number,
-  objectionsCount: number
+  objectionsCount: number,
+  talkRatioOverride?: number
 ): CoachingWalkthrough {
   const prospect = config.prospectName || 'the prospect';
   const company  = config.company || 'their company';
@@ -678,7 +680,8 @@ export function generateCoaching(
   const buyingSignalEntries = transcript.filter(e => e.signal === 'buying-signal');
   const objectionEntries    = transcript.filter(e => e.signal === 'objection');
   const buyingSignals   = buyingSignalEntries.length;
-  const talkRatio       = transcript.length > 0 ? repEntries.length / transcript.length : 0.5;
+  // Use duration-based talkRatio from the caller when available; fall back to turn-count ratio.
+  const talkRatio       = talkRatioOverride ?? (transcript.length > 0 ? repEntries.length / transcript.length : 0.5);
   const lastTimestamp   = transcript.length > 0 ? transcript[transcript.length - 1].timestampSeconds : 0;
   const reachedCloseStage = lastTimestamp > 200;
 
@@ -892,7 +895,8 @@ export function generateSessionSummary(
   transcript: TranscriptEntry[],
   suggestions: AISuggestion[],
   closeProbability: number,
-  objectionsCount: number
+  objectionsCount: number,
+  talkRatioOverride?: number
 ): { aiSummary: string; followUpEmail: string; leadScore: number; coaching: CoachingWalkthrough } {
   const buyingSignals = suggestions.filter(s => s.type === 'close-attempt').length;
   const objectionHandlers = suggestions.filter(s => s.type === 'objection-response').length;
@@ -902,7 +906,7 @@ export function generateSessionSummary(
   const company        = config.company || 'their company';
   const repEntries     = transcript.filter(e => e.speaker === 'rep');
   const prospectEntries = transcript.filter(e => e.speaker === 'prospect');
-  const talkRatio      = transcript.length > 0 ? repEntries.length / transcript.length : 0.5;
+  const talkRatio      = talkRatioOverride ?? (transcript.length > 0 ? repEntries.length / transcript.length : 0.5);
   const lastTimestamp  = transcript.length > 0 ? transcript[transcript.length - 1].timestampSeconds : 0;
   const reachedCloseStage = lastTimestamp > 200;
 
@@ -977,7 +981,7 @@ Best,
 [Your Contact Info]`;
 
   const leadScore = Math.round((closeProbability * 0.7) + (buyingSignals * 5) - (objectionsCount * 3));
-  const coaching = generateCoaching(config, transcript, suggestions, closeProbability, objectionsCount);
+  const coaching = generateCoaching(config, transcript, suggestions, closeProbability, objectionsCount, talkRatioOverride);
 
   return {
     aiSummary,

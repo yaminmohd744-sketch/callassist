@@ -4,6 +4,7 @@ import { generateSessionSummary } from '../lib/ai';
 import { classifySignal } from '../lib/keywords';
 import type { CallConfig, CallSession, TranscriptEntry } from '../types';
 import { genId } from '../lib/id';
+import { STORAGE_KEYS } from '../lib/storageKeys';
 import './UploadCallScreen.css';
 
 interface UploadCallScreenProps {
@@ -120,7 +121,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
         config, transcript, [], finalCloseProbability, objectionsCount
       );
 
-      try { localStorage.setItem('pitchbase:nextCallTip', coaching.nextCallTip); } catch { /* storage full */ }
+      try { localStorage.setItem(STORAGE_KEYS.nextCallTip, coaching.nextCallTip); } catch { /* storage full */ }
 
       const session: CallSession = {
         config,

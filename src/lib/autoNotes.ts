@@ -8,8 +8,7 @@ const MEETING_PATTERNS = [
 ];
 
 const TIME_PATTERNS = [
-  /\b\d{1,2}(?::\d{2})?\s*(?:am|pm)\b/i,
-  /\b(?:morning|afternoon|evening|noon|midday|eod|end of day)\b/i,
+  /\b\d{1,2}(?::\d{2})?\s*(?:am|pm)\b/i,  // explicit clock times only (e.g. "3pm", "10:30am")
 ];
 
 const COMMITMENT_PATTERNS = [

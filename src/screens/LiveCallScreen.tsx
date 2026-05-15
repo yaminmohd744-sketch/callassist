@@ -16,9 +16,13 @@ import { genId } from '../lib/id';
 import { saveDraft, loadDraft, clearDraft } from '../lib/callDraft';
 import { useCallRecorder } from '../hooks/useCallRecorder';
 import { useBodyLanguage } from '../hooks/useBodyLanguage';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { extractAutoNote } from '../lib/autoNotes';
 import type { AISuggestion } from '../types';
+import { STORAGE_KEYS } from '../lib/storageKeys';
 import './LiveCallScreen.css';
+
+const FILLER_WORDS = ['um', 'uh', ' like ', 'you know', 'basically', 'literally', 'sort of', 'kind of', 'i mean', 'right?'];
 
 // Classify who is speaking based on content + conversational context.
 // Prospect: asks about price/product, raises objections, reacts to the rep's pitch.
@@ -103,6 +107,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
   const bubbleRef = useRef<HTMLDivElement>(null);
   const dragOffset = useRef<{ x: number; y: number } | null>(null);
+  const dragListenersRef = useRef<{ move: (e: MouseEvent) => void; up: () => void } | null>(null);
   const flipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const speakerLockedRef = useRef(false);
   const dgSpeakerMapRef = useRef<Map<number, TranscriptSpeaker> | null>(null);
@@ -127,10 +132,12 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
     const onUp = () => {
       dragOffset.current = null;
+      dragListenersRef.current = null;
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
     };
 
+    dragListenersRef.current = { move: onMove, up: onUp };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
   }, []);
@@ -154,12 +161,14 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     }).catch(() => { /* aborted — ignore */ });
   }, [config.language]);
   const { suggestions, phaseLabel, prospectTone, closeProbability, callStage, objectionsCount, processEntry, reset: resetCoach } = useAICoach();
+  const suggestionsRef = useRef(suggestions);
+  useLayoutEffect(() => { suggestionsRef.current = suggestions; });
 
   const latestAIScript = suggestions.length > 0 ? suggestions[suggestions.length - 1].body : undefined;
   const onBodySuggestion = useCallback((s: AISuggestion) => {
     setBodySuggestions(prev => [...prev.slice(-9), s]);
   }, []);
-  useBodyLanguage({
+  const { cameraError } = useBodyLanguage({
     isActive: callStatus === 'active',
     elapsedSeconds,
     currentScript: latestAIScript,
@@ -170,8 +179,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     return [...suggestions, ...bodySuggestions]
       .sort((a, b) => a.timestampSeconds - b.timestampSeconds);
   }, [suggestions, bodySuggestions]);
-
-  const FILLER_WORDS = ['um', 'uh', ' like ', 'you know', 'basically', 'literally', 'sort of', 'kind of', 'i mean', 'right?'];
 
   // Automatically classify each mic utterance as rep or prospect based on content.
   // Only prospect entries trigger AI analysis.
@@ -289,14 +296,16 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-save draft to IndexedDB every 10 seconds during an active call
+  // Auto-save draft to IndexedDB every 10 seconds during an active call.
+  // suggestionsRef keeps the interval stable — recreating it on every new suggestion
+  // would create timing gaps in the 10s cadence.
   useEffect(() => {
     if (callStatus !== 'active') return;
     const id = setInterval(() => {
       saveDraft({
         config,
         transcript: transcriptRef.current,
-        suggestions,
+        suggestions: suggestionsRef.current,
         startedAt: startedAtRef.current,
         savedAt: new Date().toISOString(),
       }).catch((err: unknown) => {
@@ -306,7 +315,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       });
     }, 10_000);
     return () => clearInterval(id);
-  }, [callStatus, config, suggestions]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [callStatus, config]);
 
   // Push live call data to the Electron overlay window whenever it changes.
   useEffect(() => {
@@ -344,6 +354,15 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Clean up any dangling drag listeners if the component unmounts mid-drag.
+  useEffect(() => {
+    return () => {
+      if (dragListenersRef.current) {
+        window.removeEventListener('mousemove', dragListenersRef.current.move);
+        window.removeEventListener('mouseup', dragListenersRef.current.up);
+      }
+    };
+  }, []);
 
   const handleFlipSpeaker = useCallback((id: string) => {
     setTranscript(prev => {
@@ -387,28 +406,29 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     await stopRecording(recordingKeyRef.current);
     window.electronAPI?.closeOverlay();
     setIsSummarising(true);
-    // Use the ref so we always get the latest transcript entries, even if a final
-    // speech chunk arrived in the same tick as the "End Call" click.
+    // Use refs so we always get the latest values even if a final speech chunk
+    // arrived in the same tick as the "End Call" click.
     const finalTranscript = transcriptRef.current;
+    const finalSuggestions = suggestionsRef.current;
+    const totalSeconds = repSecondsRef.current + prospectSecondsRef.current;
+    const talkRatio = totalSeconds > 0 ? repSecondsRef.current / totalSeconds : 0.5;
     try {
       const { aiSummary, followUpEmail, leadScore, coaching } = await generateSessionSummary(
         config,
         finalTranscript,
-        suggestions,
+        finalSuggestions,
         closeProbability,
-        objectionsCount
+        objectionsCount,
+        talkRatio
       );
 
-      try { localStorage.setItem('pitchbase:nextCallTip', coaching.nextCallTip); } catch { /* storage full */ }
+      try { localStorage.setItem(STORAGE_KEYS.nextCallTip, coaching.nextCallTip); } catch { /* storage full */ }
       clearDraft().catch(() => { /* silent */ });
-
-      const totalSeconds = repSecondsRef.current + prospectSecondsRef.current;
-      const talkRatio = totalSeconds > 0 ? repSecondsRef.current / totalSeconds : 0.5;
 
       const session: CallSession = {
         config,
         transcript: finalTranscript,
-        suggestions,
+        suggestions: finalSuggestions,
         durationSeconds: elapsedSeconds,
         finalCloseProbability: closeProbability,
         objectionsCount,
@@ -425,22 +445,21 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       onEndCall(session);
     } catch {
       toast.error('Summary generation failed — call saved without AI coaching');
-      const totalSeconds = repSecondsRef.current + prospectSecondsRef.current;
       onEndCall({
-        config, transcript: finalTranscript, suggestions,
+        config, transcript: finalTranscript, suggestions: finalSuggestions,
         durationSeconds: elapsedSeconds,
         finalCloseProbability: closeProbability,
         objectionsCount, callStage,
         endedAt: new Date().toISOString(),
         aiSummary: '', followUpEmail: '', leadScore: 0,
         notes,
-        talkRatio: totalSeconds > 0 ? repSecondsRef.current / totalSeconds : 0.5,
+        talkRatio,
         coaching: undefined,
       });
     } finally {
       setIsSummarising(false);
     }
-  }, [stopListening, stopTimer, config, suggestions, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);
+  }, [stopListening, stopTimer, config, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);
 
   // Keep a stable ref so the overlay's trigger-end-call listener always calls the latest version.
   const handleEndCallRef = useRef(handleEndCall);
@@ -476,6 +495,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           <button className="live-call__recovery-btn live-call__recovery-btn--restore" onClick={() => {
             setTranscript(draftRecovery.transcript);
             transcriptRef.current = draftRecovery.transcript;
+            speakerLockedRef.current = false;
+            dgSpeakerMapRef.current = null;
+            resetCoach();
             setDraftRecovery(null);
           }}>Restore</button>
           <button className="live-call__recovery-btn live-call__recovery-btn--dismiss" onClick={() => {
@@ -508,30 +530,41 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
               ⚠ {recordingError}
             </div>
           )}
+          {cameraError && (
+            <div className="livecall__mic-warning">
+              ⚠ Body language coaching unavailable — {cameraError}
+            </div>
+          )}
           <div className="live-call__panels" data-mobile={mobilePanel}>
-            <TranscriptPanel
-              entries={transcript}
-              isListening={isListening}
-              interimText={interimText}
-              errorMessage={errorMessage}
-              onFlipSpeaker={handleFlipSpeaker}
-            />
-            <AIIntelligencePanel
-              suggestions={allSuggestions}
-              callStage={callStage}
-              phaseLabel={phaseLabel}
-              prospectTone={prospectTone}
-              elapsedSeconds={elapsedSeconds}
-            />
-            <LeadProfilePanel
-              config={config}
-              closeProbability={closeProbability}
-              objectionsCount={objectionsCount}
-              notes={notes}
-              noteInput={noteInput}
-              onNoteChange={setNoteInput}
-              onAddNote={handleAddNote}
-            />
+            <ErrorBoundary>
+              <TranscriptPanel
+                entries={transcript}
+                isListening={isListening}
+                interimText={interimText}
+                errorMessage={errorMessage}
+                onFlipSpeaker={handleFlipSpeaker}
+              />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <AIIntelligencePanel
+                suggestions={allSuggestions}
+                callStage={callStage}
+                phaseLabel={phaseLabel}
+                prospectTone={prospectTone}
+                elapsedSeconds={elapsedSeconds}
+              />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <LeadProfilePanel
+                config={config}
+                closeProbability={closeProbability}
+                objectionsCount={objectionsCount}
+                notes={notes}
+                noteInput={noteInput}
+                onNoteChange={setNoteInput}
+                onAddNote={handleAddNote}
+              />
+            </ErrorBoundary>
           </div>
           <div className="live-call__mobile-tabs">
             {(['transcript', 'ai', 'lead'] as const).map(p => (

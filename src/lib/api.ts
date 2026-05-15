@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 
 export const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
-export const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+export const ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || '';
 
 export async function getAuthToken(): Promise<string> {
   const { data: { session } } = await supabase.auth.getSession();

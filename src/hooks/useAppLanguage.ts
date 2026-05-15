@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { SUPPORTED_LANGUAGES, type LanguageCode } from '../lib/languages';
+import { STORAGE_KEYS } from '../lib/storageKeys';
 
 const STORAGE_KEY = 'pp-app-language';
 const LANG_EVENT = 'pp-language-change';
@@ -11,7 +12,7 @@ function getInitialLanguage(): LanguageCode {
   }
   // Try onboarding preference
   try {
-    const ob = JSON.parse(localStorage.getItem('pp-onboarding') || '{}');
+    const ob = JSON.parse(localStorage.getItem(STORAGE_KEYS.onboarding) || '{}');
     if (ob.language && SUPPORTED_LANGUAGES.some(l => l.code === ob.language)) {
       return ob.language as LanguageCode;
     }

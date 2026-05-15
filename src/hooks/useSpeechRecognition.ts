@@ -72,7 +72,6 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const wsRef           = useRef<WebSocket | null>(null);
-  const wsClosingRef    = useRef(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef       = useRef<MediaStream | null>(null);
   const wsrRef          = useRef<WSR | null>(null); // Web Speech Recognition fallback
@@ -88,15 +87,6 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   const flushTimerRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Tracks the Deepgram speaker index for the current utterance (updated per chunk).
   const dgCurrentSpeakerRef = useRef<number | undefined>(undefined);
-
-  const commitBuffer = useCallback(() => {
-    if (flushTimerRef.current) { clearTimeout(flushTimerRef.current); flushTimerRef.current = null; }
-    const combined = bufferRef.current.join(' ').trim();
-    const speaker = dgCurrentSpeakerRef.current;
-    bufferRef.current = [];
-    dgCurrentSpeakerRef.current = undefined;
-    if (combined) onFinalRef.current(combined, speaker);
-  }, []);
 
   const flushBuffer = useCallback((immediate = false) => {
     if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
@@ -188,8 +178,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   const stopListening = useCallback(() => {
     activeRef.current = false;
 
-    commitBuffer();
-    bufferRef.current = [];
+    flushBuffer(true);
 
     if (wsrRef.current) {
       try { wsrRef.current.abort(); } catch { /* ignore */ }
@@ -199,17 +188,15 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
     try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
     mediaRecorderRef.current = null;
 
-    wsClosingRef.current = true;
     try { wsRef.current?.close(); } catch { /* ignore */ }
     wsRef.current = null;
-    wsClosingRef.current = false;
 
     streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
 
     setIsListening(false);
     setInterimText('');
-  }, [commitBuffer]);
+  }, [flushBuffer]);
 
   // ── Start (Deepgram primary, Web Speech fallback) ─────────────────────────
 
@@ -305,7 +292,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
       };
 
       ws.onmessage = (event) => {
-        if (wsRef.current !== ws || wsClosingRef.current) return;
+        if (wsRef.current !== ws) return;
         if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
         interface DGWord { word: string; speaker: number; }
         interface DGResult {

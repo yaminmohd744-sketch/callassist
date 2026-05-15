@@ -36,7 +36,7 @@ export function rowToSession(row: SessionRow): CallSession {
     durationSeconds:       typeof row.duration_seconds === 'number' ? row.duration_seconds : 0,
     finalCloseProbability: typeof row.final_close_prob === 'number' ? row.final_close_prob : 50,
     objectionsCount:       typeof row.objections_count === 'number' ? row.objections_count : 0,
-    callStage:             (row.call_stage as CallStage) ?? 'opener',
+    callStage:             (['opener', 'discovery', 'pitch', 'close'] as CallStage[]).includes(row.call_stage as CallStage) ? (row.call_stage as CallStage) : 'opener',
     endedAt:               typeof row.ended_at === 'string' ? row.ended_at : new Date().toISOString(),
     aiSummary:             typeof row.ai_summary === 'string' ? row.ai_summary : '',
     followUpEmail:         typeof row.follow_up_email === 'string' ? row.follow_up_email : '',
@@ -99,6 +99,16 @@ export async function updateOutcome(userId: string, endedAt: string, outcome: Ca
     .update({ outcome })
     .eq('user_id', userId)
     .eq('ended_at', endedAt);
+  if (error) throw new Error(error.message);
+}
+
+// New — use for all direct session outcome updates (matches by id, not endedAt)
+export async function updateOutcomeById(userId: string, id: string, outcome: CallOutcome): Promise<void> {
+  const { error } = await supabase
+    .from('call_sessions')
+    .update({ outcome })
+    .eq('user_id', userId)
+    .eq('id', id);
   if (error) throw new Error(error.message);
 }
 

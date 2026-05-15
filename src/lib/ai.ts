@@ -12,14 +12,16 @@ import {
 import type { TranscriptEntry, CallStage, CallConfig, AISuggestion, AIAnalysisResult, TranscriptSignal, CoachingWalkthrough } from '../types';
 import { isCoachingWalkthrough } from '../types';
 import { FUNCTIONS_BASE, ANON_KEY, getAuthToken, fetchWithTimeout } from './api';
+import { genId } from './id';
 
 export { detectStage, STAGE_TIPS, getQuickActionSuggestion, type Memory };
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
-async function callFunction(name: string, body: unknown, retries = 3): Promise<unknown> {
-  const authToken = await getAuthToken();
+async function callFunction(name: string, body: unknown, retries = 3, signal?: AbortSignal): Promise<unknown> {
   for (let attempt = 0; attempt <= retries; attempt++) {
+    // Re-fetch auth token on each attempt so a token that expires mid-retry doesn't block recovery.
+    const authToken = await getAuthToken();
     const res = await fetchWithTimeout(`${FUNCTIONS_BASE}/${name}`, {
       method: 'POST',
       headers: {
@@ -28,10 +30,12 @@ async function callFunction(name: string, body: unknown, retries = 3): Promise<u
         'Authorization': `Bearer ${authToken}`,
       },
       body: JSON.stringify(body),
+      signal,
     });
     if (res.ok) return res.json();
-    // Retry on transient server errors; bail immediately on client errors.
-    if (res.status < 500 || attempt === retries) {
+    // Bail on 401 immediately — a fresh token was fetched this attempt, so retrying won't help.
+    // Retry on transient server errors; bail immediately on all other client errors.
+    if (res.status === 401 || res.status < 500 || attempt === retries) {
       let text = '';
       try { text = await res.text(); } catch { /* body unreadable */ }
       throw new Error(`${name} returned ${res.status}: ${text}`);
@@ -40,8 +44,6 @@ async function callFunction(name: string, body: unknown, retries = 3): Promise<u
   }
   throw new Error(`${name}: exhausted retries`);
 }
-
-import { genId } from './id';
 
 type StreamCallback = (s: AISuggestion) => void;
 
@@ -136,6 +138,10 @@ export async function analyzeTranscript(
           // We intentionally do NOT extract type/headline from partial JSON —
           // those fields are only set once the stream is complete (see below).
           if (onStream && accumulated.includes('"body":')) {
+            // Extract the partial body from mid-stream JSON so suggestions can appear token-by-token
+            // before the full response is parseable. The regex matches an opening `"body": "` and
+            // captures everything up to an unescaped closing quote or end-of-string. Non-matching
+            // chunks silently fall through — the full parse at the end handles the complete response.
             // Strip a trailing bare backslash (incomplete escape at chunk boundary)
             // before running the regex so it doesn't fail to match.
             const safeAccum = accumulated.endsWith('\\') ? accumulated.slice(0, -1) : accumulated;
@@ -300,9 +306,10 @@ export async function generateSessionSummary(
   transcript: TranscriptEntry[],
   suggestions: AISuggestion[],
   closeProbability: number,
-  objectionsCount: number
+  objectionsCount: number,
+  talkRatioOverride?: number
 ): Promise<{ aiSummary: string; followUpEmail: string; leadScore: number; coaching: CoachingWalkthrough }> {
-  const fallback = mockGenerateSessionSummary(config, transcript, suggestions, closeProbability, objectionsCount);
+  const fallback = mockGenerateSessionSummary(config, transcript, suggestions, closeProbability, objectionsCount, talkRatioOverride);
   try {
     const data = await callFunction('generate-summary', {
       config, transcript, suggestions, closeProbability, objectionsCount,

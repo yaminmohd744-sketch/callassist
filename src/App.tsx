@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import * as Sentry from '@sentry/react';
 import { ThemeToggle }      from './components/ThemeToggle';
 import { AppShell }         from './components/layout/AppShell';
@@ -13,6 +13,7 @@ import { loadSessions, saveSession, deleteSession, updateOutcome } from './lib/s
 import { saveProfilePic, loadProfilePic, deleteProfilePic } from './lib/profilePic';
 import { clearDeepgramTokenCache } from './hooks/useSpeechRecognition';
 import { updateLeadAfterCall } from './lib/leads';
+import { STORAGE_KEYS } from './lib/storageKeys';
 import type { CallConfig, CallSession, CallOutcome, Lead } from './types';
 
 import { LandingScreen } from './screens/LandingScreen';
@@ -27,9 +28,8 @@ const AuthScreen       = lazy(() => import('./screens/AuthScreen').then(m => ({ 
 const OnboardingScreen = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
 
 // One-time migration: move localStorage outcomes into Supabase call_sessions rows
-const OUTCOMES_LEGACY_KEY = 'pitchbase:outcomes';
 async function migrateOutcomes(userId: string): Promise<void> {
-  const raw = localStorage.getItem(OUTCOMES_LEGACY_KEY);
+  const raw = localStorage.getItem(STORAGE_KEYS.legacyOutcomes);
   if (!raw) return;
   let map: Record<string, CallOutcome>;
   try { map = JSON.parse(raw) as Record<string, CallOutcome>; } catch { return; }
@@ -39,7 +39,7 @@ async function migrateOutcomes(userId: string): Promise<void> {
     try { await updateOutcome(userId, endedAt, outcome); }
     catch { allSucceeded = false; }
   }
-  if (allSucceeded) localStorage.removeItem(OUTCOMES_LEGACY_KEY);
+  if (allSucceeded) localStorage.removeItem(STORAGE_KEYS.legacyOutcomes);
 }
 
 interface OnboardingData {
@@ -53,7 +53,7 @@ interface OnboardingData {
 
 function getOnboardingData(): OnboardingData {
   try {
-    const raw = JSON.parse(localStorage.getItem('pp-onboarding') || '{}') as Record<string, unknown>;
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEYS.onboarding) || '{}') as Record<string, unknown>;
     return {
       name:               typeof raw.name               === 'string' ? raw.name               : undefined,
       language:           typeof raw.language           === 'string' ? raw.language           : undefined,
@@ -86,7 +86,7 @@ function getDisplayName(
 // Read once at module scope for FOUC prevention and React state initialisation.
 // Falls back to system preference for first-time visitors.
 const INITIAL_THEME = (
-  localStorage.getItem('theme') ??
+  localStorage.getItem(STORAGE_KEYS.theme) ??
   (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
 ) as 'dark' | 'light';
 document.documentElement.dataset.theme = INITIAL_THEME === 'light' ? 'light' : '';
@@ -103,16 +103,16 @@ export function App() {
 
   const [theme, setTheme] = useState<'dark' | 'light'>(INITIAL_THEME);
 
-  function toggleTheme() {
+  const toggleTheme = useCallback(() => {
     const next = theme === 'dark' ? 'light' : 'dark';
     const overlay = document.createElement('div');
     overlay.className = `theme-flash theme-flash--${next}`;
     document.body.appendChild(overlay);
     overlay.addEventListener('animationend', () => overlay.remove(), { once: true });
     setTheme(next);
-    try { localStorage.setItem('theme', next); } catch { /* storage full */ }
+    try { localStorage.setItem(STORAGE_KEYS.theme, next); } catch { /* storage full */ }
     document.documentElement.dataset.theme = next === 'light' ? 'light' : '';
-  }
+  }, [theme]);
 
   const [screen, setScreen]             = useState<Screen>(isElectron ? 'auth' : 'landing');
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
@@ -158,7 +158,7 @@ export function App() {
     else Sentry.setUser(null);
 
     if (!authLoading && user && !transitionShown.current && isElectron) {
-      const hasOnboarded = !!localStorage.getItem('pp-onboarding');
+      const hasOnboarded = !!localStorage.getItem(STORAGE_KEYS.onboarding);
       if (!hasOnboarded) {
         setShowOnboarding(true);
       } else {
@@ -168,13 +168,15 @@ export function App() {
     }
   }, [user, authLoading]);
 
+  const lastFetchedRef = useRef<number>(0);
+
   // Load sessions and run one-time outcome migration on login
   useEffect(() => {
     if (!user) { setPastSessions([]); return; }
     async function load() {
       // Migrate legacy localStorage outcomes to Supabase — guarded by a per-user flag
       // so it only runs once even if the user logs out and back in mid-migration.
-      const MIGRATED_KEY = `pp-migrated-v1-${user!.id}`;
+      const MIGRATED_KEY = STORAGE_KEYS.migratedV1(user!.id);
       if (!localStorage.getItem(MIGRATED_KEY)) {
         await migrateOutcomes(user!.id);
         try { localStorage.setItem(MIGRATED_KEY, '1'); } catch { /* storage full — retries next login */ }
@@ -182,6 +184,7 @@ export function App() {
       try {
         const sessions = await loadSessions(user!.id);
         setPastSessions(sessions);
+        lastFetchedRef.current = Date.now();
       } catch {
         toast.error('Failed to load your call history. Check your connection and refresh.');
       }
@@ -189,13 +192,27 @@ export function App() {
     load();
   }, [user]); // toast is a stable context reference
 
-  function handleStartCall(config: CallConfig) {
+  // Re-fetch sessions when the tab regains focus (debounced to once per 60s)
+  useEffect(() => {
+    if (!user) return;
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - lastFetchedRef.current < 60_000) return;
+      loadSessions(user.id)
+        .then(sessions => { setPastSessions(sessions); lastFetchedRef.current = Date.now(); })
+        .catch(() => { /* silent — user already has a copy */ });
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [user]);
+
+  const handleStartCall = useCallback((config: CallConfig) => {
     setCallConfig(config);
     setCallSession(null);
     setScreen('live-call');
-  }
+  }, []);
 
-  async function handleEndCall(session: CallSession) {
+  const handleEndCall = useCallback(async (session: CallSession) => {
     setCallSession(session);
     setScreen('post-call');
     if (user) {
@@ -211,14 +228,14 @@ export function App() {
         setSelectedLead(null);
       }
     }
-  }
+  }, [user, selectedLead, toast]);
 
-  function handleViewSession(session: CallSession) {
+  const handleViewSession = useCallback((session: CallSession) => {
     setCallSession(session);
     setScreen('post-call');
-  }
+  }, []);
 
-  async function handleDeleteSession(id: string) {
+  const handleDeleteSession = useCallback(async (id: string) => {
     // Optimistic update — roll back on failure.
     // Only match by the Supabase-assigned id (never endedAt) to avoid accidentally
     // removing the wrong session when two calls end in the same second.
@@ -231,7 +248,7 @@ export function App() {
           .catch(() => { /* already toasted above */ });
       });
     }
-  }
+  }, [user, toast]);
 
   // ── Auth gate ──────────────────────────────────────────────────────────────
   // In the browser, never block on auth — just show the landing page immediately.
@@ -272,14 +289,14 @@ export function App() {
 
   const isShell = currentScreen === 'dashboard' || currentScreen === 'analytics' || currentScreen === 'leads';
 
-  const onboardingData = getOnboardingData();
+  const onboardingData = useMemo(() => getOnboardingData(), [user]);
   const loginUserName = getDisplayName(user, onboardingData.name);
 
   if (showOnboarding) {
     return (
       <Suspense fallback={<div className="app-loading" />}>
         <OnboardingScreen onDone={data => {
-          try { localStorage.setItem('pp-onboarding', JSON.stringify(data)); } catch { toast.error('Storage full — your preferences may not be saved.'); }
+          try { localStorage.setItem(STORAGE_KEYS.onboarding, JSON.stringify(data)); } catch { toast.error('Storage full — your preferences may not be saved.'); }
           setAppLanguage(data.language as LanguageCode);
           setShowOnboarding(false);
           setShowTransition(true);
