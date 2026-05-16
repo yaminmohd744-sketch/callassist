@@ -22,6 +22,13 @@
 .prob-meter__value--medium { color: var(--color-accent-yellow); }
 .prob-meter__value--low    { color: var(--color-accent-red); }
 
+.prob-meter__level-badge {
+  font-size: 0.65em;
+  font-weight: 600;
+  opacity: 0.75;
+  letter-spacing: 0.06em;
+}
+
 .prob-meter__track {
   height: 6px;
   background: rgba(255,255,255,0.06);
@@ -54,4 +61,12 @@
 
 [data-theme="light"] .prob-meter__track {
   background: rgba(0,0,0,0.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prob-meter *, .prob-meter *::before, .prob-meter *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

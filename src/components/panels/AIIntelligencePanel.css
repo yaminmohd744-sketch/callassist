@@ -513,3 +513,14 @@
 .ai-panel__battlecard-entry--differentiator .ai-panel__battlecard-entry-text   { color: var(--color-text-primary); }
 .ai-panel__battlecard-entry--competitor      .ai-panel__battlecard-entry-text   { color: #f97316; }
 .ai-panel__battlecard-entry--pricing-objection .ai-panel__battlecard-entry-text { color: var(--color-accent-magenta); }
+
+/* ── Tone pill variants ── */
+.ai-panel__tone-pill--skeptical  { --tone-color: var(--color-accent-yellow); }
+.ai-panel__tone-pill--curious    { --tone-color: var(--color-accent-purple); }
+.ai-panel__tone-pill--defensive  { --tone-color: var(--color-accent-red); }
+.ai-panel__tone-pill--warm       { --tone-color: var(--color-accent-green); }
+.ai-panel__tone-pill--disengaged { --tone-color: var(--color-text-muted); }
+.ai-panel__tone-pill--frustrated { --tone-color: #f97316; }
+.ai-panel__tone-pill--excited    { --tone-color: #a3e635; }
+.ai-panel__tone-pill--hesitant   { --tone-color: var(--color-accent-yellow); }
+.ai-panel__tone-pill--neutral    { --tone-color: var(--color-text-secondary); }

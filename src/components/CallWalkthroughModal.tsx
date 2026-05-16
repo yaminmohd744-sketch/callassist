@@ -3,6 +3,7 @@ import { Button } from './ui/Button';
 import type { CallSession } from '../types';
 import { generateCoaching } from '../lib/mockAI';
 import { formatDuration, formatDateFull } from '../lib/formatters';
+import { useAppContext } from '../contexts/AppContext';
 import './CallWalkthroughModal.css';
 
 interface Props {
@@ -21,6 +22,7 @@ function buildSteps(session: CallSession): Step[] {
 }
 
 export function CallWalkthroughModal({ session, onViewFull, onClose }: Props) {
+  const { appLanguage } = useAppContext();
   // For sessions loaded from history before coaching was persisted, generate it on the fly
   const coaching = useMemo(
     () => session.coaching ?? generateCoaching(
@@ -75,7 +77,7 @@ export function CallWalkthroughModal({ session, onViewFull, onClose }: Props) {
             <span className="wt-header-name">{session.config.prospectName || 'Call Review'}</span>
             {session.config.company && <span className="wt-header-company"> · {session.config.company}</span>}
             <span className="wt-header-sep">·</span>
-            <span className="wt-header-date">{formatDateFull(session.endedAt)}</span>
+            <span className="wt-header-date">{formatDateFull(session.endedAt, appLanguage)}</span>
           </div>
           <button className="wt-close" onClick={onClose} aria-label="Close">✕</button>
         </div>

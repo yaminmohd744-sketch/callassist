@@ -40,8 +40,9 @@ export async function loadLeads(userId: string): Promise<Lead[]> {
     .from('leads')
     .select('*')
     .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-  if (error) throw new Error(error.message);
+    .order('created_at', { ascending: false })
+    .limit(1000); // PostgREST default max — paginate if users regularly exceed this
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
   return (data ?? []).map(r => { assertLeadRow(r); return rowToLead(r); });
 }
 
@@ -62,8 +63,9 @@ export async function saveLead(
     })
     .select()
     .single();
-  if (error) throw new Error(error.message);
-  return rowToLead(data as LeadRow);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
+  assertLeadRow(data);
+  return rowToLead(data);
 }
 
 export async function deleteLead(id: string, userId: string): Promise<void> {
@@ -72,7 +74,7 @@ export async function deleteLead(id: string, userId: string): Promise<void> {
     .delete()
     .eq('id', id)
     .eq('user_id', userId);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
 }
 
 export async function importLeads(
@@ -89,15 +91,15 @@ export async function importLeads(
     prior_context: p.priorContext || null,
   }));
   const { data, error } = await supabase.from('leads').insert(rows).select();
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
   return (data ?? []).map(r => { assertLeadRow(r); return rowToLead(r); });
 }
 
-export async function updateLeadAfterCall(id: string, userId: string, callCount: number): Promise<void> {
+export async function updateLeadAfterCall(id: string, userId: string, currentCallCount: number): Promise<void> {
   const { error } = await supabase
     .from('leads')
-    .update({ call_count: callCount + 1, last_called_at: new Date().toISOString() })
+    .update({ call_count: currentCallCount + 1, last_called_at: new Date().toISOString() })
     .eq('id', id)
     .eq('user_id', userId);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
 }

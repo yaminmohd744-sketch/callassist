@@ -4,6 +4,7 @@ import type { CallSession } from '../types';
 import { loadRecording } from '../hooks/useCallRecorder';
 import { formatDuration, formatDateLong } from '../lib/formatters';
 import { useTranslations } from '../hooks/useTranslations';
+import { useAppContext } from '../contexts/AppContext';
 import { computeRepScore } from '../lib/repScore';
 import { generateProspectSummary } from '../lib/ai';
 import './PostCallScreen.css';
@@ -19,14 +20,14 @@ function downloadFile(filename: string, content: string) {
   setTimeout(() => URL.revokeObjectURL(url), 3000);
 }
 
-function buildTranscriptText(session: CallSession): string {
+function buildTranscriptText(session: CallSession, locale = 'en-US'): string {
   const header = [
     `PITCHBASE - TRANSCRIPT`,
     `═══════════════════════════════════════`,
     `Prospect : ${session.config.prospectName || '-'}`,
     `Company  : ${session.config.company || '-'}`,
     `Goal     : ${session.config.callGoal}`,
-    `Date     : ${formatDateLong(session.endedAt)}`,
+    `Date     : ${formatDateLong(session.endedAt, locale)}`,
     `Duration : ${formatDuration(session.durationSeconds)}`,
     `Close %  : ${session.finalCloseProbability}%`,
     `═══════════════════════════════════════`,
@@ -75,7 +76,8 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
   // Phase 4: CRM export state
   const [jsonCopied, setJsonCopied] = useState(false);
-const t = useTranslations();
+  const t = useTranslations();
+  const { appLanguage } = useAppContext();
   const slug = (session.config.prospectName || 'call').toLowerCase().replace(/\s+/g, '-');
 
   // Phase 3: scorecard metrics
@@ -142,7 +144,7 @@ const t = useTranslations();
   }
 
   function handleDownloadTranscript() {
-    downloadFile(`transcript-${slug}.txt`, buildTranscriptText(session));
+    downloadFile(`transcript-${slug}.txt`, buildTranscriptText(session, appLanguage));
   }
 
   async function handleCopyJson() {
@@ -186,7 +188,7 @@ const t = useTranslations();
             {session.config.prospectName && <span>{session.config.prospectName}</span>}
             {session.config.company && <><span className="postcall__sep">@</span><span>{session.config.company}</span></>}
             <span className="postcall__sep">·</span>
-            <span>{formatDateLong(session.endedAt)}</span>
+            <span>{formatDateLong(session.endedAt, appLanguage)}</span>
           </div>
         </div>
         <div className="postcall__header-actions">

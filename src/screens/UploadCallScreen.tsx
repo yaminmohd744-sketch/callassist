@@ -52,6 +52,7 @@ function parseTranscript(text: string): ParseResult {
       id: genId(),
       speaker,
       text: content,
+      // Fake timestamp: 15s per turn (no real audio duration available from text)
       timestampSeconds: turn * 15,
       signal: speaker === 'prospect' ? classifySignal(content) : 'neutral',
     });
@@ -83,7 +84,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
 
   async function handleAnalyze() {
     const text = transcriptText.trim();
-    if (!text) { setError('Paste a transcript or upload a .txt file first.'); return; }
+    if (!text) { setError(t.errors?.transcriptRequired ?? 'Paste a transcript or upload a .txt file first.'); return; }
     setError('');
     setParseWarning('');
     setIsProcessing(true);
@@ -126,7 +127,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
       const session: CallSession = {
         config,
         transcript,
-        suggestions: [],
+        suggestions: [], // always empty for uploaded calls — no live AI suggestions were generated
         durationSeconds,
         finalCloseProbability,
         objectionsCount,
@@ -230,7 +231,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
             >
               {isProcessing
                 ? <><span className="upload-call__spinner" /> {t.upload.analyzing}</>
-                : `◈ ${t.upload.browseFiles}`}
+                : `◈ ${t.upload.analyzeTranscript}`}
             </button>
             <button
               className="upload-call__btn upload-call__btn--ghost"

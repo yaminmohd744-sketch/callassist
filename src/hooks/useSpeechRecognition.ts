@@ -2,11 +2,16 @@ import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react
 import { getDeepgramCode } from '../lib/languages';
 import { FUNCTIONS_BASE, ANON_KEY, getAuthToken } from '../lib/api';
 
+const WATCHDOG_TIMEOUT_MS     = 10_000;
+const FLUSH_DEBOUNCE_MS       = 350;
+const TOKEN_CACHE_TTL_MS      = 50_000;
+const TOKEN_CACHE_HEADROOM_MS = 5_000;
+
 let _deepgramTokenCache: { value: string; expiresAt: number } | null = null;
 export function clearDeepgramTokenCache() { _deepgramTokenCache = null; }
 
 async function fetchDeepgramKey(): Promise<string | null> {
-  if (_deepgramTokenCache && Date.now() + 5_000 < _deepgramTokenCache.expiresAt) {
+  if (_deepgramTokenCache && Date.now() + TOKEN_CACHE_HEADROOM_MS < _deepgramTokenCache.expiresAt) {
     return _deepgramTokenCache.value;
   }
   try {
@@ -22,7 +27,7 @@ async function fetchDeepgramKey(): Promise<string | null> {
     if (!res.ok) return null;
     const data = await res.json() as { key?: string };
     const key = data.key ?? null;
-    if (key) _deepgramTokenCache = { value: key, expiresAt: Date.now() + 50_000 };
+    if (key) _deepgramTokenCache = { value: key, expiresAt: Date.now() + TOKEN_CACHE_TTL_MS };
     return key;
   } catch {
     return null;
@@ -59,6 +64,27 @@ function getWebSpeech(): WSR | null {
   return Ctor ? new Ctor() : null;
 }
 
+// Check constructor existence without instantiating — used for the isSupported flag.
+const _W = window as SpeechRecognitionWindow;
+const WEB_SPEECH_SUPPORTED = !!(_W.SpeechRecognition ?? _W.webkitSpeechRecognition);
+
+const MAX_BUFFER_CHUNKS = 50;
+
+// Deepgram keyword boosting — common sales terms weighted for better transcription accuracy.
+// Format: 'word:boost' where boost is 1–10. Add/adjust terms here.
+const DG_KEYWORD_BOOSTS = [
+  'demo:3', 'trial:2', 'pricing:2', 'integration:2',
+  'software:2', 'platform:2', 'proposal:2',
+];
+
+// ─── Deepgram message types ────────────────────────────────────────────────────
+
+interface DGWord   { word: string; speaker: number; }
+interface DGResult {
+  type: string; is_final: boolean; speech_final: boolean;
+  channel: { alternatives: Array<{ transcript: string; words?: DGWord[] }> };
+}
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 interface UseSpeechRecognitionOptions {
@@ -71,7 +97,8 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   const [interimText, setInterimText]   = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const wsRef           = useRef<WebSocket | null>(null);
+  const wsRef             = useRef<WebSocket | null>(null);
+  const watchdogTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef       = useRef<MediaStream | null>(null);
   const wsrRef          = useRef<WSR | null>(null); // Web Speech Recognition fallback
@@ -82,8 +109,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   // Utterance buffer - accumulates is_final chunks and flushes them as one entry
   // after a short silence, so fragmented mid-sentence commits get merged.
   // Capped at MAX_BUFFER_CHUNKS to prevent unbounded memory growth on very long calls.
-  const MAX_BUFFER_CHUNKS = 50;
-  const bufferRef          = useRef<string[]>([]);
+  const bufferRef = useRef<string[]>([]);
   const flushTimerRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Tracks the Deepgram speaker index for the current utterance (updated per chunk).
   const dgCurrentSpeakerRef = useRef<number | undefined>(undefined);
@@ -103,7 +129,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         bufferRef.current = [];
         dgCurrentSpeakerRef.current = undefined;
         if (combined) onFinalRef.current(combined, speaker);
-      }, 350);
+      }, FLUSH_DEBOUNCE_MS);
     }
   }, []);
 
@@ -114,7 +140,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
     const recognition = getWebSpeech();
     if (!recognition) {
-      setErrorMessage('Mic unavailable - use the text input below.');
+      setErrorMessage('Mic unavailable — use the text input below.');
       return;
     }
 
@@ -177,6 +203,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
   const stopListening = useCallback(() => {
     activeRef.current = false;
+    if (watchdogTimerRef.current) { clearTimeout(watchdogTimerRef.current); watchdogTimerRef.current = null; }
 
     flushBuffer(true);
 
@@ -241,13 +268,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         '&endpointing=250',
         '&utterance_end_ms=1000',
         '&diarize=true',
-        '&keywords=demo:3',
-        '&keywords=trial:2',
-        '&keywords=pricing:2',
-        '&keywords=integration:2',
-        '&keywords=software:2',
-        '&keywords=platform:2',
-        '&keywords=proposal:2',
+        ...DG_KEYWORD_BOOSTS.map(k => `&keywords=${k}`),
       ].join('');
 
       // WebSocket constructor throws synchronously if the subprotocol token is
@@ -266,19 +287,26 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
       // One-shot guard: onerror, onclose, and watchdog can all fire for the same failure.
       // Ensure only the first one triggers the fallback.
       let didFallback = false;
-      let watchdogTimer: ReturnType<typeof setTimeout> | null = null;
       const tryFallback = () => {
         if (didFallback) return;
         didFallback = true;
-        if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
-        setErrorMessage(null);
+        if (watchdogTimerRef.current) { clearTimeout(watchdogTimerRef.current); watchdogTimerRef.current = null; }
+        setErrorMessage('Switched to browser speech recognition — speaker labels unavailable.');
         startWebSpeechFallback();
       };
 
       ws.onopen = () => {
         const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
           ? 'audio/webm;codecs=opus'
-          : 'audio/webm';
+          : MediaRecorder.isTypeSupported('audio/webm')
+            ? 'audio/webm'
+            : null;
+        if (!mimeType) {
+          stream.getTracks().forEach(t => t.stop());
+          streamRef.current = null;
+          tryFallback();
+          return;
+        }
         const mr = new MediaRecorder(stream, { mimeType });
         mediaRecorderRef.current = mr;
         mr.ondataavailable = (e) => {
@@ -288,17 +316,12 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         setIsListening(true);
         setErrorMessage(null);
         // If no audio data arrives within 10s of connecting, assume silent failure and fall back.
-        watchdogTimer = setTimeout(() => tryFallback(), 10_000);
+        watchdogTimerRef.current = setTimeout(() => tryFallback(), WATCHDOG_TIMEOUT_MS);
       };
 
       ws.onmessage = (event) => {
         if (wsRef.current !== ws) return;
-        if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
-        interface DGWord { word: string; speaker: number; }
-        interface DGResult {
-          type: string; is_final: boolean; speech_final: boolean;
-          channel: { alternatives: Array<{ transcript: string; words?: DGWord[] }> };
-        }
+        if (watchdogTimerRef.current) { clearTimeout(watchdogTimerRef.current); watchdogTimerRef.current = null; }
         let data: DGResult;
         try { data = JSON.parse(event.data as string) as DGResult; } catch { return; }
         if (data.type !== 'Results') return;
@@ -328,7 +351,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
       ws.onerror = () => {
         if (wsRef.current !== ws) return;
-        if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
+        if (watchdogTimerRef.current) { clearTimeout(watchdogTimerRef.current); watchdogTimerRef.current = null; }
         // Deepgram auth/connection failed - silently fall back to browser speech.
         wsRef.current = null;
         try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
@@ -340,21 +363,24 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
 
       ws.onclose = (e) => {
         if (wsRef.current !== ws) return;
-        if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
+        if (watchdogTimerRef.current) { clearTimeout(watchdogTimerRef.current); watchdogTimerRef.current = null; }
         // Clean up media resources before attempting fallback so they don't leak.
         try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
         mediaRecorderRef.current = null;
         streamRef.current?.getTracks().forEach(t => t.stop());
         streamRef.current = null;
-        setIsListening(false);
         // Auth error — token is invalid; clear cache so next call fetches a fresh one.
         if (e.code === 4001) {
           _deepgramTokenCache = null;
           console.warn('[Pitchbase] Deepgram auth error (4001), token cache cleared');
         }
         // Unexpected close → fall back to browser speech.
+        // Only set isListening=false on a clean/intentional close to avoid a flicker
+        // when tryFallback() immediately sets it back to true via Web Speech start.
         if (e.code !== 1000 && e.code !== 1001 && activeRef.current) {
           tryFallback();
+        } else {
+          setIsListening(false);
         }
       };
 
@@ -369,6 +395,15 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
     }
   }, [startWebSpeechFallback, flushBuffer, language]);
 
+  // If the language changes while the Web Speech fallback is active mid-call,
+  // abort the stale recognition and restart it with the new language.
+  useEffect(() => {
+    if (!activeRef.current || wsrRef.current === null) return;
+    try { wsrRef.current.abort(); } catch { /* ignore */ }
+    wsrRef.current = null;
+    startWebSpeechFallback();
+  }, [language, startWebSpeechFallback]);
+
   useEffect(() => {
     return () => { stopListening(); };
   }, [stopListening]);
@@ -376,7 +411,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   return {
     isListening,
     interimText,
-    isSupported: getWebSpeech() !== null,
+    isSupported: WEB_SPEECH_SUPPORTED,
     errorMessage,
     startListening,
     stopListening,

@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { SUPPORTED_LANGUAGES } from '../../lib/languages';
-import type { LanguageCode } from '../../lib/languages';
 import { formatTotalTime } from '../../lib/formatters';
 import { useTranslations } from '../../hooks/useTranslations';
+import { useAppContext } from '../../contexts/AppContext';
 import './AppShell.css';
 
 type ShellScreen = 'dashboard' | 'analytics' | 'leads';
@@ -10,24 +10,11 @@ type ShellScreen = 'dashboard' | 'analytics' | 'leads';
 const NAV_IDS: ShellScreen[] = ['dashboard', 'analytics', 'leads'];
 
 interface AppShellProps {
-  activeScreen: ShellScreen | string;
+  activeScreen: ShellScreen;
   onNavigate: (screen: ShellScreen) => void;
   onStartCall: () => void;
   onUploadCall: () => void;
   onSignOut: () => void;
-  appLanguage: LanguageCode;
-  onChangeLanguage: (code: LanguageCode) => void;
-  currentLangFlag: string;
-  currentLangLabel: string;
-  userName: string;
-  userEmail: string;
-  theme: 'dark' | 'light';
-  onToggleTheme: () => void;
-  totalCallSeconds: number;
-  totalCallCount: number;
-  profilePic: string | null;
-  onProfilePicChange: (dataUrl: string) => void;
-  onProfilePicError?: () => void;
   children: React.ReactNode;
 }
 
@@ -39,18 +26,33 @@ function getInitials(name: string): string {
 
 export function AppShell({
   activeScreen, onNavigate, onStartCall, onUploadCall, onSignOut,
-  appLanguage, onChangeLanguage, currentLangLabel,
-  userName, userEmail, theme, onToggleTheme,
-  totalCallSeconds, totalCallCount,
-  profilePic, onProfilePicChange, onProfilePicError,
   children,
 }: AppShellProps) {
   const t = useTranslations();
+  const {
+    appLanguage, onChangeLanguage, currentLangLabel,
+    userName, userEmail, theme, onToggleTheme,
+    totalCallSeconds, totalCallCount,
+    profilePic, onProfilePicChange, onProfilePicError,
+  } = useAppContext();
   const [langOpen, setLangOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const picInputRef = useRef<HTMLInputElement>(null);
+
+  function handlePicClick() { picInputRef.current?.click(); }
+  function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const result = ev.target?.result as string;
+      if (result) onProfilePicChange(result);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -91,13 +93,13 @@ export function AppShell({
           <div className="app-shell__lang-wrap" ref={langRef}>
             <button
               className="app-shell__lang-btn"
-              onClick={() => setLangOpen(o => !o)}
+              onClick={() => { setProfileOpen(false); setLangOpen(o => !o); }}
               title={`${t.profile.appLanguage}: ${currentLangLabel}`}
               aria-expanded={langOpen}
             >
               <img
                 className="app-shell__lang-flag-img"
-                src={`https://flagcdn.com/w20/${appLanguage.split('-')[1].toLowerCase()}.png`}
+                src={`https://flagcdn.com/w20/${(appLanguage.split('-')[1] ?? appLanguage).toLowerCase()}.png`}
                 alt={currentLangLabel}
                 onError={e => { e.currentTarget.style.display = 'none'; }}
               />
@@ -116,7 +118,7 @@ export function AppShell({
                   >
                     <img
                       className="app-shell__lang-option-flag-img"
-                      src={`https://flagcdn.com/w20/${l.code.split('-')[1].toLowerCase()}.png`}
+                      src={`https://flagcdn.com/w20/${(l.code.split('-')[1] ?? l.code).toLowerCase()}.png`}
                       alt={l.label}
                       onError={e => { e.currentTarget.style.display = 'none'; }}
                     />
@@ -136,7 +138,7 @@ export function AppShell({
           <div className="app-shell__profile-wrap" ref={profileRef}>
             <button
               className="app-shell__avatar"
-              onClick={() => setProfileOpen(o => !o)}
+              onClick={() => { setLangOpen(false); setProfileOpen(o => !o); }}
               title={userName || userEmail}
               aria-expanded={profileOpen}
             >
@@ -151,21 +153,7 @@ export function AppShell({
               }
             </button>
 
-            {profileOpen && (() => {
-              function handlePicClick() { picInputRef.current?.click(); }
-              function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = ev => {
-                  const result = ev.target?.result as string;
-                  if (result) onProfilePicChange(result);
-                };
-                reader.readAsDataURL(file);
-                e.target.value = '';
-              }
-
-              return (
+            {profileOpen && (
                 <div className="app-shell__profile-dropdown">
 
                   {/* Hidden file input for pic upload */}
@@ -240,8 +228,7 @@ export function AppShell({
                   </button>
 
                 </div>
-              );
-            })()}
+            )}
           </div>
 
         </div>

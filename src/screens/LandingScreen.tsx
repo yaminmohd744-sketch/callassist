@@ -2,6 +2,9 @@
 import { PrivacyPolicy } from './legal/PrivacyPolicy';
 import { TermsOfService } from './legal/TermsOfService';
 import { CookiePolicy } from './legal/CookiePolicy';
+import { PricingSection } from './landing/PricingSection';
+import { BlogSection } from './landing/BlogSection';
+import { CareersSection } from './landing/CareersSection';
 import './LandingScreen.css';
 
 interface LandingScreenProps {
@@ -9,6 +12,11 @@ interface LandingScreenProps {
 }
 
 type SectionId = 'features' | 'languages' | 'pricing' | 'download' | 'changelog' | 'help' | 'about' | 'blog' | 'careers' | 'contact' | 'privacy' | 'terms' | 'cookies';
+
+const SPOTLIGHT_STEP_MS    = 1400; // stagger between spotlight phases
+const DEMO_ADVANCE_LONG_MS = 6500; // normal demo step delay (step 0 includes spotlight sequence)
+const DEMO_ADVANCE_SHORT_MS = 3500; // fast step delay (subsequent scenes)
+const FRAME_ADVANCE_MS     = 1400; // terminal frame tick speed
 
 const DEMO_FRAMES = [
   { type: 'status',   text: '● ACTIVE  02:14  OBJECTIONS 2  CLOSE PROB 68%' },
@@ -168,24 +176,6 @@ const FEATURE_TABS = [
 ];
 
 
-const PRICING_FAQ = [
-  {
-    q: 'Can my prospect hear or tell that I\'m using AI coaching during the call?',
-    a: 'No. Pitchbase runs silently in a separate browser tab your prospect only hears you speaking normally. The coaching suggestions appear as text on your screen, so there\'s nothing audible on their end. It works the same way a physical cheat sheet would, except it updates in real time based on what\'s actually being said.',
-  },
-  {
-    q: 'How accurate is the speech recognition, and what happens if it mishears something?',
-    a: 'Pitchbase uses your browser\'s native Web Speech API, which performs best in a quiet environment with a decent microphone. In good conditions accuracy is high enough to reliably catch objection keywords and buying signals. If a word is misheard, the coaching panel may occasionally miss a cue but it won\'t interrupt the call or show anything incorrect to the prospect. The full transcript is editable after the call before it\'s saved.',
-  },
-  {
-    q: 'Does it work for any product or industry, or is it only built for certain types of sales?',
-    a: 'It works for any outbound or inbound sales scenario where you\'re speaking with a prospect one-on-one. Before each call you enter your own pitch, product description, and call goal so the AI coaches you in the context of what you\'re actually selling, not a generic script. Reps selling SaaS, financial products, real estate, recruitment, and insurance have all used it effectively. The custom scenario builder in training lets you replicate the exact objections specific to your market.',
-  },
-  {
-    q: 'What happens to my transcripts and data if I cancel?',
-    a: 'Your data stays accessible for 30 days after cancellation so you can export anything you need. Transcripts, call notes, lead scores, and AI summaries can all be downloaded before that window closes. After 30 days the account and its data are permanently deleted. We don\'t sell or share your data with third parties — paid, free, or cancelled.',
-  },
-];
 
 const CHANGELOG_ENTRIES = [
   {
@@ -253,44 +243,6 @@ const HELP_TOPICS = [
   },
 ];
 
-const BLOG_POSTS = [
-  {
-    tag: 'TECHNIQUE', tagColor: 'purple',
-    title: 'The 3-second rule that turns "think it over" into a closed deal',
-    excerpt: 'Most reps go silent after a stall — and lose. Here\'s the counter-intuitive pause technique that flips hesitation into commitment.',
-    date: 'Mar 18, 2025', readTime: '5 min',
-  },
-  {
-    tag: 'TRAINING', tagColor: 'green',
-    title: 'Why practicing on real prospects is killing your close rate',
-    excerpt: 'Every time you rehearse on a live call, you\'re paying tuition to someone who isn\'t buying. AI roleplay changes the math.',
-    date: 'Feb 28, 2025', readTime: '4 min',
-  },
-  {
-    tag: 'MULTILINGUAL', tagColor: 'blue',
-    title: 'How to close in a language that isn\'t your first',
-    excerpt: 'Non-native speakers have a hidden advantage in sales. Real-time AI coaching amplifies it. Here\'s how to use it.',
-    date: 'Feb 10, 2025', readTime: '6 min',
-  },
-  {
-    tag: 'DATA', tagColor: 'yellow',
-    title: 'We analysed 10,000 sales calls. Here\'s what separates the top 5%.',
-    excerpt: 'Objection timing, question frequency, and silence patterns — the data reveals what elite reps do differently.',
-    date: 'Jan 22, 2025', readTime: '8 min',
-  },
-];
-
-const JOB_LISTINGS = [
-  { title: 'Senior Full-Stack Engineer',      team: 'Engineering',       location: 'Remote (EU / US)',   type: 'Full-time' },
-  { title: 'AI/ML Engineer — Speech & NLP',   team: 'Engineering',       location: 'Remote (Worldwide)', type: 'Full-time' },
-  { title: 'Head of Sales',                   team: 'Go-to-Market',      location: 'Remote (US)',        type: 'Full-time' },
-  { title: 'Customer Success Manager',        team: 'Customer Success',  location: 'Remote (EU / US)',   type: 'Full-time' },
-];
-
-const NAV_SECTIONS: { id: SectionId; label: string }[] = [
-  { id: 'features',  label: 'Features'  },
-  { id: 'pricing',   label: 'Pricing'   },
-];
 
 
 const LANG_PHRASES = [
@@ -319,7 +271,6 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   const [visibleFrames, setVisibleFrames]       = useState(1);
   const [menuOpen, setMenuOpen]                 = useState(false);
   const [featureTabIdx, setFeatureTabIdx]       = useState(0);
-  const [featureAutoKey, setFeatureAutoKey]     = useState(0);
   const [activeSection, setActiveSection]       = useState<SectionId | null>(null);
   const [openFaq, setOpenFaq]                   = useState<number | null>(null);
   const [billingCycle, setBillingCycle]         = useState<'monthly' | 'yearly'>('monthly');
@@ -343,9 +294,10 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
     { phase: 'postcall',  tab: 'share' },
   ];
   const [demoStep, setDemoStep] = useState(0);
-  const autoTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sugTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const spotTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const autoTimer         = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sugTimer          = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const spotTimers        = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const featureIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const clearSpotTimers = useCallback(() => {
     spotTimers.current.forEach(t => clearTimeout(t));
@@ -363,9 +315,9 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
       setDesktopShowSuggestion(false);
       setSpotlight('transcript');
       if (sugTimer.current) clearTimeout(sugTimer.current);
-      const t1 = setTimeout(() => setSpotlight('ai'),        1400);
-      const t2 = setTimeout(() => setSpotlight('notes'),     2800);
-      const t3 = setTimeout(() => { setSpotlight(null); setDesktopShowSuggestion(true); }, 4200);
+      const t1 = setTimeout(() => setSpotlight('ai'),        SPOTLIGHT_STEP_MS);
+      const t2 = setTimeout(() => setSpotlight('notes'),     SPOTLIGHT_STEP_MS * 2);
+      const t3 = setTimeout(() => { setSpotlight(null); setDesktopShowSuggestion(true); }, SPOTLIGHT_STEP_MS * 3);
       spotTimers.current = [t1, t2, t3];
     } else {
       setSpotlight(null);
@@ -378,7 +330,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
     const nextIdx = (fromIdx + 1) % DEMO_STEPS.length;
     const isLastOfScene = nextIdx === 0;
     // Step 0 gets extra time for the spotlight sequence (4.2s) + suggestion (2s) = 6.5s total
-    const delay = fromIdx === 0 ? 6500 : 3500;
+    const delay = fromIdx === 0 ? DEMO_ADVANCE_LONG_MS : DEMO_ADVANCE_SHORT_MS;
     autoTimer.current = setTimeout(() => {
       if (isLastOfScene) {
         setDesktopSceneIdx(i => (i + 1) % DEMO_SCENES.length);
@@ -402,7 +354,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
   useEffect(() => {
     if (visibleFrames >= DEMO_FRAMES.length) return;
-    const t = setTimeout(() => setVisibleFrames(v => v + 1), 1400);
+    const t = setTimeout(() => setVisibleFrames(v => v + 1), FRAME_ADVANCE_MS);
     return () => clearTimeout(t);
   }, [visibleFrames]);
 
@@ -467,16 +419,21 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   }, [activeSection]);
 
   // Auto-advance feature tabs
-  useEffect(() => {
-    const t = setInterval(() => {
+  function restartFeatureInterval() {
+    if (featureIntervalRef.current) clearInterval(featureIntervalRef.current);
+    featureIntervalRef.current = setInterval(() => {
       setFeatureTabIdx(i => (i + 1) % FEATURE_TABS.length);
     }, 3800);
-    return () => clearInterval(t);
-  }, [featureAutoKey]);
+  }
+
+  useEffect(() => {
+    restartFeatureInterval();
+    return () => { if (featureIntervalRef.current) clearInterval(featureIntervalRef.current); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function goFeatureTab(idx: number) {
     setFeatureTabIdx(idx);
-    setFeatureAutoKey(k => k + 1);
+    restartFeatureInterval();
   }
 
   function scrollTo(id: string) {
@@ -502,15 +459,18 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
         {activeSection !== null ? (
           <div className="lp__nav-links lp__nav-links--sections">
-            {NAV_SECTIONS.map(s => (
-              <button
-                key={s.id}
-                className={activeSection === s.id ? 'lp__nav-link--active' : ''}
-                onClick={() => goSection(s.id)}
-              >
-                {s.label}
-              </button>
-            ))}
+            <button
+              className={activeSection === 'features' ? 'lp__nav-link--active' : ''}
+              onClick={() => goSection('features')}
+            >
+              Features
+            </button>
+            <button
+              className={activeSection === 'pricing' ? 'lp__nav-link--active' : ''}
+              onClick={() => goSection('pricing')}
+            >
+              Pricing
+            </button>
           </div>
         ) : (
           <div className={`lp__nav-links ${menuOpen ? 'lp__nav-links--open' : ''}`}>
@@ -713,158 +673,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   // ─── Pricing section view ──────────────────────────────────────────────────
 
   if (activeSection === 'pricing') {
-    const yearly = billingCycle === 'yearly';
-    const PLANS = [
-      {
-        tier: 'STARTER',
-        monthlyPrice: 19,
-        yearlyPrice: 16,
-        desc: 'For reps learning the ropes.',
-        cta: 'Get for Windows',
-        ctaStyle: 'outline' as const,
-        badge: null,
-        highlight: false,
-        features: [
-          '15 live calls / month',
-          'English & Spanish only',
-          'Basic post-call summary',
-          'Community support',
-        ],
-        missing: ['More languages', 'Analytics', 'Call upload'],
-      },
-      {
-        tier: 'PRO',
-        monthlyPrice: 49,
-        yearlyPrice: 41,
-        desc: 'For reps ready to level up.',
-        cta: 'Get for Windows',
-        ctaStyle: 'primary' as const,
-        badge: 'MOST POPULAR',
-        highlight: true,
-        features: [
-          '60 live calls / month',
-          '6 languages',
-          'Full post-call analysis + follow-up email',
-          'Basic analytics',
-          'Email support',
-        ],
-        missing: ['All 10 languages', 'Advanced analytics', 'Call upload'],
-      },
-      {
-        tier: 'BUSINESS',
-        monthlyPrice: 59,
-        yearlyPrice: 49,
-        desc: 'Full access. No ceilings.',
-        cta: 'Get for Windows',
-        ctaStyle: 'outline' as const,
-        badge: null,
-        highlight: false,
-        features: [
-          'Unlimited live calls',
-          'All 10 languages',
-          'Full post-call analysis + follow-up email',
-          'Advanced analytics & trends',
-          'Call upload & analysis',
-          'Team leaderboard & shared call library',
-          'Manager analytics dashboard',
-          'Priority support',
-        ],
-        missing: [],
-      },
-    ];
-
-    return (
-      <div className="lp">
-        {nav}
-        <div className="lp__sv lp__sv--pricing">
-          <div className="lp__sv-hero">
-            <div className="lp__sv-label">PRICING</div>
-            <h2 className="lp__sv-h2">Simple pricing, no catch</h2>
-            <p className="lp__sv-sub">No sales call. No quote request. Pick a plan and start closing in 60 seconds.</p>
-          </div>
-
-          <div className="lp__billing-toggle">
-            <button
-              className={`lp__billing-btn${!yearly ? ' lp__billing-btn--active' : ''}`}
-              onClick={() => setBillingCycle('monthly')}
-            >
-              Monthly
-            </button>
-            <button
-              className={`lp__billing-btn${yearly ? ' lp__billing-btn--active' : ''}`}
-              onClick={() => setBillingCycle('yearly')}
-            >
-              Yearly
-              <span className="lp__billing-save">Save ~16%</span>
-            </button>
-          </div>
-
-          <div className="lp__pricing-grid">
-            {PLANS.map((plan, i) => (
-              <div
-                key={i}
-                className={`lp__pricing-card${plan.highlight ? ' lp__pricing-card--pro' : ''}`}
-                style={{ '--i': i } as React.CSSProperties}
-              >
-                {plan.badge && <div className="lp__pricing-badge">{plan.badge}</div>}
-                <div className="lp__pricing-tier">{plan.tier}</div>
-                <div className="lp__pricing-price">
-                  ${yearly ? plan.yearlyPrice : plan.monthlyPrice}<span>/month</span>
-                </div>
-                {yearly && (
-                  <div className="lp__pricing-billed-note">billed ${plan.yearlyPrice * 12}/yr</div>
-                )}
-                <div className="lp__pricing-desc">{plan.desc}</div>
-                <div className="lp__pricing-divider" />
-                <ul className="lp__pricing-features">
-                  {plan.features.map((f, j) => (
-                    <li key={j} className="lp__pricing-feature lp__pricing-feature--yes">
-                      <span className="lp__pricing-check">✓</span>{f}
-                    </li>
-                  ))}
-                  {plan.missing.map((f, j) => (
-                    <li key={j} className="lp__pricing-feature lp__pricing-feature--no">
-                      <span className="lp__pricing-check">—</span>{f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  className={`lp__btn lp__btn--${plan.ctaStyle} lp__pricing-cta`}
-                  onClick={onDownload}
-                >
-                  {plan.cta}
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="lp__pricing-guarantee-row">
-            <span className="lp__pricing-guarantee-badge">✓ 7-day free trial on all plans — no card charged upfront</span>
-            <span className="lp__pricing-guarantee-sep">·</span>
-            <span className="lp__pricing-guarantee-note">Cancel anytime · No questions asked</span>
-          </div>
-
-          <div className="lp__sv-faq">
-            <div className="lp__sv-faq-title">Frequently asked questions</div>
-            {PRICING_FAQ.map((item, i) => (
-              <div
-                key={i}
-                className={`lp__sv-faq-item ${openFaq === i ? 'lp__sv-faq-item--open' : ''}`}
-              >
-                <button
-                  className="lp__sv-faq-q"
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                >
-                  {item.q}
-                  <span className="lp__sv-faq-toggle">{openFaq === i ? '−' : '+'}</span>
-                </button>
-                {openFaq === i && <div className="lp__sv-faq-a">{item.a}</div>}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <PricingSection billingCycle={billingCycle} setBillingCycle={setBillingCycle} openFaq={openFaq} setOpenFaq={setOpenFaq} onDownload={onDownload} nav={nav} />;
   }
 
   // ─── Download section view ────────────────────────────────────────────────
@@ -1109,117 +918,13 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   // ─── Blog section view ─────────────────────────────────────────────────────
 
   if (activeSection === 'blog') {
-    const [featured, ...rest] = BLOG_POSTS;
-    return (
-      <div className="lp">
-        {nav}
-        <div className="lp__sv lp__sv--blog">
-          <div className="lp__sv-hero">
-            <div className="lp__sv-label">BLOG</div>
-            <h2 className="lp__sv-h2">The Pitchbase Sales Blog</h2>
-            <p className="lp__sv-sub">Techniques, data, and ideas for reps who want to close more.</p>
-          </div>
-
-          {/* Featured post */}
-          <div className="lp__blog-featured">
-            <div className="lp__blog-featured-inner">
-              <div className="lp__blog-featured-meta">
-                <span className={`lp__blog-tag lp__blog-tag--${featured.tagColor}`}>{featured.tag}</span>
-                <span className="lp__blog-meta">{featured.date} · {featured.readTime} read</span>
-              </div>
-              <div className="lp__blog-featured-title">{featured.title}</div>
-              <p className="lp__blog-featured-excerpt">{featured.excerpt}</p>
-              <button className="lp__blog-read lp__blog-read--featured">Read article →</button>
-            </div>
-          </div>
-
-          {/* Remaining posts */}
-          <div className="lp__blog-grid">
-            {rest.map((post, i) => (
-              <div key={i} className="lp__blog-card">
-                <div className="lp__blog-card-top">
-                  <span className={`lp__blog-tag lp__blog-tag--${post.tagColor}`}>{post.tag}</span>
-                  <span className="lp__blog-meta">{post.date} · {post.readTime} read</span>
-                </div>
-                <div className="lp__blog-title">{post.title}</div>
-                <p className="lp__blog-excerpt">{post.excerpt}</p>
-                <button className="lp__blog-read">Read article →</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <BlogSection nav={nav} />;
   }
 
   // ─── Careers section view ──────────────────────────────────────────────────
 
   if (activeSection === 'careers') {
-    const PERKS = [
-      { icon: '◎', title: 'Fully remote', desc: 'Work from anywhere. Async-first culture — no mandatory stand-ups, no HQ politics.' },
-      { icon: '✦', title: 'Ship from day one', desc: "No layers between you and the product. Week one you're in the codebase or talking to customers." },
-      { icon: '◈', title: 'Competitive pay & equity', desc: 'Market-rate salary, meaningful equity, and a $1,500 home-office stipend. We don\'t underpay to test commitment.' },
-      { icon: '▣', title: 'Learning budget', desc: '$1,200/year for courses, books, conferences, or tools that make you better at your job.' },
-      { icon: '◷', title: 'Unlimited leave', desc: 'Take the time you need. We measure output, not hours. Minimum 25 days encouraged.' },
-      { icon: '↗', title: 'Transparent roadmap', desc: 'Everyone sees the full product roadmap and P&L. No information silos.' },
-    ];
-    return (
-      <div className="lp">
-        {nav}
-        <div className="lp__sv lp__sv--careers">
-          <div className="lp__sv-hero">
-            <div className="lp__sv-label">CAREERS</div>
-            <h2 className="lp__sv-h2">Build the future of sales coaching</h2>
-            <p className="lp__sv-sub">
-              A small, remote team working on a problem that touches every sales rep on the planet.
-              No politics, no nonsense — just great work and ambitious goals.
-            </p>
-          </div>
-
-          {/* Perks grid */}
-          <div className="lp__info-grid">
-            {PERKS.map((item, i) => (
-              <div key={i} className="lp__info-card">
-                <div className="lp__info-card-icon">{item.icon}</div>
-                <div className="lp__info-card-title">{item.title}</div>
-                <p className="lp__info-card-desc">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Open roles */}
-          <div className="lp__careers-section-title">Open roles</div>
-          <div className="lp__jobs-list">
-            {JOB_LISTINGS.map((job, i) => (
-              <div key={i} className="lp__job-row">
-                <div className="lp__job-info">
-                  <div className="lp__job-title">{job.title}</div>
-                  <div className="lp__job-meta">
-                    <span className="lp__job-team">{job.team}</span>
-                    <span className="lp__job-sep">·</span>
-                    <span>{job.location}</span>
-                    <span className="lp__job-sep">·</span>
-                    <span>{job.type}</span>
-                  </div>
-                </div>
-                <button className="lp__btn lp__btn--outline lp__btn--sm" onClick={() => goSection('contact')}>Apply →</button>
-              </div>
-            ))}
-          </div>
-
-          <div className="lp__help-contact">
-            <div className="lp__help-contact-icon">◈</div>
-            <div className="lp__help-contact-text">
-              Don't see the right role?<br />
-              <span>Send a speculative application — we hire great people whenever we find them.</span>
-            </div>
-            <button className="lp__btn lp__btn--outline" onClick={() => goSection('contact')}>
-              Get in touch →
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <CareersSection nav={nav} goSection={id => goSection(id as SectionId)} />;
   }
 
   // ─── Contact section view ──────────────────────────────────────────────────

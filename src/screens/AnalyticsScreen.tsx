@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useMemo } from 'react';
+﻿import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useTranslations } from '../hooks/useTranslations';
 import { useAppLanguage } from '../hooks/useAppLanguage';
 import type { CallSession } from '../types';
@@ -195,30 +195,50 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
   );
 }
 
+// ── Module-level utilities ────────────────────────────────────────────────────
+
+function fmtDur(s: number) { return `${Math.floor(s / 60)}m ${s % 60}s`; }
+function an(delay: number) { return { '--an-delay': `${delay}ms` } as React.CSSProperties; }
+const MOCK_CALL_DATES = new Set(MOCK_CALLS.map(c => c.date.split('T')[0]));
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   const t = useTranslations();
   const { appLanguage } = useAppLanguage();
   const [tab, setTab] = useState<AnalyticsTab>('performance');
-  const [detailView, setDetailView] = useState<string | null>(null);
+  const [detailView, setDetailView] = useState<'prob' | 'stage' | 'activity' | null>(null);
   const [showAllCalls, setShowAllCalls] = useState(false);
   const [teamCode, setTeamCode] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [joinedTeam, setJoinedTeam] = useState('');
   const [teamMsg, setTeamMsg] = useState('');
 
+  const teamMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     // Team codes are session-scoped — use sessionStorage so they don't persist across
     // browser sessions or leak to other users sharing the same device.
     setTeamCode(sessionStorage.getItem('pitchbase_team_code') ?? '');
     setJoinedTeam(sessionStorage.getItem('pitchbase_joined_team') ?? '');
+    return () => {
+      if (teamMsgTimer.current !== null) clearTimeout(teamMsgTimer.current);
+    };
+  }, []);
+
+  const flashTeamMsg = useCallback((msg: string) => {
+    if (teamMsgTimer.current !== null) clearTimeout(teamMsgTimer.current);
+    setTeamMsg(msg);
+    teamMsgTimer.current = setTimeout(() => setTeamMsg(''), 2000);
   }, []);
 
   async function copyTeamCode() {
-    await navigator.clipboard.writeText(teamCode);
-    setTeamMsg(t.analytics.codeCopied);
-    setTimeout(() => setTeamMsg(''), 2000);
+    try {
+      await navigator.clipboard.writeText(teamCode);
+      flashTeamMsg(t.analytics.codeCopied);
+    } catch {
+      flashTeamMsg('Failed to copy — please copy the code manually.');
+    }
   }
 
   function generateTeamCode() {
@@ -226,7 +246,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
     const code = Array.from(bytes, b => b.toString(36).padStart(2, '0')).join('').slice(0, 6).toUpperCase();
     sessionStorage.setItem('pitchbase_team_code', code);
     setTeamCode(code);
-    setTeamMsg(t.analytics.teamCodeCreated);
+    flashTeamMsg(t.analytics.teamCodeCreated);
   }
 
   function handleJoinTeam() {
@@ -235,15 +255,13 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
     sessionStorage.setItem('pitchbase_joined_team', code);
     setJoinedTeam(code);
     setJoinCode('');
-    setTeamMsg(t.analytics.joinedTeamMsg(code));
+    flashTeamMsg(t.analytics.joinedTeamMsg(code));
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  function fmtDur(s: number) { return `${Math.floor(s / 60)}m ${s % 60}s`; }
   function fmtDate(iso: string) {
     return new Date(iso).toLocaleDateString(appLanguage, { month: 'short', day: 'numeric' });
   }
-  function an(delay: number) { return { '--an-delay': `${delay}ms` } as React.CSSProperties; }
 
   function translateStage(stage: string) {
     const map: Record<string, string> = {
@@ -256,9 +274,11 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   }
 
   // Localized short day names (Sun=0 … Sat=6), Jan 7 2024 is Sunday
-  const DAY_NAMES = Array.from({ length: 7 }, (_, i) =>
-    new Date(2024, 0, 7 + i).toLocaleDateString(appLanguage, { weekday: 'short' })
-  );
+  const DAY_NAMES = useMemo(() =>
+    Array.from({ length: 7 }, (_, i) =>
+      new Date(2024, 0, 7 + i).toLocaleDateString(appLanguage, { weekday: 'short' })
+    )
+  , [appLanguage]);
 
   // ── Data sources (real or mock) ───────────────────────────────────────────
   const useMockPerf = pastSessions.length === 0;
@@ -298,38 +318,47 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
     ? Math.round(avg(MOCK_CALLS.map(c => c.score)))
     : (pastSessions.length ? Math.round(avg(pastSessions.map(s => computeRepScore(s)))) : 0);
 
-  const avgTalkRatioPct = useMockPerf
+  const talkRatioSessions = useMockPerf ? null : pastSessions.filter(s => s.talkRatio !== undefined);
+  const avgTalkRatioPct: number | null = useMockPerf
     ? 47
-    : (pastSessions.length ? Math.round(avg(pastSessions.filter(s => s.talkRatio !== undefined).map(s => (s.talkRatio ?? 0.5) * 100))) : 50);
+    : (talkRatioSessions && talkRatioSessions.length > 0
+        ? Math.round(avg(talkRatioSessions.map(s => (s.talkRatio ?? 0.5) * 100)))
+        : null);
 
   // ── Stage breakdown ───────────────────────────────────────────────────────
-  const stageCount: Record<string, number> = { opener: 0, discovery: 0, pitch: 0, close: 0 };
-  if (useMockPerf) {
-    for (const c of MOCK_CALLS) stageCount[c.stage] = (stageCount[c.stage] ?? 0) + 1;
-  } else {
-    for (const s of pastSessions) stageCount[s.callStage] = (stageCount[s.callStage] ?? 0) + 1;
-  }
+  const stageCount = useMemo(() => {
+    const counts: Record<string, number> = { opener: 0, discovery: 0, pitch: 0, close: 0 };
+    if (useMockPerf) {
+      for (const c of MOCK_CALLS) counts[c.stage] = (counts[c.stage] ?? 0) + 1;
+    } else {
+      for (const s of pastSessions) counts[s.callStage] = (counts[s.callStage] ?? 0) + 1;
+    }
+    return counts;
+  }, [pastSessions, useMockPerf]);
   const maxStage = Math.max(...Object.values(stageCount), 1);
 
   // ── Activity grid (last 28 days) ──────────────────────────────────────────
-  const mockCallDates = new Set(MOCK_CALLS.map(c => c.date.split('T')[0]));
-  const today = new Date();
-  const activityDays = Array.from({ length: 28 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() - (27 - i));
-    const ds = d.toISOString().split('T')[0];
-    return {
-      date: ds,
-      call: useMockPerf ? mockCallDates.has(ds) : pastSessions.some(s => s.endedAt.startsWith(ds)),
-    };
-  });
+  const activityDays = useMemo(() => {
+    const now = new Date();
+    // Use UTC to stay consistent with ISO strings stored in session data
+    const utcToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    return Array.from({ length: 28 }, (_, i) => {
+      const d = new Date(utcToday);
+      d.setUTCDate(d.getUTCDate() - (27 - i));
+      const ds = d.toISOString().split('T')[0];
+      return {
+        date: ds,
+        call: useMockPerf ? MOCK_CALL_DATES.has(ds) : pastSessions.some(s => s.endedAt.startsWith(ds)),
+      };
+    });
+  }, [pastSessions, useMockPerf]);
 
   // ── Detail panel data ──────────────────────────────────────────────────────
-  const perfDetail = useMockPerf
+  const perfDetail = useMemo(() => useMockPerf
     ? MOCK_CALLS.map(c => ({
         date: fmtDate(c.date), dur: fmtDur(c.dur),
         prob: c.prob, probTier: scoreTier(c.prob),
-        score: c.score, scoreTier_: scoreTier(c.score, 70, 40),
+        score: c.score, scoreTierVal: scoreTier(c.score, 70, 40),
         stage: c.stage, objections: c.objections,
       }))
     : [...pastSessions]
@@ -337,24 +366,24 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
         .map(s => ({
           date: fmtDate(s.endedAt), dur: fmtDur(s.durationSeconds),
           prob: s.finalCloseProbability, probTier: scoreTier(s.finalCloseProbability),
-          score: s.leadScore, scoreTier_: scoreTier(s.leadScore, 70, 40),
+          score: s.leadScore, scoreTierVal: scoreTier(s.leadScore, 70, 40),
           stage: s.callStage, objections: null as number | null,
-        }));
+        })), [pastSessions, useMockPerf, appLanguage]);
 
-  const stageDetail = (Object.entries(stageCount) as [string, number][])
-    .filter(([, c]) => c > 0)
-    .map(([stage, count]) => {
-      const probs = useMockPerf
-        ? MOCK_CALLS.filter(c => c.stage === stage).map(c => c.prob)
-        : pastSessions.filter(s => s.callStage === stage).map(s => s.finalCloseProbability);
-      const durs = useMockPerf
-        ? MOCK_CALLS.filter(c => c.stage === stage).map(c => c.dur)
-        : pastSessions.filter(s => s.callStage === stage).map(s => s.durationSeconds);
-      const ap = probs.length ? Math.round(avg(probs)) : 0;
-      return { stage, count, avgProb: ap, avgDur: Math.round(avg(durs)), probTier: scoreTier(ap) };
-    });
-
-  const isMock = useMockPerf;
+  const stageDetail = useMemo(() =>
+    (Object.entries(stageCount) as [string, number][])
+      .filter(([, c]) => c > 0)
+      .map(([stage, count]) => {
+        const probs = useMockPerf
+          ? MOCK_CALLS.filter(c => c.stage === stage).map(c => c.prob)
+          : pastSessions.filter(s => s.callStage === stage).map(s => s.finalCloseProbability);
+        const durs = useMockPerf
+          ? MOCK_CALLS.filter(c => c.stage === stage).map(c => c.dur)
+          : pastSessions.filter(s => s.callStage === stage).map(s => s.durationSeconds);
+        const ap = probs.length ? Math.round(avg(probs)) : 0;
+        return { stage, count, avgProb: ap, avgDur: Math.round(avg(durs)), probTier: scoreTier(ap) };
+      })
+  , [stageCount, pastSessions, useMockPerf]);
 
   // ── Insight 1: Top objections ─────────────────────────────────────────────
   interface ObjInsight { label: string; count: number; technique: string; successRate: number; }
@@ -388,8 +417,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pastSessions]);
+  }, [pastSessions, t]);
 
   // ── Insight 2: Winning patterns ───────────────────────────────────────────
   const winningPatterns = useMemo(() => {
@@ -414,16 +442,17 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
     if (closeS.length > 0 && avgCloseP > avgOtherP + 5)
       out.push({ icon: '◈', stat: `${avgCloseP}%`, label: t.analytics.winPatternCloseStage(avgOtherP) });
     return out.slice(0, 3);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pastSessions]);
+  }, [pastSessions, t]);
 
   // ── Insight 3: Stage distribution (%) ────────────────────────────────────
-  const totalCallsForStage = Object.values(stageCount).reduce((a, b) => a + b, 0) || 1;
-  const stagePcts = (['opener', 'discovery', 'pitch', 'close'] as const).map(stage => ({
-    stage,
-    count: stageCount[stage] ?? 0,
-    pct: Math.round(((stageCount[stage] ?? 0) / totalCallsForStage) * 100),
-  }));
+  const stagePcts = useMemo(() => {
+    const total = Object.values(stageCount).reduce((a, b) => a + b, 0) || 1;
+    return (['opener', 'discovery', 'pitch', 'close'] as const).map(stage => ({
+      stage,
+      count: stageCount[stage] ?? 0,
+      pct: Math.round(((stageCount[stage] ?? 0) / total) * 100),
+    }));
+  }, [stageCount]);
 
   // ── Insight 4: Best call time (by day of week) ────────────────────────────
   const callsByDay = useMemo(() => {
@@ -439,8 +468,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
     return DAY_NAMES.map((name, i) =>
       map[i] ? { name, avgProb: Math.round(map[i].total / map[i].count), count: map[i].count } : null
     ).filter(Boolean) as { name: string; avgProb: number; count: number }[];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pastSessions, useMockPerf]);
+  }, [pastSessions, useMockPerf, DAY_NAMES]);
   const bestDay  = callsByDay.length ? callsByDay.reduce((a, b) => b.avgProb > a.avgProb ? b : a) : null;
   const maxDayProb = callsByDay.length ? Math.max(...callsByDay.map(d => d.avgProb)) : 100;
 
@@ -458,8 +486,13 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
       const ap = m.length ? Math.round(avg(m.map(s => s.prob))) : null;
       return { label: g.label, count: m.length, avgClose: ap, tier: ap ? scoreTier(ap) : 'low' as Tier };
     }).filter(g => g.count > 0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pastSessions, useMockPerf]);
+  }, [pastSessions, useMockPerf, t]);
+
+  // ── Pre-computed detail view variables (avoids IIFEs in JSX) ─────────────
+  const emptyStage = { stage: '—', count: 0, avgProb: 0, avgDur: 0, probTier: 'low' as Tier };
+  const topStage = stageDetail.reduce((a, b) => b.count > a.count ? b : a, stageDetail[0] ?? emptyStage);
+  const bestStage = stageDetail.reduce((a, b) => b.avgProb > a.avgProb ? b : a, stageDetail[0] ?? emptyStage);
+  const callDays = activityDays.filter(d => d.call).length;
 
   return (
     <div className="analytics">
@@ -472,7 +505,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
             <p className="analytics__subtitle">{t.analytics.subtitle}</p>
           </div>
         )}
-        {isMock && <span className="analytics__demo-badge">{t.analytics.demoData.toUpperCase()}</span>}
+        {useMockPerf && <span className="analytics__demo-badge">{t.analytics.demoData.toUpperCase()}</span>}
       </div>
 
       {!detailView && (
@@ -499,10 +532,10 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
             {[
               { val: `${totalCalls}`, label: t.analytics.totalCalls.toUpperCase(), cls: '' },
               { val: `${avgProb}%`, label: t.analytics.avgClosePercent.toUpperCase(), cls: `analytics__stat-val--${scoreTier(avgProb)}` },
-              { val: `${Math.max(...perfDetail.map(r => r.prob))}%`, label: t.analytics.bestCall.toUpperCase(), cls: 'analytics__stat-val--high' },
+              { val: perfDetail.length ? `${Math.max(...perfDetail.map(r => r.prob))}%` : '—', label: t.analytics.bestCall.toUpperCase(), cls: 'analytics__stat-val--high' },
               { val: `${perfDetail.filter(r => r.prob >= 61).length}`, label: t.analytics.callsWon.toUpperCase(), cls: 'analytics__stat-val--high' },
               { val: `${avgRepScore}`, label: t.analytics.avgRepScore.toUpperCase(), cls: `analytics__stat-val--${scoreTier(avgRepScore, 70, 45)}` },
-              { val: `${avgTalkRatioPct}%`, label: t.analytics.avgTalkRatio.toUpperCase(), cls: avgTalkRatioPct <= 50 ? 'analytics__stat-val--high' : avgTalkRatioPct <= 65 ? 'analytics__stat-val--medium' : 'analytics__stat-val--low' },
+              { val: avgTalkRatioPct !== null ? `${avgTalkRatioPct}%` : '—', label: t.analytics.avgTalkRatio.toUpperCase(), cls: avgTalkRatioPct === null ? '' : avgTalkRatioPct <= 50 ? 'analytics__stat-val--high' : avgTalkRatioPct <= 65 ? 'analytics__stat-val--medium' : 'analytics__stat-val--low' },
             ].map((item, i) => (
               <div key={i} className="analytics__stat-card" style={an(i * 60)}>
                 <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
@@ -525,10 +558,10 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                 <thead><tr><th>{t.analytics.colDate.toUpperCase()}</th><th>{t.analytics.colDuration.toUpperCase()}</th><th>{t.analytics.colClosePercent.toUpperCase()}</th><th>{t.analytics.colLeadScore.toUpperCase()}</th><th>{t.analytics.colStage.toUpperCase()}</th>{useMockPerf && <th>{t.analytics.colObjections.toUpperCase()}</th>}</tr></thead>
                 <tbody>
                   {(showAllCalls ? perfDetail : perfDetail.slice(0, 50)).map((r, i) => (
-                    <tr key={i}>
+                    <tr key={`${r.date}-${r.stage}-${i}`}>
                       <td>{r.date}</td><td>{r.dur}</td>
                       <td className={`analytics__detail-val--${r.probTier}`}>{r.prob}%</td>
-                      <td className={`analytics__detail-val--${r.scoreTier_}`}>{r.score}</td>
+                      <td className={`analytics__detail-val--${r.scoreTierVal}`}>{r.score}</td>
                       <td className="analytics__detail-stage">{translateStage(r.stage)}</td>
                       {useMockPerf && <td className={r.objections && r.objections > 2 ? 'analytics__detail-val--low' : ''}>{r.objections}</td>}
                     </tr>
@@ -540,7 +573,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
                   className="analytics__show-all-btn"
                   onClick={() => setShowAllCalls(v => !v)}
                 >
-                  {showAllCalls ? 'Show less' : `Show all ${perfDetail.length} calls`}
+                  {showAllCalls ? t.analytics.showLess : t.analytics.showAllCalls(perfDetail.length)}
                 </button>
               )}
             </div>
@@ -555,21 +588,17 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
             <p className="analytics__detail-view-sub">{t.analytics.callsByStageDetailSub}</p>
           </div>
           <div className="analytics__stats">
-            {(() => {
-              const topS = stageDetail.reduce((a, b) => b.count > a.count ? b : a, stageDetail[0] ?? { stage: '—', count: 0, avgProb: 0, avgDur: 0, probTier: 'low' as Tier });
-              const bestS = stageDetail.reduce((a, b) => b.avgProb > a.avgProb ? b : a, stageDetail[0] ?? { stage: '—', count: 0, avgProb: 0, avgDur: 0, probTier: 'low' as Tier });
-              return [
-                { val: `${stageDetail.length}`, label: t.analytics.activeStages.toUpperCase(), cls: '' },
-                { val: translateStage(topS.stage), label: t.analytics.mostCalls.toUpperCase(), cls: '' },
-                { val: `${bestS.avgProb}%`, label: t.analytics.bestStageAvg.toUpperCase(), cls: `analytics__stat-val--${bestS.probTier}` },
-                { val: fmtDur(avgDurSec), label: t.analytics.avgDuration.toUpperCase(), cls: '' },
-              ].map((item, i) => (
-                <div key={i} className="analytics__stat-card" style={an(i * 60)}>
-                  <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
-                  <div className="analytics__stat-label">{item.label}</div>
-                </div>
-              ));
-            })()}
+            {[
+              { val: `${stageDetail.length}`, label: t.analytics.activeStages.toUpperCase(), cls: '' },
+              { val: translateStage(topStage.stage), label: t.analytics.mostCalls.toUpperCase(), cls: '' },
+              { val: `${bestStage.avgProb}%`, label: t.analytics.bestStageAvg.toUpperCase(), cls: `analytics__stat-val--${bestStage.probTier}` },
+              { val: fmtDur(avgDurSec), label: t.analytics.avgDuration.toUpperCase(), cls: '' },
+            ].map((item, i) => (
+              <div key={i} className="analytics__stat-card" style={an(i * 60)}>
+                <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
+                <div className="analytics__stat-label">{item.label}</div>
+              </div>
+            ))}
           </div>
           <div className="analytics__chart-card" style={an(280)}>
             <div className="analytics__chart-title">{t.analytics.callVolumeByStage.toUpperCase()}</div>
@@ -589,8 +618,8 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
               <table className="analytics__detail-table">
                 <thead><tr><th>{t.analytics.colStage.toUpperCase()}</th><th>{t.analytics.colCalls.toUpperCase()}</th><th>{t.analytics.colAvgClosePercent.toUpperCase()}</th><th>{t.analytics.colAvgDuration.toUpperCase()}</th></tr></thead>
                 <tbody>
-                  {stageDetail.map((r, i) => (
-                    <tr key={i}>
+                  {stageDetail.map(r => (
+                    <tr key={r.stage}>
                       <td className="analytics__detail-stage">{translateStage(r.stage)}</td>
                       <td>{r.count}</td>
                       <td className={`analytics__detail-val--${r.probTier}`}>{r.avgProb}%</td>
@@ -611,18 +640,15 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
             <p className="analytics__detail-view-sub">{t.analytics.activityLogDetailSub}</p>
           </div>
           <div className="analytics__stats">
-            {(() => {
-              const callDays = activityDays.filter(d => d.call).length;
-              return [
-                { val: `${callDays}`, label: t.analytics.activeDays.toUpperCase(), cls: callDays > 15 ? 'analytics__stat-val--high' : '' },
-                { val: `${28 - callDays}`, label: t.analytics.daysOff.toUpperCase(), cls: '' },
-              ].map((item, i) => (
-                <div key={i} className="analytics__stat-card" style={an(i * 60)}>
-                  <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
-                  <div className="analytics__stat-label">{item.label}</div>
-                </div>
-              ));
-            })()}
+            {[
+              { val: `${callDays}`, label: t.analytics.activeDays.toUpperCase(), cls: callDays > 15 ? 'analytics__stat-val--high' : '' },
+              { val: `${28 - callDays}`, label: t.analytics.daysOff.toUpperCase(), cls: '' },
+            ].map((item, i) => (
+              <div key={i} className="analytics__stat-card" style={an(i * 60)}>
+                <div className={`analytics__stat-val ${item.cls}`}>{item.val}</div>
+                <div className="analytics__stat-label">{item.label}</div>
+              </div>
+            ))}
           </div>
           <div className="analytics__chart-card analytics__chart-card--wide" style={an(280)}>
             <div className="analytics__chart-title">{t.analytics.dayGrid28.toUpperCase()}</div>
@@ -862,7 +888,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
           <div className="analytics__chart-card" style={an(0)}>
             <div className="analytics__chart-title-row">
               <span className="analytics__chart-title">{t.analytics.teamLeaderboard.toUpperCase()}</span>
-              <span className="analytics__demo-inline">DEMO</span>
+              <span className="analytics__demo-inline">{t.analytics.demoData.toUpperCase()}</span>
             </div>
             <div className="analytics__leaderboard">
               <div className="analytics__lb-header">
@@ -874,7 +900,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
               </div>
               {MOCK_TEAM.map((rep, i) => (
                 <div
-                  key={i}
+                  key={rep.name}
                   className={`analytics__lb-row ${rep.isYou ? 'analytics__lb-row--you' : ''}`}
                   style={an(60 + i * 75)}
                 >
@@ -897,7 +923,10 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
           <div className="analytics__team-grid">
             <div className="analytics__team-card" style={an(500)}>
-              <div className="analytics__chart-title">{t.analytics.managerCreateTeam.toUpperCase()}</div>
+              <div className="analytics__chart-title-row">
+                <span className="analytics__chart-title">{t.analytics.managerCreateTeam.toUpperCase()}</span>
+                <span className="analytics__demo-inline">{t.analytics.teamComingSoon}</span>
+              </div>
               <p className="analytics__team-desc">{t.analytics.teamCodeDesc}</p>
               {teamCode ? (
                 <div className="analytics__team-code-block">
@@ -913,7 +942,10 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
             </div>
 
             <div className="analytics__team-card" style={an(580)}>
-              <div className="analytics__chart-title">{t.analytics.repJoinTeam.toUpperCase()}</div>
+              <div className="analytics__chart-title-row">
+                <span className="analytics__chart-title">{t.analytics.repJoinTeam.toUpperCase()}</span>
+                <span className="analytics__demo-inline">{t.analytics.teamComingSoon}</span>
+              </div>
               <p className="analytics__team-desc">{t.analytics.teamJoinDesc}</p>
               {joinedTeam && (
                 <div className="analytics__team-joined">

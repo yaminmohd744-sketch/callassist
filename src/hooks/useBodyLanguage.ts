@@ -16,6 +16,36 @@ const POSE_MODEL = 'https://storage.googleapis.com/mediapipe-models/pose_landmar
 
 type NL = { x: number; y: number; z: number };
 
+// ─── Module-level model cache ──────────────────────────────────────────────────
+// Models are loaded once (~20 MB from CDN) and reused across isActive toggles.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _faceLandmarker: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _poseLandmarker: any = null;
+let _modelsLoading: Promise<void> | null = null;
+
+async function ensureModels(): Promise<void> {
+  if (_faceLandmarker && _poseLandmarker) return;
+  if (_modelsLoading) return _modelsLoading;
+  _modelsLoading = (async () => {
+    const mp = await import('@mediapipe/tasks-vision');
+    const vision = await mp.FilesetResolver.forVisionTasks(WASM_PATH);
+    [_faceLandmarker, _poseLandmarker] = await Promise.all([
+      mp.FaceLandmarker.createFromOptions(vision, {
+        baseOptions: { modelAssetPath: FACE_MODEL, delegate: 'GPU' },
+        runningMode: 'VIDEO',
+        numFaces: 1,
+      }),
+      mp.PoseLandmarker.createFromOptions(vision, {
+        baseOptions: { modelAssetPath: POSE_MODEL, delegate: 'GPU' },
+        runningMode: 'VIDEO',
+        numPoses: 1,
+      }),
+    ]);
+  })();
+  return _modelsLoading;
+}
+
 export function useBodyLanguage({ isActive, elapsedSeconds, currentScript, onSuggestion }: UseBodyLanguageProps) {
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -44,10 +74,6 @@ export function useBodyLanguage({ isActive, elapsedSeconds, currentScript, onSug
     let animFrame: number | null = null;
     let stream: MediaStream | null = null;
     let video: HTMLVideoElement | null = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let faceLandmarker: any = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let poseLandmarker: any = null;
 
     const st = stateRef.current;
     st.noseYHistory = [];
@@ -119,6 +145,10 @@ export function useBodyLanguage({ isActive, elapsedSeconds, currentScript, onSug
 
     async function init() {
       try {
+        // Ensure models are loaded (no-op if already cached)
+        await ensureModels();
+        if (cancelled) return;
+
         stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
         if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
 
@@ -127,26 +157,6 @@ export function useBodyLanguage({ isActive, elapsedSeconds, currentScript, onSug
         video.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;pointer-events:none;';
         document.body.appendChild(video);
         await video.play();
-        if (cancelled) return;
-
-        const mp = await import('@mediapipe/tasks-vision');
-        if (cancelled) return;
-
-        const vision = await mp.FilesetResolver.forVisionTasks(WASM_PATH);
-        if (cancelled) return;
-
-        [faceLandmarker, poseLandmarker] = await Promise.all([
-          mp.FaceLandmarker.createFromOptions(vision, {
-            baseOptions: { modelAssetPath: FACE_MODEL, delegate: 'GPU' },
-            runningMode: 'VIDEO',
-            numFaces: 1,
-          }),
-          mp.PoseLandmarker.createFromOptions(vision, {
-            baseOptions: { modelAssetPath: POSE_MODEL, delegate: 'GPU' },
-            runningMode: 'VIDEO',
-            numPoses: 1,
-          }),
-        ]);
         if (cancelled) return;
 
         setCameraReady(true);
@@ -162,8 +172,8 @@ export function useBodyLanguage({ isActive, elapsedSeconds, currentScript, onSug
             lastMs = nowMs;
             inferring = true;
             try {
-              const fr = faceLandmarker?.detectForVideo(video, nowMs);
-              const pr = poseLandmarker?.detectForVideo(video, nowMs);
+              const fr = _faceLandmarker?.detectForVideo(video, nowMs);
+              const pr = _poseLandmarker?.detectForVideo(video, nowMs);
               detect(fr?.faceLandmarks?.[0] ?? null, pr?.landmarks?.[0] ?? null);
             } catch { /* silent — frame errors are non-fatal */ } finally {
               inferring = false;
@@ -180,15 +190,13 @@ export function useBodyLanguage({ isActive, elapsedSeconds, currentScript, onSug
 
     init();
 
-    // cancelled=true stops the animation loop and all async callbacks above from
-    // touching state after unmount. Stream/video/model teardown follows so nothing leaks.
+    // On deactivation: stop camera stream and animation loop only.
+    // Models stay alive in the module-level cache for the next activation.
     return () => {
       cancelled = true;
       if (animFrame !== null) cancelAnimationFrame(animFrame);
       stream?.getTracks().forEach(t => t.stop());
       video?.remove();
-      try { faceLandmarker?.close(); } catch { /* ignore */ }
-      try { poseLandmarker?.close(); } catch { /* ignore */ }
       setCameraReady(false);
     };
   }, [isActive]);

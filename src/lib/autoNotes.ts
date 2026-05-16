@@ -32,6 +32,15 @@ const BUDGET_TIMELINE_PATTERNS = [
   /\b(?:decision|decide|sign off|approval|green light|budget approval)\b.{0,40}\b(?:by|before|in|within|next|this)\b/i,
 ];
 
+// Deduplication: track which 2-second buckets have already produced a note.
+// Prevents multiple pattern groups matching the same utterance from emitting duplicates.
+const _emittedBuckets = new Set<number>();
+
+/** Call this when a call ends to reset dedup state for the next call. */
+export function clearAutoNoteDedup(): void {
+  _emittedBuckets.clear();
+}
+
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = String(seconds % 60).padStart(2, '0');
@@ -43,41 +52,45 @@ function truncate(text: string, max: number): string {
 }
 
 export function extractAutoNote(text: string, timestampSeconds: number): string | null {
+  const bucket = Math.floor(timestampSeconds / 2);
+  if (_emittedBuckets.has(bucket)) return null;
+
   const t = formatTime(timestampSeconds);
+  let result: string | null = null;
 
-  for (const p of MEETING_PATTERNS) {
-    const m = text.match(p);
-    if (m) return `${t} — ${truncate(m[0].trim(), 80)}`;
-  }
+  outer: {
+    for (const p of MEETING_PATTERNS) {
+      const m = text.match(p);
+      if (m) { result = `${t} — ${truncate(m[0].trim(), 80)}`; break outer; }
+    }
 
-  for (const p of COMMITMENT_PATTERNS) {
-    const m = text.match(p);
-    if (m) return `${t} — ${truncate(m[0].trim(), 80)}`;
-  }
+    for (const p of COMMITMENT_PATTERNS) {
+      const m = text.match(p);
+      if (m) { result = `${t} — ${truncate(m[0].trim(), 80)}`; break outer; }
+    }
 
-  for (const p of BUDGET_TIMELINE_PATTERNS) {
-    const m = text.match(p);
-    if (m) return `${t} — ${truncate(m[0].trim(), 80)}`;
-  }
+    for (const p of BUDGET_TIMELINE_PATTERNS) {
+      const m = text.match(p);
+      if (m) { result = `${t} — ${truncate(m[0].trim(), 80)}`; break outer; }
+    }
 
-  for (const p of PEOPLE_PATTERNS) {
-    const m = text.match(p);
-    if (m) return `${t} — ${truncate(m[0].trim(), 80)}`;
-  }
+    for (const p of PEOPLE_PATTERNS) {
+      const m = text.match(p);
+      if (m) { result = `${t} — ${truncate(m[0].trim(), 80)}`; break outer; }
+    }
 
-  for (const p of TOOL_PATTERNS) {
-    const m = text.match(p);
-    if (m) return `${t} — ${truncate(m[0].trim(), 80)}`;
-  }
+    for (const p of TOOL_PATTERNS) {
+      const m = text.match(p);
+      if (m) { result = `${t} — ${truncate(m[0].trim(), 80)}`; break outer; }
+    }
 
-  // Time mention alone (e.g. "3pm works for me")
-  for (const p of TIME_PATTERNS) {
-    const m = text.match(p);
-    if (m) {
-      const surrounding = truncate(text.trim(), 70);
-      return `${t} — ${surrounding}`;
+    // Time mention alone (e.g. "3pm works for me")
+    for (const p of TIME_PATTERNS) {
+      const m = text.match(p);
+      if (m) { result = `${t} — ${truncate(text.trim(), 70)}`; break outer; }
     }
   }
 
-  return null;
+  if (result) _emittedBuckets.add(bucket);
+  return result;
 }

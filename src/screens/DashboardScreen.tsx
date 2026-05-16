@@ -1,10 +1,20 @@
-import { useMemo, type CSSProperties } from 'react';
+import { useMemo } from 'react';
 import { Button } from '../components/ui/Button';
 import type { CallSession } from '../types';
 import { getStreak } from '../lib/streak';
 import { formatDuration, formatDateShort } from '../lib/formatters';
 import { useTranslations } from '../hooks/useTranslations';
+import { useAppContext } from '../contexts/AppContext';
 import './DashboardScreen.css';
+
+const HIGH_PROB_THRESHOLD = 61;
+const MED_PROB_THRESHOLD  = 31;
+
+function probLevel(prob: number): 'high' | 'medium' | 'low' {
+  return prob >= HIGH_PROB_THRESHOLD ? 'high' : prob >= MED_PROB_THRESHOLD ? 'medium' : 'low';
+}
+
+const animStyle = (i: number) => ({ '--i': i } as React.CSSProperties);
 
 interface DashboardScreenProps {
   pastSessions: CallSession[];
@@ -19,6 +29,7 @@ export function DashboardScreen({
   pastSessions, onStartCall, onUploadCall, onViewSession, onDeleteSession, userName,
 }: DashboardScreenProps) {
   const t = useTranslations();
+  const { appLanguage } = useAppContext();
   const totalCalls = pastSessions.length;
   const avgProb = totalCalls
     ? Math.round(pastSessions.reduce((sum, s) => sum + s.finalCloseProbability, 0) / totalCalls)
@@ -32,7 +43,7 @@ export function DashboardScreen({
       <main className="dashboard__main">
 
         {/* Greeting */}
-        <div className="dashboard__greeting db-anim" style={{ '--i': 0 } as CSSProperties}>
+        <div className="dashboard__greeting db-anim" style={animStyle(0)}>
           <div>
             <h1 className="dashboard__greeting-text">{t.dashboard.greeting(userName)}</h1>
             <p className="dashboard__subtitle">
@@ -43,13 +54,13 @@ export function DashboardScreen({
         </div>
 
         {/* Stats row */}
-        <div className="dashboard__stats db-anim" style={{ '--i': 1 } as CSSProperties}>
+        <div className="dashboard__stats db-anim" style={animStyle(1)}>
           <div className="dashboard__stat-card">
             <div className="dashboard__stat-val">{totalCalls}</div>
             <div className="dashboard__stat-label">{t.dashboard.totalCalls.toUpperCase()}</div>
           </div>
           <div className="dashboard__stat-card">
-            <div className={`dashboard__stat-val ${avgProb >= 61 ? 'dashboard__stat-val--high' : avgProb >= 31 ? 'dashboard__stat-val--medium' : totalCalls ? 'dashboard__stat-val--low' : ''}`}>
+            <div className={`dashboard__stat-val ${totalCalls ? `dashboard__stat-val--${probLevel(avgProb)}` : ''}`}>
               {totalCalls ? `${avgProb}%` : '-'}
             </div>
             <div className="dashboard__stat-label">{t.dashboard.avgCloseProb.toUpperCase()}</div>
@@ -75,7 +86,7 @@ export function DashboardScreen({
         </div>
 
         {/* Recent calls */}
-        <div className="dashboard__section db-anim" style={{ '--i': 2 } as CSSProperties}>
+        <div className="dashboard__section db-anim" style={animStyle(2)}>
           <div className="dashboard__section-header">
             <span className="dashboard__section-title">{t.dashboard.recentCalls.toUpperCase()}</span>
             <span className="dashboard__section-count">{totalCalls} {t.dashboard.total}</span>
@@ -93,9 +104,9 @@ export function DashboardScreen({
           ) : (
             <div className="dashboard__call-list">
               {sortedSessions.map((session) => {
-                const probLevel = session.finalCloseProbability >= 61 ? 'high' : session.finalCloseProbability >= 31 ? 'medium' : 'low';
+                const probLvl = probLevel(session.finalCloseProbability);
                 return (
-                  <div key={session.id ?? session.endedAt} className="dashboard__call-row" onClick={() => onViewSession(session)} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && onViewSession(session)}>
+                  <div key={session.id ?? session.endedAt} className="dashboard__call-row" onClick={() => onViewSession(session)} role="button" tabIndex={0} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onViewSession(session)}>
                     <div className="dashboard__call-prospect">
                       <div className="dashboard__call-name">
                         {session.config.prospectName || 'Unknown prospect'}
@@ -106,11 +117,11 @@ export function DashboardScreen({
                     </div>
 
                     <div className="dashboard__call-meta">
-                      <span className="dashboard__call-date">{formatDateShort(session.endedAt)}</span>
+                      <span className="dashboard__call-date">{formatDateShort(session.endedAt, appLanguage)}</span>
                     </div>
 
                     <div className="dashboard__call-stats">
-                      <span className={`dashboard__call-prob dashboard__call-prob--${probLevel}`}>
+                      <span className={`dashboard__call-prob dashboard__call-prob--${probLvl}`}>
                         {session.finalCloseProbability}%
                       </span>
                       <span className="dashboard__call-duration">{formatDuration(session.durationSeconds)}</span>
@@ -123,6 +134,7 @@ export function DashboardScreen({
                       <span className="dashboard__call-view">{t.dashboard.viewSession.toUpperCase()} →</span>
                       <button
                         className="dashboard__call-delete"
+                        aria-label={t.dashboard.deleteSession}
                         title={t.dashboard.deleteSession}
                         onClick={e => { e.stopPropagation(); onDeleteSession(session.id ?? session.endedAt); }}
                       >

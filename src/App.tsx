@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
+import { AppContext } from './contexts/AppContext';
 import * as Sentry from '@sentry/react';
 import { ThemeToggle }      from './components/ThemeToggle';
 import { AppShell }         from './components/layout/AppShell';
@@ -70,6 +71,8 @@ function getOnboardingData(): OnboardingData {
 // True when running inside the Electron desktop app
 const isElectron = navigator.userAgent.includes('Electron');
 
+const ALLOWED_IMAGE_TYPES = ['data:image/png;', 'data:image/jpeg;', 'data:image/webp;', 'data:image/gif;'];
+
 function getDisplayName(
   user: { user_metadata?: Record<string, string>; email?: string | null } | null,
   onboardingName?: string,
@@ -83,13 +86,17 @@ function getDisplayName(
   );
 }
 
+function applyTheme(t: 'dark' | 'light') {
+  document.documentElement.dataset.theme = t === 'light' ? 'light' : '';
+}
+
 // Read once at module scope for FOUC prevention and React state initialisation.
 // Falls back to system preference for first-time visitors.
 const INITIAL_THEME = (
   localStorage.getItem(STORAGE_KEYS.theme) ??
   (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
 ) as 'dark' | 'light';
-document.documentElement.dataset.theme = INITIAL_THEME === 'light' ? 'light' : '';
+applyTheme(INITIAL_THEME);
 
 type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
 
@@ -111,7 +118,7 @@ export function App() {
     overlay.addEventListener('animationend', () => overlay.remove(), { once: true });
     setTheme(next);
     try { localStorage.setItem(STORAGE_KEYS.theme, next); } catch { /* storage full */ }
-    document.documentElement.dataset.theme = next === 'light' ? 'light' : '';
+    applyTheme(next);
   }, [theme]);
 
   const [screen, setScreen]             = useState<Screen>(isElectron ? 'auth' : 'landing');
@@ -120,6 +127,7 @@ export function App() {
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
   const [showTransition, setShowTransition] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingVersion, setOnboardingVersion] = useState(0);
   const transitionShown = useRef(false);
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -131,8 +139,7 @@ export function App() {
       .catch(() => { /* IndexedDB unavailable — no pic shown */ });
   }, []);
 
-  const ALLOWED_IMAGE_TYPES = ['data:image/png;', 'data:image/jpeg;', 'data:image/webp;', 'data:image/gif;'];
-  function handleProfilePicChange(dataUrl: string) {
+  const handleProfilePicChange = useCallback((dataUrl: string) => {
     if (!ALLOWED_IMAGE_TYPES.some(prefix => dataUrl.startsWith(prefix))) {
       toast.error('Invalid image format — use PNG, JPEG, WebP or GIF');
       return;
@@ -140,7 +147,7 @@ export function App() {
     if (dataUrl.length > 500_000) { toast.error('Image too large (max ~375 KB)'); return; }
     setProfilePic(dataUrl);
     saveProfilePic(dataUrl).catch(() => toast.error('Storage full — photo not saved'));
-  }
+  }, [toast]);
 
   const totalCallSeconds = pastSessions.reduce((sum, s) => sum + s.durationSeconds, 0);
   const totalCallCount = pastSessions.length;
@@ -205,6 +212,17 @@ export function App() {
     document.addEventListener('visibilitychange', onVisible);
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, [user]);
+
+  // Guard: in the web app (non-Electron) bounce any non-landing screen back to landing.
+  useEffect(() => {
+    if (!isElectron && screen !== 'landing' && screen !== 'auth') setScreen('landing');
+  }, [screen]);
+
+  // Guard: if we land on live-call or post-call without required state, go to dashboard.
+  useEffect(() => {
+    if (screen === 'live-call' && !callConfig) setScreen('dashboard');
+    if (screen === 'post-call' && !callSession) setScreen('dashboard');
+  }, [screen, callConfig, callSession]);
 
   const handleStartCall = useCallback((config: CallConfig) => {
     setCallConfig(config);
@@ -289,7 +307,7 @@ export function App() {
 
   const isShell = currentScreen === 'dashboard' || currentScreen === 'analytics' || currentScreen === 'leads';
 
-  const onboardingData = useMemo(() => getOnboardingData(), [user]);
+  const onboardingData = useMemo(() => getOnboardingData(), [onboardingVersion]);
   const loginUserName = getDisplayName(user, onboardingData.name);
 
   if (showOnboarding) {
@@ -297,6 +315,7 @@ export function App() {
       <Suspense fallback={<div className="app-loading" />}>
         <OnboardingScreen onDone={data => {
           try { localStorage.setItem(STORAGE_KEYS.onboarding, JSON.stringify(data)); } catch { toast.error('Storage full — your preferences may not be saved.'); }
+          setOnboardingVersion(v => v + 1);
           setAppLanguage(data.language as LanguageCode);
           setShowOnboarding(false);
           setShowTransition(true);
@@ -305,8 +324,23 @@ export function App() {
     );
   }
 
+  const appContextValue = {
+    theme,
+    onToggleTheme: toggleTheme,
+    appLanguage,
+    onChangeLanguage: setAppLanguage,
+    currentLangLabel: currentLang.label,
+    userName: loginUserName,
+    userEmail: user?.email ?? '',
+    profilePic,
+    onProfilePicChange: handleProfilePicChange,
+    onProfilePicError: () => { setProfilePic(null); deleteProfilePic().catch(() => {}); },
+    totalCallSeconds,
+    totalCallCount,
+  };
+
   return (
-    <>
+    <AppContext.Provider value={appContextValue}>
       {showTransition && (
         <LoginTransitionOverlay
           userName={loginUserName}
@@ -318,24 +352,11 @@ export function App() {
 
       {isShell && (
         <AppShell
-          activeScreen={currentScreen as 'dashboard' | 'analytics' | 'leads'}
+          activeScreen={currentScreen}
           onNavigate={s => setScreen(s)}
           onStartCall={() => setScreen('pre-call')}
           onUploadCall={() => setScreen('upload-call')}
           onSignOut={() => { clearDeepgramTokenCache(); supabase.auth.signOut(); }}
-          appLanguage={appLanguage}
-          onChangeLanguage={setAppLanguage}
-          currentLangFlag={currentLang.flag}
-          currentLangLabel={currentLang.label}
-          userName={loginUserName}
-          userEmail={user?.email ?? ''}
-          theme={theme}
-          onToggleTheme={toggleTheme}
-          totalCallSeconds={totalCallSeconds}
-          totalCallCount={totalCallCount}
-          profilePic={profilePic}
-          onProfilePicChange={handleProfilePicChange}
-          onProfilePicError={() => { setProfilePic(null); deleteProfilePic().catch(() => {}); }}
         >
           {currentScreen === 'dashboard' && (
             <ErrorBoundary>
@@ -421,7 +442,7 @@ export function App() {
           </Suspense>
         </ErrorBoundary>
       )}
-    </>
+    </AppContext.Provider>
   );
 }
 

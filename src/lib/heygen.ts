@@ -16,7 +16,7 @@ async function call(body: Record<string, unknown>): Promise<Record<string, unkno
   });
 
   const json = await res.json() as Record<string, unknown>;
-  if (!res.ok) throw new Error((json.error as string) ?? `heygen-session ${res.status}`);
+  if (!res.ok) throw new Error(String(json.error ?? `heygen-session ${res.status}`));
   return json;
 }
 
@@ -32,8 +32,15 @@ export async function createHeyGenSession(
   voiceId?: string,
 ): Promise<HeyGenSession> {
   const json = await call({ action: 'create', avatarId, voiceId });
-  const data = json.data as HeyGenSession;
-  return data;
+  const data = json.data;
+  if (
+    !data ||
+    typeof data !== 'object' ||
+    typeof (data as Record<string, unknown>).session_id !== 'string'
+  ) {
+    throw new Error('Unexpected HeyGen session response shape');
+  }
+  return data as unknown as HeyGenSession;
 }
 
 export async function startHeyGenSession(sessionId: string, sdpAnswer: string): Promise<void> {

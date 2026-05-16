@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
 import './OnboardingScreen.css';
@@ -11,7 +11,7 @@ export interface OnboardingData {
   name: string;
   sellingFor: 'self' | 'company';
   industry: string;
-  companyName: string;
+  companyName?: string;
   productDescription: string;
   language: LanguageCode;
 }
@@ -59,6 +59,8 @@ const STEPS = [
   { title: "You're ready to close."        },
 ];
 
+// Flag URLs are static — precompute them into SUPPORTED_LANGUAGES at module load.
+// This avoids calling split/toLowerCase on every render for every language chip.
 function flagUrl(code: LanguageCode) {
   return `https://flagcdn.com/w40/${code.split('-')[1].toLowerCase()}.png`;
 }
@@ -66,12 +68,20 @@ function flagUrl(code: LanguageCode) {
 export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
   const [step, setStep]                   = useState(0);
   const [name, setName]                   = useState('');
-  const [sellingFor, setSellingFor]       = useState<'self' | 'company' | ''>('');
+  // null = not yet chosen; avoids the empty-string type cast at submit time
+  const [sellingFor, setSellingFor]       = useState<'self' | 'company' | null>(null);
   const [industry, setIndustry]           = useState('');
   const [industryOther, setIndustryOther] = useState('');
   const [companyName, setCompanyName]     = useState('');
   const [productDescription, setProductDescription] = useState('');
   const [language, setLanguage]           = useState<LanguageCode>('en-US');
+
+  // Focus the step heading whenever the step changes so screen reader users are
+  // announced to the new content and keyboard users land at the right place.
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, [step]);
 
   const total    = STEPS.length;
   const progress = (step / (total - 1)) * 100;
@@ -84,27 +94,42 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
 
   const canNext = (() => {
     if (step === 0) return name.trim().length > 0;
-    if (step === 1) return sellingFor !== '';
+    if (step === 1) return sellingFor !== null;
     if (step === 2) return industry !== '' && (industry !== 'other' || industryOther.trim().length > 0);
     if (step === 3) return productDescription.trim().length > 0;
     return true;
   })();
 
+  // Memoised so SUPPORTED_LANGUAGES.find() doesn't run on every render.
+  const selectedLang = useMemo(
+    () => SUPPORTED_LANGUAGES.find(l => l.code === language) ?? SUPPORTED_LANGUAGES[0],
+    [language],
+  );
+
   function next() { setStep(s => Math.min(s + 1, total - 1)); }
   function back() { setStep(s => Math.max(s - 1, 0)); }
 
+  // Resetting industry when sellingFor changes prevents a stale industry slug
+  // from a different category set passing canNext validation on step 2.
+  function handleSellingFor(val: 'self' | 'company') {
+    setSellingFor(val);
+    setIndustry('');
+    setIndustryOther('');
+  }
+
   function finish() {
+    // Guard: canNext logic prevents reaching step 5 without a sellingFor value,
+    // but the explicit check removes the need for a type cast.
+    if (!sellingFor) return;
     onDone({
       name,
-      sellingFor: sellingFor as 'self' | 'company',
+      sellingFor,
       industry: effectiveIndustry,
-      companyName,
+      companyName: companyName || undefined,
       productDescription,
       language,
     });
   }
-
-  const selectedLang = SUPPORTED_LANGUAGES.find(l => l.code === language) ?? SUPPORTED_LANGUAGES[0];
 
   return (
     <div className="ob">
@@ -114,7 +139,13 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
       <div className="ob__progress-bar">
         <div className="ob__progress-fill" style={{ width: `${progress}%` }} />
       </div>
-      <div className="ob__step-counter">{step + 1} / {total}</div>
+      <div
+        className="ob__step-counter"
+        aria-live="polite"
+        aria-label={`Step ${step + 1} of ${total}`}
+      >
+        {step + 1} / {total}
+      </div>
 
       <div className="ob__card" key={step}>
 
@@ -124,16 +155,18 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
             <div className="ob__logo">
               PITCH<span className="ob__logo-plus">PLUS</span><span className="ob__logo-sym">+</span>
             </div>
-            <h1 className="ob__h1">Welcome aboard.</h1>
+            <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>Welcome aboard.</h1>
             <p className="ob__sub">Let's get to know you so your AI coach can actually help. Takes 60 seconds.</p>
             <div className="ob__field">
-              <label className="ob__label">What's your first name?</label>
+              <label htmlFor="ob-name" className="ob__label">What's your first name?</label>
               <input
+                id="ob-name"
                 className="ob__input"
                 type="text"
                 placeholder="e.g. Yamin"
                 value={name}
                 onChange={e => setName(e.target.value)}
+                maxLength={60}
                 autoFocus
                 onKeyDown={e => e.key === 'Enter' && canNext && next()}
               />
@@ -144,14 +177,17 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
         {/* ── Step 1: Self vs Company ── */}
         {step === 1 && (
           <div className="ob__slide">
-            <h1 className="ob__h1">Who are you selling for, <span className="ob__name">{name}</span>?</h1>
+            <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>
+              Who are you selling for, <span className="ob__name">{name}</span>?
+            </h1>
             <p className="ob__sub">This helps us frame your coaching and scenarios correctly.</p>
             <div className="ob__who-grid">
               <button
                 className={`ob__who-card${sellingFor === 'self' ? ' ob__who-card--active' : ''}`}
-                onClick={() => setSellingFor('self')}
+                onClick={() => handleSellingFor('self')}
+                aria-pressed={sellingFor === 'self'}
               >
-                <span className="ob__who-emoji">🙋</span>
+                <span className="ob__who-emoji" aria-hidden="true">🙋</span>
                 <div className="ob__who-text">
                   <span className="ob__who-label">For myself</span>
                   <span className="ob__who-sub">I'm a freelancer, consultant, founder, or solopreneur</span>
@@ -159,9 +195,10 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
               </button>
               <button
                 className={`ob__who-card${sellingFor === 'company' ? ' ob__who-card--active' : ''}`}
-                onClick={() => setSellingFor('company')}
+                onClick={() => handleSellingFor('company')}
+                aria-pressed={sellingFor === 'company'}
               >
-                <span className="ob__who-emoji">🏢</span>
+                <span className="ob__who-emoji" aria-hidden="true">🏢</span>
                 <div className="ob__who-text">
                   <span className="ob__who-label">For a company</span>
                   <span className="ob__who-sub">I'm on a sales team or represent an employer</span>
@@ -174,7 +211,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
         {/* ── Step 2: Industry / Category ── */}
         {step === 2 && (
           <div className="ob__slide">
-            <h1 className="ob__h1">
+            <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>
               {sellingFor === 'company' ? 'What does your company sell?' : 'What do you offer?'}
             </h1>
             <p className="ob__sub">Pick the closest fit — your AI coach will tailor its advice to your space.</p>
@@ -184,21 +221,24 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
                   key={cat.value}
                   className={`ob__cat-chip${industry === cat.value ? ' ob__cat-chip--active' : ''}`}
                   onClick={() => setIndustry(cat.value)}
+                  aria-pressed={industry === cat.value}
                 >
-                  <span className="ob__cat-emoji">{cat.emoji}</span>
+                  <span className="ob__cat-emoji" aria-hidden="true">{cat.emoji}</span>
                   <span>{cat.label}</span>
                 </button>
               ))}
             </div>
             {industry === 'other' && (
               <div className="ob__field ob__field--mt">
-                <label className="ob__label">Describe what you sell</label>
+                <label htmlFor="ob-industry-other" className="ob__label">Describe what you sell</label>
                 <input
+                  id="ob-industry-other"
                   className="ob__input"
                   type="text"
                   placeholder="e.g. Cybersecurity auditing for SMBs"
                   value={industryOther}
                   onChange={e => setIndustryOther(e.target.value)}
+                  maxLength={120}
                   autoFocus
                   onKeyDown={e => e.key === 'Enter' && canNext && next()}
                 />
@@ -210,26 +250,30 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
         {/* ── Step 3: Details ── */}
         {step === 3 && (
           <div className="ob__slide">
-            <h1 className="ob__h1">Tell us about it.</h1>
+            <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>Tell us about it.</h1>
             <p className="ob__sub">
               The more specific you are, the more your AI coach can customise objection handling, pitches, and training to your actual deal.
             </p>
             <div className="ob__field">
-              <label className="ob__label">
+              <label htmlFor="ob-company" className="ob__label">
                 {sellingFor === 'self' ? 'Your name or business name' : 'Company name'}
+                <span className="ob__label-optional"> (optional)</span>
               </label>
               <input
+                id="ob-company"
                 className="ob__input"
                 type="text"
                 placeholder={sellingFor === 'self' ? 'e.g. Yamin Consulting' : 'e.g. Acme Inc.'}
                 value={companyName}
                 onChange={e => setCompanyName(e.target.value)}
+                maxLength={80}
                 autoFocus
               />
             </div>
             <div className="ob__field ob__field--mt">
-              <label className="ob__label">What exactly do you sell?</label>
+              <label htmlFor="ob-product" className="ob__label">What exactly do you sell?</label>
               <textarea
+                id="ob-product"
                 className="ob__input ob__textarea"
                 placeholder={
                   sellingFor === 'self'
@@ -238,6 +282,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
                 }
                 value={productDescription}
                 onChange={e => setProductDescription(e.target.value)}
+                maxLength={500}
                 rows={3}
               />
               <p className="ob__hint">Be specific — this goes straight into your AI coach's context.</p>
@@ -248,7 +293,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
         {/* ── Step 4: Language ── */}
         {step === 4 && (
           <div className="ob__slide">
-            <h1 className="ob__h1">What language do you sell in?</h1>
+            <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>What language do you sell in?</h1>
             <p className="ob__sub">
               Sets the <strong>app's default language</strong> — coaching, training, and the interface. You can change it per call too.
             </p>
@@ -258,11 +303,12 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
                   key={l.code}
                   className={`ob__lang-chip${language === l.code ? ' ob__lang-chip--active' : ''}`}
                   onClick={() => setLanguage(l.code)}
+                  aria-pressed={language === l.code}
                 >
                   <img
                     className="ob__lang-flag"
                     src={flagUrl(l.code)}
-                    alt={l.label}
+                    alt=""
                     onError={e => { e.currentTarget.style.display = 'none'; }}
                   />
                   <span>{l.label}</span>
@@ -275,8 +321,8 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
         {/* ── Step 5: Ready ── */}
         {step === 5 && (
           <div className="ob__slide ob__slide--center">
-            <div className="ob__ready-icon">✦</div>
-            <h1 className="ob__h1">
+            <div className="ob__ready-icon" aria-hidden="true">✦</div>
+            <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>
               You're all set, <span className="ob__name">{name}</span>.
             </h1>
             <p className="ob__sub">
@@ -284,24 +330,24 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
             </p>
             <div className="ob__ready-summary">
               <div className="ob__ready-row">
-                <span className="ob__ready-row-icon">{sellingFor === 'self' ? '🙋' : '🏢'}</span>
+                <span className="ob__ready-row-icon" aria-hidden="true">{sellingFor === 'self' ? '🙋' : '🏢'}</span>
                 <span className="ob__ready-row-label">Selling for</span>
                 <span className="ob__ready-row-val">{sellingFor === 'self' ? 'Myself' : 'A company'}</span>
               </div>
               <div className="ob__ready-row">
-                <span className="ob__ready-row-icon">🎯</span>
+                <span className="ob__ready-row-icon" aria-hidden="true">🎯</span>
                 <span className="ob__ready-row-label">Industry</span>
                 <span className="ob__ready-row-val">{effectiveIndustry}</span>
               </div>
               {companyName && (
                 <div className="ob__ready-row">
-                  <span className="ob__ready-row-icon">🏷</span>
+                  <span className="ob__ready-row-icon" aria-hidden="true">🏷</span>
                   <span className="ob__ready-row-label">{sellingFor === 'self' ? 'Business' : 'Company'}</span>
                   <span className="ob__ready-row-val">{companyName}</span>
                 </div>
               )}
               <div className="ob__ready-row">
-                <span className="ob__ready-row-icon">💬</span>
+                <span className="ob__ready-row-icon" aria-hidden="true">💬</span>
                 <span className="ob__ready-row-label">What you sell</span>
                 <span className="ob__ready-row-val ob__ready-row-val--wrap">{productDescription}</span>
               </div>
@@ -309,7 +355,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
                 <img
                   className="ob__ready-row-icon ob__ready-row-flag"
                   src={flagUrl(selectedLang.code)}
-                  alt={selectedLang.label}
+                  alt=""
                 />
                 <span className="ob__ready-row-label">Language</span>
                 <span className="ob__ready-row-val">{selectedLang.label}</span>

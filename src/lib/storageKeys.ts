@@ -8,5 +8,9 @@ export const STORAGE_KEYS = {
   nextCallTip:    'pitchbase:nextCallTip',
   legacyOutcomes: 'pitchbase:outcomes',
   /** Returns the per-user migration flag key. */
-  migratedV1: (userId: string) => `pp-migrated-v1-${userId}`,
+  migratedV1:       (userId: string) => `pp-migrated-v1-${userId}`,
+  /** Per-user flag: localStorage meetings migrated to Supabase. */
+  migratedMeetings: (userId: string) => `pp-migrated-meetings-${userId}`,
+  /** Per-user flag: localStorage CRM packages migrated to Supabase. */
+  migratedPackages: (userId: string) => `pp-migrated-packages-${userId}`,
 } as const;

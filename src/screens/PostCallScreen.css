@@ -24,7 +24,6 @@
   border: none;
   cursor: pointer;
   flex-shrink: 0;
-  transition: color var(--transition-fast);
 }
 .postcall__back:hover { color: var(--color-accent-purple); }
 
@@ -82,7 +81,6 @@
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
 
 .postcall__outcome-btn--won {
@@ -177,7 +175,6 @@
   border-bottom: 2px solid transparent;
   background: none;
   cursor: pointer;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
 }
 
 .postcall__tab:hover { color: var(--color-text-secondary); }
@@ -328,7 +325,6 @@
   line-height: 1.7;
   resize: vertical;
   box-sizing: border-box;
-  transition: border-color var(--transition-base);
   outline: none;
 }
 
@@ -376,7 +372,6 @@
   letter-spacing: 0.06em;
   color: var(--color-text-secondary);
   text-align: left;
-  transition: background var(--transition-fast);
 }
 .postcall__integrations-toggle:hover { background: rgba(129,74,200,0.06); }
 
@@ -421,7 +416,6 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   font-family: var(--font-display);
-  transition: border-color var(--transition-fast);
 }
 .postcall__webhook-input:focus {
   outline: none;
@@ -439,7 +433,6 @@
   font-weight: 600;
   color: #fff;
   cursor: pointer;
-  transition: opacity var(--transition-fast);
 }
 .postcall__webhook-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .postcall__webhook-btn:not(:disabled):hover { opacity: 0.85; }
@@ -548,7 +541,6 @@
 .scorecard__gauge-fill {
   height: 100%;
   border-radius: var(--border-radius-pill);
-  transition: width 0.4s ease;
 }
 .scorecard__gauge-fill--high   { background: var(--color-accent-green); }
 .scorecard__gauge-fill--medium { background: #f0c040; }
@@ -560,8 +552,8 @@
   border-radius: var(--border-radius-pill);
   overflow: hidden;
 }
-.scorecard__ratio-rep     { background: var(--color-accent-purple); transition: width 0.4s ease; }
-.scorecard__ratio-prospect { background: var(--color-accent-green); transition: width 0.4s ease; }
+.scorecard__ratio-rep     { background: var(--color-accent-purple); }
+.scorecard__ratio-prospect { background: var(--color-accent-green); }
 
 .scorecard__metric-hint {
   font-size: var(--font-size-xs);
@@ -828,12 +820,6 @@
 .postcall__replay-loading-icon {
   font-size: 32px;
   opacity: 0.3;
-  animation: replay-pulse 1.4s ease-in-out infinite;
-}
-
-@keyframes replay-pulse {
-  0%, 100% { opacity: 0.3; }
-  50%       { opacity: 0.7; }
 }
 
 .postcall__replay-audio {
@@ -857,7 +843,6 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: background var(--transition-fast);
   border-left: 2px solid transparent;
 }
 
@@ -943,12 +928,7 @@
   border: 2px solid var(--color-border);
   border-top-color: var(--color-accent-magenta);
   border-radius: 50%;
-  animation: spin 0.75s linear infinite;
   flex-shrink: 0;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 .postcall__share-body {
@@ -984,7 +964,6 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s;
 }
 
 .postcall__share-copy-btn:hover {
@@ -999,7 +978,6 @@
   padding: 10px 20px;
   font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
 }
 
 .postcall__share-regen-btn:hover {
@@ -1032,7 +1010,6 @@
   font-weight: 600;
   cursor: pointer;
   letter-spacing: 0.04em;
-  transition: background 0.15s, border-color 0.15s;
 }
 
 .postcall__share-generate-btn:hover {

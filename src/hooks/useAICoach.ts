@@ -20,6 +20,9 @@ const initialMemory: Memory = {
   closeAttempted: false,
 };
 
+const MAX_SUGGESTIONS    = 8;
+const TRIGGER_MEMORY_TTL = 120; // seconds
+
 export function useAICoach() {
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
   const [phaseLabel, setPhaseLabel] = useState<string>('');
@@ -45,7 +48,7 @@ export function useAICoach() {
 
     // Prune recentTriggers entries older than 120 seconds to keep the Map bounded.
     for (const [key, firedAt] of recentTriggersRef.current) {
-      if (elapsedSeconds - firedAt > 120) recentTriggersRef.current.delete(key);
+      if (elapsedSeconds - firedAt > TRIGGER_MEMORY_TTL) recentTriggersRef.current.delete(key);
     }
 
     // Called on every streaming chunk and on final completion.
@@ -65,14 +68,14 @@ export function useAICoach() {
         // Dedup: if this body opens identically to an existing card, replace it.
         const dupIdx = prev.findIndex(s =>
           s.body.length > 10 && stamped.body.length > 10 &&
-          s.body.slice(0, 60) === stamped.body.slice(0, 60)
+          s.body.trim() === stamped.body.trim()
         );
         if (dupIdx !== -1) {
           const next = [...prev];
           next[dupIdx] = stamped;
           return next;
         }
-        return [stamped, ...prev].slice(0, 8);
+        return [stamped, ...prev].slice(0, MAX_SUGGESTIONS);
       });
     };
 
@@ -120,14 +123,14 @@ export function useAICoach() {
         if (prev.some(s => s.id === primary.id)) return prev;
         const dupIdx = prev.findIndex(s =>
           s.body.length > 10 && primary.body.length > 10 &&
-          s.body.slice(0, 60) === primary.body.slice(0, 60)
+          s.body.trim() === primary.body.trim()
         );
         if (dupIdx !== -1) {
           const next = [...prev];
           next[dupIdx] = primary;
           return next;
         }
-        return [primary, ...prev].slice(0, 8);
+        return [primary, ...prev].slice(0, MAX_SUGGESTIONS);
       });
     } else {
       memoryRef.current = {
@@ -144,6 +147,10 @@ export function useAICoach() {
   ) => {
     const suggestion = getQuickActionSuggestion(action, config, elapsedSeconds);
     setSuggestions(s => [suggestion, ...s]);
+  }, []);
+
+  const seedSuggestions = useCallback((s: AISuggestion[]) => {
+    setSuggestions(s);
   }, []);
 
   const reset = useCallback(() => {
@@ -166,6 +173,7 @@ export function useAICoach() {
     objectionsCount: coachState.objectionsCount,
     processEntry,
     addQuickActionSuggestion,
+    seedSuggestions,
     reset,
   };
 }

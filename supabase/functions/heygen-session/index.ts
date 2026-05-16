@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 // Add to Supabase secrets: npx supabase secrets set HEYGEN_API_KEY=your_key_here
-const HEYGEN_API_KEY = Deno.env.get("HEYGEN_API_KEY")!;
+const HEYGEN_API_KEY = Deno.env.get("HEYGEN_API_KEY") ?? '';
 const HEYGEN_BASE    = "https://api.heygen.com";
 
 const CORS_HEADERS = {
@@ -18,8 +18,8 @@ Deno.serve(async (req: Request) => {
   // Auth check
   const jwt = req.headers.get("Authorization")?.replace("Bearer ", "") ?? "";
   const { data: { user } } = await createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    Deno.env.get("SUPABASE_URL") ?? '',
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? '',
   ).auth.getUser(jwt);
 
   if (!user) {
@@ -57,7 +57,7 @@ Deno.serve(async (req: Request) => {
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(`HeyGen create failed: ${JSON.stringify(json)}`);
+      if (!res.ok) { console.error("HeyGen create failed:", JSON.stringify(json)); throw new Error("HeyGen session creation failed"); }
       return new Response(JSON.stringify(json), {
         headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       });
@@ -71,7 +71,7 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({ session_id: sessionId, sdp: { type: "answer", sdp: sdpAnswer } }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(`HeyGen start failed: ${JSON.stringify(json)}`);
+      if (!res.ok) { console.error("HeyGen start failed:", JSON.stringify(json)); throw new Error("HeyGen session start failed"); }
       return new Response(JSON.stringify(json), {
         headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       });
@@ -85,7 +85,7 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({ session_id: sessionId, text, task_type: "talk" }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(`HeyGen speak failed: ${JSON.stringify(json)}`);
+      if (!res.ok) { console.error("HeyGen speak failed:", JSON.stringify(json)); throw new Error("HeyGen speak failed"); }
       return new Response(JSON.stringify(json), {
         headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       });
@@ -110,7 +110,7 @@ Deno.serve(async (req: Request) => {
 
   } catch (err) {
     console.error("heygen-session error:", err);
-    return new Response(JSON.stringify({ error: String(err) }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });

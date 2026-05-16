@@ -26,7 +26,8 @@ export const TranscriptPanel = memo(function TranscriptPanel({
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    bottomRef.current?.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth' });
   }, [entries.length, interimText]);
 
   return (
@@ -66,6 +67,7 @@ export const TranscriptPanel = memo(function TranscriptPanel({
                     type="button"
                     className="transcript-entry__speaker transcript-entry__speaker--flip"
                     onClick={() => onFlipSpeaker(entry.id)}
+                    aria-label={`${label} — click to reassign speaker`}
                     title="Click to reassign speaker"
                   >
                     {label}<span className="transcript-entry__flip-icon" aria-hidden="true">⇄</span>

@@ -27,11 +27,11 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  const SUPABASE_URL      = Deno.env.get("SUPABASE_URL") ?? '';
+  const SUPABASE_SRK      = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? '';
   const jwt = req.headers.get("Authorization")?.replace("Bearer ", "") ?? "";
-  const { data: { user } } = await createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-  ).auth.getUser(jwt);
+  const adminClient = createClient(SUPABASE_URL, SUPABASE_SRK);
+  const { data: { user } } = await adminClient.auth.getUser(jwt);
   if (!user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
@@ -40,8 +40,30 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { hubspotToken, session } = await req.json();
-    if (!hubspotToken) throw new Error("No HubSpot token provided");
+    const body = await req.json();
+
+    // Save-token mode: client sends { hubspotToken } to persist the token server-side.
+    if (body.hubspotToken && !body.session) {
+      await adminClient.auth.admin.updateUserById(user.id, {
+        user_metadata: { hubspot_token: body.hubspotToken },
+      });
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    // Push mode: retrieve token from user_metadata — never transmitted in request body.
+    const { data: { user: fullUser } } = await adminClient.auth.admin.getUserById(user.id);
+    const hubspotToken = fullUser?.user_metadata?.hubspot_token as string | undefined;
+    if (!hubspotToken) {
+      return new Response(JSON.stringify({ error: "No HubSpot token configured. Connect HubSpot first." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    const { session } = body;
+    if (!session) throw new Error("session required");
 
     const { config, aiSummary, followUpEmail, leadScore, finalCloseProbability, objectionsCount } = session;
 
@@ -130,7 +152,7 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     console.error("hubspot-push error:", err);
     return new Response(
-      JSON.stringify({ success: false, error: String(err) }),
+      JSON.stringify({ success: false, error: "Internal server error" }),
       { status: 500, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
     );
   }

@@ -17,12 +17,18 @@ import { saveDraft, loadDraft, clearDraft } from '../lib/callDraft';
 import { useCallRecorder } from '../hooks/useCallRecorder';
 import { useBodyLanguage } from '../hooks/useBodyLanguage';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { extractAutoNote } from '../lib/autoNotes';
+import { extractAutoNote, clearAutoNoteDedup } from '../lib/autoNotes';
 import type { AISuggestion } from '../types';
 import { STORAGE_KEYS } from '../lib/storageKeys';
 import './LiveCallScreen.css';
 
-const FILLER_WORDS = ['um', 'uh', ' like ', 'you know', 'basically', 'literally', 'sort of', 'kind of', 'i mean', 'right?'];
+const FILLER_WORDS = ['um', 'uh', 'like', 'you know', 'basically', 'literally', 'sort of', 'kind of', 'i mean', 'right'];
+const FILLER_PATTERNS = FILLER_WORDS.map(w => new RegExp(`\\b${w}\\b`, 'i'));
+
+const BODY_SUGGESTIONS_MAX = 10;
+const DRAFT_SAVE_INTERVAL_MS = 10_000;
+const FLIP_DEBOUNCE_MS = 400;
+const DEFAULT_TALK_RATIO = 0.5;
 
 // Classify who is speaking based on content + conversational context.
 // Prospect: asks about price/product, raises objections, reacts to the rep's pitch.
@@ -99,7 +105,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [isSummarising, setIsSummarising] = useState(false);
   const [micWarning, setMicWarning] = useState(false);
   const [minimized, setMinimized] = useState(false);
-  const [draftRecovery, setDraftRecovery] = useState<{ transcript: TranscriptEntry[]; startedAt: string } | null>(null);
+  const [draftRecovery, setDraftRecovery] = useState<{ transcript: TranscriptEntry[]; suggestions: AISuggestion[]; startedAt: string } | null>(null);
   const startedAtRef = useRef(new Date().toISOString());
   const recordingKeyRef = useRef(startedAtRef.current);
   const { startRecording, stopRecording, isSupported: recordingSupported, recordingError } = useCallRecorder();
@@ -115,6 +121,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const prospectSecondsRef = useRef(0);
   const speechStartRef = useRef<number | null>(null);
   const fillerCountRef = useRef(0);
+  const isSummarisingRef = useRef(false);
 
   const handleBubbleDragStart = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
     if (!bubbleRef.current) return;
@@ -145,28 +152,13 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const { elapsedSeconds, formattedTime, startTimer, stopTimer } = useCallTimer();
   const signalAbortRef = useRef<AbortController | null>(null);
 
-  // For non-English calls, patch the signal on an existing entry after the AI classifies it.
-  const applySignal = useCallback((id: string, text: string) => {
-    if (config.language === 'en-US') return; // English uses fast keyword matching — no AI needed
-    signalAbortRef.current?.abort();
-    const ctrl = new AbortController();
-    signalAbortRef.current = ctrl;
-    classifySignalAI(text, config.language ?? 'en-US', ctrl.signal).then(signal => {
-      if (ctrl.signal.aborted) return;
-      setTranscript(prev => {
-        const updated = prev.map(e => e.id === id ? { ...e, signal } : e);
-        transcriptRef.current = updated;
-        return updated;
-      });
-    }).catch(() => { /* aborted — ignore */ });
-  }, [config.language]);
-  const { suggestions, phaseLabel, prospectTone, closeProbability, callStage, objectionsCount, processEntry, reset: resetCoach } = useAICoach();
+  const { suggestions, phaseLabel, prospectTone, closeProbability, callStage, objectionsCount, processEntry, reset: resetCoach, seedSuggestions } = useAICoach();
   const suggestionsRef = useRef(suggestions);
   useLayoutEffect(() => { suggestionsRef.current = suggestions; });
 
   const latestAIScript = suggestions.length > 0 ? suggestions[suggestions.length - 1].body : undefined;
   const onBodySuggestion = useCallback((s: AISuggestion) => {
-    setBodySuggestions(prev => [...prev.slice(-9), s]);
+    setBodySuggestions(prev => [...prev.slice(-(BODY_SUGGESTIONS_MAX - 1)), s]);
   }, []);
   const { cameraError } = useBodyLanguage({
     isActive: callStatus === 'active',
@@ -253,19 +245,41 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       repSecondsRef.current += durationSec;
       // Track filler words
       const lower = text.toLowerCase();
-      const fillers = FILLER_WORDS.filter(f => lower.includes(f)).length;
+      const fillers = FILLER_PATTERNS.filter(p => p.test(lower)).length;
       if (fillers > 0) fillerCountRef.current += fillers;
     } else if (speaker === 'prospect') {
       prospectSecondsRef.current += durationSec;
     }
 
     if (speaker === 'prospect') {
-      processEntry(entry, newTranscript, elapsedSeconds, config);
-      applySignal(entry.id, text);
+      if (config.language === 'en-US') {
+        // Signal already correct from synchronous classifySignal()
+        processEntry(entry, newTranscript, elapsedSeconds, config);
+      } else {
+        // Await AI classification so extractContext sees the correct signal before analysis runs
+        signalAbortRef.current?.abort();
+        const ctrl = new AbortController();
+        signalAbortRef.current = ctrl;
+        classifySignalAI(text, config.language ?? 'en-US', ctrl.signal)
+          .then(signal => {
+            if (ctrl.signal.aborted) return;
+            const patched = { ...entry, signal };
+            const updatedTranscript = newTranscript.map(e =>
+              e.id === entry.id ? patched : e
+            );
+            transcriptRef.current = updatedTranscript;
+            setTranscript(updatedTranscript);
+            processEntry(patched, updatedTranscript, elapsedSeconds, config);
+          })
+          .catch(() => {
+            // Classification failed/aborted — still run analysis with neutral signal
+            if (!ctrl.signal.aborted) processEntry(entry, newTranscript, elapsedSeconds, config);
+          });
+      }
       const autoNote = extractAutoNote(text, elapsedSeconds);
       if (autoNote) setNotes(prev => [...prev, `◆ ${autoNote}`]);
     }
-  }, [elapsedSeconds, processEntry, config, applySignal]);
+  }, [elapsedSeconds, processEntry, config]);
 
   const { isListening, interimText, errorMessage, startListening, stopListening } = useSpeechRecognition({
     onFinalTranscript: handleFinalTranscript,
@@ -291,7 +305,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   useEffect(() => {
     loadDraft().then(draft => {
       if (!draft || draft.transcript.length === 0) return;
-      setDraftRecovery({ transcript: draft.transcript, startedAt: draft.startedAt });
+      setDraftRecovery({ transcript: draft.transcript, suggestions: draft.suggestions ?? [], startedAt: draft.startedAt });
     }).catch(() => { /* IndexedDB unavailable — silent */ });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -313,7 +327,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           toast.error('Storage full — auto-save draft paused. Free up browser storage.');
         }
       });
-    }, 10_000);
+    }, DRAFT_SAVE_INTERVAL_MS);
     return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callStatus, config]);
@@ -376,15 +390,34 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       if (flippedEntry?.speaker === 'prospect') {
         if (flipDebounceRef.current) clearTimeout(flipDebounceRef.current);
         flipDebounceRef.current = setTimeout(() => {
-          processEntry(flippedEntry, updated, flippedEntry.timestampSeconds, config);
-          applySignal(flippedEntry.id, flippedEntry.text);
-        }, 400);
+          if (config.language === 'en-US') {
+            processEntry(flippedEntry, updated, flippedEntry.timestampSeconds, config);
+          } else {
+            signalAbortRef.current?.abort();
+            const ctrl = new AbortController();
+            signalAbortRef.current = ctrl;
+            classifySignalAI(flippedEntry.text, config.language ?? 'en-US', ctrl.signal)
+              .then(signal => {
+                if (ctrl.signal.aborted) return;
+                const patched = { ...flippedEntry, signal };
+                setTranscript(prev => {
+                  const next = prev.map(e => e.id === patched.id ? patched : e);
+                  transcriptRef.current = next;
+                  return next;
+                });
+                processEntry(patched, transcriptRef.current, patched.timestampSeconds, config);
+              })
+              .catch(() => {
+                if (!ctrl.signal.aborted) processEntry(flippedEntry, updated, flippedEntry.timestampSeconds, config);
+              });
+          }
+        }, FLIP_DEBOUNCE_MS);
       }
       speakerLockedRef.current = false;
       dgSpeakerMapRef.current = null;
       return updated;
     });
-  }, [processEntry, config, applySignal]);
+  }, [processEntry, config]);
 
   const handleAddNote = useCallback(() => {
     const text = noteInput.trim();
@@ -395,23 +428,41 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     setNoteInput('');
   }, [noteInput, elapsedSeconds]);
 
+  const handleRestoreDraft = useCallback(() => {
+    if (!draftRecovery) return;
+    setTranscript(draftRecovery.transcript);
+    transcriptRef.current = draftRecovery.transcript;
+    speakerLockedRef.current = false;
+    dgSpeakerMapRef.current = null;
+    resetCoach();
+    seedSuggestions(draftRecovery.suggestions);
+    setDraftRecovery(null);
+  }, [draftRecovery, resetCoach, seedSuggestions]);
+
+  const handleDismissDraft = useCallback(() => {
+    clearDraft().catch(() => {});
+    setDraftRecovery(null);
+  }, []);
+
   const handleEndCall = useCallback(async () => {
-    // Ignore accidental clicks before any speech has been captured.
+    // Warn if no transcript yet, but still allow ending the call.
     if (transcriptRef.current.length === 0) {
-      toast.error('No transcript yet — start speaking before ending the call.');
-      return;
+      toast.error(t.liveCall.noTranscript);
     }
+    if (isSummarisingRef.current) return;
+    if (flipDebounceRef.current) { clearTimeout(flipDebounceRef.current); flipDebounceRef.current = null; }
     stopListening();
     stopTimer();
     await stopRecording(recordingKeyRef.current);
     window.electronAPI?.closeOverlay();
+    isSummarisingRef.current = true;
     setIsSummarising(true);
     // Use refs so we always get the latest values even if a final speech chunk
     // arrived in the same tick as the "End Call" click.
     const finalTranscript = transcriptRef.current;
     const finalSuggestions = suggestionsRef.current;
     const totalSeconds = repSecondsRef.current + prospectSecondsRef.current;
-    const talkRatio = totalSeconds > 0 ? repSecondsRef.current / totalSeconds : 0.5;
+    const talkRatio = totalSeconds > 0 ? repSecondsRef.current / totalSeconds : DEFAULT_TALK_RATIO;
     try {
       const { aiSummary, followUpEmail, leadScore, coaching } = await generateSessionSummary(
         config,
@@ -424,6 +475,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
       try { localStorage.setItem(STORAGE_KEYS.nextCallTip, coaching.nextCallTip); } catch { /* storage full */ }
       clearDraft().catch(() => { /* silent */ });
+      clearAutoNoteDedup();
 
       const session: CallSession = {
         config,
@@ -444,7 +496,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       };
       onEndCall(session);
     } catch {
-      toast.error('Summary generation failed — call saved without AI coaching');
+      isSummarisingRef.current = false;
+      setIsSummarising(false);
+      toast.error(t.liveCall.summaryFailed);
       onEndCall({
         config, transcript: finalTranscript, suggestions: finalSuggestions,
         durationSeconds: elapsedSeconds,
@@ -456,14 +510,16 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
         talkRatio,
         coaching: undefined,
       });
-    } finally {
-      setIsSummarising(false);
     }
-  }, [stopListening, stopTimer, config, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall]);
+  }, [stopListening, stopTimer, stopRecording, config, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall, t]);
 
   // Keep a stable ref so the overlay's trigger-end-call listener always calls the latest version.
   const handleEndCallRef = useRef(handleEndCall);
   useLayoutEffect(() => { handleEndCallRef.current = handleEndCall; });
+
+  const handleMobileTabChange = useCallback((p: 'transcript' | 'ai' | 'lead') => {
+    setMobilePanel(p);
+  }, []);
 
   const handleShareScreen = useCallback(() => {
     if (window.electronAPI) {
@@ -475,6 +531,15 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       setMinimized(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!minimized) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMinimized(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [minimized]);
 
   const latestSuggestion = allSuggestions.length > 0 ? allSuggestions[allSuggestions.length - 1] : null;
   const stageLabelMap: Record<string, string> = {
@@ -491,19 +556,17 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     <div className="live-call">
       {draftRecovery && (
         <div className="live-call__recovery-banner">
-          <span>↺ Unsaved transcript found from {new Date(draftRecovery.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} — restore it?</span>
-          <button className="live-call__recovery-btn live-call__recovery-btn--restore" onClick={() => {
-            setTranscript(draftRecovery.transcript);
-            transcriptRef.current = draftRecovery.transcript;
-            speakerLockedRef.current = false;
-            dgSpeakerMapRef.current = null;
-            resetCoach();
-            setDraftRecovery(null);
-          }}>Restore</button>
-          <button className="live-call__recovery-btn live-call__recovery-btn--dismiss" onClick={() => {
-            clearDraft().catch(() => {});
-            setDraftRecovery(null);
-          }}>Dismiss</button>
+          <span>↺ {t.liveCall.draftFound(new Date(draftRecovery.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}</span>
+          <button
+            className="live-call__recovery-btn live-call__recovery-btn--restore"
+            aria-label="Restore unsaved transcript"
+            onClick={handleRestoreDraft}
+          >{t.liveCall.draftRestore}</button>
+          <button
+            className="live-call__recovery-btn live-call__recovery-btn--dismiss"
+            aria-label="Dismiss unsaved transcript"
+            onClick={handleDismissDraft}
+          >{t.liveCall.draftDismiss}</button>
         </div>
       )}
       {!minimized && (
@@ -522,7 +585,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           />
           {micWarning && (
             <div className="livecall__mic-warning">
-              ⚠ Microphone unavailable — transcription disabled
+              ⚠ {t.liveCall.micUnavailable}
             </div>
           )}
           {recordingError && (
@@ -532,7 +595,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           )}
           {cameraError && (
             <div className="livecall__mic-warning">
-              ⚠ Body language coaching unavailable — {cameraError}
+              ⚠ {t.liveCall.bodyUnavailable(cameraError)}
             </div>
           )}
           <div className="live-call__panels" data-mobile={mobilePanel}>
@@ -566,14 +629,16 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
               />
             </ErrorBoundary>
           </div>
-          <div className="live-call__mobile-tabs">
+          <div className="live-call__mobile-tabs" role="tablist" aria-label="Panel tabs">
             {(['transcript', 'ai', 'lead'] as const).map(p => (
               <button
                 key={p}
+                role="tab"
+                aria-selected={mobilePanel === p}
                 className={`live-call__mobile-tab ${mobilePanel === p ? 'live-call__mobile-tab--active' : ''}`}
-                onClick={() => setMobilePanel(p)}
+                onClick={() => handleMobileTabChange(p)}
               >
-                {p === 'transcript' ? `⊟ ${t.liveCall.transcript}` : p === 'ai' ? `◈ ${t.liveCall.aiSuggestions}` : '◉ PROFILE'}
+                {p === 'transcript' ? `⊟ ${t.liveCall.transcript}` : p === 'ai' ? `◈ ${t.liveCall.aiSuggestions}` : `◉ ${t.liveCall.profile}`}
               </button>
             ))}
           </div>
@@ -581,7 +646,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       )}
 
       {minimized && (
-        <div ref={bubbleRef} className="live-call__bubble">
+        <div ref={bubbleRef} className="live-call__bubble" role="dialog" aria-label="Live call assistant" aria-modal="false">
           <div className="live-call__bubble-bar" onMouseDown={handleBubbleDragStart}>
             <div className="live-call__bubble-brand">
               <span className="live-call__bubble-dot" />
@@ -600,6 +665,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
               <button
                 className="live-call__bubble-restore"
                 onClick={() => setMinimized(false)}
+                aria-label="Restore full view"
                 title="Restore full view"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -633,7 +699,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           ) : (
             <div className="live-call__bubble-listening">
               <span className="live-call__bubble-mic-pulse" />
-              Listening to your call…
+              {t.liveCall.listeningBubble}
             </div>
           )}
         </div>
@@ -642,7 +708,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       {isSummarising && (
         <div className="live-call__summarising-overlay" role="status" aria-live="polite">
           <div className="live-call__summarising-spinner" />
-          <p className="live-call__summarising-text">Generating your coaching report…</p>
+          <p className="live-call__summarising-text">{t.liveCall.generatingReport}</p>
         </div>
       )}
     </div>

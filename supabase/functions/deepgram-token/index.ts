@@ -1,8 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const DEEPGRAM_API_KEY    = Deno.env.get("DEEPGRAM_API_KEY")!;
-const DEEPGRAM_PROJECT_ID = Deno.env.get("DEEPGRAM_PROJECT_ID")!;
+const DEEPGRAM_API_KEY    = Deno.env.get("DEEPGRAM_API_KEY") ?? '';
+const DEEPGRAM_PROJECT_ID = Deno.env.get("DEEPGRAM_PROJECT_ID") ?? '';
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -17,8 +17,8 @@ Deno.serve(async (req: Request) => {
   // Verify the JWT is a real Supabase session — not just any Bearer value.
   const jwt = req.headers.get("Authorization")?.replace("Bearer ", "") ?? "";
   const { data: { user } } = await createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    Deno.env.get("SUPABASE_URL") ?? '',
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ''
   ).auth.getUser(jwt);
 
   if (!user) {
@@ -54,7 +54,9 @@ Deno.serve(async (req: Request) => {
     );
 
     if (!tokenRes.ok) {
-      throw new Error(`Deepgram key creation failed: ${tokenRes.status}`);
+      const body = await tokenRes.text();
+      console.error(`Deepgram key creation failed (${tokenRes.status}):`, body);
+      throw new Error("Deepgram key creation failed");
     }
 
     const { key } = await tokenRes.json();
@@ -64,7 +66,7 @@ Deno.serve(async (req: Request) => {
     });
   } catch (err) {
     console.error("deepgram-token error:", err);
-    return new Response(JSON.stringify({ error: String(err) }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });

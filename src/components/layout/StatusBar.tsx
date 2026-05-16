@@ -3,6 +3,9 @@ import type { CallStatus } from '../../types';
 import { useTranslations } from '../../hooks/useTranslations';
 import './StatusBar.css';
 
+const PROB_HIGH = 61;
+const PROB_MEDIUM = 31;
+
 interface StatusBarProps {
   status: CallStatus;
   formattedTime: string;
@@ -12,7 +15,7 @@ interface StatusBarProps {
 
 export function StatusBar({ status, formattedTime, objectionsCount, closeProbability }: StatusBarProps) {
   const t = useTranslations();
-  const probLevel = closeProbability >= 61 ? 'high' : closeProbability >= 31 ? 'medium' : 'low';
+  const probLevel = closeProbability >= PROB_HIGH ? 'high' : closeProbability >= PROB_MEDIUM ? 'medium' : 'low';
 
   return (
     <div className={`status-bar status-bar--${status}`}>
@@ -22,13 +25,13 @@ export function StatusBar({ status, formattedTime, objectionsCount, closeProbabi
         <span className="status-bar__time">{formattedTime}</span>
       </div>
 
-      <div className="status-bar__right">
+      <div className="status-bar__right" aria-live="polite" aria-atomic="true">
         <span className="status-bar__stat">
           {t.liveCall.objections} <span className={`status-bar__stat-val ${objectionsCount > 0 ? 'status-bar__stat-val--red' : ''}`}>{objectionsCount}</span>
         </span>
         <span className="status-bar__divider">·</span>
         <span className="status-bar__stat">
-          {t.liveCall.closeProb} <span className={`status-bar__stat-val status-bar__stat-val--${probLevel}`}>{closeProbability}%</span>
+          {t.liveCall.closeProb} <span className={`status-bar__stat-val status-bar__stat-val--${probLevel}`} aria-label={`${closeProbability} percent, ${probLevel}`}>{closeProbability}%</span>
         </span>
       </div>
     </div>

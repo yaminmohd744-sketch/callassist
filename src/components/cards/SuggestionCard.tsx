@@ -34,7 +34,11 @@ export function SuggestionCard({ suggestion }: SuggestionCardProps) {
   const hasVerbal = !!suggestion.body;
 
   return (
-    <div className={`suggestion-card suggestion-card--${suggestion.type}${isStreaming ? ' suggestion-card--streaming' : ''}`}>
+    <div
+      role="article"
+      aria-label={`${TYPE_LABEL[suggestion.type]} suggestion at ${formatTime(suggestion.timestampSeconds)}`}
+      className={`suggestion-card suggestion-card--${suggestion.type}${isStreaming ? ' suggestion-card--streaming' : ''}`}
+    >
       <div className="suggestion-card__header">
         <span className="suggestion-card__badge">
           {isStreaming && !suggestion.body ? '...' : TYPE_LABEL[suggestion.type]}

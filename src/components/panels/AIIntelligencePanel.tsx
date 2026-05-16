@@ -4,17 +4,6 @@ import type { AISuggestion, CallStage, ProspectTone } from '../../types';
 import { useTranslations } from '../../hooks/useTranslations';
 import './AIIntelligencePanel.css';
 
-const TONE_COLOR: Record<ProspectTone, string> = {
-  Skeptical:   '#f59e0b',
-  Curious:     '#814ac8',
-  Defensive:   '#ef4444',
-  Warm:        '#22c55e',
-  Disengaged:  '#6b7280',
-  Frustrated:  '#f97316',
-  Excited:     '#a3e635',
-  Hesitant:    '#eab308',
-  Neutral:     '#94a3b8',
-};
 
 const SUGGESTION_TTL = 90; // seconds before a suggestion is considered stale
 
@@ -60,8 +49,7 @@ export function AIIntelligencePanel({
         <div className="ai-panel__header-right">
           {prospectTone && (
             <div
-              className="ai-panel__tone-pill"
-              style={{ '--tone-color': TONE_COLOR[prospectTone] } as React.CSSProperties}
+              className={`ai-panel__tone-pill ai-panel__tone-pill--${prospectTone.toLowerCase()}`}
             >
               <span className="ai-panel__tone-dot" />
               {prospectTone.toUpperCase()}

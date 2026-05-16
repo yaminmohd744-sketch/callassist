@@ -8,6 +8,31 @@ interface AuthScreenProps {
   onBack?: () => void;
 }
 
+// Deep-link URI used as the OAuth redirect target in Electron.
+const ELECTRON_REDIRECT_URI = 'pitchbase://auth';
+
+// Maps Supabase error codes to safe, non-enumerating user-facing messages.
+function safeAuthError(err: { message: string; code?: string }): string {
+  switch (err.code) {
+    case 'invalid_credentials':
+      return 'Incorrect email or password.';
+    case 'user_already_exists':
+    case 'email_exists':
+      return 'An account with this email already exists.';
+    case 'email_not_confirmed':
+      return 'Please confirm your email address before signing in.';
+    case 'over_email_send_rate_limit':
+      return 'Too many attempts. Please wait a few minutes and try again.';
+    case 'weak_password':
+      return 'Password is too weak. Please choose a stronger password.';
+    default:
+      return 'Something went wrong. Please try again.';
+  }
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]{2,}\.[a-zA-Z]{2,}$/;
+const MIN_PASSWORD_LENGTH = 6;
+
 export function AuthScreen({ onBack }: AuthScreenProps) {
   const [mode, setMode]           = useState<Mode>('sign-in');
   const [email, setEmail]         = useState('');
@@ -17,12 +42,14 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
   const [loading, setLoading]     = useState(false);
   const [message, setMessage]     = useState<string | null>(null);
 
-  const EMAIL_RE = /^[^\s@]+@[^\s@]{2,}\.[a-zA-Z]{2,}$/;
+  function clearMessages() {
+    setError(null);
+    setMessage(null);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    setMessage(null);
+    clearMessages();
 
     if (!EMAIL_RE.test(email)) {
       setError('Please enter a valid email address.');
@@ -35,42 +62,56 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
         redirectTo: window.location.origin,
       });
       setLoading(false);
-      if (err) setError(err.message);
+      if (err) setError(safeAuthError(err));
       else setMessage('Check your email for a password reset link.');
       return;
     }
 
-    if (mode === 'sign-up' && password !== confirm) {
-      setError('Passwords do not match.');
-      return;
+    if (mode === 'sign-up') {
+      if (password.length < MIN_PASSWORD_LENGTH) {
+        setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+        return;
+      }
+      if (password !== confirm) {
+        setError('Passwords do not match.');
+        return;
+      }
     }
 
     setLoading(true);
 
     if (mode === 'sign-up') {
       const { error: err } = await supabase.auth.signUp({ email, password });
-      if (err) { setError(err.message); }
-      else { setConfirm(''); setMessage('Check your email to confirm your account.'); }
+      if (err) { setError(safeAuthError(err)); }
+      else { setPassword(''); setConfirm(''); setMessage('Check your email to confirm your account.'); }
     } else {
       const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-      if (err) setError(err.message);
-      // on success, useAuth picks up the session change automatically
+      if (err) setError(safeAuthError(err));
+      // on success, useAuth picks up the session change via onAuthStateChange automatically
     }
 
     setLoading(false);
   }
 
   async function handleGoogle() {
-    setError(null);
+    clearMessages();
     const { data, error: err } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'pitchbase://auth',
+        redirectTo: ELECTRON_REDIRECT_URI,
         skipBrowserRedirect: true,
       },
     });
-    if (err) { setError(err.message); return; }
+    if (err) { setError(safeAuthError(err)); return; }
     if (data?.url) {
+      // Validate the URL is a safe HTTPS URL before passing it to the system browser.
+      try {
+        const parsed = new URL(data.url);
+        if (parsed.protocol !== 'https:') throw new Error('insecure');
+      } catch {
+        setError('Something went wrong. Please try again.');
+        return;
+      }
       // Open in system browser so the user's saved Google accounts are visible.
       if (window.electronAPI?.openExternal) {
         window.electronAPI.openExternal(data.url);
@@ -79,27 +120,25 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
       }
       // Session is picked up automatically: Electron forwards the pitchbase://
       // deep-link fragment to useAuth via IPC → setSession → onAuthStateChange fires.
-      // No polling needed.
     }
   }
 
   function switchMode() {
     setMode(m => m === 'sign-in' ? 'sign-up' : 'sign-in');
-    setError(null);
-    setMessage(null);
+    clearMessages();
   }
 
   function goToReset() {
     setMode('reset');
-    setError(null);
-    setMessage(null);
+    clearMessages();
   }
 
   function goToSignIn() {
     setMode('sign-in');
-    setError(null);
-    setMessage(null);
+    clearMessages();
   }
+
+  const passwordMismatch = mode === 'sign-up' && confirm.length > 0 && password !== confirm;
 
   return (
     <div className="auth-screen">
@@ -115,13 +154,14 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
           {mode === 'sign-in' ? 'Welcome back.' : mode === 'sign-up' ? 'Create an account.' : 'Reset your password.'}
         </h1>
 
-        {error   && <div className="auth-error">{error}</div>}
-        {message && <div className="auth-message">{message}</div>}
+        {error   && <div className="auth-error"   role="alert"  aria-live="polite">{error}</div>}
+        {message && <div className="auth-message" role="status" aria-live="polite">{message}</div>}
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-field">
-            <label className="auth-label">EMAIL</label>
+            <label htmlFor="auth-email" className="auth-label">EMAIL</label>
             <input
+              id="auth-email"
               className="auth-input"
               type="email"
               autoComplete="email"
@@ -133,8 +173,9 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
 
           {mode !== 'reset' && (
             <div className="auth-field">
-              <label className="auth-label">PASSWORD</label>
+              <label htmlFor="auth-password" className="auth-label">PASSWORD</label>
               <input
+                id="auth-password"
                 className="auth-input"
                 type="password"
                 autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
@@ -152,19 +193,27 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
 
           {mode === 'sign-up' && (
             <div className="auth-field">
-              <label className="auth-label">CONFIRM PASSWORD</label>
+              <label htmlFor="auth-confirm" className="auth-label">CONFIRM PASSWORD</label>
               <input
+                id="auth-confirm"
                 className="auth-input"
                 type="password"
                 autoComplete="new-password"
                 value={confirm}
                 onChange={e => setConfirm(e.target.value)}
+                aria-invalid={passwordMismatch}
+                aria-describedby={passwordMismatch ? 'auth-error-banner' : undefined}
                 required
               />
             </div>
           )}
 
-          <button className="auth-btn auth-btn--primary" type="submit" disabled={loading}>
+          <button
+            className="auth-btn auth-btn--primary"
+            type="submit"
+            disabled={loading}
+            aria-busy={loading}
+          >
             {loading ? 'LOADING...' : mode === 'sign-in' ? 'SIGN IN' : mode === 'sign-up' ? 'SIGN UP' : 'SEND RESET LINK'}
           </button>
         </form>

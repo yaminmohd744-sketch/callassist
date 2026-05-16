@@ -31,8 +31,22 @@ export function rowToSession(row: SessionRow): CallSession {
   return {
     id:                    typeof row.id === 'string' ? row.id : undefined,
     config,
-    transcript:            Array.isArray(row.transcript) ? row.transcript as TranscriptEntry[] : [],
-    suggestions:           Array.isArray(row.suggestions) ? row.suggestions as AISuggestion[] : [],
+    transcript: Array.isArray(row.transcript)
+      ? (row.transcript as unknown[]).filter(
+          (e): e is TranscriptEntry =>
+            !!e && typeof e === 'object' &&
+            typeof (e as Record<string, unknown>).id === 'string' &&
+            typeof (e as Record<string, unknown>).text === 'string'
+        )
+      : [],
+    suggestions: Array.isArray(row.suggestions)
+      ? (row.suggestions as unknown[]).filter(
+          (s): s is AISuggestion =>
+            !!s && typeof s === 'object' &&
+            typeof (s as Record<string, unknown>).id === 'string' &&
+            typeof (s as Record<string, unknown>).body === 'string'
+        )
+      : [],
     durationSeconds:       typeof row.duration_seconds === 'number' ? row.duration_seconds : 0,
     finalCloseProbability: typeof row.final_close_prob === 'number' ? row.final_close_prob : 50,
     objectionsCount:       typeof row.objections_count === 'number' ? row.objections_count : 0,
@@ -78,7 +92,7 @@ export async function loadSessions(userId: string): Promise<CallSession[]> {
     .eq('user_id', userId)
     .order('ended_at', { ascending: false })
     .limit(200);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
   const real = data ? data.map(r => rowToSession(r as SessionRow)) : [];
   return real;
 }
@@ -89,17 +103,21 @@ export async function saveSession(session: CallSession, userId: string): Promise
     .insert(sessionToRow(session, userId))
     .select()
     .single();
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
   return rowToSession(data as SessionRow);
 }
 
+/**
+ * @deprecated Only call from migrateOutcomes() in App.tsx (legacy localStorage migration).
+ * For all other outcome updates use updateOutcomeById().
+ */
 export async function updateOutcome(userId: string, endedAt: string, outcome: CallOutcome): Promise<void> {
   const { error } = await supabase
     .from('call_sessions')
     .update({ outcome })
     .eq('user_id', userId)
     .eq('ended_at', endedAt);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
 }
 
 // New — use for all direct session outcome updates (matches by id, not endedAt)
@@ -109,7 +127,7 @@ export async function updateOutcomeById(userId: string, id: string, outcome: Cal
     .update({ outcome })
     .eq('user_id', userId)
     .eq('id', id);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
 }
 
 export async function deleteSession(userId: string, id: string): Promise<void> {
@@ -118,5 +136,5 @@ export async function deleteSession(userId: string, id: string): Promise<void> {
     .delete()
     .eq('user_id', userId)
     .eq('id', id);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
 }

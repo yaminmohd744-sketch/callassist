@@ -311,15 +311,28 @@ function buildContextHint(ctx: ConversationContext, currentTrigger: string): str
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
+const STAGE_OPENER_SECS    = 60;
+const STAGE_DISCOVERY_SECS = 120;
+const STAGE_PITCH_SECS     = 240;
+
 export function detectStage(elapsedSeconds: number): CallStage {
-  if (elapsedSeconds < 60)  return 'opener';
-  if (elapsedSeconds < 120) return 'discovery';
-  if (elapsedSeconds < 240) return 'pitch';
+  if (elapsedSeconds < STAGE_OPENER_SECS)    return 'opener';
+  if (elapsedSeconds < STAGE_DISCOVERY_SECS) return 'discovery';
+  if (elapsedSeconds < STAGE_PITCH_SECS)     return 'pitch';
   return 'close';
 }
 
 function clamp(val: number, min: number, max: number): number {
   return Math.min(Math.max(val, min), max);
+}
+
+/** Use word-boundary matching for short tokens (≤5 chars) to avoid substring false positives. */
+function matchesKeyword(text: string, keyword: string): boolean {
+  const kw = keyword.trim();
+  if (kw.length <= 5 && /^\w/.test(kw) && /\w$/.test(kw)) {
+    return new RegExp(`\\b${kw}\\b`, 'i').test(text);
+  }
+  return text.includes(keyword);
 }
 
 function makeSuggestion(
@@ -353,7 +366,7 @@ function analyzeWithKeywords(
   const variantIndex = currentObjectionsCount >= 1 ? 1 : 0;
 
   for (const [keyword, def] of Object.entries(OBJECTION_MAP)) {
-    if (text.includes(keyword)) {
+    if (matchesKeyword(text, keyword)) {
       const lastTriggered = recentTriggers.get(keyword) ?? -999;
       if (now - lastTriggered > 30) {
         recentTriggers.set(keyword, now);
@@ -371,7 +384,7 @@ function analyzeWithKeywords(
 
   if (suggestions.length === 0) {
     for (const [keyword, def] of Object.entries(BUYING_SIGNAL_MAP)) {
-      if (text.includes(keyword)) {
+      if (matchesKeyword(text, keyword)) {
         const base = fill(def.response, config);
         const hint = ctx ? buildContextHint(ctx, newEntry.text) : null;
         const body = hint ? `${base}\n\n- ${hint}` : base;
@@ -401,7 +414,7 @@ interface NeutralPreset {
 
 const NEUTRAL_PRESETS: NeutralPreset[] = [
   {
-    keywords: ['hello', 'hi ', 'hey ', 'good morning', 'good afternoon', 'good evening', 'howdy'],
+    keywords: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'howdy'],
     label: 'Opener Hook',
     responses: {
       opener:    "Quick intro - [Pitch]. My goal today is to [goal]. Is that worth 60 seconds?\n\nState your name and company first, then this line.",
@@ -584,7 +597,7 @@ function analyzeWithPresets(
   if (newEntry.speaker !== 'rep') {
     const lower = newEntry.text.toLowerCase();
     for (const preset of NEUTRAL_PRESETS) {
-      if (!preset.keywords.some(k => lower.includes(k))) continue;
+      if (!preset.keywords.some(k => matchesKeyword(lower, k))) continue;
       // Per-label cooldown: same label can't fire more than once per LABEL_COOLDOWN seconds
       const labelKey = `label:${preset.label}`;
       const lastFired = recentTriggers.get(labelKey) ?? -999;
@@ -898,7 +911,7 @@ export function generateSessionSummary(
   objectionsCount: number,
   talkRatioOverride?: number
 ): { aiSummary: string; followUpEmail: string; leadScore: number; coaching: CoachingWalkthrough } {
-  const buyingSignals = suggestions.filter(s => s.type === 'close-attempt').length;
+  const buyingSignals = transcript.filter(e => e.signal === 'buying-signal').length;
   const objectionHandlers = suggestions.filter(s => s.type === 'objection-response').length;
   const totalEntries = transcript.length;
 

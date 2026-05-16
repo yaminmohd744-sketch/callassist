@@ -40,6 +40,7 @@ async function callFunction(name: string, body: unknown, retries = 3, signal?: A
       try { text = await res.text(); } catch { /* body unreadable */ }
       throw new Error(`${name} returned ${res.status}: ${text}`);
     }
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
     await sleep(300 * 2 ** attempt + Math.random() * 100);
   }
   throw new Error(`${name}: exhausted retries`);
@@ -242,7 +243,7 @@ export async function analyzeTranscript(
       suggestions: [suggestion],
       updatedProbability: clamp(currentProbability + probDelta, 5, 95),
       updatedStage: aiDetectedStage,
-      updatedObjectionsCount: currentObjectionsCount + objDelta,
+      updatedObjectionsCount: Math.max(0, currentObjectionsCount + objDelta),
       phaseLabel: aiPhaseLabel,
       prospectTone: aiProspectTone,
     };
@@ -351,7 +352,12 @@ export async function generateBattleCard(
     const data = await callFunction('generate-battle-card', {
       prospectName, prospectTitle, company, callType, callGoal, yourPitch, priorContext,
     }) as Record<string, unknown>;
-    if (Array.isArray(data.likelyObjections)) return data as unknown as BattleCard;
+    if (
+      Array.isArray(data.likelyObjections) &&
+      Array.isArray(data.powerQuestions) &&
+      typeof data.suggestedOpener === 'string' &&
+      typeof data.contextInsight === 'string'
+    ) return data as unknown as BattleCard;
     return fallback;
   } catch (err) {
     console.error('[Pitchbase] generateBattleCard failed:', err instanceof Error ? err.message : err);

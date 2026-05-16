@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { Meeting, MeetingReport, MeetingPlatform, MeetingStatus } from '../types';
+import { STORAGE_KEYS } from './storageKeys';
 
 const LS_KEY = 'pitchbase:meetings';
 
@@ -69,16 +70,18 @@ function meetingToRow(m: Meeting, userId: string): Omit<MeetingRow, 'created_at'
 }
 
 async function migrateFromLocalStorage(userId: string): Promise<void> {
+  const flagKey = STORAGE_KEYS.migratedMeetings(userId);
+  if (localStorage.getItem(flagKey)) return; // already migrated
   const raw = localStorage.getItem(LS_KEY);
-  if (!raw) return;
+  if (!raw) { localStorage.setItem(flagKey, '1'); return; }
   try {
     const meetings = JSON.parse(raw) as Meeting[];
-    if (meetings.length === 0) { localStorage.removeItem(LS_KEY); return; }
+    if (meetings.length === 0) { localStorage.removeItem(LS_KEY); localStorage.setItem(flagKey, '1'); return; }
     const rows = meetings.map(m => meetingToRow(m, userId));
     const { error } = await supabase.from('meetings').upsert(rows, { onConflict: 'id', ignoreDuplicates: true });
-    if (!error) localStorage.removeItem(LS_KEY);
+    if (!error) { localStorage.removeItem(LS_KEY); localStorage.setItem(flagKey, '1'); }
   } catch {
-    // Migration failed silently — localStorage data stays intact
+    // Migration failed silently — localStorage data stays intact, flag not set so it retries next time
   }
 }
 
@@ -89,7 +92,7 @@ export async function loadMeetings(userId: string): Promise<Meeting[]> {
     .select('*')
     .eq('user_id', userId)
     .order('scheduled_at', { ascending: false });
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
   return (data ?? []).map(r => rowToMeeting(r as MeetingRow));
 }
 
@@ -99,7 +102,7 @@ export async function saveMeeting(meeting: Meeting, userId: string): Promise<Mee
     .insert(meetingToRow(meeting, userId))
     .select()
     .single();
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
   return rowToMeeting(data as MeetingRow);
 }
 
@@ -125,7 +128,7 @@ export async function updateMeeting(id: string, userId: string, patch: Partial<M
     .update(patchRow)
     .eq('id', id)
     .eq('user_id', userId);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
 }
 
 export async function deleteMeeting(id: string, userId: string): Promise<void> {
@@ -134,5 +137,5 @@ export async function deleteMeeting(id: string, userId: string): Promise<void> {
     .delete()
     .eq('id', id)
     .eq('user_id', userId);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`[${error.code}] ${error.message}`);
 }
