@@ -57,6 +57,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Light mode: flat warm cream — no floating blobs */
+[data-theme="light"] body {
+  background-image: none;
+}
+
 button {
   font-family: var(--font-display);
   cursor: pointer;

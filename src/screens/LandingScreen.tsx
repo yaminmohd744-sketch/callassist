@@ -1490,34 +1490,35 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
               <div className="lp__dd-pc-content">
 
-                {/* ── Tab annotations — unique animation per tab ── */}
+                {/* ── Tab annotations — all pop in from top-right ── */}
                 {demoPhase === 'postcall' && postcallTab === 'summary' && (
-                  <div key="ann-summary" className="lp__dd-pc-ann lp__dd-pc-ann--summary">
-                    <div className="lp__dd-pc-ann-icon">◎</div>
-                    <div className="lp__dd-pc-ann-text">Full AI summary — what went well, gaps, and next steps</div>
+                  <div key="ann-summary" className="lp__dd-pc-ann">
+                    <div className="lp__dd-pc-ann-stamp">AI SUMMARY</div>
+                    <div className="lp__dd-pc-ann-text">What went well, gaps, and next steps</div>
                   </div>
                 )}
                 {demoPhase === 'postcall' && postcallTab === 'transcript' && (
-                  <div key="ann-transcript" className="lp__dd-pc-ann lp__dd-pc-ann--transcript">
+                  <div key="ann-transcript" className="lp__dd-pc-ann">
+                    <div className="lp__dd-pc-ann-stamp">FULL TRANSCRIPT</div>
                     <div className="lp__dd-pc-ann-text">Every word timestamped — search, review, share</div>
-                    <div className="lp__dd-pc-ann-bar" />
                   </div>
                 )}
                 {demoPhase === 'postcall' && postcallTab === 'email' && (
-                  <div key="ann-email" className="lp__dd-pc-ann lp__dd-pc-ann--email">
+                  <div key="ann-email" className="lp__dd-pc-ann">
                     <div className="lp__dd-pc-ann-stamp">READY TO SEND</div>
                     <div className="lp__dd-pc-ann-text">Personalised follow-up drafted instantly — just hit send</div>
                   </div>
                 )}
                 {demoPhase === 'postcall' && postcallTab === 'scorecard' && (
-                  <div key="ann-scorecard" className="lp__dd-pc-ann lp__dd-pc-ann--scorecard">
-                    <div className="lp__dd-pc-ann-text">Your performance scored — talk ratio, objections, close probability</div>
+                  <div key="ann-scorecard" className="lp__dd-pc-ann">
+                    <div className="lp__dd-pc-ann-stamp">REP SCORECARD</div>
+                    <div className="lp__dd-pc-ann-text">Talk ratio, objections handled, close probability</div>
                   </div>
                 )}
                 {demoPhase === 'postcall' && postcallTab === 'share' && (
-                  <div key="ann-share" className="lp__dd-pc-ann lp__dd-pc-ann--share">
-                    <div className="lp__dd-pc-ann-text">Share the call summary with your team in one click</div>
-                    <div className="lp__dd-pc-ann-line" />
+                  <div key="ann-share" className="lp__dd-pc-ann">
+                    <div className="lp__dd-pc-ann-stamp">SHARE INSTANTLY</div>
+                    <div className="lp__dd-pc-ann-text">Send the call summary to your team in one click</div>
                   </div>
                 )}
 

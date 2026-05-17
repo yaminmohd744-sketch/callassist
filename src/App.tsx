@@ -268,6 +268,9 @@ export function App() {
     }
   }, [user, toast]);
 
+  // Must be above all early returns — hooks cannot be called conditionally.
+  const onboardingData = useMemo(() => getOnboardingData(), [onboardingVersion]);
+
   // ── Auth gate ──────────────────────────────────────────────────────────────
   // In the browser, never block on auth — just show the landing page immediately.
   if (authLoading && isElectron) return <div className="app-loading" />;
@@ -307,7 +310,6 @@ export function App() {
 
   const isShell = currentScreen === 'dashboard' || currentScreen === 'analytics' || currentScreen === 'leads';
 
-  const onboardingData = useMemo(() => getOnboardingData(), [onboardingVersion]);
   const loginUserName = getDisplayName(user, onboardingData.name);
 
   if (showOnboarding) {

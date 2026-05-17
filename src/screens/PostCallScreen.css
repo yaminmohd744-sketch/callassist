@@ -191,6 +191,21 @@
   padding: var(--space-6);
 }
 
+/* Tab panel entrance — each panel animates in on mount (tab switch) */
+@keyframes postcall-tab-enter {
+  from { opacity: 0; transform: translateY(-10px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0)     scale(1); }
+}
+
+.postcall__summary,
+.postcall__transcript-section,
+.postcall__email-section,
+.scorecard,
+.postcall__replay,
+.postcall__share {
+  animation: postcall-tab-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
 .postcall__pre {
   font-family: var(--font-display);
   font-size: var(--font-size-sm);
