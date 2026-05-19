@@ -214,6 +214,16 @@ textarea::placeholder {
   to   { width: 28px; opacity: 1; }
 }
 
+/* ── Reduced motion — disable all animations/transitions for users who prefer it */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ── Numeric elements — Clash Display everywhere ─────────────────────────── */
 
 .dashboard__stat-val,

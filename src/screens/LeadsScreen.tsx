@@ -223,6 +223,11 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
   const [importStatus, setImportStatus] = useState('');
   const [searchQuery,  setSearchQuery]  = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const importStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (importStatusTimerRef.current !== null) clearTimeout(importStatusTimerRef.current);
+  }, []);
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -347,7 +352,8 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
     } catch {
       setImportStatus('Import failed. Check file format.');
     }
-    setTimeout(() => setImportStatus(''), 5000);
+    if (importStatusTimerRef.current !== null) clearTimeout(importStatusTimerRef.current);
+    importStatusTimerRef.current = setTimeout(() => setImportStatus(''), 5000);
   }
 
   async function handleCreatePackage() {

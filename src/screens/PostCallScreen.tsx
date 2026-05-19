@@ -99,6 +99,8 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
         recordingUrlRef.current = url;
       }
     }).catch(() => {});
+    // Only revoke on unmount or when the recording key changes — not on tab change.
+    // Revoking on tab change without clearing state would leave a stale revoked URL.
     return () => {
       if (recordingUrlRef.current) {
         URL.revokeObjectURL(recordingUrlRef.current);
@@ -106,7 +108,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, session.recordingKey]);
+  }, [session.recordingKey]);
 
   async function handleGenerateProspectSummary() {
     if (generatingSummary) return;
