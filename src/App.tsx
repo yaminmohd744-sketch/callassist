@@ -71,7 +71,7 @@ function getOnboardingData(): OnboardingData {
 // True when running inside the Electron desktop app
 const isElectron = navigator.userAgent.includes('Electron');
 
-const ALLOWED_IMAGE_TYPES = ['data:image/png;', 'data:image/jpeg;', 'data:image/webp;', 'data:image/gif;'];
+const ALLOWED_IMAGE_REGEX = /^data:image\/(png|jpeg|webp|gif);base64,/;
 
 function getDisplayName(
   user: { user_metadata?: Record<string, string>; email?: string | null } | null,
@@ -115,7 +115,9 @@ export function App() {
     const overlay = document.createElement('div');
     overlay.className = `theme-flash theme-flash--${next}`;
     document.body.appendChild(overlay);
-    overlay.addEventListener('animationend', () => overlay.remove(), { once: true });
+    const removeOverlay = () => overlay.remove();
+    overlay.addEventListener('animationend', removeOverlay, { once: true });
+    setTimeout(removeOverlay, 600); // fallback: remove if animationend never fires
     setTheme(next);
     try { localStorage.setItem(STORAGE_KEYS.theme, next); } catch { /* storage full */ }
     applyTheme(next);
@@ -140,7 +142,7 @@ export function App() {
   }, []);
 
   const handleProfilePicChange = useCallback((dataUrl: string) => {
-    if (!ALLOWED_IMAGE_TYPES.some(prefix => dataUrl.startsWith(prefix))) {
+    if (!ALLOWED_IMAGE_REGEX.test(dataUrl)) {
       toast.error('Invalid image format — use PNG, JPEG, WebP or GIF');
       return;
     }

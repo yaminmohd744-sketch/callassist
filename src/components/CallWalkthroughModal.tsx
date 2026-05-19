@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
 import { Button } from './ui/Button';
 import type { CallSession } from '../types';
 import { generateCoaching } from '../lib/mockAI';
@@ -55,22 +55,55 @@ export function CallWalkthroughModal({ session, onViewFull, onClose }: Props) {
     setStepIndex(i => i - 1);
   }
 
+  // Refs so the stable keydown listener always calls the latest versions of these callbacks
+  const goNextRef = useRef(goNext);
+  const goBackRef = useRef(goBack);
+  const onCloseRef = useRef(onClose);
+  useLayoutEffect(() => { goNextRef.current = goNext; goBackRef.current = goBack; onCloseRef.current = onClose; });
+
+  // Stable keydown listener (registered once) — calls via refs to avoid re-registration on every render
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'ArrowRight' || e.key === 'Enter') goNext();
-      if (e.key === 'ArrowLeft')  goBack();
-      if (e.key === 'Escape')     onClose();
+      if (e.key === 'ArrowRight' || e.key === 'Enter') goNextRef.current();
+      if (e.key === 'ArrowLeft')  goBackRef.current();
+      if (e.key === 'Escape')     onCloseRef.current();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  });
+  }, []);
+
+  // Focus trap: keep keyboard focus inside the modal while it is open
+  const modalRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const modal = modalRef.current;
+    if (!modal) return;
+    const previously = document.activeElement as HTMLElement | null;
+    // Focus the first focusable element on mount
+    const focusable = modal.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    focusable[0]?.focus();
+
+    function trapFocus(e: KeyboardEvent) {
+      if (e.key !== 'Tab' || !focusable.length) return;
+      const first = focusable[0];
+      const last  = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+    modal.addEventListener('keydown', trapFocus);
+    return () => {
+      modal.removeEventListener('keydown', trapFocus);
+      previously?.focus(); // restore focus to trigger element on close
+    };
+  }, []);
 
   const probLevel = session.finalCloseProbability >= 61 ? 'high' : session.finalCloseProbability >= 31 ? 'medium' : 'low';
   const scoreLevel = session.leadScore >= 70 ? 'high' : session.leadScore >= 40 ? 'medium' : 'low';
 
   return (
     <div className="wt-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="wt-modal">
+      <div className="wt-modal" ref={modalRef}>
         {/* Header */}
         <div className="wt-header">
           <div className="wt-header-meta">

@@ -16,6 +16,13 @@ export function LoginTransitionOverlay({ userName, onDone }: Props) {
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [onDone]);
 
+  // Allow users to skip the overlay immediately with Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onDone(); }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onDone]);
+
   return (
     <div className={`lto lto--${phase}`} aria-hidden="true">
       <div className="lto__bg" />

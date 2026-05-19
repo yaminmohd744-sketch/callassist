@@ -104,30 +104,38 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   const wsrRef          = useRef<WSR | null>(null); // Web Speech Recognition fallback
   const activeRef       = useRef(false);
   const onFinalRef      = useRef(onFinalTranscript);
-  useLayoutEffect(() => { onFinalRef.current = onFinalTranscript; });
+  useLayoutEffect(() => { onFinalRef.current = onFinalTranscript; }, [onFinalTranscript]);
 
   // Utterance buffer - accumulates is_final chunks and flushes them as one entry
   // after a short silence, so fragmented mid-sentence commits get merged.
   // Capped at MAX_BUFFER_CHUNKS to prevent unbounded memory growth on very long calls.
   const bufferRef = useRef<string[]>([]);
   const flushTimerRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFlushingRef      = useRef(false);
   // Tracks the Deepgram speaker index for the current utterance (updated per chunk).
   const dgCurrentSpeakerRef = useRef<number | undefined>(undefined);
 
   const flushBuffer = useCallback((immediate = false) => {
     if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
     if (immediate) {
+      // Guard against concurrent flushes from rapid final-chunk bursts
+      if (isFlushingRef.current) return;
+      isFlushingRef.current = true;
       const combined = bufferRef.current.join(' ').trim();
       const speaker = dgCurrentSpeakerRef.current;
       bufferRef.current = [];
       dgCurrentSpeakerRef.current = undefined;
+      isFlushingRef.current = false;
       if (combined) onFinalRef.current(combined, speaker);
     } else {
       flushTimerRef.current = setTimeout(() => {
+        if (isFlushingRef.current) return;
+        isFlushingRef.current = true;
         const combined = bufferRef.current.join(' ').trim();
         const speaker = dgCurrentSpeakerRef.current;
         bufferRef.current = [];
         dgCurrentSpeakerRef.current = undefined;
+        isFlushingRef.current = false;
         if (combined) onFinalRef.current(combined, speaker);
       }, FLUSH_DEBOUNCE_MS);
     }

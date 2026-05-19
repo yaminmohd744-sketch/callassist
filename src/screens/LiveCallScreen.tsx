@@ -154,7 +154,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
   const { suggestions, phaseLabel, prospectTone, closeProbability, callStage, objectionsCount, processEntry, reset: resetCoach, seedSuggestions } = useAICoach();
   const suggestionsRef = useRef(suggestions);
-  useLayoutEffect(() => { suggestionsRef.current = suggestions; });
+  useLayoutEffect(() => { suggestionsRef.current = suggestions; }, [suggestions]);
 
   const latestAIScript = suggestions.length > 0 ? suggestions[suggestions.length - 1].body : undefined;
   const onBodySuggestion = useCallback((s: AISuggestion) => {
@@ -167,9 +167,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     onSuggestion: onBodySuggestion,
   });
 
+  // Both sources append chronologically, so no sort needed (max ~18 items total)
   const allSuggestions = useMemo(() => {
-    return [...suggestions, ...bodySuggestions]
-      .sort((a, b) => a.timestampSeconds - b.timestampSeconds);
+    return [...suggestions, ...bodySuggestions];
   }, [suggestions, bodySuggestions]);
 
   // Automatically classify each mic utterance as rep or prospect based on content.
@@ -672,7 +672,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
                   <path d="M2 8L6 4L10 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
-              <button className="live-call__bubble-end" onClick={handleEndCall}>
+              <button className="live-call__bubble-end" onClick={handleEndCall} aria-label="End call">
                 ■ End
               </button>
             </div>

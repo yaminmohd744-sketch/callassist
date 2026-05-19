@@ -24,16 +24,13 @@ function fill(text: string, config?: CallConfig): string {
   const co    = config.company      || 'your company';
   const pitch = config.yourPitch    || 'what I have for you';
   const goal  = config.callGoal     || 'connect with you today';
+  // Use callback form so replacement strings with $1/$& are treated literally
   return text
-    .replace(/\[Prospect\]/g,       name)
-    .replace(/\[prospect\]/g,       name)
-    .replace(/\[their company\]/gi, co)
-    .replace(/\[Company\]/g,        co)
-    .replace(/\[company\]/g,        co)
-    .replace(/\[Pitch\]/g,          pitch)
-    .replace(/\[pitch\]/g,          pitch)
-    .replace(/\[Goal\]/g,           goal)
-    .replace(/\[goal\]/g,           goal);
+    .replace(/\[prospect\]/gi,      () => name)
+    .replace(/\[their company\]/gi, () => co)
+    .replace(/\[company\]/gi,       () => co)
+    .replace(/\[pitch\]/gi,         () => pitch)
+    .replace(/\[goal\]/gi,          () => goal);
 }
 
 // ─── Objection Map ────────────────────────────────────────────────────────────
@@ -261,18 +258,14 @@ function extractContext(transcript: TranscriptEntry[]): ConversationContext {
   else if (buyingSignals >= 2) tone = 'interested';
   else if (buyingSignals === 1) tone = 'curious';
 
-  const painKeywords = ['struggle', 'problem', 'issue', 'challenge', 'difficult', 'frustrat',
-    'waste', 'slow', 'manual', 'expensive', 'costly', 'broken', 'miss', 'losing', 'pain'];
   const confirmedPain = prospectEntries.find(e =>
-    painKeywords.some(k => e.text.toLowerCase().includes(k)))?.text ?? null;
+    PAIN_KEYWORDS.some(k => e.text.toLowerCase().includes(k)))?.text ?? null;
 
-  const toolKeywords = ['salesforce', 'hubspot', 'zoho', 'pipedrive', 'monday', 'notion',
-    'slack', 'microsoft', 'google', 'excel', 'spreadsheet', 'sheets', 'airtable',
-    'dynamics', 'close.io', 'outreach', 'salesloft'];
+
   let mentionedTool: string | null = null;
   for (const e of prospectEntries) {
     const low = e.text.toLowerCase();
-    const found = toolKeywords.find(t => low.includes(t));
+    const found = TOOL_KEYWORDS.find(t => low.includes(t));
     if (found) { mentionedTool = found; break; }
   }
 
@@ -311,6 +304,21 @@ function buildContextHint(ctx: ConversationContext, currentTrigger: string): str
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
+// Module-level constants — defined once, not recreated on every function call
+const PAIN_KEYWORDS = [
+  'struggle', 'problem', 'issue', 'challenge', 'difficult', 'frustrat',
+  'waste', 'slow', 'manual', 'expensive', 'costly', 'broken', 'miss', 'losing', 'pain',
+];
+
+const TOOL_KEYWORDS = [
+  'salesforce', 'hubspot', 'zoho', 'pipedrive', 'monday', 'notion',
+  'slack', 'microsoft', 'google', 'excel', 'spreadsheet', 'sheets', 'airtable',
+  'dynamics', 'close.io', 'outreach', 'salesloft',
+];
+
+// Regex cache for matchesKeyword — avoids recompiling the same pattern on every call
+const _kwRegexCache = new Map<string, RegExp>();
+
 const STAGE_OPENER_SECS    = 60;
 const STAGE_DISCOVERY_SECS = 120;
 const STAGE_PITCH_SECS     = 240;
@@ -330,7 +338,9 @@ function clamp(val: number, min: number, max: number): number {
 function matchesKeyword(text: string, keyword: string): boolean {
   const kw = keyword.trim();
   if (kw.length <= 5 && /^\w/.test(kw) && /\w$/.test(kw)) {
-    return new RegExp(`\\b${kw}\\b`, 'i').test(text);
+    let re = _kwRegexCache.get(kw);
+    if (!re) { re = new RegExp(`\\b${kw}\\b`, 'i'); _kwRegexCache.set(kw, re); }
+    return re.test(text);
   }
   return text.includes(keyword);
 }
@@ -368,7 +378,7 @@ function analyzeWithKeywords(
   for (const [keyword, def] of Object.entries(OBJECTION_MAP)) {
     if (matchesKeyword(text, keyword)) {
       const lastTriggered = recentTriggers.get(keyword) ?? -999;
-      if (now - lastTriggered > 30) {
+      if (now - lastTriggered >= 30) {
         recentTriggers.set(keyword, now);
         const raw = def.responses[Math.min(variantIndex, def.responses.length - 1)];
         const base = fill(raw, config);
@@ -676,6 +686,31 @@ function trunc(text: string, max = 70): string {
   return text.length > max ? text.slice(0, max - 1).trimEnd() + '…' : text;
 }
 
+interface CallMetrics {
+  repEntries: TranscriptEntry[];
+  prospectEntries: TranscriptEntry[];
+  buyingSignalEntries: TranscriptEntry[];
+  objectionEntries: TranscriptEntry[];
+  buyingSignals: number;
+  talkRatio: number;
+  lastTimestamp: number;
+  reachedCloseStage: boolean;
+}
+
+/** Compute derived call metrics shared by generateCoaching and generateSessionSummary. */
+function computeCallMetrics(transcript: TranscriptEntry[], talkRatioOverride?: number): CallMetrics {
+  const repEntries          = transcript.filter(e => e.speaker === 'rep');
+  const prospectEntries     = transcript.filter(e => e.speaker === 'prospect');
+  const buyingSignalEntries = transcript.filter(e => e.signal === 'buying-signal');
+  const objectionEntries    = transcript.filter(e => e.signal === 'objection');
+  const buyingSignals       = buyingSignalEntries.length;
+  // Use duration-based talkRatio from caller when available; fall back to turn-count ratio.
+  const talkRatio           = talkRatioOverride ?? (transcript.length > 0 ? repEntries.length / transcript.length : 0.5);
+  const lastTimestamp       = transcript.length > 0 ? transcript[transcript.length - 1].timestampSeconds : 0;
+  const reachedCloseStage   = lastTimestamp > 200;
+  return { repEntries, prospectEntries, buyingSignalEntries, objectionEntries, buyingSignals, talkRatio, lastTimestamp, reachedCloseStage };
+}
+
 export function generateCoaching(
   config: CallConfig,
   transcript: TranscriptEntry[],
@@ -688,15 +723,7 @@ export function generateCoaching(
   const company  = config.company || 'their company';
   const goal     = config.callGoal || 'close the deal';
 
-  const repEntries      = transcript.filter(e => e.speaker === 'rep');
-  const prospectEntries = transcript.filter(e => e.speaker === 'prospect');
-  const buyingSignalEntries = transcript.filter(e => e.signal === 'buying-signal');
-  const objectionEntries    = transcript.filter(e => e.signal === 'objection');
-  const buyingSignals   = buyingSignalEntries.length;
-  // Use duration-based talkRatio from the caller when available; fall back to turn-count ratio.
-  const talkRatio       = talkRatioOverride ?? (transcript.length > 0 ? repEntries.length / transcript.length : 0.5);
-  const lastTimestamp   = transcript.length > 0 ? transcript[transcript.length - 1].timestampSeconds : 0;
-  const reachedCloseStage = lastTimestamp > 200;
+  const { repEntries, prospectEntries, buyingSignalEntries, objectionEntries, buyingSignals, talkRatio, lastTimestamp, reachedCloseStage } = computeCallMetrics(transcript, talkRatioOverride);
 
   // Pull the opener — first substantive rep utterance
   const openerEntry = repEntries.find(e => e.text.trim().length > 10);
@@ -911,17 +938,12 @@ export function generateSessionSummary(
   objectionsCount: number,
   talkRatioOverride?: number
 ): { aiSummary: string; followUpEmail: string; leadScore: number; coaching: CoachingWalkthrough } {
-  const buyingSignals = transcript.filter(e => e.signal === 'buying-signal').length;
+  const { prospectEntries, buyingSignals, talkRatio, reachedCloseStage } = computeCallMetrics(transcript, talkRatioOverride);
   const objectionHandlers = suggestions.filter(s => s.type === 'objection-response').length;
   const totalEntries = transcript.length;
 
-  const prospect       = config.prospectName || 'the prospect';
-  const company        = config.company || 'their company';
-  const repEntries     = transcript.filter(e => e.speaker === 'rep');
-  const prospectEntries = transcript.filter(e => e.speaker === 'prospect');
-  const talkRatio      = talkRatioOverride ?? (transcript.length > 0 ? repEntries.length / transcript.length : 0.5);
-  const lastTimestamp  = transcript.length > 0 ? transcript[transcript.length - 1].timestampSeconds : 0;
-  const reachedCloseStage = lastTimestamp > 200;
+  const prospect = config.prospectName || 'the prospect';
+  const company  = config.company || 'their company';
 
   // ── What went well (factual, not coaching) ───────────────────────────────
   const wentWellLines: string[] = [];
