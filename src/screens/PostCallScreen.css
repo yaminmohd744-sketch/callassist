@@ -204,6 +204,7 @@
 .postcall__replay,
 .postcall__share {
   animation: postcall-tab-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  position: relative;
 }
 
 .postcall__pre {
@@ -1038,4 +1039,45 @@
   max-width: 380px;
   line-height: 1.6;
   margin: 0;
+}
+
+/* ── Tab annotation stamps (top-right corner of each panel) ── */
+.postcall__ann {
+  position: absolute;
+  pointer-events: none;
+  z-index: 20;
+  font-family: var(--font-display);
+  top: 14px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  animation: postcall-ann-drop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+}
+
+.postcall__ann-stamp {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #fff;
+  background: #814ac8;
+  padding: 3px 8px;
+  border-radius: 4px;
+  transform: rotate(-2deg);
+  display: inline-block;
+}
+
+.postcall__ann-text {
+  font-size: 8.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  text-align: right;
+}
+
+@keyframes postcall-ann-drop {
+  from { opacity: 0; transform: translateY(-16px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0)     scale(1); }
 }

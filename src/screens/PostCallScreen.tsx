@@ -290,6 +290,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
       <div className="postcall__content">
         {activeTab === 'summary' && (
           <div className="postcall__summary" role="tabpanel" id="postcall-panel-summary" aria-labelledby="postcall-tab-summary" tabIndex={0}>
+            <div className="postcall__ann"><div className="postcall__ann-stamp">AI SUMMARY</div><div className="postcall__ann-text">What went well, gaps, and next steps</div></div>
             {renderSummary(session.aiSummary)}
             {session.notes && session.notes.length > 0 && (
               <div className="postcall__summary-notes-section">
@@ -304,6 +305,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
         {activeTab === 'transcript' && (
           <div className="postcall__transcript-section" role="tabpanel" id="postcall-panel-transcript" aria-labelledby="postcall-tab-transcript" tabIndex={0}>
+            <div className="postcall__ann"><div className="postcall__ann-stamp">FULL TRANSCRIPT</div><div className="postcall__ann-text">Every word timestamped — search, review, share</div></div>
             <div className="postcall__tab-actions">
               <Button variant="secondary" size="sm" onClick={handleDownloadTranscript}>
                 ↓ {t.postcall.download}
@@ -333,6 +335,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
         {activeTab === 'email' && (
           <div className="postcall__email-section" role="tabpanel" id="postcall-panel-email" aria-labelledby="postcall-tab-email" tabIndex={0}>
+            <div className="postcall__ann"><div className="postcall__ann-stamp">READY TO SEND</div><div className="postcall__ann-text">Personalised follow-up drafted instantly — just hit send</div></div>
             <div className="postcall__tab-actions">
               <Button variant="secondary" size="sm" onClick={handleCopyEmail}>
                 {copied ? `✓ ${t.postcall.copyEmail}` : `⎘ ${t.postcall.copyEmail}`}
@@ -367,6 +370,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
         {activeTab === 'scorecard' && (
           <div className="scorecard" role="tabpanel" id="postcall-panel-scorecard" aria-labelledby="postcall-tab-scorecard" tabIndex={0}>
+            <div className="postcall__ann"><div className="postcall__ann-stamp">REP SCORECARD</div><div className="postcall__ann-text">Talk ratio, objections handled, close probability</div></div>
             <div className="scorecard__score-block">
               <div className={`scorecard__score-ring scorecard__score-ring--${repScore >= 70 ? 'high' : repScore >= 45 ? 'medium' : 'low'}`}
                 style={{ '--score-pct': `${repScore}%` } as React.CSSProperties}>
@@ -440,6 +444,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
         {activeTab === 'replay' && (
           <div className="postcall__replay" role="tabpanel" id="postcall-panel-replay" aria-labelledby="postcall-tab-replay" tabIndex={0}>
+            <div className="postcall__ann"><div className="postcall__ann-stamp">CALL REPLAY</div><div className="postcall__ann-text">Listen back and sync with the full transcript</div></div>
             {!recordingUrl ? (
               <div className="postcall__replay-loading">
                 <div className="postcall__replay-loading-icon">▶</div>
@@ -480,6 +485,7 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
         {activeTab === 'share' && (
           <div className="postcall__share" role="tabpanel" id="postcall-panel-share" aria-labelledby="postcall-tab-share" tabIndex={0}>
+            <div className="postcall__ann"><div className="postcall__ann-stamp">SHARE INSTANTLY</div><div className="postcall__ann-text">Send the call summary to your team in one click</div></div>
             <div className="postcall__share-header">
               <div className="postcall__share-title">Prospect Summary</div>
               <p className="postcall__share-desc">
