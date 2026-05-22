@@ -34,7 +34,7 @@ export function LoginTransitionOverlay({ userName, onDone }: Props) {
       </div>
       <div className="lto__content">
         <div className="lto__logo">
-          PITCH<span className="lto__logo-word">BASE</span>
+          PITCHR
         </div>
         <div className="lto__welcome">
           Welcome back, <strong>{userName || 'there'}</strong>

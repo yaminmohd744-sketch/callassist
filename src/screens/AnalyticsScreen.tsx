@@ -219,8 +219,8 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   useEffect(() => {
     // Team codes are session-scoped — use sessionStorage so they don't persist across
     // browser sessions or leak to other users sharing the same device.
-    setTeamCode(sessionStorage.getItem('pitchbase_team_code') ?? '');
-    setJoinedTeam(sessionStorage.getItem('pitchbase_joined_team') ?? '');
+    setTeamCode(sessionStorage.getItem('pitchr_team_code') ?? '');
+    setJoinedTeam(sessionStorage.getItem('pitchr_joined_team') ?? '');
     return () => {
       if (teamMsgTimer.current !== null) clearTimeout(teamMsgTimer.current);
     };
@@ -244,7 +244,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   function generateTeamCode() {
     const bytes = crypto.getRandomValues(new Uint8Array(4));
     const code = Array.from(bytes, b => b.toString(36).padStart(2, '0')).join('').slice(0, 6).toUpperCase();
-    sessionStorage.setItem('pitchbase_team_code', code);
+    sessionStorage.setItem('pitchr_team_code', code);
     setTeamCode(code);
     flashTeamMsg(t.analytics.teamCodeCreated);
   }
@@ -252,7 +252,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
   function handleJoinTeam() {
     const code = joinCode.trim().toUpperCase();
     if (!code) return;
-    sessionStorage.setItem('pitchbase_joined_team', code);
+    sessionStorage.setItem('pitchr_joined_team', code);
     setJoinedTeam(code);
     setJoinCode('');
     flashTeamMsg(t.analytics.joinedTeamMsg(code));

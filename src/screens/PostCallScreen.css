@@ -801,6 +801,19 @@
 
 /* ─── Header actions ───────────────────────────────────────── */
 
+.postcall__profile-badge {
+  font-family: 'Clash Display', system-ui, sans-serif;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-accent, #814ac8);
+  background: rgba(129, 74, 200, 0.08);
+  border: 1px solid rgba(129, 74, 200, 0.25);
+  border-radius: var(--border-radius-pill);
+  padding: 6px 14px;
+  white-space: nowrap;
+}
+
 .postcall__crm-badge {
   font-family: 'Clash Display', system-ui, sans-serif;
   font-size: var(--font-size-xs);

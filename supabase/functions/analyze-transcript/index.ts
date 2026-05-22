@@ -31,7 +31,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { entry, transcript, stage, elapsedSeconds, probability, objectionsCount, config, lastLabel, language, currentPhaseLabel, callSummary } =
+    const { entry, transcript, stage, elapsedSeconds, probability, objectionsCount, config, lastLabel, language, currentPhaseLabel, callSummary, repContext } =
       await req.json();
 
     const langNote = language && language !== "en-US"
@@ -52,6 +52,7 @@ Deno.serve(async (req: Request) => {
     const safeProspectTitle = sanitize(config?.prospectTitle, 80);
     const safePriorContext = sanitize(config?.priorContext, 400);
     const safeCallSummary = sanitize(callSummary, 400);
+    const safeRepContext = sanitize(repContext, 600);
 
     const systemPrompt = `You are an elite real-time sales copilot. You observe live calls silently and intervene ONLY when it materially increases the chance of closing. Most moments do not need intervention — silence is a tool.
 
@@ -66,7 +67,7 @@ Context:
 - Goal: ${safeGoal || "move the conversation forward"}
 ${safeProspectTitle ? `- Prospect role: ${safeProspectTitle}\n` : ''}${config?.callType ? `- Call type: ${config.callType}\n` : ''}- ${Math.floor(elapsedSeconds / 60)}min elapsed | Close probability: ${probability}% | Objections: ${objectionsCount}
 - Last suggestion: ${lastLabel ?? "none"} — suggest something meaningfully different${langNote}
-${safePriorContext ? `- Prior context: ${safePriorContext}\n` : ''}${currentPhaseLabel ? `- Current detected phase: ${currentPhaseLabel}\n` : ''}${safeCallSummary ? `- Earlier in the call: ${safeCallSummary}\n` : ''}
+${safePriorContext ? `- Prior context: ${safePriorContext}\n` : ''}${currentPhaseLabel ? `- Current detected phase: ${currentPhaseLabel}\n` : ''}${safeCallSummary ? `- Earlier in the call: ${safeCallSummary}\n` : ''}${safeRepContext ? `\n${safeRepContext}\n` : ''}
 Recent conversation:
 ${recentEntries}
 

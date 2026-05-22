@@ -14,6 +14,9 @@ export interface OnboardingData {
   companyName?: string;
   productDescription: string;
   language: LanguageCode;
+  targetCustomer: string;
+  differentiators: string[];
+  commonObjections: string[];
 }
 
 // ── Category options ──────────────────────────────────────────────────────────
@@ -51,16 +54,16 @@ const COMPANY_CATEGORIES: Category[] = [
 ];
 
 const STEPS = [
-  { title: 'Welcome to Pitchbase'         },
-  { title: 'Who are you selling for?'      },
-  { title: 'What do you sell?'             },
-  { title: 'Tell us about it'              },
-  { title: 'What language do you sell in?' },
-  { title: "You're ready to close."        },
+  { title: 'Welcome to Pitchr'             },  // 0
+  { title: 'Who are you selling for?'      },  // 1
+  { title: 'What do you sell?'             },  // 2
+  { title: 'Tell us about it'              },  // 3
+  { title: 'Who do you sell to?'           },  // 4 NEW
+  { title: 'Your competitive edge'         },  // 5 NEW
+  { title: 'What language do you sell in?' },  // 6
+  { title: "You're ready to close."        },  // 7
 ];
 
-// Flag URLs are static — precompute them into SUPPORTED_LANGUAGES at module load.
-// This avoids calling split/toLowerCase on every render for every language chip.
 function flagUrl(code: LanguageCode) {
   return `https://flagcdn.com/w40/${code.split('-')[1].toLowerCase()}.png`;
 }
@@ -68,16 +71,17 @@ function flagUrl(code: LanguageCode) {
 export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
   const [step, setStep]                   = useState(0);
   const [name, setName]                   = useState('');
-  // null = not yet chosen; avoids the empty-string type cast at submit time
   const [sellingFor, setSellingFor]       = useState<'self' | 'company' | null>(null);
   const [industry, setIndustry]           = useState('');
   const [industryOther, setIndustryOther] = useState('');
   const [companyName, setCompanyName]     = useState('');
   const [productDescription, setProductDescription] = useState('');
   const [language, setLanguage]           = useState<LanguageCode>('en-US');
+  // New fields
+  const [targetCustomer, setTargetCustomer]   = useState('');
+  const [differentiators, setDifferentiators] = useState<[string, string, string]>(['', '', '']);
+  const [commonObjectionsRaw, setCommonObjectionsRaw] = useState('');
 
-  // Focus the step heading whenever the step changes so screen reader users are
-  // announced to the new content and keyboard users land at the right place.
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     headingRef.current?.focus();
@@ -92,15 +96,17 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
     ? industryOther.trim()
     : (categories.find(c => c.value === industry)?.label ?? '');
 
+  const filledDifferentiators = differentiators.filter(d => d.trim());
+
   const canNext = (() => {
     if (step === 0) return name.trim().length > 0;
     if (step === 1) return sellingFor !== null;
     if (step === 2) return industry !== '' && (industry !== 'other' || industryOther.trim().length > 0);
     if (step === 3) return productDescription.trim().length > 0;
-    return true;
+    if (step === 4) return targetCustomer.trim().length > 0;
+    return true; // steps 5, 6, 7
   })();
 
-  // Memoised so SUPPORTED_LANGUAGES.find() doesn't run on every render.
   const selectedLang = useMemo(
     () => SUPPORTED_LANGUAGES.find(l => l.code === language) ?? SUPPORTED_LANGUAGES[0],
     [language],
@@ -109,18 +115,26 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
   function next() { setStep(s => Math.min(s + 1, total - 1)); }
   function back() { setStep(s => Math.max(s - 1, 0)); }
 
-  // Resetting industry when sellingFor changes prevents a stale industry slug
-  // from a different category set passing canNext validation on step 2.
   function handleSellingFor(val: 'self' | 'company') {
     setSellingFor(val);
     setIndustry('');
     setIndustryOther('');
   }
 
+  function updateDifferentiator(index: 0 | 1 | 2, value: string) {
+    setDifferentiators(prev => {
+      const next: [string, string, string] = [...prev] as [string, string, string];
+      next[index] = value;
+      return next;
+    });
+  }
+
   function finish() {
-    // Guard: canNext logic prevents reaching step 5 without a sellingFor value,
-    // but the explicit check removes the need for a type cast.
     if (!sellingFor) return;
+    const commonObjections = commonObjectionsRaw
+      .split(/[,\n]/)
+      .map(s => s.trim())
+      .filter(Boolean);
     onDone({
       name,
       sellingFor,
@@ -128,6 +142,9 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
       companyName: companyName || undefined,
       productDescription,
       language,
+      targetCustomer,
+      differentiators: filledDifferentiators,
+      commonObjections,
     });
   }
 
@@ -152,9 +169,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
         {/* ── Step 0: Name ── */}
         {step === 0 && (
           <div className="ob__slide">
-            <div className="ob__logo">
-              PITCH<span className="ob__logo-plus">BASE</span>
-            </div>
+            <div className="ob__logo">PITCHR</div>
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>Welcome aboard.</h1>
             <p className="ob__sub">Let's get to know you so your AI coach can actually help. Takes 60 seconds.</p>
             <div className="ob__field">
@@ -290,8 +305,79 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 4: Language ── */}
+        {/* ── Step 4: Target Customer (NEW) ── */}
         {step === 4 && (
+          <div className="ob__slide">
+            <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>Who do you sell to?</h1>
+            <p className="ob__sub">
+              Describe your typical buyer. Your AI coach will tailor objection responses and closing tactics to this specific person.
+            </p>
+            <div className="ob__field">
+              <label htmlFor="ob-target" className="ob__label">Your ideal customer</label>
+              <textarea
+                id="ob-target"
+                className="ob__input ob__textarea"
+                placeholder="e.g. CTOs at Series B SaaS companies with 50–500 employees"
+                value={targetCustomer}
+                onChange={e => setTargetCustomer(e.target.value)}
+                maxLength={300}
+                rows={2}
+                autoFocus
+              />
+              <p className="ob__hint">The more specific, the sharper your coaching will be.</p>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 5: Competitive Edge (NEW) ── */}
+        {step === 5 && (
+          <div className="ob__slide">
+            <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>Your competitive edge.</h1>
+            <p className="ob__sub">
+              Help your AI coach understand what makes you stand out — and what pushback to expect.
+            </p>
+            <div className="ob__field">
+              <label className="ob__label">What makes you stand out?<span className="ob__label-optional"> (up to 3)</span></label>
+              {([0, 1, 2] as const).map(i => (
+                <div key={i} className="ob__diff-row">
+                  <span className="ob__diff-bullet" aria-hidden="true">◆</span>
+                  <input
+                    className="ob__input ob__diff-input"
+                    type="text"
+                    placeholder={
+                      i === 0 ? 'e.g. 30-day money back guarantee' :
+                      i === 1 ? 'e.g. 2x faster onboarding than competitors' :
+                                'e.g. Dedicated account manager included'
+                    }
+                    value={differentiators[i]}
+                    onChange={e => updateDifferentiator(i, e.target.value)}
+                    maxLength={120}
+                    autoFocus={i === 0}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="ob__field ob__field--mt">
+              <label htmlFor="ob-objections" className="ob__label">
+                Objections you usually face?
+                <span className="ob__label-optional"> (optional)</span>
+              </label>
+              <textarea
+                id="ob-objections"
+                className="ob__input ob__textarea"
+                placeholder="e.g. Too expensive, Not the right time, Already using a competitor"
+                value={commonObjectionsRaw}
+                onChange={e => setCommonObjectionsRaw(e.target.value)}
+                maxLength={300}
+                rows={2}
+              />
+              <p className="ob__hint">Separate with commas. Your coach will prepare responses for these.</p>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 6: Language ── */}
+        {step === 6 && (
           <div className="ob__slide">
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>What language do you sell in?</h1>
             <p className="ob__sub">
@@ -318,15 +404,15 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 5: Ready ── */}
-        {step === 5 && (
+        {/* ── Step 7: Ready ── */}
+        {step === 7 && (
           <div className="ob__slide ob__slide--center">
             <div className="ob__ready-icon" aria-hidden="true">✦</div>
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>
               You're all set, <span className="ob__name">{name}</span>.
             </h1>
             <p className="ob__sub">
-              Your AI coach knows your space. Here's what it's working with:
+              Your AI coach knows your world. Here's what it's working with:
             </p>
             <div className="ob__ready-summary">
               <div className="ob__ready-row">
@@ -351,6 +437,20 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
                 <span className="ob__ready-row-label">What you sell</span>
                 <span className="ob__ready-row-val ob__ready-row-val--wrap">{productDescription}</span>
               </div>
+              {targetCustomer && (
+                <div className="ob__ready-row">
+                  <span className="ob__ready-row-icon" aria-hidden="true">👤</span>
+                  <span className="ob__ready-row-label">Selling to</span>
+                  <span className="ob__ready-row-val ob__ready-row-val--wrap">{targetCustomer}</span>
+                </div>
+              )}
+              {filledDifferentiators.length > 0 && (
+                <div className="ob__ready-row">
+                  <span className="ob__ready-row-icon" aria-hidden="true">⚡</span>
+                  <span className="ob__ready-row-label">Your edge</span>
+                  <span className="ob__ready-row-val ob__ready-row-val--wrap">{filledDifferentiators.join(' · ')}</span>
+                </div>
+              )}
               <div className="ob__ready-row">
                 <img
                   className="ob__ready-row-icon ob__ready-row-flag"

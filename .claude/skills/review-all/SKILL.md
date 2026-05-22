@@ -1,10 +1,10 @@
 ---
 name: review-all
-description: Deep-review every section of the Pitchbase app automatically and fix all issues found
+description: Deep-review every section of the Pitchr app automatically and fix all issues found
 user-invocable: true
 ---
 
-You are performing a full automated code review and fix pass on the entire **Pitchbase** app (React 18 + TypeScript strict + Vite, plain CSS, Web Speech API, Supabase). You will work through every section one by one, review it deeply, fix all issues, and at the end run one build verification.
+You are performing a full automated code review and fix pass on the entire **Pitchr** app (React 18 + TypeScript strict + Vite, plain CSS, Web Speech API, Supabase). You will work through every section one by one, review it deeply, fix all issues, and at the end run one build verification.
 
 The working directory is: `c:/Users/User/callassist`
 
@@ -130,7 +130,7 @@ After all 27 sections are complete:
 3. Output the full log of all sections with this header:
 
 ```
-# Pitchbase — Full Automated Review Complete
+# Pitchr — Full Automated Review Complete
 
 Build: ✓ Clean / ✗ Errors remaining
 

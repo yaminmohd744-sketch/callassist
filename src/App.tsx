@@ -15,7 +15,10 @@ import { saveProfilePic, loadProfilePic, deleteProfilePic } from './lib/profileP
 import { clearDeepgramTokenCache } from './hooks/useSpeechRecognition';
 import { updateLeadAfterCall } from './lib/leads';
 import { STORAGE_KEYS } from './lib/storageKeys';
-import type { CallConfig, CallSession, CallOutcome, Lead } from './types';
+import { loadBusinessProfile, saveBusinessProfile, onboardingToBusinessProfile } from './lib/businessProfile';
+import { loadLearningProfile, updateLearningProfile } from './lib/learningProfile';
+import { loadLearningLog, generateAndAppendLogEntries } from './lib/learningLog';
+import type { CallConfig, CallSession, CallOutcome, Lead, BusinessProfile, RepLearningProfile, LearningLogEntry } from './types';
 
 import { LandingScreen } from './screens/LandingScreen';
 const DashboardScreen  = lazy(() => import('./screens/DashboardScreen').then(m => ({ default: m.DashboardScreen })));
@@ -50,6 +53,9 @@ interface OnboardingData {
   industry?: string;
   companyName?: string;
   productDescription?: string;
+  targetCustomer?: string;
+  differentiators?: string[];
+  commonObjections?: string[];
 }
 
 function getOnboardingData(): OnboardingData {
@@ -62,6 +68,9 @@ function getOnboardingData(): OnboardingData {
       industry:           typeof raw.industry           === 'string' ? raw.industry           : undefined,
       companyName:        typeof raw.companyName        === 'string' ? raw.companyName        : undefined,
       productDescription: typeof raw.productDescription === 'string' ? raw.productDescription : undefined,
+      targetCustomer:     typeof raw.targetCustomer     === 'string' ? raw.targetCustomer     : undefined,
+      differentiators:    Array.isArray(raw.differentiators) ? raw.differentiators as string[] : undefined,
+      commonObjections:   Array.isArray(raw.commonObjections) ? raw.commonObjections as string[] : undefined,
     };
   } catch {
     return {};
@@ -109,6 +118,9 @@ export function App() {
   const toast = useToast();
 
   const [theme, setTheme] = useState<'dark' | 'light'>(INITIAL_THEME);
+  const [businessProfile, setBusinessProfile] = useState<BusinessProfile | null>(() => loadBusinessProfile());
+  const [learningProfile, setLearningProfile] = useState<RepLearningProfile | null>(() => loadLearningProfile());
+  const [learningLog, setLearningLog] = useState<LearningLogEntry[]>(() => loadLearningLog());
 
   const toggleTheme = useCallback(() => {
     const next = theme === 'dark' ? 'light' : 'dark';
@@ -238,7 +250,21 @@ export function App() {
     if (user) {
       try {
         const saved = await saveSession(session, user.id);
-        setPastSessions(prev => [saved, ...prev]);
+        setPastSessions(prev => {
+          const next = [saved, ...prev];
+          try {
+            const previous = loadLearningProfile();
+            const updated = updateLearningProfile(next);
+            if (updated) {
+              setLearningProfile(updated);
+              // Fire-and-forget: generate AI log entries for meaningful changes
+              generateAndAppendLogEntries(updated, previous)
+                .then(() => setLearningLog(loadLearningLog()))
+                .catch(() => {});
+            }
+          } catch { /* non-critical */ }
+          return next;
+        });
       } catch {
         toast.error('Call ended but failed to save. Your data is safe locally.');
       }
@@ -285,7 +311,7 @@ export function App() {
         <ErrorBoundary>
           <LandingScreen onDownload={() => {
             // Internal deep-link only — never route user-supplied input through here
-            const DESKTOP_PROTOCOL = 'pitchbase://open' as const;
+            const DESKTOP_PROTOCOL = 'pitchr://open' as const;
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
             iframe.src = DESKTOP_PROTOCOL;
@@ -318,7 +344,12 @@ export function App() {
     return (
       <Suspense fallback={<div className="app-loading" />}>
         <OnboardingScreen onDone={data => {
-          try { localStorage.setItem(STORAGE_KEYS.onboarding, JSON.stringify(data)); } catch { toast.error('Storage full — your preferences may not be saved.'); }
+          try {
+            localStorage.setItem(STORAGE_KEYS.onboarding, JSON.stringify(data));
+            const profile = onboardingToBusinessProfile(data);
+            saveBusinessProfile(profile);
+            setBusinessProfile(profile);
+          } catch { toast.error('Storage full — your preferences may not be saved.'); }
           setOnboardingVersion(v => v + 1);
           setAppLanguage(data.language as LanguageCode);
           setShowOnboarding(false);
@@ -372,6 +403,8 @@ export function App() {
                   onViewSession={handleViewSession}
                   onDeleteSession={handleDeleteSession}
                   userName={loginUserName}
+                  learningProfile={learningProfile}
+                  learningLog={learningLog}
                 />
               </Suspense>
             </ErrorBoundary>
@@ -414,6 +447,8 @@ export function App() {
                 priorContext:  selectedLead.priorContext ?? '',
               } : undefined}
               userId={user.id}
+              businessProfile={businessProfile}
+              learningProfile={learningProfile}
             />
           </Suspense>
         </ErrorBoundary>

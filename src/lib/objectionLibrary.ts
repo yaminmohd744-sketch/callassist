@@ -1,4 +1,4 @@
-﻿const STORAGE_KEY = 'pitchbase:custom-objections';
+﻿const STORAGE_KEY = 'pitchr:custom-objections';
 
 export interface CustomObjectionEntry {
   id: string;

@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 import type { Meeting, MeetingReport, MeetingPlatform, MeetingStatus } from '../types';
 import { STORAGE_KEYS } from './storageKeys';
 
-const LS_KEY = 'pitchbase:meetings';
+const LS_KEY = 'pitchr:meetings';
 
 interface MeetingRow {
   id: string;

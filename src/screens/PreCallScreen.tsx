@@ -5,7 +5,8 @@ import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
 import { loadLeads } from '../lib/leads';
 import { genId } from '../lib/id';
-import type { CallConfig, CallType, Lead } from '../types';
+import type { CallConfig, CallType, Lead, BusinessProfile, RepLearningProfile } from '../types';
+import { buildEnrichedContext } from '../lib/businessProfile';
 import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
 
@@ -18,6 +19,8 @@ interface PreCallScreenProps {
   defaultLanguage?: LanguageCode;
   defaultConfig?: Partial<CallConfig & { prospectTitle?: string }>;
   userId?: string;
+  businessProfile?: BusinessProfile | null;
+  learningProfile?: RepLearningProfile | null;
 }
 
 interface Perk {
@@ -53,6 +56,8 @@ export function PreCallScreen({
   defaultLanguage = 'en-US',
   defaultConfig,
   userId,
+  businessProfile,
+  learningProfile,
 }: PreCallScreenProps) {
   const t = useTranslations();
 
@@ -67,7 +72,15 @@ export function PreCallScreen({
   );
   const [leadSearch, setLeadSearch] = useState('');
   const [callGoal, setCallGoal]     = useState(defaultConfig?.callGoal ?? '');
-  const [perks, setPerks]           = useState<Perk[]>([{ id: genId(), text: '' }]);
+  const [perks, setPerks]           = useState<Perk[]>(() => {
+    if (defaultConfig?.yourPitch) {
+      return defaultConfig.yourPitch.split('\n').filter(Boolean).map(text => ({ id: genId(), text })).concat([{ id: genId(), text: '' }]);
+    }
+    if (businessProfile?.differentiators?.length) {
+      return businessProfile.differentiators.map(text => ({ id: genId(), text })).concat([{ id: genId(), text: '' }]);
+    }
+    return [{ id: genId(), text: '' }];
+  });
   const [language, setLanguage]     = useState<string>(defaultLanguage);
   const [errors, setErrors]         = useState<StringConfigErrors>({});
   const loadedRef      = useRef(false);
@@ -158,6 +171,7 @@ export function PreCallScreen({
 
   const buildConfig = useCallback((): CallConfig => {
     const filledPerks = perks.filter(p => p.text.trim()).map(p => p.text);
+    const repContext = buildEnrichedContext(businessProfile ?? null, learningProfile ?? null) || undefined;
     return {
       prospectName:  selectedLead?.name ?? '',
       company:       selectedLead?.company ?? '',
@@ -167,8 +181,9 @@ export function PreCallScreen({
       callGoal,
       yourPitch:     filledPerks.join('\n'),
       language,
+      repContext,
     };
-  }, [perks, selectedLead, callType, callGoal, language]);
+  }, [perks, selectedLead, callType, callGoal, language, businessProfile, learningProfile]);
 
   const handleSubmit = useCallback(() => {
     const newErrors: StringConfigErrors = {};
@@ -198,7 +213,7 @@ export function PreCallScreen({
 
         <div className="precall__header">
           <button className="precall__back" onClick={onBack}>← {t.common.back}</button>
-          <div className="precall__logo">Pitchbase</div>
+          <div className="precall__logo">Pitchr</div>
         </div>
 
         <h2 className="precall__title">{t.precall.title}</h2>

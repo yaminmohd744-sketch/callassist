@@ -144,7 +144,8 @@
       "Bash(git add *)",
       "Bash(npm uninstall *)",
       "Bash(Start-Sleep -Seconds 3)",
-      "Bash(Get-Content \"C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-User-callassist\\\\6d945e38-7785-4f4f-9010-072d85a9743a\\\\tasks\\\\bp256w6ox.output\")"
+      "Bash(Get-Content \"C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-User-callassist\\\\6d945e38-7785-4f4f-9010-072d85a9743a\\\\tasks\\\\bp256w6ox.output\")",
+      "Bash(Get-Content \"C:\\\\Users\\\\User\\\\.claude\\\\projects\\\\c--Users-User-callassist\\\\8f9dd50f-9bb9-4f8b-8e2c-cb2980001a56\\\\tool-results\\\\toolu_01SBSGzth7P1oyRntYwqUy1e.txt\")"
     ]
   }
 }

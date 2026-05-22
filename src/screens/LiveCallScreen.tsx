@@ -651,7 +651,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
             <div className="live-call__bubble-brand">
               <span className="live-call__bubble-dot" />
               <span className="live-call__bubble-logo">
-                PITCHBASE
+                PITCHR
               </span>
               {config.prospectName && (
                 <span className="live-call__bubble-prospect">· {config.prospectName}</span>

@@ -15,7 +15,7 @@ export function Header({ prospectName, company, onEndCall, onMinimize }: HeaderP
   return (
     <header className="header">
       <div className="header__left">
-        <div className="header__logo">PITCH<span className="lp__logo-plus">BASE</span></div>
+        <div className="header__logo">PITCHR</div>
         <div className="header__prospect">
           <span className="header__prospect-name">{prospectName || t.liveCall.noProspect}</span>
           {company && <><span className="header__prospect-sep">@</span><span className="header__prospect-company">{company}</span></>}

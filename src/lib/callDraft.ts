@@ -1,6 +1,6 @@
 ﻿import type { TranscriptEntry, AISuggestion, CallConfig } from '../types';
 
-const DB_NAME = 'pitchbase';
+const DB_NAME = 'pitchr';
 const STORE   = 'call_draft';
 const KEY     = 'active';
 
@@ -32,7 +32,7 @@ export async function saveDraft(draft: CallDraft): Promise<boolean> {
     const { usage = 0, quota = 0 } = est;
     const free = quota === 0 ? Infinity : quota - usage;
     if (free < 10_000_000) {
-      console.warn('[Pitchbase] Storage low (<10 MB free), skipping draft save');
+      console.warn('[Pitchr] Storage low (<10 MB free), skipping draft save');
       return false;
     }
   }

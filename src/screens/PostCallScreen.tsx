@@ -7,6 +7,7 @@ import { useTranslations } from '../hooks/useTranslations';
 import { useAppContext } from '../contexts/AppContext';
 import { computeRepScore } from '../lib/repScore';
 import { generateProspectSummary } from '../lib/ai';
+import { loadLearningProfile } from '../lib/learningProfile';
 import './PostCallScreen.css';
 
 
@@ -22,7 +23,7 @@ function downloadFile(filename: string, content: string) {
 
 function buildTranscriptText(session: CallSession, locale = 'en-US'): string {
   const header = [
-    `PITCHBASE - TRANSCRIPT`,
+    `PITCHR - TRANSCRIPT`,
     `═══════════════════════════════════════`,
     `Prospect : ${session.config.prospectName || '-'}`,
     `Company  : ${session.config.company || '-'}`,
@@ -76,7 +77,13 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
 
   // Phase 4: CRM export state
   const [jsonCopied, setJsonCopied] = useState(false);
+  const [profileUpdated, setProfileUpdated] = useState(false);
   const t = useTranslations();
+
+  useEffect(() => {
+    const profile = loadLearningProfile();
+    if (profile && profile.callsAnalyzed >= 1) setProfileUpdated(true);
+  }, []);
   const { appLanguage } = useAppContext();
   const slug = (session.config.prospectName || 'call').toLowerCase().replace(/\s+/g, '-');
 
@@ -194,6 +201,11 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
           </div>
         </div>
         <div className="postcall__header-actions">
+          {profileUpdated && (
+            <div className="postcall__profile-badge" title="Your coaching profile has been updated based on this call">
+              ✦ Profile updated
+            </div>
+          )}
           <div className="postcall__crm-badge">✓ {t.postcall.savedToCrm}</div>
           <Button variant="primary" size="md" onClick={onNewCall}>
             ▶ {t.postcall.newCall}

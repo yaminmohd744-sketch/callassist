@@ -3,11 +3,11 @@ import type { ReactNode } from 'react';
 const PRICING_FAQ = [
   {
     q: 'Can my prospect hear or tell that I\'m using AI coaching during the call?',
-    a: 'No. Pitchbase runs silently in a separate browser tab your prospect only hears you speaking normally. The coaching suggestions appear as text on your screen, so there\'s nothing audible on their end. It works the same way a physical cheat sheet would, except it updates in real time based on what\'s actually being said.',
+    a: 'No. Pitchr runs silently in a separate browser tab your prospect only hears you speaking normally. The coaching suggestions appear as text on your screen, so there\'s nothing audible on their end. It works the same way a physical cheat sheet would, except it updates in real time based on what\'s actually being said.',
   },
   {
     q: 'How accurate is the speech recognition, and what happens if it mishears something?',
-    a: 'Pitchbase uses your browser\'s native Web Speech API, which performs best in a quiet environment with a decent microphone. In good conditions accuracy is high enough to reliably catch objection keywords and buying signals. If a word is misheard, the coaching panel may occasionally miss a cue but it won\'t interrupt the call or show anything incorrect to the prospect. The full transcript is editable after the call before it\'s saved.',
+    a: 'Pitchr uses your browser\'s native Web Speech API, which performs best in a quiet environment with a decent microphone. In good conditions accuracy is high enough to reliably catch objection keywords and buying signals. If a word is misheard, the coaching panel may occasionally miss a cue but it won\'t interrupt the call or show anything incorrect to the prospect. The full transcript is editable after the call before it\'s saved.',
   },
   {
     q: 'Does it work for any product or industry, or is it only built for certain types of sales?',

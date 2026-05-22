@@ -30,7 +30,7 @@ export function PrivacyPolicy({ nav, goSection }: PrivacyPolicyProps) {
           <h1 className="lp__legal-title">Privacy Policy</h1>
           <p className="lp__legal-meta">Effective date: 1 April 2025 &nbsp;·&nbsp; Last updated: 6 April 2026</p>
           <p className="lp__legal-intro">
-            Pitchbase ("we", "us", "our") is committed to protecting your personal data. This Privacy Policy explains what information we collect, why we collect it, how we use it, and what rights you have in relation to it. It applies to all users of <strong>pitchbase.ai</strong> and the Pitchbase desktop and web application.
+            Pitchr ("we", "us", "our") is committed to protecting your personal data. This Privacy Policy explains what information we collect, why we collect it, how we use it, and what rights you have in relation to it. It applies to all users of <strong>pitchr.org</strong> and the Pitchr desktop and web application.
           </p>
           <div className="lp__legal-links">
             <button className="lp__legal-sibling" onClick={() => goSection('terms')}>Terms of Service →</button>
@@ -50,7 +50,7 @@ export function PrivacyPolicy({ nav, goSection }: PrivacyPolicyProps) {
 
             <section id="pp-1" className="lp__legal-section">
               <h2>1. Who we are</h2>
-              <p>Pitchbase is operated by <strong>Pitchbase Ltd</strong>, a company incorporated in England and Wales. We are the data controller for the personal data described in this policy. Our registered address is available upon written request to <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a>.</p>
+              <p>Pitchr is operated by <strong>Pitchr Ltd</strong>, a company incorporated in England and Wales. We are the data controller for the personal data described in this policy. Our registered address is available upon written request to <a href="mailto:privacy@pitchr.org">privacy@pitchr.org</a>.</p>
             </section>
 
             <section id="pp-2" className="lp__legal-section">
@@ -100,7 +100,7 @@ export function PrivacyPolicy({ nav, goSection }: PrivacyPolicyProps) {
             <section id="pp-4" className="lp__legal-section">
               <h2>4. How we use your data</h2>
               <ul className="lp__legal-list">
-                <li>To provide, operate, and maintain the Pitchbase service.</li>
+                <li>To provide, operate, and maintain the Pitchr service.</li>
                 <li>To process payments and send transactional communications (receipts, billing alerts, password resets).</li>
                 <li>To generate and display AI-powered coaching suggestions, post-call analysis, lead scores, and follow-up emails within your account.</li>
                 <li>To provide customer support and respond to queries.</li>
@@ -117,7 +117,7 @@ export function PrivacyPolicy({ nav, goSection }: PrivacyPolicyProps) {
               <ul className="lp__legal-list">
                 <li><strong>Service providers (processors).</strong> We use third-party vendors who act as data processors on our behalf: <strong>Supabase</strong> (database, authentication, and storage), <strong>Stripe</strong> (payment processing), and <strong>OpenAI</strong> (AI-generated coaching suggestions, post-call analysis, and follow-up email generation). Each vendor is bound by a Data Processing Agreement (DPA) and may not use your data for their own purposes. A full list of sub-processors is available on request.</li>
                 <li><strong>Legal requirements.</strong> We may disclose your data where required by law, court order, or to cooperate with law enforcement agencies, provided we are legally permitted to notify you before doing so.</li>
-                <li><strong>Business transfers.</strong> If Pitchbase Ltd is acquired by or merges with another company, your data may be transferred as part of that transaction. We will notify you via email and/or a prominent notice on our website before any transfer and before your data becomes subject to a different privacy policy.</li>
+                <li><strong>Business transfers.</strong> If Pitchr Ltd is acquired by or merges with another company, your data may be transferred as part of that transaction. We will notify you via email and/or a prominent notice on our website before any transfer and before your data becomes subject to a different privacy policy.</li>
                 <li><strong>With your consent.</strong> We may share information for any other purpose with your explicit prior consent.</li>
               </ul>
             </section>
@@ -130,7 +130,7 @@ export function PrivacyPolicy({ nav, goSection }: PrivacyPolicyProps) {
                 <li>Adequacy decisions where applicable.</li>
                 <li>Binding corporate rules where applicable.</li>
               </ul>
-              <p>You may request a copy of the relevant transfer mechanism by contacting <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a>.</p>
+              <p>You may request a copy of the relevant transfer mechanism by contacting <a href="mailto:privacy@pitchr.org">privacy@pitchr.org</a>.</p>
             </section>
 
             <section id="pp-7" className="lp__legal-section">
@@ -171,12 +171,12 @@ export function PrivacyPolicy({ nav, goSection }: PrivacyPolicyProps) {
                 <li><strong>Rights related to automated decision-making (Art. 22 GDPR):</strong> Our AI-generated lead scores and coaching suggestions are tools to assist you — they do not constitute automated decisions that produce legal or similarly significant effects about you.</li>
                 <li><strong>California residents (CCPA/CPRA):</strong> You have the right to know what personal information is collected, disclosed, or sold, the right to delete, the right to opt out of sale (we do not sell data), and the right to non-discrimination for exercising these rights.</li>
               </ul>
-              <p>To exercise any of these rights, email <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a> from the email address associated with your account, or use the data export/deletion tools in your account settings.</p>
+              <p>To exercise any of these rights, email <a href="mailto:privacy@pitchr.org">privacy@pitchr.org</a> from the email address associated with your account, or use the data export/deletion tools in your account settings.</p>
             </section>
 
             <section id="pp-10" className="lp__legal-section">
               <h2>10. Children's privacy</h2>
-              <p>Pitchbase is a business-to-business sales tool. We do not knowingly collect personal data from anyone under the age of 16. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a> and we will delete the information promptly.</p>
+              <p>Pitchr is a business-to-business sales tool. We do not knowingly collect personal data from anyone under the age of 16. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at <a href="mailto:privacy@pitchr.org">privacy@pitchr.org</a> and we will delete the information promptly.</p>
             </section>
 
             <section id="pp-11" className="lp__legal-section">
@@ -186,14 +186,14 @@ export function PrivacyPolicy({ nav, goSection }: PrivacyPolicyProps) {
 
             <section id="pp-12" className="lp__legal-section">
               <h2>12. Changes to this policy</h2>
-              <p>We may update this Privacy Policy from time to time. When we make material changes, we will notify you by email (to the address associated with your account) and by posting a notice in the application at least 14 days before the changes take effect. The "Last updated" date at the top of this page will always reflect the most recent revision. Your continued use of Pitchbase after changes take effect constitutes acceptance of the updated policy.</p>
+              <p>We may update this Privacy Policy from time to time. When we make material changes, we will notify you by email (to the address associated with your account) and by posting a notice in the application at least 14 days before the changes take effect. The "Last updated" date at the top of this page will always reflect the most recent revision. Your continued use of Pitchr after changes take effect constitutes acceptance of the updated policy.</p>
             </section>
 
             <section id="pp-13" className="lp__legal-section">
               <h2>13. Contact &amp; complaints</h2>
               <p>For any questions, concerns, or requests relating to this Privacy Policy or your personal data, please contact us at:</p>
               <div className="lp__legal-contact-block">
-                <div><strong>Email:</strong> <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a></div>
+                <div><strong>Email:</strong> <a href="mailto:privacy@pitchr.org">privacy@pitchr.org</a></div>
                 <div><strong>Response time:</strong> Within 5 business days for general queries; within 30 days for formal rights requests.</div>
               </div>
               <p>If you are in the EEA or UK and are not satisfied with our response, you have the right to lodge a complaint with your local data protection supervisory authority. In the UK, this is the <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">Information Commissioner's Office (ICO)</a>. In Ireland, it is the <a href="https://www.dataprotection.ie" target="_blank" rel="noopener noreferrer">Data Protection Commission (DPC)</a>.</p>

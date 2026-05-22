@@ -96,6 +96,7 @@ export async function analyzeTranscript(
         lastLabel: memory?.lastLabel ?? null,
         language: config?.language ?? 'en-US',
         currentPhaseLabel: memory?.phaseLabel ?? null,
+        repContext: config?.repContext ?? null,
         // Compress entries older than the last 8 into a short summary string so
         // the AI retains full-call context without ballooning the token count.
         callSummary: fullTranscript.length > 8
@@ -254,7 +255,7 @@ export async function analyzeTranscript(
     if (streamingShown && onStream && suggestionId) {
       onStream({ id: suggestionId, type: 'tip', headline: '', body: '', triggeredBy: newEntry.text, timestampSeconds: elapsedSeconds, streaming: false });
     }
-    console.error('[Pitchbase] AI call failed, using fallback:', err instanceof Error ? err.message : err);
+    console.error('[Pitchr] AI call failed, using fallback:', err instanceof Error ? err.message : err);
     Sentry.captureException(err, { tags: { section: 'analyze-transcript' } });
     const fallback = await mockAnalyzeTranscript(
       newEntry, fullTranscript, currentStage, elapsedSeconds,
@@ -276,7 +277,7 @@ export async function enhancePitch(
     const data = await callFunction('enhance-pitch', { pitch, company, callGoal }) as Record<string, unknown>;
     return (data.enhancedPitch as string) ?? pitch;
   } catch (err) {
-    console.error('[Pitchbase] Pitch enhancement failed:', err instanceof Error ? err.message : err);
+    console.error('[Pitchr] Pitch enhancement failed:', err instanceof Error ? err.message : err);
     Sentry.captureException(err, { tags: { section: 'enhance-pitch' } });
     return pitch;
   }
@@ -299,7 +300,7 @@ export async function classifySignalAI(text: string, language: string, abortSign
     if (signal === 'objection' || signal === 'buying-signal' || signal === 'neutral') return signal;
     return 'neutral';
   } catch (err) {
-    console.error('[Pitchbase] classifySignalAI failed:', err instanceof Error ? err.message : err);
+    console.error('[Pitchr] classifySignalAI failed:', err instanceof Error ? err.message : err);
     Sentry.captureException(err, { tags: { section: 'classify-signal' } });
     return 'neutral';
   }
@@ -318,6 +319,7 @@ export async function generateSessionSummary(
     const data = await callFunction('generate-summary', {
       config, transcript, suggestions, closeProbability, objectionsCount,
       language: config.language ?? 'en-US',
+      repContext: config.repContext ?? null,
     }) as Record<string, unknown>;
 
     const coaching = isCoachingWalkthrough(data.coaching) ? data.coaching : fallback.coaching;
@@ -328,7 +330,7 @@ export async function generateSessionSummary(
       coaching,
     };
   } catch (err) {
-    console.error('[Pitchbase] Summary call failed, using fallback:', err instanceof Error ? err.message : err);
+    console.error('[Pitchr] Summary call failed, using fallback:', err instanceof Error ? err.message : err);
     Sentry.captureException(err, { tags: { section: 'generate-summary' } });
     return fallback;
   }
@@ -363,7 +365,7 @@ export async function generateBattleCard(
     ) return data as unknown as BattleCard;
     return fallback;
   } catch (err) {
-    console.error('[Pitchbase] generateBattleCard failed:', err instanceof Error ? err.message : err);
+    console.error('[Pitchr] generateBattleCard failed:', err instanceof Error ? err.message : err);
     Sentry.captureException(err, { tags: { section: 'generate-battle-card' } });
     return fallback;
   }
@@ -384,7 +386,7 @@ export async function generateProspectSummary(
     }) as Record<string, unknown>;
     return typeof data.summary === 'string' ? data.summary : fallback;
   } catch (err) {
-    console.error('[Pitchbase] generateProspectSummary failed:', err instanceof Error ? err.message : err);
+    console.error('[Pitchr] generateProspectSummary failed:', err instanceof Error ? err.message : err);
     Sentry.captureException(err, { tags: { section: 'generate-prospect-summary' } });
     return fallback;
   }

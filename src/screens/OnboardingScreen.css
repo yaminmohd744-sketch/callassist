@@ -548,6 +548,24 @@
   outline-offset: 2px;
 }
 
+/* ─── Differentiators row (step 5) ──────────────────────────────────────────── */
+.ob__diff-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.ob__diff-bullet {
+  color: var(--accent, #7c3aed);
+  font-size: 11px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.ob__diff-input {
+  flex: 1;
+  margin-bottom: 0 !important;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .ob__card      { padding: 32px 24px; }

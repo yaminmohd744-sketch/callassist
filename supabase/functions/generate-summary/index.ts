@@ -31,7 +31,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { config, transcript, suggestions, closeProbability, objectionsCount, language } = await req.json();
+    const { config, transcript, suggestions, closeProbability, objectionsCount, language, repContext } = await req.json();
 
     const langNote = language && language !== 'en-US'
       ? `\n\nIMPORTANT: "aiSummary" and "followUpEmail" MUST be written in the language for BCP 47 code "${language}".`
@@ -89,8 +89,9 @@ NEXT STEPS:
     const safePitch = sanitize(config?.yourPitch, 300);
     const safeGoal = sanitize(config?.callGoal, 200);
     const safePriorContext = sanitize(config?.priorContext, 400);
+    const safeRepContext = sanitize(repContext, 600);
 
-    const userMessage = `Call details:
+    const userMessage = `${safeRepContext ? `${safeRepContext}\n\n` : ''}Call details:
 Prospect: ${safeProspectName}${safeProspectTitle ? `, ${safeProspectTitle}` : ''} at ${safeCompany}
 ${config?.callType ? `Call type: ${config.callType}\n` : ''}Rep's pitch: ${safePitch}
 Call goal: ${safeGoal}

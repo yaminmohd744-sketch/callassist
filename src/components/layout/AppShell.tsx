@@ -71,7 +71,7 @@ export function AppShell({
       {/* ── Top nav ── */}
       <header className="app-shell__topnav">
         <div className="app-shell__logo">
-          PITCH<span className="app-shell__logo-word">BASE</span>
+          PITCHR
         </div>
 
         <nav className="app-shell__tabs" role="navigation">

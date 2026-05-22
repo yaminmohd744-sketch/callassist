@@ -1,7 +1,7 @@
 // Profile picture stored in IndexedDB instead of localStorage to avoid
 // consuming the ~5 MB localStorage quota and to keep it out of synchronous storage.
 
-const DB_NAME = 'pitchbase';
+const DB_NAME = 'pitchr';
 const STORE   = 'profile_pics';
 const KEY     = 'current';
 const DB_VERSION = 3;

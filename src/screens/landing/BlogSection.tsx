@@ -39,7 +39,7 @@ export function BlogSection({ nav }: BlogSectionProps) {
       <div className="lp__sv lp__sv--blog">
         <div className="lp__sv-hero">
           <div className="lp__sv-label">BLOG</div>
-          <h2 className="lp__sv-h2">The Pitchbase Sales Blog</h2>
+          <h2 className="lp__sv-h2">The Pitchr Sales Blog</h2>
           <p className="lp__sv-sub">Techniques, data, and ideas for reps who want to close more.</p>
         </div>
 

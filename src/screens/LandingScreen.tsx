@@ -91,6 +91,12 @@ const FEATURES = [
     desc: 'Full transcript, AI summary, lead score, and a ready-to-send personalised follow-up email generated the moment you hang up.',
     bullets: ['Full transcript saved', 'AI-generated follow-up email', 'Improvement suggestions'],
   },
+  {
+    icon: '◈',
+    title: 'Body language',
+    desc: 'AI reads your tone, pacing, and vocal confidence in real time — alerting you when you sound hesitant, rushed, or too passive so you can course-correct mid-call.',
+    bullets: ['Vocal confidence scoring', 'Pace & filler-word alerts', 'Hesitation detection'],
+  },
 ];
 
 const STEPS = [
@@ -275,7 +281,6 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
   const [openFaq, setOpenFaq]                   = useState<number | null>(null);
   const [billingCycle, setBillingCycle]         = useState<'monthly' | 'yearly'>('monthly');
   const [langIdx, setLangIdx]                   = useState(0);
-  const [navCtaVisible, setNavCtaVisible]       = useState(false);
   const [demoPhase, setDemoPhase]               = useState<'expanded' | 'clicking' | 'minimized' | 'endclicking' | 'postcall'>('expanded');
   const [desktopSceneIdx, setDesktopSceneIdx]   = useState(0);
   const [desktopShowSuggestion, setDesktopShowSuggestion] = useState(false);
@@ -403,19 +408,34 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
     return () => observer.disconnect();
   }, [activeSection]);
 
-  // Show nav CTA only after scrolling past the hero (≈ 80% of viewport height)
+  // Drive nav CTA visibility via rAF — bypasses scroll event uncertainty and
+  // React state batching entirely by writing opacity directly to the DOM node.
   useEffect(() => {
     if (activeSection !== null) return;
-    const container = document.querySelector('.lp') ?? window;
-    const threshold = window.innerHeight * 0.8;
-    function onScroll() {
-      const scrolled = container === window
-        ? window.scrollY
-        : (container as Element).scrollTop;
-      setNavCtaVisible(scrolled > threshold);
-    }
-    container.addEventListener('scroll', onScroll, { passive: true });
-    return () => container.removeEventListener('scroll', onScroll);
+
+    const hero = document.querySelector<Element>('.lp__hero-actions');
+    const cta  = document.querySelector<Element>('.lp__cta-banner');
+    const btn  = document.querySelector<HTMLElement>('.lp__nav-cta-win');
+    if (!hero || !btn) return;
+
+    let rafId: number;
+    let lastOpacity = '';
+
+    const tick = () => {
+      const heroBottom = hero.getBoundingClientRect().bottom;
+      const ctaTop     = cta ? cta.getBoundingClientRect().top : Infinity;
+      const show = heroBottom < 0 && ctaTop > window.innerHeight * 0.85;
+      const next = show ? '1' : '0';
+      if (next !== lastOpacity) {
+        btn.style.opacity       = next;
+        btn.style.pointerEvents = show ? 'auto' : 'none';
+        lastOpacity = next;
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
   }, [activeSection]);
 
   // Auto-advance feature tabs
@@ -454,7 +474,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
     <nav className="lp__nav">
       <div className="lp__nav-inner">
         <button className="lp__nav-logo" onClick={() => setActiveSection(null)}>
-          PITCH<span className="lp__logo-plus">BASE</span>
+          PITCHR
         </button>
 
         {activeSection !== null ? (
@@ -483,7 +503,6 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
           <button
             className="lp__win-btn lp__nav-cta-win"
             onClick={onDownload}
-            style={{ opacity: navCtaVisible ? 1 : 0, pointerEvents: navCtaVisible ? 'auto' : 'none' }}
           >
             <WinLogo /> Get for Windows
           </button>
@@ -507,7 +526,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
               <div className="lp__sv-label">FEATURES</div>
               <h2 className="lp__sv-h2 lp__sv-h2--solid">Everything you need<br />to win more deals</h2>
             </div>
-            <p className="lp__sv-sub lp__sv-sub--aside">Four tools that work together, live on every call.</p>
+            <p className="lp__sv-sub lp__sv-sub--aside">Five tools that work together, live on every call.</p>
           </div>
 
           <div className="lp__sv-flist">
@@ -590,6 +609,36 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
               </div>
             </div>
 
+            {/* 05 Body language */}
+            <div className="lp__sv-frow" style={{ '--row-i': 4 } as React.CSSProperties}>
+              <span className="lp__sv-frow-num">05</span>
+              <div className="lp__sv-frow-body">
+                <h3 className="lp__sv-frow-title">{FEATURES[4].title}</h3>
+                <p className="lp__sv-frow-desc">{FEATURES[4].desc}</p>
+                <ul className="lp__sv-frow-bullets">
+                  {FEATURES[4].bullets.map((b, i) => <li key={i}>{b}</li>)}
+                </ul>
+              </div>
+              <div className="lp__sv-demo lp__sv-frow-demo">
+                <div className="demo-body-row">
+                  <span className="demo-body-label">Confidence</span>
+                  <div className="demo-body-bar-track"><div className="demo-body-bar demo-body-bar--confidence" /></div>
+                  <span className="demo-body-pct">84%</span>
+                </div>
+                <div className="demo-body-row">
+                  <span className="demo-body-label">Pace</span>
+                  <div className="demo-body-bar-track"><div className="demo-body-bar demo-body-bar--pace" /></div>
+                  <span className="demo-body-pct">Good</span>
+                </div>
+                <div className="demo-body-row">
+                  <span className="demo-body-label">Fillers</span>
+                  <div className="demo-body-bar-track"><div className="demo-body-bar demo-body-bar--fillers" /></div>
+                  <span className="demo-body-pct">Low</span>
+                </div>
+                <div className="demo-body-alert">⚠ Hesitation detected — sound more certain</div>
+              </div>
+            </div>
+
           </div>
 
           <div className="lp__sv-diffs">
@@ -622,7 +671,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             <div className="lp__sv-label">MULTILINGUAL</div>
             <h2 className="lp__sv-h2">Close deals in any language</h2>
             <p className="lp__sv-sub">
-              While every competitor limits coaching to English, Pitchbase coaches in 10 languages 
+              While every competitor limits coaching to English, Pitchr coaches in 10 languages 
               real-time objection handling and post-call analysis, all localised.
             </p>
           </div>
@@ -654,7 +703,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
           </div>
 
           <div className="lp__sv-lang-vs">
-            <span className="lp__sv-lang-vs-us">Pitchbase: 10 languages</span>
+            <span className="lp__sv-lang-vs-us">Pitchr: 10 languages</span>
             <span className="lp__sv-lang-vs-sep">vs</span>
             <span className="lp__sv-lang-vs-them">Competitors: English only</span>
           </div>
@@ -687,7 +736,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             <div className="lp__sv-label">DOWNLOAD</div>
             <h2 className="lp__sv-h2">One install.<br />Always ready to sell.</h2>
             <p className="lp__sv-sub">
-              Pitchbase is a native Windows desktop app. Install it once and it's always a click away —
+              Pitchr is a native Windows desktop app. Install it once and it's always a click away —
               no browser tab, no extension, no lag. Just open and coach.
             </p>
           </div>
@@ -711,7 +760,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             {[
               { num: '01', title: 'Download the app', desc: 'Click Download Free and run the installer. Takes under a minute on any Windows 10 or 11 machine.' },
               { num: '02', title: 'Create your account', desc: 'Sign up inside the app in 30 seconds. No credit card required for the free plan.' },
-              { num: '03', title: 'Allow microphone', desc: 'Grant microphone permission once. Pitchbase never records without your explicit start.' },
+              { num: '03', title: 'Allow microphone', desc: 'Grant microphone permission once. Pitchr never records without your explicit start.' },
               { num: '04', title: 'Start your call', desc: 'Enter your prospect\'s details, hit Start, and get live coaching the moment they speak.' },
             ].map((step, i) => (
               <div key={i} className="lp__sv-tstep" style={{ '--i': i } as React.CSSProperties}>
@@ -742,7 +791,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         <div className="lp__sv lp__sv--changelog">
           <div className="lp__sv-hero">
             <div className="lp__sv-label">CHANGELOG</div>
-            <h2 className="lp__sv-h2">What's new in Pitchbase</h2>
+            <h2 className="lp__sv-h2">What's new in Pitchr</h2>
             <p className="lp__sv-sub">New features, improvements, and fixes — published as they ship.</p>
           </div>
 
@@ -788,7 +837,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             <div className="lp__sv-label">HELP CENTER</div>
             <h2 className="lp__sv-h2">How can we help?</h2>
             <p className="lp__sv-sub">
-              Everything you need to get the most out of Pitchbase — from your first call to advanced coaching techniques.
+              Everything you need to get the most out of Pitchr — from your first call to advanced coaching techniques.
             </p>
           </div>
 
@@ -856,11 +905,11 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         {nav}
         <div className="lp__sv lp__sv--about">
           <div className="lp__sv-hero">
-            <div className="lp__sv-label">ABOUT PITCHBASE</div>
+            <div className="lp__sv-label">ABOUT PITCHR</div>
             <h2 className="lp__sv-h2">Built by salespeople,<br />for salespeople.</h2>
             <p className="lp__sv-sub">
               We spent years losing deals in the last 30 seconds because we said the wrong thing.
-              Pitchbase is the tool we always wished existed.
+              Pitchr is the tool we always wished existed.
             </p>
           </div>
 
@@ -887,7 +936,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
               No lag. No judgment. Just the right words, right now.
             </p>
             <p>
-              Today, Pitchbase coaches reps in 10 languages across 40+ countries. We're a small team of
+              Today, Pitchr coaches reps in 10 languages across 40+ countries. We're a small team of
               engineers, salespeople, and linguists united by one belief: the best salespeople aren't born —
               they're built, rep by rep.
             </p>
@@ -945,28 +994,28 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
               <div className="lp__contact-card-icon">◎</div>
               <div className="lp__contact-card-title">Product support</div>
               <p className="lp__contact-card-desc">Questions about your account, billing, call quality, or how a feature works. We've got you.</p>
-              <a className="lp__contact-link" href="mailto:support@pitchbase.ai">support@pitchbase.ai</a>
+              <a className="lp__contact-link" href="mailto:support@pitchr.org">support@pitchr.org</a>
               <div className="lp__contact-sla">Avg. response: &lt; 4 hours</div>
             </div>
             <div className="lp__contact-card">
               <div className="lp__contact-card-icon">◈</div>
               <div className="lp__contact-card-title">Sales & partnerships</div>
               <p className="lp__contact-card-desc">Team plans, reseller deals, API access, or white-label enquiries. Let's talk numbers.</p>
-              <a className="lp__contact-link" href="mailto:sales@pitchbase.ai">sales@pitchbase.ai</a>
+              <a className="lp__contact-link" href="mailto:sales@pitchr.org">sales@pitchr.org</a>
               <div className="lp__contact-sla">Avg. response: &lt; 1 business day</div>
             </div>
             <div className="lp__contact-card">
               <div className="lp__contact-card-icon">✦</div>
               <div className="lp__contact-card-title">Press & media</div>
               <p className="lp__contact-card-desc">Writing about AI in sales, multilingual tools, or the future of coaching? We'll make it easy.</p>
-              <a className="lp__contact-link" href="mailto:press@pitchbase.ai">press@pitchbase.ai</a>
+              <a className="lp__contact-link" href="mailto:press@pitchr.org">press@pitchr.org</a>
               <div className="lp__contact-sla">Avg. response: &lt; 1 business day</div>
             </div>
             <div className="lp__contact-card">
               <div className="lp__contact-card-icon">▣</div>
               <div className="lp__contact-card-title">Legal & privacy</div>
               <p className="lp__contact-card-desc">Data subject requests, GDPR enquiries, DPA requests, or legal correspondence.</p>
-              <a className="lp__contact-link" href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a>
+              <a className="lp__contact-link" href="mailto:privacy@pitchr.org">privacy@pitchr.org</a>
               <div className="lp__contact-sla">GDPR response: within 30 days</div>
             </div>
           </div>
@@ -1036,7 +1085,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
               <span className="lp__dot lp__dot--red" />
               <span className="lp__dot lp__dot--yellow" />
               <span className="lp__dot lp__dot--green" />
-              <span className="lp__terminal-title">PITCHBASE - LIVE</span>
+              <span className="lp__terminal-title">PITCHR - LIVE</span>
             </div>
             <div className="lp__terminal-body">
               {DEMO_FRAMES.slice(0, visibleFrames).map((frame, i) => (
@@ -1089,7 +1138,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         <div className="lp__section-label reveal">MULTILINGUAL</div>
         <h2 className="lp__section-h2 reveal" data-delay="0.1">Sell in 10 languages</h2>
         <p className="lp__section-sub reveal" data-delay="0.18">
-          Competitors coach only in English. Pitchbase coaches in your language 
+          Competitors coach only in English. Pitchr coaches in your language 
           real-time objection handling and post-call analysis, all localised.
         </p>
         <div className="lp__lang-grid reveal" data-delay="0.25">
@@ -1159,13 +1208,13 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
       {/* ── Comparison ── */}
       <section className="lp__section">
         <div className="lp__section-label reveal">COMPARISON</div>
-        <h2 className="lp__section-h2 reveal" data-delay="0.1">Why Pitchbase over the alternatives?</h2>
+        <h2 className="lp__section-h2 reveal" data-delay="0.1">Why Pitchr over the alternatives?</h2>
         <div className="lp__compare-wrap reveal" data-delay="0.18">
           <table className="lp__compare">
             <thead>
               <tr>
                 <th className="lp__compare-feature-col">Feature</th>
-                <th className="lp__compare-us-col">Pitchbase</th>
+                <th className="lp__compare-us-col">Pitchr</th>
                 <th className="lp__compare-them-col">Other Tools</th>
               </tr>
             </thead>
@@ -1194,7 +1243,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         <div className="lp__section-label reveal">SEE IT IN ACTION</div>
         <h2 className="lp__section-h2 reveal" data-delay="0.1">Your AI co-pilot, live on every call</h2>
         <p className="lp__section-sub reveal" data-delay="0.18">
-          Pitchbase listens in real time, transcribes every word, and surfaces the right response the moment your prospect speaks — objection handlers, close prompts, and buying signal alerts.
+          Pitchr listens in real time, transcribes every word, and surfaces the right response the moment your prospect speaks — objection handlers, close prompts, and buying signal alerts.
         </p>
 
         {/* ── Desktop demo ── */}
@@ -1206,7 +1255,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             {/* Header — exact match of real Header component */}
             <div className="lp__dd-header">
               <div className="lp__dd-header-left">
-                <span className="lp__dd-logo">PITCH<span className="lp__dd-logo-plus">BASE</span></span>
+                <span className="lp__dd-logo">PITCHR</span>
                 <span className="lp__dd-prospect">Sarah Chen</span>
                 <span className="lp__dd-prospect-sep">@</span>
                 <span className="lp__dd-prospect-co">CloudBridge Inc.</span>
@@ -1412,7 +1461,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                 <div className="lp__dd-bubble-bar">
                   <div className="lp__dd-bubble-brand">
                     <span className="lp__dd-bubble-dot" />
-                    <span className="lp__dd-bubble-logo">PITCH<span className="lp__dd-bubble-logo-plus">BASE</span></span>
+                    <span className="lp__dd-bubble-logo">PITCHR</span>
                     <span className="lp__dd-bubble-prospect">Sarah Chen · CloudBridge Inc.</span>
                   </div>
                   <div className="lp__dd-bubble-stats">
@@ -1552,7 +1601,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                   <div className="lp__dd-pc-transcript">
                     <button className="lp__dd-pc-dl-btn">↓ DOWNLOAD .TXT</button>
                     {[
-                      { who: 'YOU',      time: '00:04', text: "Hi Amara, this is Alex from Pitchbase — do you have a couple of minutes?", cls: '' },
+                      { who: 'YOU',      time: '00:04', text: "Hi Amara, this is Alex from Pitchr — do you have a couple of minutes?", cls: '' },
                       { who: 'PROSPECT', time: '00:11', text: "Sure, a couple. What's this about?", cls: '' },
                       { who: 'YOU',      time: '00:18', text: "We build AI coaching software for sales teams. I noticed Meridian Growth has been scaling outbound — is rep performance consistency something you're actively working on?", cls: '' },
                       { who: 'PROSPECT', time: '00:38', text: "Yeah, actually. We've got eight reps and the spread is massive — our top two are crushing it but the other six are all over the place.", cls: ' lp__dd-pc-entry--buying-signal' },
@@ -1588,9 +1637,9 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                       <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Hi Amara,</div>
                       <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">As promised — here's a summary of what we covered, plus a one-pager for your VP to review ahead of our three-way call.</div>
                       <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">The core problem: your top 2 reps are performing strongly, but the remaining 6 fold under pressure on objections like "too expensive" or "not now." They know the answers — they just can't execute in the moment.</div>
-                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">The math we ran: 8 reps × $8K avg deal. If the bottom 6 close just 1 extra deal per month, that's $48K in additional monthly revenue — a fraction of the Pitchbase Growth plan cost.</div>
+                      <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">The math we ran: 8 reps × $8K avg deal. If the bottom 6 close just 1 extra deal per month, that's $48K in additional monthly revenue — a fraction of the Pitchr Growth plan cost.</div>
                       <div className="lp__dd-pc-email-line lp__dd-pc-email-line--gap">Before the three-way call: what's your VP's biggest concern when evaluating a new sales tool — ROI, implementation risk, or something else?</div>
-                      <div className="lp__dd-pc-email-line">Best, Alex · Pitchbase</div>
+                      <div className="lp__dd-pc-email-line">Best, Alex · Pitchr</div>
                     </div>
                     <div className="lp__dd-pc-email-integrations">
                       <span>▶</span> Integrations (Zapier / Webhook)
@@ -1654,7 +1703,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                     <div className="lp__dd-pc-share-desc">A clean, context-aware recap written for Amara Osei. Copy it and send via email, WhatsApp, or however you follow up.</div>
                     <div className="lp__dd-pc-share-body">
                       <div className="lp__dd-pc-share-line">Hi Amara — great speaking with you today.</div>
-                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">You mentioned your top 2 reps are crushing it while the other 6 fold under pressure when objections come up. That's exactly the gap Pitchbase closes — when a rep hears "too expensive," the right rebuttal appears on their screen instantly. No hesitation. No panic pitch.</div>
+                      <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">You mentioned your top 2 reps are crushing it while the other 6 fold under pressure when objections come up. That's exactly the gap Pitchr closes — when a rep hears "too expensive," the right rebuttal appears on their screen instantly. No hesitation. No panic pitch.</div>
                       <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">Based on your $8K average deal, closing just one extra deal per month per rep more than covers the cost — you worked that out yourself on the call.</div>
                       <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">Looking forward to the three-way call with your VP. I'll make sure it's worth his time.</div>
                       <div className="lp__dd-pc-share-line lp__dd-pc-share-line--gap">— Alex</div>
@@ -1793,7 +1842,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
           {/* Brand */}
           <div className="lp__footer-brand">
-            <div className="lp__footer-logo">PITCH<span className="lp__logo-plus">BASE</span></div>
+            <div className="lp__footer-logo">PITCHR</div>
             <p className="lp__footer-tagline">AI-powered sales coaching that listens, analyzes, and coaches you in real time — so every call is your best call.</p>
           </div>
 
@@ -1833,7 +1882,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
         </div>
 
         <div className="lp__footer-bottom">
-          <div className="lp__footer-copy">© 2025 Pitchbase. All rights reserved.</div>
+          <div className="lp__footer-copy">© 2025 Pitchr. All rights reserved.</div>
           <div className="lp__footer-socials">
             <a className="lp__footer-social" href="#" aria-label="Twitter / X">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>

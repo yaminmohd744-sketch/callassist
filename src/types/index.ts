@@ -12,6 +12,7 @@ export interface CallConfig {
   prospectTitle?: string;  // their job title / role
   callType?: CallType;
   priorContext?: string;   // research, previous interactions, expected objections
+  repContext?: string;     // Business + learning profile block — ephemeral, not shown in UI
 }
 
 // ─── Transcript ──────────────────────────────────────────────────────────────
@@ -152,6 +153,21 @@ export interface Meeting {
   createdAt: string;
 }
 
+// ─── Learning Log ────────────────────────────────────────────────────────────
+
+export type LogSeverity = 'finding' | 'improvement' | 'warning';
+export type LogCategory = 'talk-ratio' | 'objection-handling' | 'closing' | 'discovery' | 'trajectory' | 'general';
+
+export interface LearningLogEntry {
+  id: string;
+  timestamp: string;
+  callsAnalyzed: number;
+  category: LogCategory;
+  severity: LogSeverity;
+  headline: string;
+  body: string;
+}
+
 // ─── Lead ─────────────────────────────────────────────────────────────────────
 
 // ─── CRM Package ──────────────────────────────────────────────────────────────
@@ -177,6 +193,45 @@ export interface Lead {
   lastCalledAt?: string;
   callCount: number;
   createdAt: string;
+}
+
+// ─── Business Profile ─────────────────────────────────────────────────────────
+
+export interface BusinessProfile {
+  industry: string;
+  productDescription: string;
+  companyName?: string;
+  sellingFor: 'self' | 'company';
+  targetCustomer: string;
+  differentiators: string[];
+  commonObjections: string[];
+}
+
+// ─── Rep Learning Profile ─────────────────────────────────────────────────────
+
+export interface WeaknessScores {
+  objectionHandling: number;
+  talkRatio: number;
+  closingConfidence: number;
+  discoveryDepth: number;
+}
+
+export type Trajectory = 'improving' | 'declining' | 'stable';
+
+export interface RepLearningProfile {
+  updatedAt: string;
+  callsAnalyzed: number;
+  weaknesses: WeaknessScores;
+  topObjectionTypes: string[];
+  recurringImprovementAreas: string[];
+  trajectories: {
+    closeProbability: Trajectory;
+    talkRatio: Trajectory;
+    objectionHandling: Trajectory;
+  };
+  aiCoachingFocus: string;
+  practiceRecommendation: string;
+  topWeaknessKey: keyof WeaknessScores;
 }
 
 export function isCoachingWalkthrough(v: unknown): v is CoachingWalkthrough {

@@ -380,7 +380,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
         // Auth error — token is invalid; clear cache so next call fetches a fresh one.
         if (e.code === 4001) {
           _deepgramTokenCache = null;
-          console.warn('[Pitchbase] Deepgram auth error (4001), token cache cleared');
+          console.warn('[Pitchr] Deepgram auth error (4001), token cache cleared');
         }
         // Unexpected close → fall back to browser speech.
         // Only set isListening=false on a clean/intentional close to avoid a flicker

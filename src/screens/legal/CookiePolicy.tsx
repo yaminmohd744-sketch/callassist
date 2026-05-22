@@ -24,7 +24,7 @@ export function CookiePolicy({ nav, goSection }: CookiePolicyProps) {
           <h1 className="lp__legal-title">Cookie Policy</h1>
           <p className="lp__legal-meta">Effective date: 1 April 2025 &nbsp;·&nbsp; Last updated: 6 April 2026</p>
           <p className="lp__legal-intro">
-            This Cookie Policy explains what cookies are, which cookies Pitchbase uses, why we use them, and how you can control them. It should be read alongside our <button className="lp__legal-inline-link" onClick={() => goSection('privacy')}>Privacy Policy</button>.
+            This Cookie Policy explains what cookies are, which cookies Pitchr uses, why we use them, and how you can control them. It should be read alongside our <button className="lp__legal-inline-link" onClick={() => goSection('privacy')}>Privacy Policy</button>.
           </p>
           <div className="lp__legal-links">
             <button className="lp__legal-sibling" onClick={() => goSection('privacy')}>Privacy Policy →</button>
@@ -147,7 +147,7 @@ export function CookiePolicy({ nav, goSection }: CookiePolicyProps) {
 
             <section id="cp-7" className="lp__legal-section">
               <h2>7. Contact</h2>
-              <p>Questions about our use of cookies? Email <a href="mailto:privacy@pitchbase.ai">privacy@pitchbase.ai</a>. We aim to respond within 5 business days.</p>
+              <p>Questions about our use of cookies? Email <a href="mailto:privacy@pitchr.org">privacy@pitchr.org</a>. We aim to respond within 5 business days.</p>
             </section>
 
           </div>

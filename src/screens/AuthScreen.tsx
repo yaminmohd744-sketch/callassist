@@ -9,7 +9,7 @@ interface AuthScreenProps {
 }
 
 // Deep-link URI used as the OAuth redirect target in Electron.
-const ELECTRON_REDIRECT_URI = 'pitchbase://auth';
+const ELECTRON_REDIRECT_URI = 'pitchr://auth';
 
 // Maps Supabase error codes to safe, non-enumerating user-facing messages.
 function safeAuthError(err: { message: string; code?: string }): string {
@@ -118,7 +118,7 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
       } else {
         window.open(data.url, '_blank');
       }
-      // Session is picked up automatically: Electron forwards the pitchbase://
+      // Session is picked up automatically: Electron forwards the pitchr://
       // deep-link fragment to useAuth via IPC → setSession → onAuthStateChange fires.
     }
   }
@@ -147,7 +147,7 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
           <button className="auth-back" onClick={onBack}>← Back</button>
         )}
         <div className="auth-logo">
-          PITCHBASE
+          PITCHR
         </div>
 
         <h1 className="auth-title">

@@ -1,5 +1,5 @@
 ---
-name: Pitch Plus
+name: Pitchr
 description: Real-time AI sales coaching for reps who can't afford to look at a screen twice.
 colors:
   accent-purple: "#7c3aed"
@@ -106,13 +106,13 @@ components:
     padding: "8px 16px"
 ---
 
-# Design System: Pitch Plus
+# Design System: Pitchr
 
 ## 1. Overview
 
 **Creative North Star: "The Quiet Edge"**
 
-Pitch Plus runs during a live sales call. The rep can't pause the conversation to read an interface. Every pixel either earns attention or wastes it. The system is built around one discipline: surface what matters, hide everything else. Not minimal for aesthetics, minimal because the stakes are real.
+Pitchr runs during a live sales call. The rep can't pause the conversation to read an interface. Every pixel either earns attention or wastes it. The system is built around one discipline: surface what matters, hide everything else. Not minimal for aesthetics, minimal because the stakes are real.
 
 The visual language takes its cues from Raycast and Superhuman — tools that feel like extensions of the person using them, not software they're operating. Dark, calm, text-forward. The accent color is a weapon, not decoration: it fires once per screen at maximum to point at the single most important thing. Surfaces are flat at rest and lift only under state changes. No glass on every panel, no gradients on every border, no glow on every button.
 

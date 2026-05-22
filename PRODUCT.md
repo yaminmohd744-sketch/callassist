@@ -10,7 +10,7 @@ Sales reps and founders who run high-volume outbound calls and video meetings. T
 
 ## Product Purpose
 
-Pitchbase is an all-in-one AI sales platform. It handles the full sales workflow: live call coaching, autonomous AI avatars for video meetings, lead management, analytics, and post-call reporting. The goal is to let a single rep perform like a team.
+Pitchr is an all-in-one AI sales platform. It handles the full sales workflow: live call coaching, autonomous AI avatars for video meetings, lead management, analytics, and post-call reporting. The goal is to let a single rep perform like a team.
 
 ## Brand Personality
 
