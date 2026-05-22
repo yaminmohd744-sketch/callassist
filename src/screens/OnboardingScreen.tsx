@@ -153,7 +153,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
         {step === 0 && (
           <div className="ob__slide">
             <div className="ob__logo">
-              PITCH<span className="ob__logo-plus">PLUS</span><span className="ob__logo-sym">+</span>
+              PITCH<span className="ob__logo-plus">BASE</span>
             </div>
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>Welcome aboard.</h1>
             <p className="ob__sub">Let's get to know you so your AI coach can actually help. Takes 60 seconds.</p>

@@ -2,11 +2,10 @@ import { useState, useCallback, useEffect } from 'react';
 import { SUPPORTED_LANGUAGES, type LanguageCode } from '../lib/languages';
 import { STORAGE_KEYS } from '../lib/storageKeys';
 
-const STORAGE_KEY = 'pp-app-language';
 const LANG_EVENT = 'pp-language-change';
 
 function getInitialLanguage(): LanguageCode {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = localStorage.getItem(STORAGE_KEYS.appLanguage);
   if (saved && SUPPORTED_LANGUAGES.some(l => l.code === saved)) {
     return saved as LanguageCode;
   }
@@ -35,7 +34,7 @@ export function useAppLanguage() {
 
   const setAppLanguage = useCallback((code: LanguageCode) => {
     setAppLanguageState(code);
-    localStorage.setItem(STORAGE_KEY, code);
+    localStorage.setItem(STORAGE_KEYS.appLanguage, code);
     // Notify all other useAppLanguage instances in this window
     window.dispatchEvent(new CustomEvent(LANG_EVENT, { detail: code }));
   }, []);

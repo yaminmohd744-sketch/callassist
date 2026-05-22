@@ -469,7 +469,10 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
                       <div
                         key={entry.id}
                         className={`postcall__replay-entry postcall__replay-entry--${entry.speaker}${isActive ? ' postcall__replay-entry--active' : ''}`}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => { if (audioRef.current) audioRef.current.currentTime = entry.timestampSeconds; }}
+                        onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && audioRef.current) { e.preventDefault(); audioRef.current.currentTime = entry.timestampSeconds; } }}
                       >
                         <span className="postcall__replay-ts">{mins}:{secs}</span>
                         <span className="postcall__replay-speaker">{entry.speaker === 'rep' ? 'YOU' : 'PROSPECT'}</span>

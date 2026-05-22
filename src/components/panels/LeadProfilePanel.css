@@ -122,7 +122,7 @@
 }
 
 .lead-panel__prob-pct--warn {
-  color: #f5a623;
+  color: var(--color-accent-yellow);
 }
 
 .lead-panel__obj-badge {
@@ -131,8 +131,8 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-accent-red);
-  background: rgba(255, 68, 68, 0.1);
-  border: 1px solid rgba(255, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
   border-radius: var(--border-radius-pill);
   padding: 1px 6px;
 }

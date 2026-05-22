@@ -142,7 +142,9 @@
       "Bash(node .agents/skills/impeccable/scripts/load-context.mjs)",
       "Bash(node c:/Users/yamin/callassist/callassist/.agents/skills/impeccable/scripts/load-context.mjs)",
       "Bash(git add *)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(Start-Sleep -Seconds 3)",
+      "Bash(Get-Content \"C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-User-callassist\\\\6d945e38-7785-4f4f-9010-072d85a9743a\\\\tasks\\\\bp256w6ox.output\")"
     ]
   }
 }

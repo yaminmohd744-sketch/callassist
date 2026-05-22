@@ -507,11 +507,11 @@
 }
 
 .ai-panel__battlecard-entry--differentiator .ai-panel__battlecard-entry-dot   { background: var(--color-accent-green); box-shadow: 0 0 4px rgba(34,197,94,0.5); }
-.ai-panel__battlecard-entry--competitor      .ai-panel__battlecard-entry-dot   { background: #f97316; box-shadow: 0 0 4px rgba(249,115,22,0.5); }
+.ai-panel__battlecard-entry--competitor      .ai-panel__battlecard-entry-dot   { background: var(--color-accent-orange); box-shadow: 0 0 4px rgba(249,115,22,0.5); }
 .ai-panel__battlecard-entry--pricing-objection .ai-panel__battlecard-entry-dot { background: var(--color-accent-purple); box-shadow: 0 0 4px rgba(124,58,237,0.5); }
 
 .ai-panel__battlecard-entry--differentiator .ai-panel__battlecard-entry-text   { color: var(--color-text-primary); }
-.ai-panel__battlecard-entry--competitor      .ai-panel__battlecard-entry-text   { color: #f97316; }
+.ai-panel__battlecard-entry--competitor      .ai-panel__battlecard-entry-text   { color: var(--color-accent-orange); }
 .ai-panel__battlecard-entry--pricing-objection .ai-panel__battlecard-entry-text { color: var(--color-accent-magenta); }
 
 /* ── Tone pill variants ── */
@@ -520,7 +520,7 @@
 .ai-panel__tone-pill--defensive  { --tone-color: var(--color-accent-red); }
 .ai-panel__tone-pill--warm       { --tone-color: var(--color-accent-green); }
 .ai-panel__tone-pill--disengaged { --tone-color: var(--color-text-muted); }
-.ai-panel__tone-pill--frustrated { --tone-color: #f97316; }
+.ai-panel__tone-pill--frustrated { --tone-color: var(--color-accent-orange); }
 .ai-panel__tone-pill--excited    { --tone-color: #a3e635; }
 .ai-panel__tone-pill--hesitant   { --tone-color: var(--color-accent-yellow); }
 .ai-panel__tone-pill--neutral    { --tone-color: var(--color-text-secondary); }

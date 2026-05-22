@@ -664,7 +664,7 @@
 }
 
 .coaching__section--green { border-top: 2px solid var(--color-accent-green); }
-.coaching__section--orange { border-top: 2px solid var(--color-accent-yellow, #f5a623); }
+.coaching__section--orange { border-top: 2px solid var(--color-accent-yellow); }
 
 .coaching__section-title {
   font-size: 10px;
@@ -702,7 +702,7 @@
 }
 
 .coaching__list-item--green::before { background: var(--color-accent-green); }
-.coaching__list-item--orange::before { background: var(--color-accent-yellow, #f5a623); }
+.coaching__list-item--orange::before { background: var(--color-accent-yellow); }
 
 .coaching__item-point {
   font-weight: 600;

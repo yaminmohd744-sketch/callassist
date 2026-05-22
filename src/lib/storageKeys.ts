@@ -4,6 +4,7 @@
 
 export const STORAGE_KEYS = {
   theme:          'theme',
+  appLanguage:    'pp-app-language',
   onboarding:     'pp-onboarding',
   nextCallTip:    'pitchbase:nextCallTip',
   legacyOutcomes: 'pitchbase:outcomes',

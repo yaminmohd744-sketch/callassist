@@ -107,9 +107,11 @@ export async function analyzeTranscript(
       }),
       signal: streamController.signal,
     });
-    clearTimeout(streamTimer);
 
-    if (!res.ok || !res.body) throw new Error(`analyze-transcript returned ${res.status}`);
+    if (!res.ok || !res.body) {
+      clearTimeout(streamTimer);
+      throw new Error(`analyze-transcript returned ${res.status}`);
+    }
 
     suggestionId = genId();
     let accumulated = '';
@@ -172,6 +174,7 @@ export async function analyzeTranscript(
         } catch { /* incomplete JSON chunk — continue */ }
       }
     }
+    clearTimeout(streamTimer);
 
     // Parse the complete accumulated JSON.
     // Try direct parse first (the stream content should be a single JSON object).

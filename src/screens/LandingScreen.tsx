@@ -454,7 +454,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
     <nav className="lp__nav">
       <div className="lp__nav-inner">
         <button className="lp__nav-logo" onClick={() => setActiveSection(null)}>
-          PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span>
+          PITCH<span className="lp__logo-plus">BASE</span>
         </button>
 
         {activeSection !== null ? (
@@ -1206,7 +1206,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             {/* Header — exact match of real Header component */}
             <div className="lp__dd-header">
               <div className="lp__dd-header-left">
-                <span className="lp__dd-logo">PITCH<span className="lp__dd-logo-plus">PLUS</span><span className="lp__dd-logo-sym">+</span></span>
+                <span className="lp__dd-logo">PITCH<span className="lp__dd-logo-plus">BASE</span></span>
                 <span className="lp__dd-prospect">Sarah Chen</span>
                 <span className="lp__dd-prospect-sep">@</span>
                 <span className="lp__dd-prospect-co">CloudBridge Inc.</span>
@@ -1412,7 +1412,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
                 <div className="lp__dd-bubble-bar">
                   <div className="lp__dd-bubble-brand">
                     <span className="lp__dd-bubble-dot" />
-                    <span className="lp__dd-bubble-logo">PITCH<span className="lp__dd-bubble-logo-plus">PLUS</span>+</span>
+                    <span className="lp__dd-bubble-logo">PITCH<span className="lp__dd-bubble-logo-plus">BASE</span></span>
                     <span className="lp__dd-bubble-prospect">Sarah Chen · CloudBridge Inc.</span>
                   </div>
                   <div className="lp__dd-bubble-stats">
@@ -1793,7 +1793,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
           {/* Brand */}
           <div className="lp__footer-brand">
-            <div className="lp__footer-logo">PITCH<span className="lp__logo-plus">PLUS</span><span className="lp__logo-sym">+</span></div>
+            <div className="lp__footer-logo">PITCH<span className="lp__logo-plus">BASE</span></div>
             <p className="lp__footer-tagline">AI-powered sales coaching that listens, analyzes, and coaches you in real time — so every call is your best call.</p>
           </div>
 

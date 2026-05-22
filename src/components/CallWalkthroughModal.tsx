@@ -78,14 +78,15 @@ export function CallWalkthroughModal({ session, onViewFull, onClose }: Props) {
     const modal = modalRef.current;
     if (!modal) return;
     const previously = document.activeElement as HTMLElement | null;
+    const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
     // Focus the first focusable element on mount
-    const focusable = modal.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    focusable[0]?.focus();
+    modal.querySelectorAll<HTMLElement>(FOCUSABLE)[0]?.focus();
 
     function trapFocus(e: KeyboardEvent) {
-      if (e.key !== 'Tab' || !focusable.length) return;
+      if (e.key !== 'Tab' || !modal) return;
+      // Re-query on every keypress so step changes are reflected immediately.
+      const focusable = modal.querySelectorAll<HTMLElement>(FOCUSABLE);
+      if (!focusable.length) return;
       const first = focusable[0];
       const last  = focusable[focusable.length - 1];
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }

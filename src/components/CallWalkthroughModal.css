@@ -158,7 +158,7 @@
 }
 
 .wt-screen-label--green  { color: var(--color-accent-green); }
-.wt-screen-label--orange { color: #f5a623; }
+.wt-screen-label--orange { color: var(--color-accent-yellow); }
 .wt-screen-label--purple { color: var(--color-accent-magenta); }
 
 /* ─── VERDICT screen ───────────────────────────────────────── */
@@ -210,10 +210,10 @@
 .wt-score-val--stage        { font-size: var(--font-size-sm); }
 .wt-score-val--close        { color: var(--color-accent-green); }
 .wt-score-val--pitch        { color: var(--color-accent-cyan); }
-.wt-score-val--discovery    { color: #f5a623; }
+.wt-score-val--discovery    { color: var(--color-accent-yellow); }
 
 .wt-score-card--high   .wt-score-val { color: var(--color-accent-green); }
-.wt-score-card--medium .wt-score-val { color: #f5a623; }
+.wt-score-card--medium .wt-score-val { color: var(--color-accent-yellow); }
 .wt-score-card--low    .wt-score-val { color: var(--color-accent-red); }
 
 .wt-score-label {
@@ -247,7 +247,7 @@
 }
 
 .wt-item--green  { border-left: 3px solid var(--color-accent-green); }
-.wt-item--orange { border-left: 3px solid #f5a623; }
+.wt-item--orange { border-left: 3px solid var(--color-accent-yellow); }
 
 .wt-item-dot {
   width: 8px;
@@ -258,7 +258,7 @@
 }
 
 .wt-item-dot--green  { background: var(--color-accent-green); }
-.wt-item-dot--orange { background: #f5a623; }
+.wt-item-dot--orange { background: var(--color-accent-yellow); }
 
 .wt-item-body {
   display: flex;
@@ -306,8 +306,8 @@
   animation: wt-moment-in 0.3s ease both;
 }
 
-.wt-moment--obj { border-left-color: var(--color-accent-red); background: rgba(255,68,68,0.05); }
-.wt-moment--sig { border-left-color: var(--color-accent-green); background: rgba(57,211,83,0.05); }
+.wt-moment--obj { border-left-color: var(--color-accent-red); background: rgba(239,68,68,0.05); }
+.wt-moment--sig { border-left-color: var(--color-accent-green); background: rgba(34,197,94,0.05); }
 
 .wt-moment-time {
   font-family: var(--font-display);

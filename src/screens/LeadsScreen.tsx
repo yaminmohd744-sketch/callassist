@@ -623,7 +623,9 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
                       key={lead.id}
                       className="leads-screen__row leads-screen__row--clickable"
                       style={{ '--i': idx } as React.CSSProperties}
+                      tabIndex={0}
                       onClick={() => { setSelectedLead(lead); setView('detail'); }}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedLead(lead); setView('detail'); } }}
                     >
                       <td className="leads-screen__cell leads-screen__cell--name">
                         <span className="leads-screen__name">{lead.name}</span>

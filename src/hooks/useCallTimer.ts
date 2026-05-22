@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 export function useCallTimer() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -26,6 +26,10 @@ export function useCallTimer() {
     stopTimer();
     setElapsedSeconds(0);
   }, [stopTimer]);
+
+  useEffect(() => () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  }, []);
 
   const formattedTime = `${String(Math.floor(elapsedSeconds / 60)).padStart(2, '0')}:${String(elapsedSeconds % 60).padStart(2, '0')}`;
 
