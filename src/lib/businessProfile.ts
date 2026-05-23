@@ -9,6 +9,9 @@ interface RawOnboardingData {
   targetCustomer?: string;
   differentiators?: string[];
   commonObjections?: string[];
+  experienceLevel?: string;
+  dealType?: string;
+  topChallenges?: string[];
 }
 
 export function loadBusinessProfile(): BusinessProfile | null {
@@ -36,6 +39,9 @@ export function onboardingToBusinessProfile(data: RawOnboardingData): BusinessPr
     targetCustomer:     data.targetCustomer ?? '',
     differentiators:    Array.isArray(data.differentiators) ? data.differentiators : [],
     commonObjections:   Array.isArray(data.commonObjections) ? data.commonObjections : [],
+    experienceLevel:    data.experienceLevel as BusinessProfile['experienceLevel'] ?? undefined,
+    dealType:           data.dealType as BusinessProfile['dealType'] ?? undefined,
+    topChallenges:      Array.isArray(data.topChallenges) ? data.topChallenges : [],
   };
 }
 
@@ -60,6 +66,27 @@ export function buildEnrichedContext(
     }
     if (business.commonObjections.length > 0) {
       parts.push(`- Common objections to expect: ${business.commonObjections.join(', ')}`);
+    }
+
+    const EXP_LABEL: Record<string, string> = {
+      beginner:     'new to sales (under 1 year)',
+      intermediate: '1–3 years experience',
+      experienced:  '3–10 years experience',
+      veteran:      '10+ years — sales veteran',
+    };
+    const DEAL_LABEL: Record<string, string> = {
+      transactional: 'quick / transactional (same-day to 1 week)',
+      'mid-market':  'mid-market (a few weeks)',
+      enterprise:    'enterprise (months-long cycle)',
+    };
+    if (business.experienceLevel) {
+      parts.push(`- Rep experience: ${EXP_LABEL[business.experienceLevel] ?? business.experienceLevel}`);
+    }
+    if (business.dealType) {
+      parts.push(`- Typical deal: ${DEAL_LABEL[business.dealType] ?? business.dealType}`);
+    }
+    if (business.topChallenges && business.topChallenges.length > 0) {
+      parts.push(`- Rep wants to improve: ${business.topChallenges.join(', ')}`);
     }
   }
 

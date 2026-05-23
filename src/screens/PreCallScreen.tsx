@@ -5,7 +5,7 @@ import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
 import { loadLeads } from '../lib/leads';
 import { genId } from '../lib/id';
-import type { CallConfig, CallType, Lead, BusinessProfile, RepLearningProfile } from '../types';
+import type { CallConfig, CallType, CallPlatform, Lead, BusinessProfile, RepLearningProfile } from '../types';
 import { buildEnrichedContext } from '../lib/businessProfile';
 import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
@@ -28,6 +28,20 @@ interface Perk {
   text: string;
 }
 
+const PLATFORMS: { value: CallPlatform; label: string; icon: string }[] = [
+  { value: 'phone', label: 'Phone call',   icon: '☎' },
+  { value: 'zoom',  label: 'Zoom',         icon: '⬤' },
+  { value: 'meet',  label: 'Google Meet',  icon: '▶' },
+  { value: 'teams', label: 'Teams',        icon: '⊞' },
+];
+
+const PLATFORM_CONTEXT: Record<CallPlatform, string> = {
+  phone: 'This is a regular phone call — no video, no screen share, no meeting link involved.',
+  zoom:  'This call is on Zoom — screen sharing and video are available if needed.',
+  meet:  'This call is on Google Meet — screen sharing and video are available if needed.',
+  teams: 'This call is on Microsoft Teams — screen sharing and video are available if needed.',
+};
+
 const CALL_TYPES: { value: CallType; label: string }[] = [
   { value: 'cold',        label: 'Cold call'      },
   { value: 'warm',        label: 'Warm follow-up' },
@@ -37,6 +51,66 @@ const CALL_TYPES: { value: CallType; label: string }[] = [
   { value: 'negotiation', label: 'Negotiation'     },
   { value: 'close',       label: 'Closing call'    },
 ];
+
+const EXP_SHORT: Record<string, string> = {
+  beginner:     '🌱 Newcomer',
+  intermediate: '📈 Getting confident',
+  experienced:  '🎯 Battle-tested',
+  veteran:      '🏆 Veteran',
+};
+
+const DEAL_SHORT: Record<string, string> = {
+  transactional: '⚡ Quick wins',
+  'mid-market':  '📊 Mid-market',
+  enterprise:    '🏛 Enterprise',
+};
+
+function getGoalSuggestions(callType: CallType, dealType?: string): string[] {
+  const d = dealType ?? 'default';
+  const map: Record<string, Record<string, string[]>> = {
+    cold: {
+      transactional: ['Book a 15-min demo for later today', 'Qualify them and close on the spot if fit'],
+      'mid-market':  ['Book a 20-min discovery call this week', 'Get the right decision maker on the line'],
+      enterprise:    ['Secure a discovery call with the key stakeholder', 'Identify pain, budget range, and timeline'],
+      default:       ['Book a discovery call', 'Qualify budget, authority, and need'],
+    },
+    warm: {
+      transactional: ['Get a decision on this call', 'Follow up and close if they reviewed it'],
+      'mid-market':  ['Follow up on the proposal and confirm next steps', 'Handle remaining objections and set a timeline'],
+      enterprise:    ['Align all stakeholders on next steps', 'Surface and handle the final objection'],
+      default:       ['Follow up and confirm next steps', 'Identify any remaining blockers'],
+    },
+    referral: {
+      default:    ['Introduce myself and book a demo', 'Build rapport and qualify fit'],
+      enterprise: ['Understand their specific pain and map stakeholders', 'Get a meeting with the full buying team'],
+    },
+    discovery: {
+      transactional: ['Uncover the core need and propose a solution today'],
+      'mid-market':  ['Uncover budget, timeline, and key pain points', 'Identify decision criteria and who else is involved'],
+      enterprise:    ['Map all stakeholders and understand the buying process', 'Understand budget range and decision timeline'],
+      default:       ['Uncover budget, timeline, and key pain points', 'Identify who else is involved in the decision'],
+    },
+    demo: {
+      transactional: ['Show the core feature and close today'],
+      'mid-market':  ['Walk through the ROI story and handle their main concern'],
+      enterprise:    ['Demonstrate value to each stakeholder role and handle security questions'],
+      default:       ['Show the core value and address their top objection'],
+    },
+    negotiation: {
+      transactional: ['Close on price and confirm the deal on this call'],
+      'mid-market':  ['Agree on pricing and contract length', 'Handle the discount request and confirm a start date'],
+      enterprise:    ['Align on pricing, SLAs, and timeline', 'Handle procurement and legal requirements'],
+      default:       ['Agree on pricing and confirm the next step'],
+    },
+    close: {
+      transactional: ['Get a yes and confirm payment on this call'],
+      'mid-market':  ['Get a verbal yes and confirm the start date', 'Handle the final "I need to think about it"'],
+      enterprise:    ['Get a verbal commitment and align on contract timeline'],
+      default:       ['Get a verbal yes and confirm the start date'],
+    },
+  };
+  return map[callType]?.[d] ?? map[callType]?.['default'] ?? [];
+}
 
 // Defined outside component — stable, depends on no props/state
 const GOAL_PLACEHOLDERS: Record<string, string> = {
@@ -61,8 +135,9 @@ export function PreCallScreen({
 }: PreCallScreenProps) {
   const t = useTranslations();
 
-  const [callType, setCallType] = useState<CallType | undefined>(defaultConfig?.callType);
-  const [inCrm, setInCrm]       = useState<boolean | null>(null);
+  const [callType, setCallType]   = useState<CallType | undefined>(defaultConfig?.callType);
+  const [platform, setPlatform]   = useState<CallPlatform | undefined>(defaultConfig?.platform);
+  const [inCrm, setInCrm]         = useState<boolean | null>(null);
   const [leads, setLeads]        = useState<Lead[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(
@@ -171,19 +246,22 @@ export function PreCallScreen({
 
   const buildConfig = useCallback((): CallConfig => {
     const filledPerks = perks.filter(p => p.text.trim()).map(p => p.text);
-    const repContext = buildEnrichedContext(businessProfile ?? null, learningProfile ?? null) || undefined;
+    const base = buildEnrichedContext(businessProfile ?? null, learningProfile ?? null);
+    const platformNote = platform ? PLATFORM_CONTEXT[platform] : '';
+    const repContext = [base, platformNote].filter(Boolean).join('\n') || undefined;
     return {
       prospectName:  selectedLead?.name ?? '',
       company:       selectedLead?.company ?? '',
       prospectTitle: selectedLead?.title ?? '',
       priorContext:  selectedLead?.priorContext ?? '',
       callType,
+      platform,
       callGoal,
       yourPitch:     filledPerks.join('\n'),
       language,
       repContext,
     };
-  }, [perks, selectedLead, callType, callGoal, language, businessProfile, learningProfile]);
+  }, [perks, selectedLead, callType, platform, callGoal, language, businessProfile, learningProfile]);
 
   const handleSubmit = useCallback(() => {
     const newErrors: StringConfigErrors = {};
@@ -221,6 +299,34 @@ export function PreCallScreen({
 
         <div className="precall__form">
 
+          {/* ── Coaching context strip ── */}
+          {businessProfile && (
+            businessProfile.experienceLevel ||
+            businessProfile.dealType ||
+            (businessProfile.topChallenges?.length ?? 0) > 0 ||
+            (businessProfile.commonObjections?.length ?? 0) > 0
+          ) && (
+            <div className="precall__context-strip">
+              <span className="precall__context-title" aria-hidden="true">◎ COACHING PROFILE</span>
+              <div className="precall__context-pills">
+                {businessProfile.experienceLevel && (
+                  <span className="precall__context-pill">{EXP_SHORT[businessProfile.experienceLevel]}</span>
+                )}
+                {businessProfile.dealType && (
+                  <span className="precall__context-pill">{DEAL_SHORT[businessProfile.dealType]}</span>
+                )}
+                {businessProfile.topChallenges?.slice(0, 2).map(c => (
+                  <span key={c} className="precall__context-pill precall__context-pill--focus">{c}</span>
+                ))}
+                {(businessProfile.commonObjections?.length ?? 0) > 0 && (
+                  <span className="precall__context-pill precall__context-pill--objection">
+                    ⚡ {businessProfile.commonObjections!.slice(0, 2).join(' · ')}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* ── 1. Call Type ── */}
           <div id="precall-calltype-label" className="precall__section-label">{t.precall.callTypeQuestion}</div>
           <div className="precall__chips" role="group" aria-labelledby="precall-calltype-label">
@@ -237,7 +343,24 @@ export function PreCallScreen({
             ))}
           </div>
 
-          {/* ── 2. Is the lead in CRM? ── */}
+          {/* ── 2. Platform ── */}
+          <div id="precall-platform-label" className="precall__section-label">WHERE IS THIS CALL HAPPENING?</div>
+          <div className="precall__chips" role="group" aria-labelledby="precall-platform-label">
+            {PLATFORMS.map(p => (
+              <button
+                key={p.value}
+                type="button"
+                aria-pressed={platform === p.value}
+                className={`precall__chip precall__chip--platform${platform === p.value ? ' precall__chip--active' : ''}`}
+                onClick={() => setPlatform(prev => prev === p.value ? undefined : p.value)}
+              >
+                <span className="precall__chip-icon" aria-hidden="true">{p.icon}</span>
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* ── 3. Is the lead in CRM? ── */}
           <div id="precall-crm-label" className="precall__section-label">{t.precall.inCrmQuestion}</div>
           <div className="precall__crm-toggle" role="group" aria-labelledby="precall-crm-label">
             <button
@@ -319,7 +442,7 @@ export function PreCallScreen({
             </div>
           )}
 
-          {/* ── 3. Call Goal ── */}
+          {/* ── 4. Call Goal ── */}
           <label htmlFor="precall-call-goal" className="precall__section-label">
             {t.precall.callGoal} <span className="precall__required" aria-hidden="true">*</span>
           </label>
@@ -346,7 +469,18 @@ export function PreCallScreen({
             )}
           </div>
 
-          {/* ── 4. Your Perks ── */}
+          {callType && callGoal.trim() === '' && getGoalSuggestions(callType, businessProfile?.dealType).length > 0 && (
+            <div className="precall__goal-suggestions">
+              <span className="precall__goal-suggestions-label">Quick fill</span>
+              {getGoalSuggestions(callType, businessProfile?.dealType).map((s, i) => (
+                <button key={i} type="button" className="precall__goal-suggestion" onClick={() => setCallGoal(s)}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* ── 5. Your Perks ── */}
           <div id="precall-perks-label" className="precall__section-label">{t.precall.yourPerksLabel}</div>
           <p className="precall__perks-desc">{t.precall.yourPerksDesc}</p>
           <div className="precall__perks-list" role="group" aria-labelledby="precall-perks-label">
@@ -375,7 +509,7 @@ export function PreCallScreen({
             ))}
           </div>
 
-          {/* ── 5. Language ── */}
+          {/* ── 6. Language ── */}
           <div id="precall-lang-label" className="precall__section-label">{t.precall.language}</div>
           <div className="precall__lang-grid" role="group" aria-labelledby="precall-lang-label">
             {SUPPORTED_LANGUAGES.map(l => (

@@ -45,22 +45,8 @@
 /* ─── Logo ── */
 
 .app-shell__logo {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--color-text-primary);
   flex-shrink: 0;
   margin-right: 28px;
-  user-select: none;
-}
-
-.app-shell__logo-word {
-  color: var(--color-text-primary);
-}
-
-.app-shell__logo-plus {
-  color: var(--color-accent-purple);
 }
 
 /* ─── Nav tabs ── */

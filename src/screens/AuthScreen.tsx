@@ -154,7 +154,7 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
           {mode === 'sign-in' ? 'Welcome back.' : mode === 'sign-up' ? 'Create an account.' : 'Reset your password.'}
         </h1>
 
-        {error   && <div className="auth-error"   role="alert"  aria-live="polite">{error}</div>}
+        {error   && <div id="auth-error-banner" className="auth-error"   role="alert"  aria-live="polite">{error}</div>}
         {message && <div className="auth-message" role="status" aria-live="polite">{message}</div>}
 
         <form className="auth-form" onSubmit={handleSubmit}>

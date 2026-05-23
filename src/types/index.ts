@@ -1,6 +1,7 @@
 // ─── Configuration ───────────────────────────────────────────────────────────
 
 export type CallType = 'cold' | 'warm' | 'referral' | 'discovery' | 'demo' | 'negotiation' | 'close';
+export type CallPlatform = 'phone' | 'zoom' | 'meet' | 'teams';
 
 export interface CallConfig {
   prospectName: string;
@@ -11,6 +12,7 @@ export interface CallConfig {
   // Optional enrichment fields — set during pre-call setup
   prospectTitle?: string;  // their job title / role
   callType?: CallType;
+  platform?: CallPlatform;
   priorContext?: string;   // research, previous interactions, expected objections
   repContext?: string;     // Business + learning profile block — ephemeral, not shown in UI
 }
@@ -166,6 +168,8 @@ export interface LearningLogEntry {
   severity: LogSeverity;
   headline: string;
   body: string;
+  expectedChange?: string;
+  achieved?: boolean;
 }
 
 // ─── Lead ─────────────────────────────────────────────────────────────────────
@@ -205,6 +209,9 @@ export interface BusinessProfile {
   targetCustomer: string;
   differentiators: string[];
   commonObjections: string[];
+  experienceLevel?: 'beginner' | 'intermediate' | 'experienced' | 'veteran';
+  dealType?: 'transactional' | 'mid-market' | 'enterprise';
+  topChallenges?: string[];
 }
 
 // ─── Rep Learning Profile ─────────────────────────────────────────────────────

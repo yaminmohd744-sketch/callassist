@@ -3,6 +3,7 @@ import { SUPPORTED_LANGUAGES } from '../../lib/languages';
 import { formatTotalTime } from '../../lib/formatters';
 import { useTranslations } from '../../hooks/useTranslations';
 import { useAppContext } from '../../contexts/AppContext';
+import { PitchrLogo } from '../ui/PitchrLogo';
 import './AppShell.css';
 
 type ShellScreen = 'dashboard' | 'analytics' | 'leads';
@@ -71,7 +72,7 @@ export function AppShell({
       {/* ── Top nav ── */}
       <header className="app-shell__topnav">
         <div className="app-shell__logo">
-          PITCHR
+          <PitchrLogo size="sm" />
         </div>
 
         <nav className="app-shell__tabs" role="navigation">

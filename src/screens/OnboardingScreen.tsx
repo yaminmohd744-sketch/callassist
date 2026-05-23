@@ -17,6 +17,9 @@ export interface OnboardingData {
   targetCustomer: string;
   differentiators: string[];
   commonObjections: string[];
+  experienceLevel: 'beginner' | 'intermediate' | 'experienced' | 'veteran';
+  dealType?: 'transactional' | 'mid-market' | 'enterprise';
+  topChallenges: string[];
 }
 
 // ── Category options ──────────────────────────────────────────────────────────
@@ -54,15 +57,48 @@ const COMPANY_CATEGORIES: Category[] = [
 ];
 
 const STEPS = [
-  { title: 'Welcome to Pitchr'             },  // 0
-  { title: 'Who are you selling for?'      },  // 1
-  { title: 'What do you sell?'             },  // 2
-  { title: 'Tell us about it'              },  // 3
-  { title: 'Who do you sell to?'           },  // 4 NEW
-  { title: 'Your competitive edge'         },  // 5 NEW
-  { title: 'What language do you sell in?' },  // 6
-  { title: "You're ready to close."        },  // 7
+  { title: 'Welcome to Pitchr'              },  // 0
+  { title: 'How long have you been selling?'},  // 1 NEW
+  { title: 'Who are you selling for?'       },  // 2
+  { title: 'What do you sell?'              },  // 3
+  { title: 'Tell us about it'               },  // 4
+  { title: 'Who do you sell to?'            },  // 5
+  { title: 'Your competitive edge'          },  // 6
+  { title: 'What do you want to improve?'   },  // 7 NEW
+  { title: 'What language do you sell in?'  },  // 8
+  { title: "You're ready to close."         },  // 9
 ];
+
+interface ExperienceOption {
+  value: 'beginner' | 'intermediate' | 'experienced' | 'veteran';
+  emoji: string;
+  label: string;
+  sub: string;
+}
+
+const EXPERIENCE_OPTIONS: ExperienceOption[] = [
+  { value: 'beginner',     emoji: '🌱', label: 'Just starting out',  sub: 'Under 1 year in sales'  },
+  { value: 'intermediate', emoji: '📈', label: 'Getting confident',  sub: '1–3 years'               },
+  { value: 'experienced',  emoji: '🎯', label: 'Battle-tested',      sub: '3–10 years'              },
+  { value: 'veteran',      emoji: '🏆', label: 'Sales veteran',      sub: '10+ years'               },
+];
+
+interface ChallengeOption { value: string; emoji: string; label: string; }
+const CHALLENGE_OPTIONS: ChallengeOption[] = [
+  { value: 'Handling objections',  emoji: '🛡', label: 'Handling objections' },
+  { value: 'Closing more deals',   emoji: '🔑', label: 'Closing more deals'  },
+  { value: 'Better discovery',     emoji: '🔍', label: 'Better discovery'    },
+  { value: 'Building rapport',     emoji: '🤝', label: 'Building rapport'    },
+  { value: 'Staying confident',    emoji: '💪', label: 'Staying confident'   },
+  { value: 'Consistent process',   emoji: '📋', label: 'Consistent process'  },
+];
+
+const EXP_SUMMARY_LABEL: Record<string, string> = {
+  beginner:     '🌱 Just starting out',
+  intermediate: '📈 Getting confident',
+  experienced:  '🎯 Battle-tested',
+  veteran:      '🏆 Sales veteran',
+};
 
 function flagUrl(code: LanguageCode) {
   return `https://flagcdn.com/w40/${code.split('-')[1].toLowerCase()}.png`;
@@ -77,10 +113,14 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
   const [companyName, setCompanyName]     = useState('');
   const [productDescription, setProductDescription] = useState('');
   const [language, setLanguage]           = useState<LanguageCode>('en-US');
-  // New fields
+  // Phase 2 fields
   const [targetCustomer, setTargetCustomer]   = useState('');
   const [differentiators, setDifferentiators] = useState<[string, string, string]>(['', '', '']);
   const [commonObjectionsRaw, setCommonObjectionsRaw] = useState('');
+  // Personalization fields
+  const [experienceLevel, setExperienceLevel] = useState<'beginner' | 'intermediate' | 'experienced' | 'veteran' | null>(null);
+  const [dealType, setDealType]               = useState<'transactional' | 'mid-market' | 'enterprise' | null>(null);
+  const [topChallenges, setTopChallenges]     = useState<string[]>([]);
 
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -100,11 +140,12 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
 
   const canNext = (() => {
     if (step === 0) return name.trim().length > 0;
-    if (step === 1) return sellingFor !== null;
-    if (step === 2) return industry !== '' && (industry !== 'other' || industryOther.trim().length > 0);
-    if (step === 3) return productDescription.trim().length > 0;
-    if (step === 4) return targetCustomer.trim().length > 0;
-    return true; // steps 5, 6, 7
+    if (step === 1) return experienceLevel !== null;
+    if (step === 2) return sellingFor !== null;
+    if (step === 3) return industry !== '' && (industry !== 'other' || industryOther.trim().length > 0);
+    if (step === 4) return productDescription.trim().length > 0;
+    if (step === 5) return targetCustomer.trim().length > 0;
+    return true; // steps 6, 7, 8, 9
   })();
 
   const selectedLang = useMemo(
@@ -121,6 +162,12 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
     setIndustryOther('');
   }
 
+  function toggleChallenge(val: string) {
+    setTopChallenges(prev =>
+      prev.includes(val) ? prev.filter(c => c !== val) : prev.length < 3 ? [...prev, val] : prev,
+    );
+  }
+
   function updateDifferentiator(index: 0 | 1 | 2, value: string) {
     setDifferentiators(prev => {
       const next: [string, string, string] = [...prev] as [string, string, string];
@@ -130,7 +177,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
   }
 
   function finish() {
-    if (!sellingFor) return;
+    if (!sellingFor || !experienceLevel) return;
     const commonObjections = commonObjectionsRaw
       .split(/[,\n]/)
       .map(s => s.trim())
@@ -145,6 +192,9 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
       targetCustomer,
       differentiators: filledDifferentiators,
       commonObjections,
+      experienceLevel,
+      dealType: dealType ?? undefined,
+      topChallenges,
     });
   }
 
@@ -189,8 +239,32 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 1: Self vs Company ── */}
+        {/* ── Step 1: Experience level ── */}
         {step === 1 && (
+          <div className="ob__slide">
+            <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>
+              How long have you been selling, <span className="ob__name">{name}</span>?
+            </h1>
+            <p className="ob__sub">Your AI coach adjusts its style based on your experience — tougher love for veterans, more guidance for newcomers.</p>
+            <div className="ob__exp-grid">
+              {EXPERIENCE_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  className={`ob__exp-card${experienceLevel === opt.value ? ' ob__exp-card--active' : ''}`}
+                  onClick={() => setExperienceLevel(opt.value)}
+                  aria-pressed={experienceLevel === opt.value}
+                >
+                  <span className="ob__exp-emoji" aria-hidden="true">{opt.emoji}</span>
+                  <span className="ob__exp-label">{opt.label}</span>
+                  <span className="ob__exp-sub">{opt.sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 2: Self vs Company ── */}
+        {step === 2 && (
           <div className="ob__slide">
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>
               Who are you selling for, <span className="ob__name">{name}</span>?
@@ -223,8 +297,8 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 2: Industry / Category ── */}
-        {step === 2 && (
+        {/* ── Step 3: Industry / Category ── */}
+        {step === 3 && (
           <div className="ob__slide">
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>
               {sellingFor === 'company' ? 'What does your company sell?' : 'What do you offer?'}
@@ -262,8 +336,8 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 3: Details ── */}
-        {step === 3 && (
+        {/* ── Step 4: Details ── */}
+        {step === 4 && (
           <div className="ob__slide">
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>Tell us about it.</h1>
             <p className="ob__sub">
@@ -302,11 +376,31 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
               />
               <p className="ob__hint">Be specific — this goes straight into your AI coach's context.</p>
             </div>
+            <div className="ob__field ob__field--mt">
+              <label className="ob__label">How long is a typical deal?<span className="ob__label-optional"> (optional)</span></label>
+              <div className="ob__deal-row">
+                {([
+                  { value: 'transactional', label: 'Quick win', sub: 'Same-day – 1 week' },
+                  { value: 'mid-market',    label: 'A few weeks', sub: '1–4 weeks' },
+                  { value: 'enterprise',    label: 'Long cycle', sub: 'Months' },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.value}
+                    className={`ob__deal-btn${dealType === opt.value ? ' ob__deal-btn--active' : ''}`}
+                    onClick={() => setDealType(prev => prev === opt.value ? null : opt.value)}
+                    aria-pressed={dealType === opt.value}
+                  >
+                    <span className="ob__deal-label">{opt.label}</span>
+                    <span className="ob__deal-sub">{opt.sub}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* ── Step 4: Target Customer (NEW) ── */}
-        {step === 4 && (
+        {/* ── Step 5: Target Customer ── */}
+        {step === 5 && (
           <div className="ob__slide">
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>Who do you sell to?</h1>
             <p className="ob__sub">
@@ -329,8 +423,8 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 5: Competitive Edge (NEW) ── */}
-        {step === 5 && (
+        {/* ── Step 6: Competitive Edge ── */}
+        {step === 6 && (
           <div className="ob__slide">
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>Your competitive edge.</h1>
             <p className="ob__sub">
@@ -376,8 +470,42 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 6: Language ── */}
-        {step === 6 && (
+        {/* ── Step 7: Top challenges (NEW) ── */}
+        {step === 7 && (
+          <div className="ob__slide">
+            <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>What do you want to get better at?</h1>
+            <p className="ob__sub">
+              Pick up to 3. Your AI coach will focus on these areas from your very first call — no waiting.
+            </p>
+            <div className="ob__challenge-grid">
+              {CHALLENGE_OPTIONS.map(opt => {
+                const selected = topChallenges.includes(opt.value);
+                const maxed    = !selected && topChallenges.length >= 3;
+                return (
+                  <button
+                    key={opt.value}
+                    className={`ob__challenge-chip${selected ? ' ob__challenge-chip--active' : ''}${maxed ? ' ob__challenge-chip--disabled' : ''}`}
+                    onClick={() => !maxed && toggleChallenge(opt.value)}
+                    aria-pressed={selected}
+                    disabled={maxed}
+                  >
+                    <span className="ob__challenge-emoji" aria-hidden="true">{opt.emoji}</span>
+                    <span>{opt.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {topChallenges.length > 0 && (
+              <p className="ob__hint ob__hint--center">
+                {topChallenges.length} / 3 selected
+                {topChallenges.length === 3 && ' — your coach is ready to focus on these.'}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ── Step 8: Language ── */}
+        {step === 8 && (
           <div className="ob__slide">
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>What language do you sell in?</h1>
             <p className="ob__sub">
@@ -404,8 +532,8 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 7: Ready ── */}
-        {step === 7 && (
+        {/* ── Step 9: Ready ── */}
+        {step === 9 && (
           <div className="ob__slide ob__slide--center">
             <div className="ob__ready-icon" aria-hidden="true">✦</div>
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>
@@ -449,6 +577,33 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
                   <span className="ob__ready-row-icon" aria-hidden="true">⚡</span>
                   <span className="ob__ready-row-label">Your edge</span>
                   <span className="ob__ready-row-val ob__ready-row-val--wrap">{filledDifferentiators.join(' · ')}</span>
+                </div>
+              )}
+              {experienceLevel && (
+                <div className="ob__ready-row">
+                  <span className="ob__ready-row-icon" aria-hidden="true">
+                    {EXP_SUMMARY_LABEL[experienceLevel].split(' ')[0]}
+                  </span>
+                  <span className="ob__ready-row-label">Experience</span>
+                  <span className="ob__ready-row-val">
+                    {EXP_SUMMARY_LABEL[experienceLevel].split(' ').slice(1).join(' ')}
+                  </span>
+                </div>
+              )}
+              {dealType && (
+                <div className="ob__ready-row">
+                  <span className="ob__ready-row-icon" aria-hidden="true">💼</span>
+                  <span className="ob__ready-row-label">Deal type</span>
+                  <span className="ob__ready-row-val">
+                    {dealType === 'transactional' ? 'Quick wins' : dealType === 'mid-market' ? 'A few weeks' : 'Long cycle'}
+                  </span>
+                </div>
+              )}
+              {topChallenges.length > 0 && (
+                <div className="ob__ready-row">
+                  <span className="ob__ready-row-icon" aria-hidden="true">🎯</span>
+                  <span className="ob__ready-row-label">Focus areas</span>
+                  <span className="ob__ready-row-val ob__ready-row-val--wrap">{topChallenges.join(' · ')}</span>
                 </div>
               )}
               <div className="ob__ready-row">

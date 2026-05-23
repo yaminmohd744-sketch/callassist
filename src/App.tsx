@@ -56,6 +56,9 @@ interface OnboardingData {
   targetCustomer?: string;
   differentiators?: string[];
   commonObjections?: string[];
+  experienceLevel?: string;
+  dealType?: string;
+  topChallenges?: string[];
 }
 
 function getOnboardingData(): OnboardingData {
@@ -71,6 +74,9 @@ function getOnboardingData(): OnboardingData {
       targetCustomer:     typeof raw.targetCustomer     === 'string' ? raw.targetCustomer     : undefined,
       differentiators:    Array.isArray(raw.differentiators) ? raw.differentiators as string[] : undefined,
       commonObjections:   Array.isArray(raw.commonObjections) ? raw.commonObjections as string[] : undefined,
+      experienceLevel:    typeof raw.experienceLevel    === 'string' ? raw.experienceLevel    : undefined,
+      dealType:           typeof raw.dealType           === 'string' ? raw.dealType           : undefined,
+      topChallenges:      Array.isArray(raw.topChallenges) ? raw.topChallenges as string[] : undefined,
     };
   } catch {
     return {};
@@ -403,7 +409,6 @@ export function App() {
                   onViewSession={handleViewSession}
                   onDeleteSession={handleDeleteSession}
                   userName={loginUserName}
-                  learningProfile={learningProfile}
                   learningLog={learningLog}
                 />
               </Suspense>

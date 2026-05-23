@@ -8,8 +8,47 @@ import {
 } from '../lib/packagesSupabase';
 import { formatDuration, formatDateShort } from '../lib/formatters';
 import { useAppContext } from '../contexts/AppContext';
+import { generateNextMoves } from '../lib/nextMoves';
+import type { MoveAction, NextMove } from '../lib/nextMoves';
 import type { Lead, CallSession, CrmPackage } from '../types';
 import './LeadsScreen.css';
+
+const MOVE_ICON: Record<MoveAction, string> = {
+  'close':     '◉',
+  'call-back': '↺',
+  'follow-up': '→',
+  're-engage': '◌',
+};
+
+const MOVE_LABEL: Record<MoveAction, string> = {
+  'close':     'Close it',
+  'call-back': 'Call back',
+  'follow-up': 'Follow up',
+  're-engage': 'Re-engage',
+};
+
+const DEMO_MOVES: NextMove[] = [
+  {
+    sessionId: 'demo-1', action: 'close', prospectName: 'Sarah Mitchell',
+    company: 'Acme Corp', body: 'Close probability at 82% — push for a decision before end of quarter.',
+    callDate: '2026-05-20T14:22:00Z', probability: 82,
+  },
+  {
+    sessionId: 'demo-2', action: 'follow-up', prospectName: 'James Chen',
+    company: 'TechFlow Inc', body: 'Strong interest in AI coaching features — send the case study you mentioned.',
+    callDate: '2026-05-18T10:15:00Z', probability: 55,
+  },
+  {
+    sessionId: 'demo-3', action: 'call-back', prospectName: 'Carlos Mendes',
+    company: 'PivotLabs', body: 'Competitor contract up for renewal — follow up while it\'s still fresh.',
+    callDate: '2026-05-21T08:50:00Z', probability: 48,
+  },
+  {
+    sessionId: 'demo-4', action: 're-engage', prospectName: 'Alex Johnson',
+    company: 'NovaSoft', body: 'It\'s been a while — a quick check-in could restart the conversation.',
+    callDate: '2026-05-10T09:00:00Z', probability: 30,
+  },
+];
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
@@ -272,6 +311,12 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
     );
   }, [visibleLeads, searchQuery]);
 
+  const isDemo = pastSessions.length === 0;
+  const nextMoves = useMemo(
+    () => isDemo ? DEMO_MOVES : generateNextMoves(pastSessions),
+    [isDemo, pastSessions],
+  );
+
   // Call sessions matched to the selected lead
   const leadSessions = useMemo(() => {
     if (!selectedLead) return [];
@@ -514,6 +559,37 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
               );
             })}
           </div>
+
+          {/* Next Moves */}
+          {nextMoves.length > 0 && (
+            <div className="leads-screen__moves">
+              <div className="leads-screen__moves-header">
+                <span className="leads-screen__moves-title">NEXT MOVES</span>
+                <span className="leads-screen__moves-count">{nextMoves.length}</span>
+                {isDemo && <span className="leads-screen__moves-demo">demo</span>}
+              </div>
+              <div className="leads-screen__moves-list">
+                {nextMoves.map(move => (
+                  <div
+                    key={move.sessionId}
+                    className={`leads-screen__move-card leads-screen__move-card--${move.action}`}
+                  >
+                    <span className="leads-screen__move-icon" aria-hidden="true">{MOVE_ICON[move.action]}</span>
+                    <div className="leads-screen__move-content">
+                      <div className="leads-screen__move-header">
+                        <span className="leads-screen__move-action">{MOVE_LABEL[move.action].toUpperCase()}</span>
+                        <span className="leads-screen__move-date">{formatDate(move.callDate)}</span>
+                      </div>
+                      <div className="leads-screen__move-prospect">
+                        {move.prospectName}{move.company ? ` · ${move.company}` : ''}
+                      </div>
+                      <p className="leads-screen__move-body">{move.body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {packages.length === 0 && !showNewPkg && (
             <p className="leads-screen__pkg-hint">

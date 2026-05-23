@@ -5,6 +5,7 @@ import { CookiePolicy } from './legal/CookiePolicy';
 import { PricingSection } from './landing/PricingSection';
 import { BlogSection } from './landing/BlogSection';
 import { CareersSection } from './landing/CareersSection';
+import { PitchrLogo } from '../components/ui/PitchrLogo';
 import './LandingScreen.css';
 
 interface LandingScreenProps {
@@ -474,7 +475,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
     <nav className="lp__nav">
       <div className="lp__nav-inner">
         <button className="lp__nav-logo" onClick={() => setActiveSection(null)}>
-          PITCHR
+          <PitchrLogo size="sm" />
         </button>
 
         {activeSection !== null ? (
@@ -1842,7 +1843,7 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
 
           {/* Brand */}
           <div className="lp__footer-brand">
-            <div className="lp__footer-logo">PITCHR</div>
+            <div className="lp__footer-logo"><PitchrLogo /></div>
             <p className="lp__footer-tagline">AI-powered sales coaching that listens, analyzes, and coaches you in real time — so every call is your best call.</p>
           </div>
 

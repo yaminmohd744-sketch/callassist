@@ -1,0 +1,25 @@
+.pitchr-logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.pitchr-logo--sm { gap: 6px; }
+.pitchr-logo--lg { gap: 9px; }
+
+.pitchr-logo__word {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  background: linear-gradient(135deg, #814ac8, #df7afe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.pitchr-logo--sm .pitchr-logo__word { font-size: 14px; }
+.pitchr-logo--md .pitchr-logo__word { font-size: 16px; }
+.pitchr-logo--lg .pitchr-logo__word { font-size: 22px; }

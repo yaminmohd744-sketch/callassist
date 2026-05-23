@@ -141,6 +141,22 @@
   outline-offset: 2px;
 }
 
+.precall__chip--platform {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.precall__chip-icon {
+  font-size: 11px;
+  opacity: 0.6;
+  line-height: 1;
+}
+
+.precall__chip--active .precall__chip-icon {
+  opacity: 1;
+}
+
 /* ─── CRM Yes/No toggle ────────────────────────────────────── */
 
 .precall__crm-toggle {
@@ -441,6 +457,104 @@
   width: 16px;
   height: auto;
   border-radius: 2px;
+}
+
+/* ─── Coaching context strip ──────────────────────────────── */
+
+.precall__context-strip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--_purple-a08);
+  border: 1px solid var(--_purple-a25);
+  border-radius: 10px;
+}
+
+.precall__context-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--color-accent-purple);
+  white-space: nowrap;
+  padding-top: 3px;
+  flex-shrink: 0;
+}
+
+.precall__context-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.precall__context-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.precall__context-pill--focus {
+  background: rgba(129, 74, 200, 0.15);
+  border-color: rgba(129, 74, 200, 0.4);
+  color: var(--color-accent-magenta);
+}
+
+.precall__context-pill--objection {
+  background: rgba(234, 179, 8, 0.07);
+  border-color: rgba(234, 179, 8, 0.25);
+  color: var(--color-accent-yellow);
+}
+
+/* ─── Goal quick-fill suggestions ──────────────────────────── */
+
+.precall__goal-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: calc(-1 * var(--space-3));
+}
+
+.precall__goal-suggestions-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.precall__goal-suggestion {
+  padding: 4px 11px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-pill);
+  font-family: var(--font-display);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  text-align: left;
+}
+
+.precall__goal-suggestion:hover {
+  border-color: var(--color-accent-purple);
+  color: var(--color-text-primary);
+  background: var(--_purple-a08);
+}
+
+.precall__goal-suggestion:focus-visible {
+  outline: 2px solid var(--color-accent-purple);
+  outline-offset: 2px;
+  border-radius: var(--border-radius-pill);
 }
 
 /* ─── Actions ──────────────────────────────────────────────── */
