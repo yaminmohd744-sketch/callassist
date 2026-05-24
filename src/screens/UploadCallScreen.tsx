@@ -118,6 +118,11 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
       const totalWords = transcript.reduce((s, e) => s + e.text.split(/\s+/).length, 0);
       const durationSeconds = Math.max(30, Math.round((totalWords / 130) * 60));
 
+      const repWords = transcript
+        .filter(e => e.speaker === 'rep')
+        .reduce((s, e) => s + e.text.split(/\s+/).length, 0);
+      const talkRatio = totalWords > 0 ? repWords / totalWords : 0.5;
+
       const { aiSummary, followUpEmail, leadScore, coaching } = await generateSessionSummary(
         config, transcript, [], finalCloseProbability, objectionsCount
       );
@@ -137,6 +142,7 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
         followUpEmail,
         leadScore,
         notes: [],
+        talkRatio,
         coaching,
       };
 

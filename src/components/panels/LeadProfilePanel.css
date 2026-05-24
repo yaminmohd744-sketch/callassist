@@ -85,6 +85,12 @@
   font-weight: 400;
 }
 
+.lead-panel__field-val--context {
+  max-height: 80px;
+  overflow-y: auto;
+  display: block;
+}
+
 .lead-panel__field-val--chip {
   background: rgba(124, 58, 237, 0.12);
   border: 1px solid rgba(124, 58, 237, 0.3);
@@ -247,7 +253,7 @@
   height: 28px;
   border-radius: var(--border-radius-sm);
   background: var(--color-accent-gradient);
-  color: #fff;
+  color: var(--color-text-on-accent);
   border: none;
   font-size: var(--font-size-base);
   font-weight: 700;

@@ -350,9 +350,10 @@ function makeSuggestion(
   headline: string,
   body: string,
   triggeredBy: string,
-  timestampSeconds: number
+  timestampSeconds: number,
+  probabilityAtTime?: number
 ): AISuggestion {
-  return { id: genId(), type, headline, body, triggeredBy, timestampSeconds };
+  return { id: genId(), type, headline, body, triggeredBy, timestampSeconds, probabilityAtTime };
 }
 
 // ─── Keyword Analysis ─────────────────────────────────────────────────────────
@@ -384,7 +385,7 @@ function analyzeWithKeywords(
         const base = fill(raw, config);
         const hint = ctx ? buildContextHint(ctx, newEntry.text) : null;
         const body = hint ? `${base}\n\n- ${hint}` : base;
-        suggestions.push(makeSuggestion('objection-response', def.label, body, newEntry.text, elapsedSeconds));
+        suggestions.push(makeSuggestion('objection-response', def.label, body, newEntry.text, elapsedSeconds, currentProbability));
         probability -= 10;
         objectionsCount += 1;
         break;
@@ -398,7 +399,7 @@ function analyzeWithKeywords(
         const base = fill(def.response, config);
         const hint = ctx ? buildContextHint(ctx, newEntry.text) : null;
         const body = hint ? `${base}\n\n- ${hint}` : base;
-        suggestions.push(makeSuggestion('close-attempt', def.label, body, newEntry.text, elapsedSeconds));
+        suggestions.push(makeSuggestion('close-attempt', def.label, body, newEntry.text, elapsedSeconds, currentProbability));
         probability += 8;
         break;
       }
@@ -618,7 +619,7 @@ function analyzeWithPresets(
       const base = fill(preset.responses[currentStage], config);
       const hint = ctx ? buildContextHint(ctx, newEntry.text) : null;
       const body = hint ? `${base}\n\n- ${hint}` : base;
-      const suggestion = makeSuggestion('tip', preset.label, body, newEntry.text, elapsedSeconds);
+      const suggestion = makeSuggestion('tip', preset.label, body, newEntry.text, elapsedSeconds, currentProbability);
       if (onStream) onStream({ ...suggestion, streaming: false });
       return {
         suggestions: [suggestion],
@@ -639,7 +640,7 @@ function analyzeWithPresets(
       const fbBase = fill(fb.response[currentStage], config);
       const fbHint = ctx ? buildContextHint(ctx, newEntry.text) : null;
       const fbBody = fbHint ? `${fbBase}\n\n- ${fbHint}` : fbBase;
-      const fallback = makeSuggestion('tip', fb.label, fbBody, newEntry.text, elapsedSeconds);
+      const fallback = makeSuggestion('tip', fb.label, fbBody, newEntry.text, elapsedSeconds, currentProbability);
       if (onStream) onStream({ ...fallback, streaming: false });
       return {
         suggestions: [fallback],

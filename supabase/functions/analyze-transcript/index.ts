@@ -54,8 +54,20 @@ Deno.serve(async (req: Request) => {
     const safeCallSummary = sanitize(callSummary, 400);
     const safeRepContext = sanitize(repContext, 600);
 
-    const systemPrompt = `You are an elite real-time sales copilot. You observe live calls silently and intervene ONLY when it materially increases the chance of closing. Most moments do not need intervention — silence is a tool.
+    // Extract the COACHING PRIORITY line from repContext if present — it goes at the top of the prompt
+    // so the model treats it as the primary directive, not generic background.
+    let repContextBody = safeRepContext;
+    let coachingPriorityLine = '';
+    if (safeRepContext) {
+      const priorityMatch = safeRepContext.match(/COACHING PRIORITY FOR THIS REP:\s*(.+?)(?:\n|$)/s);
+      if (priorityMatch) {
+        coachingPriorityLine = priorityMatch[1].trim();
+        repContextBody = safeRepContext.replace(/\nCOACHING PRIORITY FOR THIS REP:[\s\S]*$/, '').trim();
+      }
+    }
 
+    const systemPrompt = `You are an elite real-time sales copilot. You observe live calls silently and intervene ONLY when it materially increases the chance of closing. Most moments do not need intervention — silence is a tool.
+${coachingPriorityLine ? `\n⚑ REP-SPECIFIC COACHING PRIORITY: ${coachingPriorityLine}\nThis is the single most impactful area for this rep — weight your suggestions toward it whenever the conversation allows.\n` : ''}
 Your core principles:
 - Diagnose over convince. Guide the rep to understand the prospect deeper, not push harder.
 - Precision over volume. One sharp, timely suggestion beats three generic ones.
@@ -67,7 +79,7 @@ Context:
 - Goal: ${safeGoal || "move the conversation forward"}
 ${safeProspectTitle ? `- Prospect role: ${safeProspectTitle}\n` : ''}${config?.callType ? `- Call type: ${config.callType}\n` : ''}- ${Math.floor(elapsedSeconds / 60)}min elapsed | Close probability: ${probability}% | Objections: ${objectionsCount}
 - Last suggestion: ${lastLabel ?? "none"} — suggest something meaningfully different${langNote}
-${safePriorContext ? `- Prior context: ${safePriorContext}\n` : ''}${currentPhaseLabel ? `- Current detected phase: ${currentPhaseLabel}\n` : ''}${safeCallSummary ? `- Earlier in the call: ${safeCallSummary}\n` : ''}${safeRepContext ? `\n${safeRepContext}\n` : ''}
+${safePriorContext ? `- Prior context: ${safePriorContext}\n` : ''}${currentPhaseLabel ? `- Current detected phase: ${currentPhaseLabel}\n` : ''}${safeCallSummary ? `- Earlier in the call: ${safeCallSummary}\n` : ''}${repContextBody ? `\n${repContextBody}\n` : ''}
 Recent conversation:
 ${recentEntries}
 

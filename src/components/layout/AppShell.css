@@ -254,7 +254,7 @@
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-on-accent);
   cursor: pointer;
   letter-spacing: 0.04em;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
@@ -262,7 +262,7 @@
 }
 
 .app-shell__btn-primary:hover {
-  background: #6d28d9;
+  background: var(--color-accent-purple-dark);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(124,58,237,0.3);
 }
@@ -284,7 +284,7 @@
   border-radius: 50%;
   background: var(--color-accent-gradient);
   border: 1px solid rgba(124,58,237,0.3);
-  color: #fff;
+  color: var(--color-text-on-accent);
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 700;
@@ -342,7 +342,7 @@
   border-radius: 50%;
   background: var(--color-accent-gradient);
   border: 1px solid rgba(124,58,237,0.3);
-  color: #fff;
+  color: var(--color-text-on-accent);
   font-family: var(--font-display);
   font-size: 15px;
   font-weight: 700;
@@ -545,7 +545,7 @@
 
 .app-shell__theme-toggle--light .app-shell__theme-knob {
   transform: translateX(16px);
-  background: #fff;
+  background: var(--color-text-on-accent);
 }
 
 /* ── Sign out ── */
@@ -630,4 +630,4 @@
 [data-theme="light"] .app-shell__profile-signout { color: rgba(30, 19, 51, 0.4); }
 [data-theme="light"] .app-shell__profile-signout:hover { background: rgba(220,38,38,0.06); color: var(--color-accent-red); }
 [data-theme="light"] .app-shell__theme-knob { background: rgba(0,0,0,0.2); }
-[data-theme="light"] .app-shell__theme-toggle--light .app-shell__theme-knob { background: #fff; }
+[data-theme="light"] .app-shell__theme-toggle--light .app-shell__theme-knob { background: var(--color-text-on-accent); }

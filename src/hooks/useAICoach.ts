@@ -109,7 +109,7 @@ export function useAICoach() {
     if (result.prospectTone) setProspectTone(result.prospectTone);
 
     if (result.suggestions.length > 0) {
-      const primary = { ...result.suggestions[0], createdAt: result.suggestions[0].createdAt ?? elapsedSeconds };
+      const primary = { ...result.suggestions[0], createdAt: result.suggestions[0].createdAt ?? elapsedSeconds, probabilityAtTime: result.suggestions[0].probabilityAtTime ?? current.closeProbability };
       memoryRef.current = {
         lastLabel: primary.headline,
         lastObjectionType: primary.type === 'objection-response'

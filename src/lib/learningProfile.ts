@@ -1,5 +1,5 @@
 import { STORAGE_KEYS } from './storageKeys';
-import type { CallSession, RepLearningProfile, WeaknessScores, Trajectory } from '../types';
+import type { CallSession, RepLearningProfile, WeaknessScores, Trajectory, SuggestionType, SuggestionOutcomes } from '../types';
 
 const ANALYSIS_WINDOW = 15;
 const MIN_SESSIONS_FOR_TRAJECTORY = 4;
@@ -100,6 +100,9 @@ export function computeLearningProfile(sessions: CallSession[]): RepLearningProf
   const aiCoachingFocus = buildCoachingFocus(topWeaknessKey, weaknesses);
   const practiceRecommendation = buildPracticeRecommendation(topWeaknessKey);
 
+  const suggestionOutcomes = computeSuggestionOutcomes(window);
+  const avgCallProbabilityGain = computeAvgProbGain(window);
+
   return {
     updatedAt: new Date().toISOString(),
     callsAnalyzed: window.length,
@@ -110,6 +113,8 @@ export function computeLearningProfile(sessions: CallSession[]): RepLearningProf
     aiCoachingFocus,
     practiceRecommendation,
     topWeaknessKey,
+    suggestionOutcomes,
+    avgCallProbabilityGain,
   };
 }
 
@@ -209,4 +214,60 @@ function buildPracticeRecommendation(key: keyof WeaknessScores): string {
     case 'closingConfidence':  return 'Work on your closing — you rarely reach the close stage.';
     case 'discoveryDepth':     return 'Start calls with more discovery questions before pitching.';
   }
+}
+
+function computeAvgProbGain(sessions: CallSession[]): number {
+  if (sessions.length === 0) return 0;
+  const gains = sessions.map(s => s.finalCloseProbability - 50); // baseline 50%
+  return Math.round(mean(gains));
+}
+
+function computeSuggestionOutcomes(sessions: CallSession[]): SuggestionOutcomes | undefined {
+  // Collect all suggestions that have probabilityAtTime set (new tracking field)
+  const typed: Record<SuggestionType, number[]> = {
+    'tip': [],
+    'objection-response': [],
+    'close-attempt': [],
+    'discovery': [],
+  };
+
+  for (const session of sessions) {
+    const finalProb = session.finalCloseProbability;
+    const suggestions = session.suggestions.filter(s => typeof s.probabilityAtTime === 'number');
+    if (suggestions.length === 0) continue;
+
+    // Sort by timestamp so we can estimate the probability trajectory per suggestion
+    const sorted = [...suggestions].sort((a, b) => a.timestampSeconds - b.timestampSeconds);
+
+    for (let i = 0; i < sorted.length; i++) {
+      const s = sorted[i];
+      const probAtTime = s.probabilityAtTime!;
+      // Estimate prob ~60s later: use next suggestion's probabilityAtTime if within 90s, else use finalProb
+      const next = sorted[i + 1];
+      const probAfter = next && (next.timestampSeconds - s.timestampSeconds) <= 90
+        ? next.probabilityAtTime!
+        : finalProb;
+      const delta = probAfter - probAtTime;
+      typed[s.type].push(delta);
+    }
+  }
+
+  const totalSamples = Object.values(typed).reduce((sum, arr) => sum + arr.length, 0);
+  if (totalSamples < 5) return undefined; // not enough data yet
+
+  const avgs: Record<SuggestionType, number> = {
+    'tip': typed['tip'].length > 0 ? Math.round(mean(typed['tip'])) : 0,
+    'objection-response': typed['objection-response'].length > 0 ? Math.round(mean(typed['objection-response'])) : 0,
+    'close-attempt': typed['close-attempt'].length > 0 ? Math.round(mean(typed['close-attempt'])) : 0,
+    'discovery': typed['discovery'].length > 0 ? Math.round(mean(typed['discovery'])) : 0,
+  };
+
+  const mostEffectiveType = (Object.entries(avgs) as [SuggestionType, number][])
+    .sort((a, b) => b[1] - a[1])[0][0];
+
+  return {
+    ...avgs,
+    mostEffectiveType,
+    sampleSize: totalSamples,
+  };
 }

@@ -512,12 +512,12 @@
 .analytics__detail-table tr:last-child td { border-bottom: none; }
 .analytics__detail-table tr:hover td { background: rgba(255,255,255,0.02); }
 
-.analytics__detail-val--high   { color: #39d353 !important; font-weight: 700; }
-.analytics__detail-val--medium { color: #f0e040 !important; font-weight: 700; }
-.analytics__detail-val--low    { color: #ff4444 !important; font-weight: 700; }
+.analytics__detail-val--high   { color: var(--color-accent-green) !important; font-weight: 700; }
+.analytics__detail-val--medium { color: var(--color-accent-yellow) !important; font-weight: 700; }
+.analytics__detail-val--low    { color: var(--color-accent-red) !important; font-weight: 700; }
 
-.analytics__detail-trend--up   { color: #39d353; font-weight: 700; }
-.analytics__detail-trend--down { color: #ff4444; font-weight: 700; }
+.analytics__detail-trend--up   { color: var(--color-accent-green); font-weight: 700; }
+.analytics__detail-trend--down { color: var(--color-accent-red); font-weight: 700; }
 .analytics__detail-trend--flat { color: var(--color-text-muted); }
 
 .analytics__detail-stage {

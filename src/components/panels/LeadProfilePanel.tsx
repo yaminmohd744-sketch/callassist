@@ -39,6 +39,12 @@ export function LeadProfilePanel({ config, closeProbability, objectionsCount, no
               <span className="lead-panel__field-val">{config.company}</span>
             </div>
           )}
+          {config.prospectTitle && (
+            <div className="lead-panel__field">
+              <span className="lead-panel__field-key">Role</span>
+              <span className="lead-panel__field-val lead-panel__field-val--muted">{config.prospectTitle}</span>
+            </div>
+          )}
           {config.callType && (
             <div className="lead-panel__field">
               <span className="lead-panel__field-key">Type</span>
@@ -49,6 +55,12 @@ export function LeadProfilePanel({ config, closeProbability, objectionsCount, no
             <div className="lead-panel__field lead-panel__field--block">
               <span className="lead-panel__field-key">Goal</span>
               <span className="lead-panel__field-val lead-panel__field-val--muted">{config.callGoal}</span>
+            </div>
+          )}
+          {config.priorContext && (
+            <div className="lead-panel__field lead-panel__field--block">
+              <span className="lead-panel__field-key">Context</span>
+              <span className="lead-panel__field-val lead-panel__field-val--muted lead-panel__field-val--context">{config.priorContext}</span>
             </div>
           )}
           {!config.prospectName && !config.company && !config.callGoal && (

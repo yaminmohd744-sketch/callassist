@@ -146,7 +146,7 @@
 
 .auth-btn--primary {
   background: var(--color-accent-gradient);
-  color: #ffffff;
+  color: var(--color-text-on-accent);
   border-color: transparent;
 }
 

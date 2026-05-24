@@ -46,6 +46,7 @@ export interface AISuggestion {
   isFallback?: boolean;
   physicalAction?: string;
   physicalIcon?: string;
+  probabilityAtTime?: number; // close probability when this suggestion fired
 }
 
 // ─── Call State ──────────────────────────────────────────────────────────────
@@ -80,14 +81,6 @@ export interface ToneCoaching {
   tone: ProspectTone;
   move: string;
   say: string;
-}
-
-export interface SessionSummary {
-  headline: string;
-  assessment: string;
-  strengths: string[];
-  improvements: string[];
-  keyTakeaway: string;
 }
 
 // ─── Coaching ────────────────────────────────────────────────────────────────
@@ -172,9 +165,7 @@ export interface LearningLogEntry {
   achieved?: boolean;
 }
 
-// ─── Lead ─────────────────────────────────────────────────────────────────────
-
-// ─── CRM Package ──────────────────────────────────────────────────────────────
+// ─── Lead & CRM ───────────────────────────────────────────────────────────────
 
 export type CrmSource = 'salesforce' | 'hubspot' | 'pipedrive' | 'apollo' | 'zoho' | 'custom';
 
@@ -225,6 +216,17 @@ export interface WeaknessScores {
 
 export type Trajectory = 'improving' | 'declining' | 'stable';
 
+export interface SuggestionOutcomes {
+  // For each suggestion type: avg probability delta observed in the 60s after the suggestion fired
+  tip: number;
+  'objection-response': number;
+  'close-attempt': number;
+  discovery: number;
+  // Which type has been most effective for this rep
+  mostEffectiveType: SuggestionType;
+  sampleSize: number;
+}
+
 export interface RepLearningProfile {
   updatedAt: string;
   callsAnalyzed: number;
@@ -239,6 +241,8 @@ export interface RepLearningProfile {
   aiCoachingFocus: string;
   practiceRecommendation: string;
   topWeaknessKey: keyof WeaknessScores;
+  suggestionOutcomes?: SuggestionOutcomes;
+  avgCallProbabilityGain?: number; // avg (finalProb - initialProb) across all calls
 }
 
 export function isCoachingWalkthrough(v: unknown): v is CoachingWalkthrough {

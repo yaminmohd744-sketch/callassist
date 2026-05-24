@@ -498,7 +498,7 @@ export function DashboardScreen({
           </div>
           <div className="dashboard__stat-card">
             <div className="dashboard__stat-val dashboard__stat-val--high">
-              {totalCalls ? formatDuration(Math.round(pastSessions.reduce((sum, s) => sum + s.durationSeconds, 0) / totalCalls)) : '-'}
+              {totalCalls ? formatDuration(Math.round(sessions.reduce((sum, s) => sum + s.durationSeconds, 0) / totalCalls)) : '-'}
             </div>
             <div className="dashboard__stat-label">{t.dashboard.avgDuration.toUpperCase()}</div>
           </div>

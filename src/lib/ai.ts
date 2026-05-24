@@ -237,6 +237,7 @@ export async function analyzeTranscript(
       triggeredBy: newEntry.text,
       timestampSeconds: elapsedSeconds,
       streaming: false,
+      probabilityAtTime: currentProbability,
     };
 
     if (onStream) onStream(suggestion);

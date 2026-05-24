@@ -50,10 +50,10 @@ Deno.serve(async (req: Request) => {
       .map((s) => `- [${s.type}] ${s.headline}: triggered by "${s.triggeredBy}"`)
       .join("\n");
 
-    const systemPrompt = `You are a senior sales manager writing a post-call deal debrief for a B2B sales rep.
+    const systemPrompt = `You are a senior sales manager writing a post-call deal debrief and coaching report for a B2B sales rep.
 
 Respond ONLY with valid JSON — no markdown, no extra text.
-Schema: { "aiSummary": string, "followUpEmail": string, "leadScore": number }
+Schema: { "aiSummary": string, "followUpEmail": string, "leadScore": number, "coaching": { "overallVerdict": string, "whatWentWell": [{"point": string, "salesNote": string}], "areasToImprove": [{"point": string, "salesNote": string}], "keyMoments": [{"timestampSeconds": number, "label": string, "note": string}], "nextCallTip": string } }
 
 - "aiSummary": A structured debrief using EXACTLY these 6 sections in this order, each on its own line with a blank line between sections. Use bullet points (•) for list items. Be specific — reference actual things said in the call, not generic advice.
 
@@ -81,7 +81,13 @@ NEXT STEPS:
 [Add more numbered steps if needed]
 
 - "followUpEmail": A complete follow-up email the rep can send immediately. Include subject line at the top (format: "Subject: ..."). Personalize it to the actual conversation. Professional but not stiff.
-- "leadScore": Integer 0-100. Weight: close probability (50%), buying signals (25%), minus objections (25%).${langNote}`;
+- "leadScore": Integer 0-100. Weight: close probability (50%), buying signals (25%), minus objections (25%).
+- "coaching": A tactical coaching debrief for the rep (not for the prospect). Be direct and specific — reference actual moments from the call transcript.
+  - "overallVerdict": 1-2 sentences — overall assessment of how well the rep executed. Be honest.
+  - "whatWentWell": 2-4 items. Each "point" is a concise skill the rep demonstrated (e.g. "Strong discovery questioning"), "salesNote" is a 1-sentence explanation referencing what they actually said or did.
+  - "areasToImprove": 2-3 items. Each "point" is a specific coaching area (e.g. "Failed to handle price objection"), "salesNote" explains what they should have done differently — actionable, not generic.
+  - "keyMoments": 2-4 turning points from the transcript. Each needs a "timestampSeconds" (integer from the transcript), a "label" (e.g. "Objection raised", "Buying signal missed"), and a "note" (what happened and why it mattered — 1 sentence).
+  - "nextCallTip": One sharp sentence — the single most impactful thing this rep should focus on in their next call.${langNote}`;
 
     const safeProspectName = sanitize(config?.prospectName, 80);
     const safeProspectTitle = sanitize(config?.prospectTitle, 80);
@@ -122,7 +128,7 @@ ${formattedSuggestions || "(none)"}`;
           { role: "user", content: userMessage },
         ],
         response_format: { type: "json_object" },
-        max_tokens: 1400,
+        max_tokens: 2200,
         temperature: 0.5,
       }),
     });

@@ -1094,3 +1094,53 @@
   from { opacity: 0; transform: translateY(-16px) scale(0.9); }
   to   { opacity: 1; transform: translateY(0)     scale(1); }
 }
+
+/* ── Coaching section (summary tab) ─────────────────────────────────────────── */
+
+.postcall__coaching-section {
+  margin-top: var(--space-4);
+}
+
+.postcall__coaching-item {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent-magenta);
+  border-radius: var(--border-radius-sm);
+}
+
+.postcall__coaching-point {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.postcall__coaching-note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.postcall__next-tip {
+  margin-top: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-accent-purple-dim);
+  border: 1px solid var(--color-border-bright);
+  border-radius: var(--border-radius-md);
+}
+
+.postcall__next-tip-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-magenta);
+  margin-bottom: var(--space-2);
+}
+
+.postcall__next-tip-body {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}

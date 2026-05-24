@@ -36,6 +36,8 @@
   --color-text-secondary: rgba(240, 235, 255, 0.65);
   --color-text-muted:     rgba(240, 235, 255, 0.32);
   --color-text-accent:    #c026d3;
+  --color-text-on-accent: #ffffff; /* text on filled accent buttons — always white */
+  --color-accent-purple-dark: #6d28d9; /* hover state for primary buttons */
 
   /* ─── Typography ─────────────────────────────────────────────── */
   --font-sans:    'Clash Display', system-ui, -apple-system, sans-serif;

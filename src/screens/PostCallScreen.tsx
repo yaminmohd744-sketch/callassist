@@ -312,6 +312,24 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
                 ))}
               </div>
             )}
+            {session.coaching && session.coaching.areasToImprove.length > 0 && (
+              <div className="postcall__coaching-section">
+                <div className="postcall__summary-spacer" />
+                <div className="postcall__summary-heading">COACHING NOTES</div>
+                {session.coaching.areasToImprove.map((item, i) => (
+                  <div key={i} className="postcall__coaching-item">
+                    <div className="postcall__coaching-point">⚑ {item.point}</div>
+                    {item.salesNote && <div className="postcall__coaching-note">{item.salesNote}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
+            {session.coaching?.nextCallTip && (
+              <div className="postcall__next-tip">
+                <div className="postcall__next-tip-label">NEXT CALL TIP</div>
+                <div className="postcall__next-tip-body">{session.coaching.nextCallTip}</div>
+              </div>
+            )}
           </div>
         )}
 
