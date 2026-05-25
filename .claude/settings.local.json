@@ -152,7 +152,10 @@
       "Bash(grep -rn \":\\\\s*#[0-9a-fA-F]\\\\{3,8\\\\}\\\\b\" src --include=\"*.css\")",
       "Bash(sed -i 's/  color: #fff;/  color: var\\(--color-text-on-accent\\);/g' src/components/layout/AppShell.css)",
       "Bash(sed -i 's/  background: #fff;/  background: var\\(--color-text-on-accent\\);/g' src/components/layout/AppShell.css)",
-      "Bash(sed -i 's/background: #fff; }/background: var\\(--color-text-on-accent\\); }/g' src/components/layout/AppShell.css)"
+      "Bash(sed -i 's/background: #fff; }/background: var\\(--color-text-on-accent\\); }/g' src/components/layout/AppShell.css)",
+      "Bash(code \"c:\\\\Users\\\\User\\\\callassist\\\\marketing\\\\carousels\\\\INDEX.md\")",
+      "PowerShell(code \"c:\\\\Users\\\\User\\\\callassist\\\\marketing\\\\carousels\\\\INDEX.md\")",
+      "PowerShell(Start-Process \"c:\\\\Users\\\\User\\\\callassist\\\\marketing\\\\carousels\\\\INDEX.md\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\callassist\\.claude\\skills"

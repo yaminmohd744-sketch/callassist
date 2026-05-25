@@ -10,6 +10,7 @@ import './LandingScreen.css';
 
 interface LandingScreenProps {
   onDownload: () => void;
+  onViewCarousels?: () => void;
 }
 
 type SectionId = 'features' | 'languages' | 'pricing' | 'download' | 'changelog' | 'help' | 'about' | 'blog' | 'careers' | 'contact' | 'privacy' | 'terms' | 'cookies';
@@ -274,7 +275,7 @@ function WinLogo() {
 }
 
 
-export function LandingScreen({ onDownload }: LandingScreenProps) {
+export function LandingScreen({ onDownload, onViewCarousels }: LandingScreenProps) {
   const [visibleFrames, setVisibleFrames]       = useState(1);
   const [menuOpen, setMenuOpen]                 = useState(false);
   const [featureTabIdx, setFeatureTabIdx]       = useState(0);
@@ -1861,6 +1862,9 @@ export function LandingScreen({ onDownload }: LandingScreenProps) {
             <div className="lp__footer-col-title">Resources</div>
             <button className="lp__footer-link" onClick={() => goSection('languages')}>Languages</button>
             <button className="lp__footer-link" onClick={() => goSection('help')}>Help Center</button>
+            {onViewCarousels && (
+              <button className="lp__footer-link" onClick={onViewCarousels}>Content Carousels</button>
+            )}
           </div>
 
           {/* Company */}

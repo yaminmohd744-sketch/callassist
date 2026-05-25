@@ -30,6 +30,7 @@ const UploadCallScreen = lazy(() => import('./screens/UploadCallScreen').then(m 
 const LeadsScreen      = lazy(() => import('./screens/LeadsScreen').then(m => ({ default: m.LeadsScreen })));
 const AuthScreen       = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })));
 const OnboardingScreen = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
+const MarketingCarouselsScreen = lazy(() => import('./screens/MarketingCarouselsScreen').then(m => ({ default: m.MarketingCarouselsScreen })));
 
 // One-time migration: move localStorage outcomes into Supabase call_sessions rows
 async function migrateOutcomes(userId: string): Promise<void> {
@@ -113,7 +114,7 @@ const INITIAL_THEME = (
 ) as 'dark' | 'light';
 applyTheme(INITIAL_THEME);
 
-type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
+type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call' | 'marketing-carousels';
 
 // ─── App ─────────────────────────────────────────────────────────────────────
 
@@ -174,11 +175,13 @@ export function App() {
 
   // In the browser (non-Electron), always stay on the landing page regardless of auth state.
   // The full app only runs inside Electron.
-  const currentScreen: Screen = (!isElectron && screen === 'landing')
-    ? 'landing'
-    : (user && (screen === 'landing' || screen === 'auth'))
-      ? 'dashboard'
-      : screen;
+  const currentScreen: Screen = screen === 'marketing-carousels'
+    ? 'marketing-carousels'
+    : (!isElectron && screen === 'landing')
+      ? 'landing'
+      : (user && (screen === 'landing' || screen === 'auth'))
+        ? 'dashboard'
+        : screen;
 
   useEffect(() => {
     if (user) Sentry.setUser({ id: user.id, email: user.email ?? undefined });
@@ -235,7 +238,7 @@ export function App() {
 
   // Guard: in the web app (non-Electron) bounce any non-landing screen back to landing.
   useEffect(() => {
-    if (!isElectron && screen !== 'landing' && screen !== 'auth') setScreen('landing');
+    if (!isElectron && screen !== 'landing' && screen !== 'auth' && screen !== 'marketing-carousels') setScreen('landing');
   }, [screen]);
 
   // Guard: if we land on live-call or post-call without required state, go to dashboard.
@@ -311,11 +314,19 @@ export function App() {
 
   // In the web app, always show the landing page regardless of auth state.
   // The full app (dashboard, calls, etc.) only runs inside the Electron desktop app.
+  if (screen === 'marketing-carousels') {
+    return (
+      <Suspense fallback={<div className="app-loading" />}>
+        <MarketingCarouselsScreen onBack={() => setScreen('landing')} />
+      </Suspense>
+    );
+  }
+
   if (!isElectron && screen === 'landing') {
     return (
       <>
         <ErrorBoundary>
-          <LandingScreen onDownload={() => {
+          <LandingScreen onViewCarousels={() => setScreen('marketing-carousels')} onDownload={() => {
             // Internal deep-link only — never route user-supplied input through here
             const DESKTOP_PROTOCOL = 'pitchr://open' as const;
             const iframe = document.createElement('iframe');
