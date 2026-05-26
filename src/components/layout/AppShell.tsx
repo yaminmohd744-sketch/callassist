@@ -96,7 +96,9 @@ export function AppShell({
               className="app-shell__lang-btn"
               onClick={() => { setProfileOpen(false); setLangOpen(o => !o); }}
               title={`${t.profile.appLanguage}: ${currentLangLabel}`}
+              aria-label={`${t.profile.appLanguage}: ${currentLangLabel}`}
               aria-expanded={langOpen}
+              aria-haspopup="true"
             >
               <img
                 className="app-shell__lang-flag-img"
@@ -141,7 +143,9 @@ export function AppShell({
               className="app-shell__avatar"
               onClick={() => { setLangOpen(false); setProfileOpen(o => !o); }}
               title={userName || userEmail}
+              aria-label={`Profile: ${userName || userEmail}`}
               aria-expanded={profileOpen}
+              aria-haspopup="true"
             >
               {profilePic
                 ? <img

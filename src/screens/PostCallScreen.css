@@ -412,8 +412,8 @@
   color: var(--color-text-muted);
   margin: 0;
   padding: 4px 8px;
-  border-left: 2px solid #f59e0b;
-  background: rgba(245, 158, 11, 0.06);
+  border-left: 2px solid var(--color-accent-yellow);
+  background: rgba(234, 179, 8, 0.06);
   border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
   line-height: 1.4;
 }
@@ -447,7 +447,7 @@
   font-family: var(--font-display);
   font-size: var(--font-size-xs);
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-on-accent);
   cursor: pointer;
 }
 .postcall__webhook-btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -491,13 +491,13 @@
   box-shadow: inset 0 0 0 12px var(--color-bg-surface);
 }
 .scorecard__score-ring--high  { --ring-color: var(--color-accent-green); }
-.scorecard__score-ring--medium { --ring-color: #f0c040; }
+.scorecard__score-ring--medium { --ring-color: var(--color-accent-yellow); }
 .scorecard__score-ring--low   { --ring-color: var(--color-accent-red); }
 
 .scorecard__score-num {
   font-size: var(--font-size-2xl);
   font-weight: 700;
-  color: #ffffff;
+  color: var(--color-text-primary);
   line-height: 1;
 }
 
@@ -544,7 +544,7 @@
   font-weight: 600;
 }
 .scorecard__metric-value--high   { color: var(--color-accent-green); }
-.scorecard__metric-value--medium { color: #f0c040; }
+.scorecard__metric-value--medium { color: var(--color-accent-yellow); }
 .scorecard__metric-value--low    { color: var(--color-accent-red); }
 
 .scorecard__gauge {
@@ -559,7 +559,7 @@
   border-radius: var(--border-radius-pill);
 }
 .scorecard__gauge-fill--high   { background: var(--color-accent-green); }
-.scorecard__gauge-fill--medium { background: #f0c040; }
+.scorecard__gauge-fill--medium { background: var(--color-accent-yellow); }
 .scorecard__gauge-fill--low    { background: var(--color-accent-red); }
 
 .scorecard__ratio-bar {
@@ -806,7 +806,7 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: var(--color-accent, #814ac8);
+  color: var(--color-accent-purple);
   background: rgba(129, 74, 200, 0.08);
   border: 1px solid rgba(129, 74, 200, 0.25);
   border-radius: var(--border-radius-pill);

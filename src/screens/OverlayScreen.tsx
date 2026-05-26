@@ -75,6 +75,7 @@ export function OverlayScreen() {
             className="ov__btn-icon"
             onClick={() => setExpanded(e => !e)}
             title={expanded ? 'Collapse' : 'Expand'}
+            aria-label={expanded ? 'Collapse' : 'Expand'}
           >
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
               {expanded

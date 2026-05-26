@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import './IntroScreen.css';
 
 interface IntroScreenProps {
@@ -12,15 +12,17 @@ const PLUS  = ['P', 'L', 'U', 'S'];
 
 export function IntroScreen({ onDone }: IntroScreenProps) {
   const [phase, setPhase] = useState<Phase>('dark');
+  const onDoneRef = useRef(onDone);
+  useLayoutEffect(() => { onDoneRef.current = onDone; }, [onDone]);
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase('plus'),  200);
     const t2 = setTimeout(() => setPhase('words'), 800);
     const t3 = setTimeout(() => setPhase('tag'),   2000);
     const t4 = setTimeout(() => setPhase('exit'),  3300);
-    const t5 = setTimeout(onDone,                  4150);
+    const t5 = setTimeout(() => onDoneRef.current(), 4150);
     return () => [t1, t2, t3, t4, t5].forEach(clearTimeout);
-  }, [onDone]);
+  }, []);
 
   const wordsIn = phase === 'words' || phase === 'tag' || phase === 'exit';
 

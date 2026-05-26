@@ -168,8 +168,9 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
           <div className="upload-call__section-label">CALL DETAILS</div>
           <div className="upload-call__fields">
             <div className="upload-call__field">
-              <label className="upload-call__label">Prospect Name</label>
+              <label htmlFor="upload-prospect-name" className="upload-call__label">Prospect Name</label>
               <input
+                id="upload-prospect-name"
                 className="upload-call__input"
                 placeholder="Jane Smith"
                 value={prospectName}
@@ -177,8 +178,9 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
               />
             </div>
             <div className="upload-call__field">
-              <label className="upload-call__label">Company</label>
+              <label htmlFor="upload-company" className="upload-call__label">Company</label>
               <input
+                id="upload-company"
                 className="upload-call__input"
                 placeholder="Acme Corp"
                 value={company}
@@ -186,8 +188,9 @@ export function UploadCallScreen({ onEndCall, onBack }: UploadCallScreenProps) {
               />
             </div>
             <div className="upload-call__field upload-call__field--wide">
-              <label className="upload-call__label">Call Goal</label>
+              <label htmlFor="upload-call-goal" className="upload-call__label">Call Goal</label>
               <input
+                id="upload-call-goal"
                 className="upload-call__input"
                 placeholder="Book a discovery meeting"
                 value={callGoal}

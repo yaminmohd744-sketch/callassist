@@ -1,4 +1,5 @@
 
+import { useMemo } from 'react';
 import { SuggestionCard } from '../cards/SuggestionCard';
 import type { AISuggestion, CallStage, ProspectTone } from '../../types';
 import { useTranslations } from '../../hooks/useTranslations';
@@ -24,12 +25,12 @@ export function AIIntelligencePanel({
 }: AIIntelligencePanelProps) {
   const t = useTranslations();
 
-  const STAGE_LABEL: Record<CallStage, string> = {
+  const STAGE_LABEL = useMemo<Record<CallStage, string>>(() => ({
     opener:    t.liveCall.stageOpener,
     discovery: t.liveCall.stageDiscovery,
     pitch:     t.liveCall.stagePitch,
     close:     t.liveCall.stageClose,
-  };
+  }), [t]);
 
   // Filter out suggestions older than 90 seconds so stale coaching doesn't linger.
   const fresh = suggestions.filter(s =>

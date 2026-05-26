@@ -101,7 +101,7 @@ const EXP_SUMMARY_LABEL: Record<string, string> = {
 };
 
 function flagUrl(code: LanguageCode) {
-  return `https://flagcdn.com/w40/${code.split('-')[1].toLowerCase()}.png`;
+  return `https://flagcdn.com/w40/${(code.split('-')[1] ?? code).toLowerCase()}.png`;
 }
 
 export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
@@ -611,6 +611,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
                   className="ob__ready-row-icon ob__ready-row-flag"
                   src={flagUrl(selectedLang.code)}
                   alt=""
+                  onError={e => { e.currentTarget.style.display = 'none'; }}
                 />
                 <span className="ob__ready-row-label">Language</span>
                 <span className="ob__ready-row-val">{selectedLang.label}</span>

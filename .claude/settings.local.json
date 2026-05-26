@@ -157,7 +157,8 @@
       "PowerShell(code \"c:\\\\Users\\\\User\\\\callassist\\\\marketing\\\\carousels\\\\INDEX.md\")",
       "PowerShell(Start-Process \"c:\\\\Users\\\\User\\\\callassist\\\\marketing\\\\carousels\\\\INDEX.md\")",
       "Bash(Invoke-WebRequest -Uri \"http://localhost:5173\" -UseBasicParsing -TimeoutSec 5)",
-      "Bash(Select-Object -ExpandProperty StatusCode)"
+      "Bash(Select-Object -ExpandProperty StatusCode)",
+      "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,6\\\\}\" c:/Users/User/callassist/src/screens/DashboardScreen.css c:/Users/User/callassist/src/screens/PreCallScreen.css c:/Users/User/callassist/src/screens/LiveCallScreen.css c:/Users/User/callassist/src/screens/PostCallScreen.css)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\callassist\\.claude\\skills"
