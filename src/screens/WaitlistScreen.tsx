@@ -8,13 +8,6 @@ interface WaitlistScreenProps {
 
 const SOCIAL_PROOF_COUNT = 1_847;
 
-const FEATURES = [
-  { icon: '◎', text: 'Real-time objection coaching — mid-call, not post-mortem' },
-  { icon: '✦', text: 'Works on phone calls, Zoom, Teams, and Meet' },
-  { icon: '⊕', text: 'Coaches in 10 languages — not just English' },
-  { icon: '◈', text: 'Body language AI reads your confidence in real time' },
-  { icon: '↗', text: 'Built-in CRM — every call saved automatically' },
-];
 
 export function WaitlistScreen({ onBack }: WaitlistScreenProps) {
   const [email, setEmail]         = useState('');
