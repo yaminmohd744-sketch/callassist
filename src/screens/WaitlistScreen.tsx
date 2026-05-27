@@ -139,12 +139,6 @@ export function WaitlistScreen({ onBack }: WaitlistScreenProps) {
           ))}
         </div>
 
-        {/* Competitor comparison line */}
-        <div className="wl__compare">
-          <span className="wl__compare-them">Gong: $240/user/month, post-call only</span>
-          <span className="wl__compare-sep">vs</span>
-          <span className="wl__compare-us">Pitchr: $39/month, real-time, works solo</span>
-        </div>
 
       </div>
 
