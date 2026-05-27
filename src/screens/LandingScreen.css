@@ -1292,6 +1292,17 @@
   font-weight: 400;
   position: relative;
 }
+.lp__cta-banner-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  position: relative;
+}
+.lp__cta-banner-wl {
+  font-size: 14px;
+}
 .lp__cta-banner-note {
   margin-top: var(--space-4);
   font-size: var(--font-size-sm);

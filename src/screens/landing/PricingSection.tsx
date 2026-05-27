@@ -32,16 +32,16 @@ export function PricingSection({ billingCycle, setBillingCycle, openFaq, setOpen
   const yearly = billingCycle === 'yearly';
   const PLANS = [
     {
-      tier: 'STARTER',
-      monthlyPrice: 19,
-      yearlyPrice: 16,
+      tier: 'BASIC',
+      monthlyPrice: 14.99,
+      yearlyPrice: 12.99,
       desc: 'For reps learning the ropes.',
       cta: 'Get for Windows',
       ctaStyle: 'outline' as const,
       badge: null,
       highlight: false,
       features: [
-        '15 live calls / month',
+        '30 live calls / month',
         'English & Spanish only',
         'Basic post-call summary',
         'Community support',
@@ -49,16 +49,16 @@ export function PricingSection({ billingCycle, setBillingCycle, openFaq, setOpen
       missing: ['More languages', 'Analytics', 'Call upload'],
     },
     {
-      tier: 'PRO',
-      monthlyPrice: 49,
-      yearlyPrice: 41,
+      tier: 'PLUS',
+      monthlyPrice: 39,
+      yearlyPrice: 32.99,
       desc: 'For reps ready to level up.',
       cta: 'Get for Windows',
       ctaStyle: 'primary' as const,
       badge: 'MOST POPULAR',
       highlight: true,
       features: [
-        '60 live calls / month',
+        '100 live calls / month',
         '6 languages',
         'Full post-call analysis + follow-up email',
         'Basic analytics',
@@ -67,7 +67,7 @@ export function PricingSection({ billingCycle, setBillingCycle, openFaq, setOpen
       missing: ['All 10 languages', 'Advanced analytics', 'Call upload'],
     },
     {
-      tier: 'BUSINESS',
+      tier: 'PRO',
       monthlyPrice: 59,
       yearlyPrice: 49,
       desc: 'Full access. No ceilings.',

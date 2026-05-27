@@ -1,184 +1,166 @@
 # Pitchr — Marketing Strategy
-*Generated: May 2026*
+_Generated: 2026-05-27_
 
 ---
 
 ## A — Market Positioning
 
-### Vs. Each Competitor
+### Positioning vs. Each Competitor
 
-| Competitor | Positioning Statement |
-|---|---|
-| **Gong** | Gong autopsies lost deals. Pitchr prevents them — in the moment, on the call. |
-| **Chorus by ZoomInfo** | Chorus is a feature bolted onto a platform you overpay for. Pitchr is the whole tool. |
-| **Salesloft** | Salesloft is a sequencing engine with a broken phone. Pitchr is built for the call itself. |
-| **Orum** | Orum gets you connected. Pitchr makes sure you don't fumble it when you are. |
-| **Wingman / Clari Copilot** | Wingman coaches Zoom calls in English. Pitchr coaches every call, in 10 languages. |
-| **Salesken** | Salesken requires a sales call to buy a sales tool. Pitchr is self-serve — start in minutes. |
-| **Avoma** | Avoma takes notes. Pitchr coaches. Completely different job. |
-| **Fireflies.ai** | Fireflies tells you what was said. Pitchr tells you what to say next. |
+| Competitor | Positioning statement |
+|-----------|----------------------|
+| **Gong** | Gong coaches managers watching old recordings. Pitchr coaches reps winning live calls. |
+| **Chorus by ZoomInfo** | Chorus costs $13K+/year for a 10-rep team and still only tells you what went wrong. Pitchr tells you what to say while you still have the chance. |
+| **Salesloft** | Salesloft gets you to the call. Pitchr wins the call. |
+| **Orum** | Orum connects the dial. Pitchr closes the deal. |
+| **Clari Copilot** | Clari Copilot is enterprise software that takes months to deploy. Pitchr is 60 seconds to install and works on day 1 — for $39/month. |
+| **Salesken** | Salesken requires a sales process just to buy it. Pitchr is self-serve, no demo required, start free today. |
+| **Avoma** | Avoma takes meeting notes. Pitchr changes outcomes. |
+| **Fireflies.ai** | Fireflies transcribes calls. Pitchr transforms them. |
 
-### The Single Most Exploitable Gap
+### The Single Most Exploitable Market Gap
 
-**Real-time AI coaching that works on plain phone calls, at a price individual reps can afford, across multiple languages — this does not exist anywhere else in the market.**
+**Every major competitor is post-call only** — they analyze and debrief *after* the conversation is over. This is coaching that arrives too late. The deal is already won or lost. Pitchr is the only affordable, self-serve, real-time coaching tool that works on *any* call type and requires zero enterprise procurement.
 
-Every real-time coaching tool requires Zoom or Teams, enterprise procurement, or both. Every affordable tool is post-call only. Pitchr fills the exact hole at the intersection: real-time + phone-first + self-serve + multilingual.
+The gap is: **real-time + affordable + no IT required + works on phone calls + solo-rep friendly.**
 
-### Pitchr's Primary Differentiator Statement
+No single competitor ticks all five. Pitchr ticks all five.
 
-> **"The only AI coach that listens to your actual call — not just your Zoom — and tells you exactly what to say before you lose the deal."**
+### Primary Differentiator Statement
+
+> **Pitchr is the unfair advantage on every call — the only AI coach that tells you exactly what to say, in the moment, before the prospect hangs up.**
 
 ---
 
 ## B — Target Audience Breakdown
 
 ### Persona 1: Solo SDR / BDR
-**Who they are:** 22–28, individual contributor, 1–3 years in sales. Cold calling 50–100 numbers a day. Trying to hit quota, often alone or in a small pod. Maybe remote. Under constant pressure. May be grinding on the side while building skills.
+**Who they are:** 1–3 years in sales, doing 50–100 outbound dials/day, hitting quota inconsistently, probably at a startup or small team. No dedicated sales coach. Learning mostly by failing.
 
-**#1 Pain:** Phone anxiety + objection panic. They know what to say in theory but freeze the second a prospect pushes back. The unpredictability of the call is what kills them. "What if they say something I don't know how to handle?"
+**Their #1 pain:** Freezing up when an objection hits. Knowing what to say in the *moment* is the skill they haven't built yet. They've watched all the YouTube training — but when the prospect says "we already have something for that," the brain goes blank.
 
-**What they search/scroll for:**
-- "How to handle price objection cold call"
-- "Cold call script objections 2025"
-- "SDR tips" / "BDR tips" Reddit, TikTok
-- LinkedIn posts from top SDR coaches
-- "Sales objection comebacks" carousels
+**What they search/scroll for:** Objection handling scripts. Cold call tear-downs. "What to say when…" content. Success stories from reps close to their own level.
 
-**What makes them buy:**
-- They believe it will help them not freeze
-- They see a specific objection handled (relatable moment)
-- It's affordable and doesn't require manager approval
-- Free trial removes the risk
-- They identify with the founder/brand ("this was built for someone like me")
+**What makes them buy:** A tool that solves the one specific problem that's costing them commissions right now. Low price (< $50/month). No team-wide deployment needed — works solo. Instant gratification (start today, not in 3 months). Free trial to de-risk it.
 
 ---
 
 ### Persona 2: AE Trying to Close More
-**Who they are:** 26–35, quota-carrying, selling into mid-market or enterprise. Has 5–20 active deals, managing the full sales cycle. Knows sales fundamentals but losing deals to "budget," "not now," or going dark after demo. Confident enough on discovery but inconsistent at close.
+**Who they are:** 3–7 years in sales, quota-carrying, closing mid-market or enterprise deals. Knows the fundamentals but losing deals in the final stages — price objections, "let me think about it," multi-stakeholder ghosting. Has a manager but doesn't want coaching *from* them.
 
-**#1 Pain:** The late-stage loss. They get to final stages but can't close — either they over-talk, don't detect buying signals, or misjudge when to push. One bad call can cost $10K+ in commission. The cost of freezing is much higher for them than an SDR.
+**Their #1 pain:** Deals going dark after a great discovery call. Losing deals at the close they felt certain about. Not knowing if they handled a late-stage objection correctly until the prospect stops responding.
 
-**What they search/scroll for:**
-- "How to close deals faster"
-- "Closing techniques that work"
-- "Deal went dark what to do"
-- "Talk ratio sales" / "active listening sales"
-- Frameworks: MEDDIC, SPIN, Challenger, SPICED
+**What they search/scroll for:** Closing frameworks. Objection handling for late-stage deals. "Why deals go dark" content. Advanced sales psychology.
 
-**What makes them buy:**
-- Close probability meter (they want signal on whether to push or hold)
-- The body language coaching (they're doing video calls, want the edge)
-- Buying signal detection (they're already thinking about this)
-- Post-call follow-up email automation (saves 20 mins per deal)
+**What makes them buy:** A tool that improves close rate measurably. Data they can show their manager (analytics). Confidence that they handled the call correctly. Price is less of an issue — they'll pay $59/month without hesitation if it closes one more deal.
 
 ---
 
 ### Persona 3: Sales Manager / Team Lead
-**Who they are:** 30–45, responsible for 5–15 reps. Spends hours reviewing call recordings, coaching 1:1s, writing playbooks that reps don't use. Watching quota attainment and trying to figure out why some reps succeed and others don't. Fighting churn on their team.
+**Who they are:** Managing 5–15 reps, responsible for team quota, doesn't have time to sit on every rep's call. Wants reps to perform consistently without being babysat. Frustrated that reps keep making the same mistakes on calls.
 
-**#1 Pain:** Inconsistent rep performance at scale. They can't be on every call. Their best coaching advice isn't retained by reps in the moment — reps know the objection handler in the 1:1 and forget it on the call. The knowledge gap is largest when it matters most.
+**Their #1 pain:** Inconsistent rep performance. The top rep closes 70% of their calls; the bottom rep closes 15%. Same product, same market, wildly different results. They can't fix this by adding more training — they need something that works in the moment.
 
-**What they search/scroll for:**
-- "How to improve rep performance"
-- "Sales coaching tools for managers"
-- "Why are my reps losing deals"
-- "Call coaching software" / "sales enablement tools"
-- Articles on reducing ramp time for new reps
+**What they search/scroll for:** Sales team performance tools. Rep coaching at scale. Analytics that show which reps need help and why. Tools that don't require weeks of onboarding.
 
-**What makes them buy:**
-- Ramp time reduction ("my new reps can close faster")
-- Consistency across the team ("everyone handles objections the same way")
-- Post-call analytics + lead scoring (they want data on rep performance)
-- They buy when they see a rep succeed with it — case study > feature list
+**What makes them buy:** Team analytics showing who's improving, who isn't, and why. The ability to see what objections their team is facing. Proof that Pitchr improves close rates (metrics). Easy rollout — no IT, no procurement, no 90-day implementation.
 
 ---
 
 ## C — Winning Content Angles
 
-1. **"The Freeze Frame"** — Recreate the exact moment a rep goes blank on a call. Zero in on that feeling before delivering the solution. **Why it wins:** Universal fear trigger — every SDR has been there, massive relatability = saves.
+1. **The Blank Mind** — "You've done the training. Then the objection hits and your brain goes blank." — _Fear/validation_: the most common SDR experience, never addressed in training.
 
-2. **"48% of SDRs"** — Lead with the stat that nearly half of SDRs are afraid to pick up the phone. Make them feel seen, then reframe it. **Why it wins:** Stat-led hooks dominate the sales niche — people screenshot and share numbers.
+2. **The Post-Call Regret** — "The perfect response came to you 20 minutes after the call ended." — _Validation_: universal sales experience that earns instant trust and massive saves.
 
-3. **"The Real-Time Edge"** — Show the contrast: what a rep does without AI (freezes, stumbles) vs. with Pitchr (calm, guided, closes). **Why it wins:** Before/after is timeless — works for aspiration and curiosity.
+3. **The Secret Weapon** — "Most reps don't know this tool exists." — _Curiosity + FOMO_: triggers immediate scroll-stop and share behavior.
 
-4. **"Objection Kill Kit"** — A framework carousel: 5 most common objections + exact scripts to handle each. Not selling Pitchr at all until the final slide. **Why it wins:** Pure value → saves → follows. Education angle builds trust before the ask.
+4. **Price Shock** — "Gong costs $28,000/year for 10 reps. This costs $39/month." — _Shock + value comparison_: brutal price contrast earns engagement and reshares from outraged reps.
 
-5. **"The $10K Call"** — Frame a single call as carrying $10,000 in commission. Would you walk into it without prep? **Why it wins:** Stakes framing is powerful for AEs — makes inaction feel expensive.
+5. **What to Say When...** — "What to say when they say 'we already have a tool for that'" — _Education + instant value_: screenshottable, saveable, shareable. Builds followers fast.
 
-6. **"Language Isn't a Limit"** — Position the 10-language feature as the unfair advantage for reps selling globally. **Why it wins:** Unique differentiator almost nobody else is shouting about — novelty wins saves.
+6. **The Objection Playbook** — A 7-slide carousel with the top 5 objections and exact word-for-word responses — _Education_: massive save and share rate because it's immediately usable.
 
-7. **"Gong Is Too Late"** — Compare post-call coaching (mortem) vs. real-time coaching (prevention). Never name Gong aggressively — just say "reviewing recordings after the call." **Why it wins:** Reframes the whole category. Curiosity + validation for people who've been burned by post-call-only tools.
+7. **The 48% Stat** — "48% of B2B SDRs fear making cold calls. Here's the fix." — _Stats + hope_: validates pain, then sells the solution.
 
-8. **"The Cold Call Survival Guide"** — A multi-slide how-to for surviving cold call anxiety: mindset, script structure, objection protocol, follow-up. **Why it wins:** Bookmarkable, teachable, builds audience in the SDR niche.
+8. **Phone Call Blind Spot** — "Every AI tool is built for Zoom. 60% of your deals happen on phone calls." — _Education + gap awareness_: nobody is talking about this. Contrarian and shareable.
 
-9. **"Close Probability in Real Time"** — Visualise what a live close probability meter looks like on a call. Show it rising after handling an objection. **Why it wins:** Novelty — people have never seen this concept visualised. Curiosity-first.
+9. **Real-Time vs Post-Mortem** — "Getting coached AFTER you lose a deal is like getting a diagnosis after the funeral." — _Analogy + humor_: emotionally resonant and shareable.
 
-10. **"The Whisper"** — The AI "whispering" the right answer in your ear like a seasoned rep standing beside you. The metaphor sells itself. **Why it wins:** Storytelling + aspiration. The dream scenario for an anxious SDR.
+10. **The New SDR Stack** — "The exact 3 tools top SDRs use in 2025 that their quota-missing peers don't know about." — _Aspiration + FOMO_: listicle format earns fast saves.
 
-11. **"No Demo Required"** — Attack the enterprise sales process that competitors use. You shouldn't need a 45-minute discovery call just to try a sales tool. **Why it wins:** Frustration validation — this is a known pain. Clear CTA to self-serve trial.
+11. **Close Probability POV** — "POV: You're watching your close probability hit 81% in real time." — _Aspiration_: makes the product feel magical, not technical.
 
-12. **"Talk Less, Close More"** — The talk ratio insight: top closers listen 57% of the time. Most reps are at 80%+ talk. **Why it wins:** Counterintuitive data + actionable takeaway — high save potential.
+12. **Language Angle** — "You speak Spanish to your abuela. You close deals in English. Pitchr works in both — and 8 other languages." — _Relatability + differentiation_: uniquely ownable, emotional.
 
-13. **"Body Language on Camera"** — Show the body language coaching angle. Reps don't realise their nonverbal signals are undermining their close. **Why it wins:** Unique feature nobody else has. Curiosity + novelty = shares.
+13. **The 1-Rep Angle** — "Every AI sales tool requires a 10-person team minimum. This one is built for the solo rep grinding it out." — _Underdog solidarity_: resonates deeply with individual contributors who feel overlooked by enterprise tools.
 
-14. **"The Follow-Up That Gets Replies"** — How to write a follow-up email after a sales call that doesn't get ghosted. Organic tip carousel. Product = AI generates it for you in the CTA. **Why it wins:** Extremely searchable pain point for every rep. SEO effect on content.
+14. **The Body Language Card** — "Top closers know: 55% of communication is body language. Your AI coach sees that too." — _Surprise + education_: unique feature nobody else has — inherently shareable.
 
-15. **"From SDR to AE"** — Aspirational career journey angle. How the reps who hit AE fastest all used one habit. **Why it wins:** Aspiration is the most motivating content type for early-career reps. High follow rate.
+15. **The Founder Story** — "I got destroyed on cold calls. I built the tool I wish existed." — _Origin story + relatability_: humanizes the brand and earns trust.
 
 ---
 
 ## D — Platform Strategy
 
 ### Instagram
-**Lead format:** Carousels — 7-10 slides. Carousels are outperforming Reels in saves and reach for B2B SaaS in 2025. Start every carousel with a bold full-bleed stat or pain-trigger on Slide 1.
 
-**Optimal posting frequency:** 4-5x per week. 3 carousels + 1-2 Reels (Reel = repurposed carousel voiceover or product clip). Consistency > volume.
+**Lead format:** Carousels (static slides) — higher save rate, longer shelf life than Reels for this niche. Reels for top-of-funnel reach (use short-form video hooks to drive profile follows).
 
-**Hashtag strategy:**
-- Tier 1 (niche, high engagement): #SDR #BDR #ColdCalling #SalesRep #SalesTips
-- Tier 2 (broader discovery): #SalesLife #CloseMoreDeals #SalesCoaching #B2BSales
-- Tier 3 (reach): #Sales #Entrepreneur #StartupLife
-- Limit to 8-12 hashtags per post (avoid 30-tag spam, kills engagement rate signal)
-- Put hashtags in first comment, not caption body
+**Posting frequency:** 4–5x per week. 3 carousels + 1–2 Reels. Consistency > volume.
 
-**Bio:** "The unfair advantage on every call. AI sales coaching — real-time, on any call. pitchr.org"
+**Content mix:**
+- 40% Education (objection scripts, frameworks, stats) — drives saves and follows
+- 30% Pain/problem awareness — drives comments and shares
+- 20% Product demos/POV — drives conversions
+- 10% Brand/founder story — drives trust
+
+**Hashtag strategy:** 5–8 hashtags max per post. Mix broad (#salestips, #coldcalling) with niche (#SDR, #BDRlife, #salescoach) and branded (#Pitchr). Avoid hashtag stuffing — Instagram algorithm deprioritizes it.
+
+**CTA approach:** "Link in bio for free trial" on education posts. "Comment 'PITCH' and I'll DM you the script" on high-engagement posts (comment-trigger growth hack).
+
+**Profile setup:**
+- Bio: "AI sales coach for every call. Real-time. Solo-friendly. 10 languages. Try free → pitchr.org"
+- Highlight covers: How It Works / Results / Objection Scripts / Pricing
+- Grid aesthetic: Dark (#000000 base), purple gradient accents, clean bold typography
 
 ---
 
 ### TikTok
-**Hooks that work in sales niche:**
-- Open with the pain moment: "I used to go completely blank when a prospect said 'we already have a solution'" — immediate relatability
-- Stat cold open: "48% of salespeople are afraid to pick up the phone" — then cut to why
-- The relatable failure: record yourself fumbling an objection, then show the coached response
-- Pattern interrupt: start mid-sentence or mid-call to grab attention before the algorithm registers a skip
 
-**Content structure:**
-- 0-3s: Hook (pain, stat, or pattern interrupt)
-- 3-15s: Setup / problem exposition
-- 15-40s: The insight / framework / product moment
-- 40-55s: Resolution + CTA
+**What hooks work in the sales niche:**
+- "Stop doing X on your cold calls" (pattern interrupt)
+- "The objection that kills most SDRs — and the exact response" (stakes + solution)
+- "POV: you're 60 seconds into a cold call and this happens…" (immersive)
+- Start with a number: "87% of cold calls end in the first 30 seconds. Here's why yours don't have to."
+- "I used to freeze up when prospects said this. Now I love it." (transformation)
 
-**Tone:** More raw, more personal than Instagram. Voiceover over on-screen text. Authentic energy > polished graphics. Even if the underlying carousel is designed, the TikTok version should feel like you're explaining it to a friend.
+**Content structure for TikTok:**
+- 0–3s: The hook (visual + text overlay + audio drop)
+- 3–15s: Expand the pain or set up the lesson
+- 15–40s: The value / the reveal / the script
+- 40–50s: CTA ("Follow for more. Free trial link in bio.")
 
-**CTA approach:** Soft CTAs perform better than hard sells. "Link in bio to try it" > "Go buy Pitchr now." Use comment-baiting: "Comment 'SCRIPT' and I'll send you the full objection handle." This drives comments which drive reach.
+**Voiceover tone:** Direct. No filler words. Confident but not arrogant. Speak to the rep, not at them. "You've been there." "This fixes that." Not "sales guru" energy — peer energy.
 
-**Trending audio:** Match audio energy to content. Pain/anxiety content = ambient or minor-key background. Win/celebration content = trending upbeat. Product demos = no music, clear voiceover.
+**Music/audio:** Trending lo-fi or hip-hop beats (TikTok library). Match audio energy to content mood — fast-paced tracks for high-energy hooks, calm beats for educational breakdowns.
+
+**CTA approach:** "Follow for daily sales scripts." "Free trial link in bio." "Comment 'OBJECTION' and I'll reply with the exact script." Avoid "click the link in bio" without a reason — give them the reason first.
+
+**Posting frequency:** 1x/day minimum. TikTok rewards volume and consistency over perfection.
 
 ---
 
 ## E — Competitive Attack Angles
 
-1. **"Your AI coach should be there during the call — not after it."**
-   Positions against Gong/Chorus without naming them. The "post-call autopsy" category gets reframed as the wrong tool for the job. Legal-safe: feature contrast, not defamation.
+1. **The Price Transparency Play:** Post a side-by-side cost breakdown — Gong ($240/user/month) vs. Clari Copilot ($200/user/month) vs. Salesken (custom, call required) vs. Pitchr ($39/month, no demo, start free). No slander — just numbers. Let the math speak.
 
-2. **"Most AI coaching tools are Zoom-only. Your prospects pick up a phone."**
-   Positions against Wingman/Clari Copilot's Zoom/Teams limitation. Resonates with outbound reps who do cold calling on actual phones. Factual, product-level comparison.
+2. **The Solo Rep Play:** "Every enterprise sales tool has a 10-seat minimum. Here's why they'll never build what you actually need." Positions Pitchr as the tool built *for* the rep, not *for* the VP of Sales.
 
-3. **"Why should you need a 45-minute demo just to try a sales coaching tool?"**
-   Positions against Salesken and any enterprise tool with opaque pricing. Self-serve vs. procurement friction. Resonates strongly with solo reps and small teams.
+3. **The Real-Time Gap Play:** "Post-call analytics tell you why you lost the deal. Real-time coaching prevents you from losing it in the first place." No competitor named — just the category difference. Impossible to dispute, impossible to ignore.
 
-4. **"Coaching in 10 languages. Not just English."**
-   Wingman and Salesken are English-only. This is a factual differentiator. Resonates with EMEA and LATAM reps, multilingual teams, global orgs hiring diverse sales staff.
+4. **The Phone Call Blind Spot:** "Gong. Chorus. Clari. Every AI coaching tool is built for your Zoom calls. Nobody built one for your phone calls — until now." Factual, differentiating, not legally risky.
 
-5. **"You shouldn't pay for a whole platform just to get one feature."**
-   Positions against Chorus (buried in ZoomInfo) and Wingman (requires Clari). The "bolt-on" problem is a real pain point. Frame Pitchr as purpose-built vs. feature-inside-a-platform.
+5. **The 60-Second Setup:** "Competitors quote you a 90-day implementation timeline. Pitchr starts in 60 seconds. Here's what rep #1 said after their first call." Contrast without naming competitors directly on the landing page.
+
+---

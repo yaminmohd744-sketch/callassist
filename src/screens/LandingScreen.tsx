@@ -4,16 +4,15 @@ import { TermsOfService } from './legal/TermsOfService';
 import { CookiePolicy } from './legal/CookiePolicy';
 import { PricingSection } from './landing/PricingSection';
 import { BlogSection } from './landing/BlogSection';
-import { CareersSection } from './landing/CareersSection';
 import { PitchrLogo } from '../components/ui/PitchrLogo';
 import './LandingScreen.css';
 
 interface LandingScreenProps {
   onDownload: () => void;
-  onViewCarousels?: () => void;
+  onWaitlist?: () => void;
 }
 
-type SectionId = 'features' | 'languages' | 'pricing' | 'download' | 'changelog' | 'help' | 'about' | 'blog' | 'careers' | 'contact' | 'privacy' | 'terms' | 'cookies';
+type SectionId = 'features' | 'languages' | 'pricing' | 'download' | 'changelog' | 'help' | 'about' | 'blog' | 'contact' | 'privacy' | 'terms' | 'cookies';
 
 const SPOTLIGHT_STEP_MS    = 1400; // stagger between spotlight phases
 const DEMO_ADVANCE_LONG_MS = 6500; // normal demo step delay (step 0 includes spotlight sequence)
@@ -275,7 +274,7 @@ function WinLogo() {
 }
 
 
-export function LandingScreen({ onDownload, onViewCarousels }: LandingScreenProps) {
+export function LandingScreen({ onDownload, onWaitlist }: LandingScreenProps) {
   const [visibleFrames, setVisibleFrames]       = useState(1);
   const [menuOpen, setMenuOpen]                 = useState(false);
   const [featureTabIdx, setFeatureTabIdx]       = useState(0);
@@ -972,12 +971,6 @@ export function LandingScreen({ onDownload, onViewCarousels }: LandingScreenProp
     return <BlogSection nav={nav} />;
   }
 
-  // ─── Careers section view ──────────────────────────────────────────────────
-
-  if (activeSection === 'careers') {
-    return <CareersSection nav={nav} goSection={id => goSection(id as SectionId)} />;
-  }
-
   // ─── Contact section view ──────────────────────────────────────────────────
 
   if (activeSection === 'contact') {
@@ -1072,9 +1065,15 @@ export function LandingScreen({ onDownload, onViewCarousels }: LandingScreenProp
             <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
               <WinLogo /> Get for Windows
             </button>
-            <button className="lp__btn lp__btn--ghost" onClick={() => scrollTo('how-it-works')}>
-              See how it works →
-            </button>
+            {onWaitlist ? (
+              <button className="lp__btn lp__btn--ghost" onClick={onWaitlist}>
+                Join the waitlist →
+              </button>
+            ) : (
+              <button className="lp__btn lp__btn--ghost" onClick={() => scrollTo('how-it-works')}>
+                See how it works →
+              </button>
+            )}
           </div>
           <p className="lp__hero-note">
             ✓ No credit card required &nbsp;·&nbsp; ✓ 7-day money-back guarantee
@@ -1773,40 +1772,40 @@ export function LandingScreen({ onDownload, onViewCarousels }: LandingScreenProp
 
         <div className="lp__pricing-grid reveal" data-delay="0.12">
 
-          {/* STARTER */}
+          {/* BASIC */}
           <div className="lp__pricing-card">
-            <div className="lp__pricing-tier">STARTER</div>
-            <div className="lp__pricing-price">${billingCycle === 'yearly' ? 16 : 19}<span>/month</span></div>
-            {billingCycle === 'yearly' && <div className="lp__pricing-billed-note">billed $192/yr</div>}
+            <div className="lp__pricing-tier">BASIC</div>
+            <div className="lp__pricing-price">${billingCycle === 'yearly' ? 12.99 : 14.99}<span>/month</span></div>
+            {billingCycle === 'yearly' && <div className="lp__pricing-billed-note">billed $155.88/yr</div>}
             <div className="lp__pricing-desc">For reps learning the ropes</div>
             <div className="lp__pricing-divider" />
             <ul className="lp__pricing-features">
-              {['15 live calls / month','English & Spanish only','Basic post-call summary','Community support'].map((f,i) => (
+              {['30 live calls / month','English & Spanish only','Basic post-call summary','Community support'].map((f,i) => (
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>
             <button className="lp__win-btn lp__win-btn--outline lp__pricing-cta" onClick={onDownload}><WinLogo /> Get for Windows</button>
           </div>
 
-          {/* PRO */}
+          {/* PLUS */}
           <div className="lp__pricing-card lp__pricing-card--pro">
             <div className="lp__pricing-badge">MOST POPULAR</div>
-            <div className="lp__pricing-tier">PRO</div>
-            <div className="lp__pricing-price">${billingCycle === 'yearly' ? 41 : 49}<span>/month</span></div>
-            {billingCycle === 'yearly' && <div className="lp__pricing-billed-note">billed $492/yr</div>}
+            <div className="lp__pricing-tier">PLUS</div>
+            <div className="lp__pricing-price">${billingCycle === 'yearly' ? 32.99 : 39}<span>/month</span></div>
+            {billingCycle === 'yearly' && <div className="lp__pricing-billed-note">billed $395.88/yr</div>}
             <div className="lp__pricing-desc">For reps ready to level up</div>
             <div className="lp__pricing-divider" />
             <ul className="lp__pricing-features">
-              {['60 live calls / month','6 languages','Full post-call analysis + follow-up email','Basic analytics','Email support'].map((f,i) => (
+              {['100 live calls / month','6 languages','Full post-call analysis + follow-up email','Basic analytics','Email support'].map((f,i) => (
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>
             <button className="lp__win-btn lp__pricing-cta" onClick={onDownload}><WinLogo /> Get for Windows</button>
           </div>
 
-          {/* BUSINESS */}
+          {/* PRO */}
           <div className="lp__pricing-card">
-            <div className="lp__pricing-tier">BUSINESS</div>
+            <div className="lp__pricing-tier">PRO</div>
             <div className="lp__pricing-price">${billingCycle === 'yearly' ? 49 : 59}<span>/month</span></div>
             {billingCycle === 'yearly' && <div className="lp__pricing-billed-note">billed $588/yr</div>}
             <div className="lp__pricing-desc">Full access. No ceilings.</div>
@@ -1832,9 +1831,16 @@ export function LandingScreen({ onDownload, onViewCarousels }: LandingScreenProp
         <p className="lp__cta-banner-sub">
           Join sales reps using AI to win more calls - in any language, on any device.
         </p>
-        <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
-          <WinLogo /> Get for Windows
-        </button>
+        <div className="lp__cta-banner-actions">
+          <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+            <WinLogo /> Get for Windows
+          </button>
+          {onWaitlist && (
+            <button className="lp__btn lp__btn--ghost lp__cta-banner-wl" onClick={onWaitlist}>
+              Join the waitlist →
+            </button>
+          )}
+        </div>
         <p className="lp__cta-banner-note">No credit card · 7-day money-back · Windows 10 &amp; 11</p>
       </section>
 
@@ -1862,9 +1868,6 @@ export function LandingScreen({ onDownload, onViewCarousels }: LandingScreenProp
             <div className="lp__footer-col-title">Resources</div>
             <button className="lp__footer-link" onClick={() => goSection('languages')}>Languages</button>
             <button className="lp__footer-link" onClick={() => goSection('help')}>Help Center</button>
-            {onViewCarousels && (
-              <button className="lp__footer-link" onClick={onViewCarousels}>Content Carousels</button>
-            )}
           </div>
 
           {/* Company */}
@@ -1872,7 +1875,6 @@ export function LandingScreen({ onDownload, onViewCarousels }: LandingScreenProp
             <div className="lp__footer-col-title">Company</div>
             <button className="lp__footer-link" onClick={() => goSection('about')}>About</button>
             <button className="lp__footer-link" onClick={() => goSection('blog')}>Blog</button>
-            <button className="lp__footer-link" onClick={() => goSection('careers')}>Careers</button>
             <button className="lp__footer-link" onClick={() => goSection('contact')}>Contact</button>
           </div>
 

@@ -1,189 +1,228 @@
-# Pitchr — Market Research
-*Generated: May 2026*
+# Pitchr — Competitor Research
+_Generated: 2026-05-27_
 
 ---
 
-## 1. Competitor Analysis
+## 1. Gong
 
-### Gong.io
-- **Type:** Enterprise call recording + post-call coaching (NO real-time)
-- **Pricing:** ~$250/user/month bundled; platform fee >$5,000 upfront; 10-person team can pay $238–$613/user/month in year one
-- **Target:** Enterprise sales teams, large orgs
-- **Key weaknesses:**
-  - No real-time coaching — everything is post-call
-  - Astronomically expensive for small/mid teams
-  - No self-serve pricing, no free trial, no sandbox
-  - Forced module bundling — pay for what you don't need
-  - Auto-renewal uplifts of 5–15%
-  - Call search is the #1 complaint (154 mentions on review sites)
-  - Outsourced support with slow ticket resolution
-- **What users hate:** "Way too expensive when there are more affordable tools." "Platform fee before you even pay for seats." "You need a sales call just to get a price."
-- **Pitchr angle:** Pitchr is real-time, not post-mortem. Gong tells you what went wrong after the deal is already lost. Pitchr tells you what to say before you lose it. Also: Pitchr starts at a fraction of the cost, no sales call needed, 7-day money-back.
+**Category:** Enterprise call intelligence + post-call coaching
+**Target:** Large sales teams (20+ reps), enterprise/mid-market
+**Pricing:**
+- Foundation (core only): $1,400–$1,600/user/year ($108–$133/month)
+- Bundled (Foundation + Engage + Forecast): $2,880–$3,000/year ($240–$250/month)
+- Mandatory platform fee: $5,000–$50,000/year (scales with team size)
+- Onboarding/implementation: $7,500–$65,000 one-time
+- Real-world Year 1 cost for a 10-rep team: $28,500–$73,500
+- Auto-renewal price increases of 5–15% per year baked into contracts
 
----
+**Key Complaints (from G2, TrustRadius, Reddit):**
+- "Way too expensive for small/startup teams"
+- "We don't use half the features but pay for the full bundle"
+- "Onboarding is outsourced — tickets take weeks to resolve"
+- "Locked into a 2-year term — big mistake"
+- Post-call only — no live coaching during the call itself
+- Export your own data restricted; requires paid dev resources
+- March 2025 restructure forces Forecast + Engage bundles even if unused
 
-### Chorus by ZoomInfo
-- **Type:** Call recording + post-call analytics (NO real-time)
-- **Pricing:** ~$40/seat add-on on top of ZoomInfo's full platform — forces you to buy ZoomInfo infrastructure; opaque pricing
-- **Target:** Mid-market and enterprise, ZoomInfo customers
-- **Key weaknesses:**
-  - Post-call only — zero in-the-moment help
-  - Buried inside the ZoomInfo ecosystem — you're paying for a whole platform to get one feature
-  - Inaccurate transcriptions reported
-  - Slow processing times
-  - Cumbersome note-taker integration
-  - Occasional missed recordings
-- **What users hate:** "Eye-watering prices." "You need the whole ZoomInfo stack just to use Chorus." "Takes too long to process after the call."
-- **Pitchr angle:** Chorus is bolt-on analytics for a tool you already pay too much for. Pitchr is purpose-built for the rep in the moment of the call — standalone, no ecosystem lock-in.
+**Pitchr Exploit Angles:**
+- Gong reviews calls AFTER they're lost. Pitchr coaches you DURING the call.
+- Gong starts at $28K/year for 10 reps. Pitchr starts at $14.99/month per rep.
+- Gong requires months of procurement + setup. Pitchr = 60 seconds to install.
 
 ---
 
-### Salesloft
-- **Type:** Sales engagement platform (sequences, email cadences, dialer, analytics)
-- **Pricing:** ~$125–165/user/month; dialer is a $200/user/year add-on (most complained-about feature on G2 — 95 separate complaints)
-- **Target:** Mid-market, SDR teams with heavy outbound motion
-- **Key weaknesses:**
-  - Dialer is notoriously buggy and clunky
-  - No real-time coaching on calls
-  - Add-on hell — the dialer you need most costs extra
-  - No free trial for core platform
-  - Multi-seat minimums
-  - Support is slow
-- **What users hate:** "The dialer has consistently caused major issues." "Seconds turn into minutes, minutes turn into an extra hour of dialing." "You pay for the platform AND the dialer AND the coaching add-on."
-- **Pitchr angle:** Salesloft is a sequencing engine that tried to add a phone. Pitchr is built phone-first, works on any call including plain cell-to-cell phone calls, and the AI coaching is the core product — not an add-on.
+## 2. Chorus by ZoomInfo
+
+**Category:** Call recording + post-call analytics
+**Target:** Mid-market to enterprise sales teams
+**Pricing:**
+- Not publicly disclosed; ~$13,700+/year minimum for 10-rep team
+- ZoomInfo bundling can add $15–40K+ on top
+- Enterprise deals routinely reach hundreds of thousands/year
+
+**Key Complaints:**
+- "Eye-watering prices" — most cited complaint
+- Innovation stalled since ZoomInfo acquisition in 2021
+- Bot frequently misses call openings (joins late)
+- Transcription accuracy issues — mishears critical words
+- Data privacy concerns in GDPR regions
+- Post-call only — zero live coaching
+
+**Pitchr Exploit Angles:**
+- Chorus records your failures after the fact. Pitchr prevents them in real time.
+- Chorus requires enterprise procurement. Pitchr has no minimum team size.
 
 ---
 
-### Orum (AI Parallel Dialer)
-- **Type:** AI power dialer — dials multiple numbers simultaneously, connects when answered
-- **Pricing:** Launch plan ~$3,000/user/year; Ascend ~$400–500+/user/month; annual contracts only, no monthly
-- **Target:** High-volume SDR teams, enterprise outbound
-- **Key weaknesses:**
-  - Annual-only contracts — #1 complaint on Reddit and G2
-  - No coaching on call content — just dials faster
-  - Expensive for what it does
-  - No phone-call coaching during the conversation itself
-- **Pitchr angle:** Orum gets you connected faster. Pitchr makes sure you don't fumble the call once you're on it. Different jobs — but Pitchr is what you use *during* the call Orum connects you to.
+## 3. Salesloft
+
+**Category:** Sales engagement platform
+**Target:** Mid-market to enterprise
+**Pricing:**
+- $125–$180/user/month on Advanced tier (annual billing)
+- No public pricing, no free trial
+- Dialer is an add-on: $400–$600/month extra for 10-person team
+
+**Key Complaints:**
+- 2025 merger with Clari created product uncertainty + support degradation
+- "Customer service is notoriously difficult — arguments and rudeness when reached"
+- No power/auto-dialer built in — slows high-volume calling 30–40%
+- "Seconds turn into minutes, minutes into an extra hour of dialing" (Reddit)
+- Complex setup: weeks–months, requires dedicated RevOps staff
+- No real-time AI coaching during calls
+
+**Pitchr Exploit Angles:**
+- Salesloft manages sequences. Pitchr tells you what to say once the prospect picks up.
+- Salesloft + dialer add-on = $150–200/user/month. Pitchr Pro = $59/month.
 
 ---
 
-### Wingman / Clari Copilot
-- **Type:** Real-time AI coaching + call recording + post-call analytics
-- **Pricing:** ~$1,080–$1,320/user/year standalone; $60–110/user/month bundled with Clari platform; requires Clari ecosystem
-- **Target:** Mid-market and enterprise, Clari customers
-- **Key weaknesses:**
-  - Real-time coaching is there but built for meetings (Zoom/Teams), not phone calls
-  - Steep learning curve
-  - AI "can't fully grasp nuances of customer relationships" (per reviews)
-  - Transcription accuracy issues
-  - Requires being inside the Clari platform — forces platform buy-in
-  - No Windows desktop standalone app
-  - English-only coaching
-- **What users hate:** Transcription issues, learning curve, tied to the Clari ecosystem.
-- **Pitchr angle:** Wingman is the closest direct competitor. Key advantages for Pitchr: works on phone calls (Wingman is Zoom/Teams only), 10 languages (Wingman = English only), Windows desktop app (no browser needed), no platform lock-in, body language coaching via camera.
+## 4. Orum
+
+**Category:** AI parallel dialer
+**Target:** High-volume SDR teams
+**Pricing:** Custom/enterprise; ~$400–$600/user/month
+
+**Notes:** Orum automates outbound dialing but has NO AI coaching during conversations — it connects calls and gets out of the way. Rep is on their own once prospect answers.
+
+**Pitchr Exploit Angle:**
+- Orum gets you on the phone. Pitchr tells you what to say once you're there.
+- Complementary positioning: Orum dials, Pitchr wins.
 
 ---
 
-### Salesken
-- **Type:** Real-time AI coaching + call analysis
-- **Pricing:** No public pricing — requires demo/quote
-- **Target:** Enterprise sales teams, call centers
-- **Key weaknesses:**
-  - No transparent pricing (barrier to indie rep adoption)
-  - Loading delays and network lag reported
-  - Transcription accuracy issues
-  - Limited report customization
-  - Learning curve
-  - Feels enterprise-heavy, not built for the individual rep
-- **Pitchr angle:** Salesken is enterprise-only behind a sales call. Pitchr is self-serve, transparent pricing, works for the solo rep — no IT approval, no procurement process.
+## 5. Wingman / Clari Copilot
+
+**Category:** Real-time AI coaching on calls (closest direct competitor)
+**Target:** Mid-market to enterprise
+**Pricing:**
+- $120–$160/user/month standalone
+- $200+/user/month bundled with Clari
+- Requires existing Clari contract in many cases
+
+**Key Complaints:**
+- "AI can't fully grasp nuances of customer relationships"
+- Transcription accuracy issues — mishears key phrases
+- "Steep learning curve" — non-intuitive interface, excessive pop-ups
+- 2–3 month implementation before team is productive
+- Primarily Zoom/Teams focused; phone call support is limited
+- Bot sometimes joins calls late or not at all
+
+**Pitchr Exploit Angles:**
+- Clari Copilot costs $200+/month and takes months to set up. Pitchr is $39/month, works day 1.
+- Clari Copilot is mainly for video calls. Pitchr works on ANY call — phone, video, or desktop.
+- Clari Copilot requires team-wide deployment. Pitchr works solo.
 
 ---
 
-### Avoma
-- **Type:** Meeting AI — notes, transcription, coaching (post-call focus)
-- **Pricing:** $19–$129/user/month; free plan available
-- **Target:** SMB and mid-market, meeting-heavy teams
-- **Key weaknesses:**
-  - Primarily meeting note-taker, coaching is secondary
-  - Expensive for small teams on higher tiers
-  - Post-call analysis, not real-time
-- **Pitchr angle:** Avoma takes notes. Pitchr coaches. Different category entirely.
+## 6. Salesken
+
+**Category:** Real-time AI sales coaching (enterprise)
+**Target:** Enterprise sales teams
+**Pricing:** Custom only — must request a demo (no self-serve)
+
+**Notes:** Strong G2 reviews. Real-time cueing and battle cards. Occasional lag during calls. Enterprise-focused — not self-serve. Sales cycle to get access = 30–90 days.
+
+**Pitchr Exploit Angle:**
+- Salesken requires a sales call to buy Salesken. Pitchr lets you start free today.
 
 ---
 
-### Fireflies.ai
-- **Type:** Meeting transcription + summaries (no coaching)
-- **Pricing:** Free–$39/user/month; hidden AI credits system creates unpredictable costs
-- **Target:** Anyone who wants auto-notes
-- **Key weaknesses:**
-  - Not a coaching tool at all — transcription only
-  - 12+ documented hidden costs; AI credits for advanced features
-  - No real-time element
-- **Pitchr angle:** Fireflies tells you what was said. Pitchr tells you what to say next.
+## 7. Avoma
+
+**Category:** Meeting AI + notes + conversation intelligence
+**Target:** SMB to mid-market
+**Pricing:** $19–$129/user/month
+
+**Key Complaints:**
+- 48% of users: bot joined calls late (missed critical context)
+- 31% experienced mid-call drops
+- 27% experienced complete bot no-shows
+- Post-call summaries only — zero real-time guidance
+- Expensive vs. free alternatives like Fathom
+
+**Pitchr Exploit Angle:**
+- Avoma takes notes. Pitchr wins deals.
 
 ---
 
-## 2. Market Gap Analysis
+## 8. Fireflies.ai
 
-**The gap no one has properly filled:**
-Real-time AI coaching that works on **phone calls** (not just Zoom/Teams), available to **individual reps** (not just enterprise teams), at **accessible pricing** (self-serve, no demo required), in **multiple languages**.
+**Category:** Meeting transcription + summaries
+**Target:** General business (not sales-specific)
+**Pricing:** Free / $10–18/user/month
 
-Gong, Chorus, Salesloft = post-call only (too late).
-Wingman/Clari Copilot = real-time but Zoom/Teams only + enterprise pricing + English only.
-Salesken = real-time but enterprise-only, opaque pricing.
-Orum = dials fast, doesn't coach.
-Fireflies/Avoma = note-taking, not coaching.
+**Key Complaints:**
+- Credit-based gotcha: charged for every AI chatbot query and custom template
+- Bot frequently joins late — misses opening minutes
+- Poor transcription accuracy with accents, overlapping speech, technical jargon
+- Not sales-specific — no objection handling, no close probability, no coaching
 
-**Nobody is coaching the rep during the actual call, at a price a solo rep can afford, across 10 languages, on any call type including plain phone calls.**
-
----
-
-## 3. Sales Rep Pain Points (Cold Calling)
-
-Based on industry research:
-- **48% of SDRs are afraid to pick up the phone**
-- **44% quit after the first rejection**
-- **22% don't follow up after two rejections**
-- Top fears: fear of rejection, not knowing what to say when hit with an objection, fear of going blank, not knowing how to respond to "we already have a solution"
-- Performance pressure from quotas causes anxiety that spills into every call
-- Reps procrastinate on calls ("call reluctance") — this kills pipeline
-- The unpredictability of what the prospect might say is the biggest source of anxiety
-- Reps lose deals not because the product is bad but because they freeze, over-talk, or don't know how to handle a specific objection
+**Pitchr Exploit Angle:**
+- Fireflies records calls. Pitchr changes their outcome.
 
 ---
 
-## 4. Content Performance — Instagram & TikTok (2025)
+## Market Gap Summary
 
-### What's Working
-- **Carousels are outperforming video** on both platforms in engagement-per-impression — users swipe through and save, which signals high value to the algorithm
-- **Sweet spot: 7–10 slides** — enough depth without losing people
-- **First 3 seconds / Slide 1 must stop the scroll** — bold statement, pain-trigger, or a number
-- **Numbers and metrics** perform extremely well: "48% of SDRs…", "You're losing 6 deals a month because of this"
-- **Authenticity > polish** — raw-feeling content (even if designed) outperforms corporate-looking graphics
-- **Niche content wins** — content that only sales reps understand gets massive saves and shares within that community
-- **Education + pain = saves** — tutorials, frameworks, "how I fixed X" content drives bookmark behavior
-- **Social proof + outcomes** drive follows — people want to see what winning looks like
-
-### Hook Formats That Work in Sales Niche
-- "The thing nobody tells you about cold calling..."
-- "I used to freeze when prospects said [objection]. Here's what changed."
-- "You're losing deals to this one mistake." (fear trigger)
-- "How top 1% AEs handle [specific objection]" (aspiration)
-- Specific numbers: "3 objections. 3 scripts. Swipe to steal them."
-
-### Platform Differences
-- **TikTok:** Rawer, more honest, voiceover + on-screen text, trending audio helps discovery, storytelling tone
-- **Instagram:** Slightly more polished visually, saves are the key metric, carousels stay in feed longer, strong hashtag strategy matters more
+| Gap | Severity | Pitchr's answer |
+|-----|----------|----------------|
+| All major tools are POST-CALL | Critical — coaching after the lost deal is useless | Real-time coaching DURING the call |
+| Enterprise pricing only | $100–250+/user/month — solo reps locked out | $14.99–$59/month, no minimums |
+| Setup takes weeks/months | 2–3 month onboarding standard | 60 seconds to start |
+| Zoom/Teams video focus | Phone calls dominate outbound SDR work | Works on ANY call type |
+| English only (most tools) | Global sales teams excluded | 10 languages |
+| No solo rep option | 10–25 user minimums are common | Works for 1 rep |
+| Separate CRM required | $50–200+/month add-on | CRM built in |
+| Body language coaching | None of the above have it | Camera coaching built in |
 
 ---
 
-## 5. Sources Referenced
-- Sybill.ai: Gong pricing analysis
-- Oliv.ai: Gong reviews analysis (600+ reviews)
-- tldv.io: Gong review
-- Capterra / GetApp / G2: Wingman/Clari Copilot, Salesken, Salesloft, Orum reviews
-- Claap.io: Chorus by ZoomInfo analysis
-- Cloudeagle.ai / Outdoo.ai: Fireflies.ai pricing
-- Postnitro.ai / iConnect.buzz: Carousel performance data 2025
-- Cognism / Klenty / Trellus.ai: Cold calling fear and SDR pain point research
-- Snaplama / Jollybot / HookStudio: TikTok/Instagram B2B SaaS strategy
+## SDR / Sales Rep Pain Points (Research-Backed)
+
+**Core fears:**
+- 48% of B2B SDRs fear making cold calls
+- 44% quit following up after the FIRST rejection
+- #1 cause of call reluctance: not knowing what to say when an objection hits
+- Rejection anxiety compounds — emotional burnout is the #1 reason talented SDRs quit
+
+**What they search/scroll for:**
+- "How to handle [specific objection]"
+- "What to say when prospect says they already have a solution"
+- "Cold call scripts for [industry]"
+- "How to close on a call"
+- "Sales confidence tips"
+- Cold call tear-downs and real-call walkthroughs
+
+**What triggers saves and shares:**
+- Watching someone handle a tough objection smoothly (aspiration)
+- A "secret weapon" tool they didn't know existed (curiosity + FOMO)
+- Stats that validate their struggle ("48% of reps fear cold calling")
+- Screenshottable scripts they can use immediately
+- Before/after rep transformations
+- "I wish I had this when I was an SDR" type content
+
+---
+
+## Content Format Research — Instagram/TikTok 2025
+
+**What performs best:**
+- Hook in first 3 seconds is everything — bold statement, surprising stat, scroll-stopping visual
+- Authentic over polished — casual delivery outperforms overproduced content
+- Education content drives saves — "how to handle X objection" gets saved to revisit
+- Pattern interrupt: "Stop doing this on cold calls" stops the scroll hard
+- POV content: "POV: Your AI coach tells you exactly what to say when they object"
+- Before/after transformations drive shares
+- Screenshot-able frameworks/scripts in carousels get saved
+- Social proof beats product demos — outcomes resonate more than feature lists
+
+**Winning caption formula:**
+1. Hook (match energy of slide 1 headline)
+2. Expand on pain or insight (2–3 sentences)
+3. Tease the fix without fully explaining
+4. CTA: link in bio / try free / comment X for Y
+5. 3–5 hashtags max: #salestips #SDR #coldcalling #salescoach #salesrep
+
+**Hashtag targets:** #salestips #SDR #coldcalling #salescoaching #salesrep #B2Bsales #AE #closingdeals #saas #pitchr
+
+---
