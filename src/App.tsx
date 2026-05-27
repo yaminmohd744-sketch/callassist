@@ -87,6 +87,33 @@ function getOnboardingData(): OnboardingData {
 // True when running inside the Electron desktop app
 const isElectron = navigator.userAgent.includes('Electron');
 
+const PREVIEW_PASSWORD = 'pitchr2025';
+
+function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
+  const [val, setVal] = useState('');
+  const [err, setErr] = useState(false);
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (val === PREVIEW_PASSWORD) { onUnlock(); return; }
+    setErr(true); setVal('');
+    setTimeout(() => setErr(false), 1800);
+  }
+  return (
+    <div style={{ minHeight: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', fontFamily: 'monospace', letterSpacing: '0.14em', marginBottom: '8px' }}>PITCHR — PREVIEW</div>
+      <form onSubmit={submit} style={{ display: 'flex', gap: '8px' }}>
+        <input
+          type="password" value={val} onChange={e => setVal(e.target.value)}
+          placeholder="Password" autoFocus
+          style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${err ? '#ff4444' : 'rgba(255,255,255,0.12)'}`, borderRadius: '8px', padding: '11px 16px', color: '#fff', fontSize: '14px', outline: 'none', minWidth: '220px' }}
+        />
+        <button type="submit" style={{ background: 'linear-gradient(135deg,#814ac8,#df7afe)', border: 'none', borderRadius: '8px', padding: '11px 20px', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>→</button>
+      </form>
+      {err && <div style={{ color: '#ff6b6b', fontSize: '13px' }}>Incorrect password</div>}
+    </div>
+  );
+}
+
 const ALLOWED_IMAGE_REGEX = /^data:image\/(png|jpeg|webp|gif);base64,/;
 
 function getDisplayName(
@@ -152,6 +179,9 @@ export function App() {
   const transitionShown = useRef(false);
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [previewUnlocked, setPreviewUnlocked] = useState(() =>
+    sessionStorage.getItem('pitchr_preview') === '1'
+  );
 
   // Load profile pic from IndexedDB on mount
   useEffect(() => {
@@ -310,40 +340,56 @@ export function App() {
   // In the browser, never block on auth — just show the landing page immediately.
   if (authLoading && isElectron) return <div className="app-loading" />;
 
-  // In the web app, always show the landing page regardless of auth state.
-  // The full app (dashboard, calls, etc.) only runs inside the Electron desktop app.
-  if (!isElectron && screen === 'landing') {
-    return (
-      <>
-        <ErrorBoundary>
-          <LandingScreen
-            onDownload={() => {
-              // Internal deep-link only — never route user-supplied input through here
-              const DESKTOP_PROTOCOL = 'pitchr://open' as const;
-              const iframe = document.createElement('iframe');
-              iframe.style.display = 'none';
-              iframe.src = DESKTOP_PROTOCOL;
-              document.body.appendChild(iframe);
-              setTimeout(() => document.body.removeChild(iframe), 2000);
-              setTimeout(() => setScreen('auth'), 1800);
-            }}
-            onWaitlist={() => setScreen('waitlist')}
-          />
-        </ErrorBoundary>
-        <ThemeToggle theme={theme} onToggle={toggleTheme} />
-      </>
-    );
-  }
+  // Web app: waitlist by default. Landing page accessible only via ?preview + password.
+  if (!isElectron) {
+    const hasPreviewParam = new URLSearchParams(window.location.search).has('preview');
 
-  if (!isElectron && screen === 'waitlist') {
+    if (hasPreviewParam && !previewUnlocked) {
+      return <PasswordGate onUnlock={() => {
+        sessionStorage.setItem('pitchr_preview', '1');
+        setPreviewUnlocked(true);
+        setScreen('landing');
+      }} />;
+    }
+
+    if (hasPreviewParam && previewUnlocked) {
+      if (screen === 'waitlist') {
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<div className="app-loading" />}>
+              <WaitlistScreen onBack={() => setScreen('landing')} />
+            </Suspense>
+          </ErrorBoundary>
+        );
+      }
+      return (
+        <>
+          <ErrorBoundary>
+            <LandingScreen
+              onDownload={() => {
+                const DESKTOP_PROTOCOL = 'pitchr://open' as const;
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = DESKTOP_PROTOCOL;
+                document.body.appendChild(iframe);
+                setTimeout(() => document.body.removeChild(iframe), 2000);
+                setTimeout(() => setScreen('auth'), 1800);
+              }}
+              onWaitlist={() => setScreen('waitlist')}
+            />
+          </ErrorBoundary>
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
+        </>
+      );
+    }
+
+    // Default for everyone: waitlist only
     return (
-      <>
-        <ErrorBoundary>
-          <Suspense fallback={<div className="app-loading" />}>
-            <WaitlistScreen onBack={() => setScreen('landing')} />
-          </Suspense>
-        </ErrorBoundary>
-      </>
+      <ErrorBoundary>
+        <Suspense fallback={<div className="app-loading" />}>
+          <WaitlistScreen onBack={() => {}} />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
