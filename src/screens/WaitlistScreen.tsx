@@ -54,11 +54,11 @@ export function WaitlistScreen({ onBack }: WaitlistScreenProps) {
 
       <div className="wl__content">
 
-        {/* Badge */}
-        <div className="wl__badge">🎯 Coming to Windows — early access open</div>
-
         {/* Logo */}
         <div className="wl__logo">PITCHR</div>
+
+        {/* Badge */}
+        <div className="wl__badge">🎯 Coming to Windows — early access open</div>
 
         {/* Headline */}
         <h1 className="wl__headline">

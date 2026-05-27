@@ -111,8 +111,18 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 16px;
-  animation: wl-fadein 0.5s 0.05s ease both;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 32px rgba(223, 122, 254, 0.55)) drop-shadow(0 0 64px rgba(129, 74, 200, 0.35));
+  animation: wl-fadein 0.5s 0.05s ease both, wl-logo-float 5s ease-in-out infinite;
+}
+
+@keyframes wl-logo-float {
+  0%, 100% { transform: translateY(0px); filter: drop-shadow(0 0 32px rgba(223,122,254,0.55)) drop-shadow(0 0 64px rgba(129,74,200,0.35)); }
+  50%       { transform: translateY(-8px); filter: drop-shadow(0 0 48px rgba(223,122,254,0.8)) drop-shadow(0 0 96px rgba(129,74,200,0.55)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wl__logo { animation: wl-fadein 0.5s 0.05s ease both; }
 }
 
 /* ── Headline ────────────────────────────────────────────────────────────────── */
