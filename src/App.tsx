@@ -30,7 +30,7 @@ const UploadCallScreen = lazy(() => import('./screens/UploadCallScreen').then(m 
 const LeadsScreen      = lazy(() => import('./screens/LeadsScreen').then(m => ({ default: m.LeadsScreen })));
 const AuthScreen       = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })));
 const OnboardingScreen = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
-const MarketingCarouselsScreen = lazy(() => import('./screens/MarketingCarouselsScreen').then(m => ({ default: m.MarketingCarouselsScreen })));
+const WaitlistScreen   = lazy(() => import('./screens/WaitlistScreen').then(m => ({ default: m.WaitlistScreen })));
 
 // One-time migration: move localStorage outcomes into Supabase call_sessions rows
 async function migrateOutcomes(userId: string): Promise<void> {
@@ -114,7 +114,7 @@ const INITIAL_THEME = (
 ) as 'dark' | 'light';
 applyTheme(INITIAL_THEME);
 
-type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call' | 'marketing-carousels';
+type Screen = 'landing' | 'waitlist' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
 
 // ─── App ─────────────────────────────────────────────────────────────────────
 
@@ -142,7 +142,7 @@ export function App() {
     applyTheme(next);
   }, [theme]);
 
-  const [screen, setScreen]             = useState<Screen>(isElectron ? 'auth' : 'landing');
+  const [screen, setScreen]             = useState<Screen>(isElectron ? 'auth' : 'waitlist');
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
@@ -175,9 +175,7 @@ export function App() {
 
   // In the browser (non-Electron), always stay on the landing page regardless of auth state.
   // The full app only runs inside Electron.
-  const currentScreen: Screen = screen === 'marketing-carousels'
-    ? 'marketing-carousels'
-    : (!isElectron && screen === 'landing')
+  const currentScreen: Screen = (!isElectron && screen === 'landing')
       ? 'landing'
       : (user && (screen === 'landing' || screen === 'auth'))
         ? 'dashboard'
@@ -238,7 +236,7 @@ export function App() {
 
   // Guard: in the web app (non-Electron) bounce any non-landing screen back to landing.
   useEffect(() => {
-    if (!isElectron && screen !== 'landing' && screen !== 'auth' && screen !== 'marketing-carousels') setScreen('landing');
+    if (!isElectron && screen !== 'landing' && screen !== 'waitlist' && screen !== 'auth') setScreen('landing');
   }, [screen]);
 
   // Guard: if we land on live-call or post-call without required state, go to dashboard.
@@ -314,30 +312,37 @@ export function App() {
 
   // In the web app, always show the landing page regardless of auth state.
   // The full app (dashboard, calls, etc.) only runs inside the Electron desktop app.
-  if (screen === 'marketing-carousels') {
-    return (
-      <Suspense fallback={<div className="app-loading" />}>
-        <MarketingCarouselsScreen onBack={() => setScreen('landing')} />
-      </Suspense>
-    );
-  }
-
   if (!isElectron && screen === 'landing') {
     return (
       <>
         <ErrorBoundary>
-          <LandingScreen onViewCarousels={() => setScreen('marketing-carousels')} onDownload={() => {
-            // Internal deep-link only — never route user-supplied input through here
-            const DESKTOP_PROTOCOL = 'pitchr://open' as const;
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = DESKTOP_PROTOCOL;
-            document.body.appendChild(iframe);
-            setTimeout(() => document.body.removeChild(iframe), 2000);
-            setTimeout(() => setScreen('auth'), 1800);
-          }} />
+          <LandingScreen
+            onDownload={() => {
+              // Internal deep-link only — never route user-supplied input through here
+              const DESKTOP_PROTOCOL = 'pitchr://open' as const;
+              const iframe = document.createElement('iframe');
+              iframe.style.display = 'none';
+              iframe.src = DESKTOP_PROTOCOL;
+              document.body.appendChild(iframe);
+              setTimeout(() => document.body.removeChild(iframe), 2000);
+              setTimeout(() => setScreen('auth'), 1800);
+            }}
+            onWaitlist={() => setScreen('waitlist')}
+          />
         </ErrorBoundary>
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      </>
+    );
+  }
+
+  if (!isElectron && screen === 'waitlist') {
+    return (
+      <>
+        <ErrorBoundary>
+          <Suspense fallback={<div className="app-loading" />}>
+            <WaitlistScreen onBack={() => setScreen('landing')} />
+          </Suspense>
+        </ErrorBoundary>
       </>
     );
   }
