@@ -129,15 +129,6 @@ export function WaitlistScreen({ onBack }: WaitlistScreenProps) {
           </form>
         )}
 
-        {/* Feature list */}
-        <div className="wl__features">
-          {FEATURES.map((f, i) => (
-            <div key={i} className="wl__feature" style={{ '--i': i } as React.CSSProperties}>
-              <span className="wl__feature-icon" aria-hidden="true">{f.icon}</span>
-              <span className="wl__feature-text">{f.text}</span>
-            </div>
-          ))}
-        </div>
 
 
       </div>
