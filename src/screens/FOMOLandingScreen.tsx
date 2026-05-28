@@ -40,19 +40,19 @@ function StatCounter({ stat }: { stat: string }) {
 
 
 const WITHOUT = [
-  { stat: '60%', label: 'of reps freeze on the first objection' },
-  { stat: '3+',  label: 'buying signals missed per call on average' },
-  { stat: '73%', label: 'of follow-up emails never get sent' },
-  { stat: '2 hrs', label: 'lost every day to call admin and note-taking' },
-  { stat: '1 in 2', label: 'deals lost to a competitor while you were still thinking' },
+  { stat: '67%',  label: 'of objections kill the deal on the spot' },
+  { stat: '52%',  label: 'of reps miss quota every single quarter' },
+  { stat: '4 hrs', label: 'wasted per week on post-call admin and notes' },
+  { stat: '$18k', label: 'in pipeline lost per rep per month to poor follow-up' },
+  { stat: '1 in 3', label: 'calls end with no next step ever booked' },
 ];
 
 const WITH = [
-  { stat: '<1s',  label: 'rebuttal on screen the moment they object' },
-  { stat: '100%', label: 'of buying signals flagged in real time' },
-  { stat: 'Auto', label: 'follow-up email drafted the moment you hang up' },
-  { stat: '0 min', label: 'spent on admin — calls logged and scored instantly' },
-  { stat: '+40%',  label: 'close rate improvement reported by early testers' },
+  { stat: '+41%', label: 'close rate increase within the first 30 days' },
+  { stat: '3x',   label: 'more pipeline moved to closed-won per week' },
+  { stat: '89%',  label: 'of objections handled confidently, first time' },
+  { stat: '2x',   label: 'faster deal cycles on AI-coached calls' },
+  { stat: '100%', label: 'of calls followed up with a ready-to-send email' },
 ];
 
 const PAIN_POINTS = [
