@@ -426,16 +426,22 @@
 
 .fl__pain-card {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(129, 74, 200, 0.18);
   border-radius: 16px;
   padding: 28px 24px;
+  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.35),
+              0 0 18px rgba(129, 74, 200, 0.12),
+              0 8px 32px rgba(129, 74, 200, 0.08);
   animation: fl-fadein 0.5s calc(0.1s + var(--i, 0) * 0.08s) ease both;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .fl__pain-card:hover {
   background: rgba(129, 74, 200, 0.05);
-  border-color: rgba(129, 74, 200, 0.2);
+  border-color: rgba(129, 74, 200, 0.3);
+  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.35),
+              0 0 28px rgba(129, 74, 200, 0.22),
+              0 8px 40px rgba(129, 74, 200, 0.14);
 }
 
 .fl__pain-icon {
