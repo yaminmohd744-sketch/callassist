@@ -10,6 +10,7 @@ import './LandingScreen.css';
 interface LandingScreenProps {
   onDownload: () => void;
   onWaitlist?: () => void;
+  onMarketingPlan?: () => void;
 }
 
 type SectionId = 'features' | 'languages' | 'pricing' | 'download' | 'changelog' | 'help' | 'about' | 'blog' | 'contact' | 'privacy' | 'terms' | 'cookies';
@@ -274,7 +275,7 @@ function WinLogo() {
 }
 
 
-export function LandingScreen({ onDownload, onWaitlist }: LandingScreenProps) {
+export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: LandingScreenProps) {
   const [visibleFrames, setVisibleFrames]       = useState(1);
   const [menuOpen, setMenuOpen]                 = useState(false);
   const [featureTabIdx, setFeatureTabIdx]       = useState(0);
@@ -1876,6 +1877,9 @@ export function LandingScreen({ onDownload, onWaitlist }: LandingScreenProps) {
             <button className="lp__footer-link" onClick={() => goSection('about')}>About</button>
             <button className="lp__footer-link" onClick={() => goSection('blog')}>Blog</button>
             <button className="lp__footer-link" onClick={() => goSection('contact')}>Contact</button>
+            {onMarketingPlan && (
+              <button className="lp__footer-link" onClick={onMarketingPlan}>Marketing Plan</button>
+            )}
           </div>
 
           {/* Legal */}
