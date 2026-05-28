@@ -177,12 +177,6 @@ export function FOMOLandingScreen() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="fl__footer">
-        <span>© 2026 Pitchr</span>
-        <span>pitchr.org</span>
-      </footer>
-
     </div>
   );
 }
