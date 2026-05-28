@@ -161,21 +161,6 @@ export function FOMOLandingScreen() {
         ))}
       </section>
 
-      {/* Urgency CTA */}
-      <section className="fl__cta">
-        <div className="fl__cta-inner">
-          <div className="fl__cta-eyebrow">FOUNDING MEMBER ACCESS</div>
-          <h2 className="fl__cta-h2">
-            You're looking at this at {WAITLIST_COUNT.toLocaleString()}.<br />
-            Early access closes at {EARLY_ACCESS_LIMIT.toLocaleString()}.
-          </h2>
-          <p className="fl__cta-sub">
-            Founding members lock in the lowest price Pitchr will ever be.
-            Once we hit {EARLY_ACCESS_LIMIT.toLocaleString()}, it's gone.
-          </p>
-          <WaitlistForm source="fomo-cta" />
-        </div>
-      </section>
 
     </div>
   );
