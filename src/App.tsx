@@ -20,7 +20,8 @@ import { loadLearningProfile, updateLearningProfile } from './lib/learningProfil
 import { loadLearningLog, generateAndAppendLogEntries } from './lib/learningLog';
 import type { CallConfig, CallSession, CallOutcome, Lead, BusinessProfile, RepLearningProfile, LearningLogEntry } from './types';
 
-import { LandingScreen } from './screens/LandingScreen';
+import { MarketingPlanScreen } from './screens/MarketingPlanScreen';
+import { FOMOLandingScreen } from './screens/FOMOLandingScreen';
 const DashboardScreen  = lazy(() => import('./screens/DashboardScreen').then(m => ({ default: m.DashboardScreen })));
 const PreCallScreen    = lazy(() => import('./screens/PreCallScreen').then(m => ({ default: m.PreCallScreen })));
 const LiveCallScreen   = lazy(() => import('./screens/LiveCallScreen').then(m => ({ default: m.LiveCallScreen })));
@@ -114,7 +115,7 @@ const INITIAL_THEME = (
 ) as 'dark' | 'light';
 applyTheme(INITIAL_THEME);
 
-type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
+type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call' | 'marketing-plan';
 
 // ─── App ─────────────────────────────────────────────────────────────────────
 
@@ -236,7 +237,7 @@ export function App() {
 
   // Guard: in the web app (non-Electron) bounce any non-landing screen back to landing.
   useEffect(() => {
-    if (!isElectron && screen !== 'landing' && screen !== 'auth') setScreen('landing');
+    if (!isElectron && screen !== 'landing' && screen !== 'auth' && screen !== 'marketing-plan') setScreen('landing');
   }, [screen]);
 
   // Guard: if we land on live-call or post-call without required state, go to dashboard.
@@ -310,25 +311,16 @@ export function App() {
   // In the browser, never block on auth — just show the landing page immediately.
   if (authLoading && isElectron) return <div className="app-loading" />;
 
-  // In the web app, always show the landing page.
+  // In the web app, always show the landing page (or marketing plan page).
+  if (!isElectron && screen === 'marketing-plan') {
+    return <MarketingPlanScreen onBack={() => setScreen('landing')} />;
+  }
+
   if (!isElectron && screen === 'landing') {
     return (
-      <>
-        <ErrorBoundary>
-          <LandingScreen
-            onDownload={() => {
-              const DESKTOP_PROTOCOL = 'pitchr://open' as const;
-              const iframe = document.createElement('iframe');
-              iframe.style.display = 'none';
-              iframe.src = DESKTOP_PROTOCOL;
-              document.body.appendChild(iframe);
-              setTimeout(() => document.body.removeChild(iframe), 2000);
-              setTimeout(() => setScreen('auth'), 1800);
-            }}
-          />
-        </ErrorBoundary>
-        <ThemeToggle theme={theme} onToggle={toggleTheme} />
-      </>
+      <ErrorBoundary>
+        <FOMOLandingScreen />
+      </ErrorBoundary>
     );
   }
 

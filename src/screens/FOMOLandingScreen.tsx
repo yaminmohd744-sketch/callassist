@@ -1,0 +1,188 @@
+import { useState, useRef } from 'react';
+import { joinWaitlist } from '../lib/waitlist';
+import './FOMOLandingScreen.css';
+
+const WAITLIST_COUNT = 1_847;
+const EARLY_ACCESS_LIMIT = 5_000;
+
+const PAIN_POINTS = [
+  {
+    icon: '⊘',
+    headline: 'You freeze.',
+    body: 'They say "we already have something." Your brain goes blank. Three seconds of silence. The deal dies.',
+  },
+  {
+    icon: '◎',
+    headline: 'You miss it.',
+    body: '"The reporting could be better." That was a buying signal. You didn\'t catch it. They went cold.',
+  },
+  {
+    icon: '↺',
+    headline: 'You realise too late.',
+    body: 'The perfect response comes to you 20 minutes after the call. Gong confirms what went wrong the next morning.',
+  },
+];
+
+const OUTCOMES = [
+  {
+    headline: 'The rebuttal appears before the silence.',
+    body: 'Pitchr hears the objection the moment they say it — and puts the exact response on your screen. No freeze. No scramble.',
+  },
+  {
+    headline: 'You never miss a signal to close.',
+    body: 'Buying signals flagged in real time. Close probability tracked live. You always know when you\'re winning and when to push.',
+  },
+  {
+    headline: 'Every call saved automatically.',
+    body: 'Full transcript, AI summary, lead score, and a ready-to-send follow-up email — the moment you hang up.',
+  },
+];
+
+function WaitlistForm({ source }: { source: string }) {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (status === 'loading' || status === 'success') return;
+    setErrorMsg('');
+    setStatus('loading');
+    const result = await joinWaitlist(email, source);
+    if (result.ok) { setStatus('success'); return; }
+    setStatus('error');
+    if (result.reason === 'invalid-email') setErrorMsg('Please enter a valid email address.');
+    else if (result.reason === 'already-on-list') setErrorMsg("You're already on the list.");
+    else setErrorMsg('Something went wrong. Try again.');
+    setTimeout(() => { setStatus('idle'); inputRef.current?.focus(); }, 2000);
+  }
+
+  if (status === 'success') {
+    return (
+      <div className="fl__success">
+        <span className="fl__success-icon">✓</span>
+        <div>
+          <div className="fl__success-title">You're on the list.</div>
+          <div className="fl__success-sub">We'll email you the moment access opens.</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form className="fl__form" onSubmit={handleSubmit} noValidate>
+      <div className="fl__input-row">
+        <input
+          ref={inputRef}
+          className={`fl__input${status === 'error' ? ' fl__input--error' : ''}`}
+          type="email"
+          placeholder="your@email.com"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          autoComplete="email"
+          required
+          disabled={status === 'loading'}
+        />
+        <button className="fl__btn" type="submit" disabled={status === 'loading' || !email.trim()}>
+          {status === 'loading' ? <span className="fl__spinner" /> : 'Get early access →'}
+        </button>
+      </div>
+      {errorMsg && <p className="fl__error" role="alert">{errorMsg}</p>}
+      <p className="fl__fine">No spam. No credit card. Just early access.</p>
+    </form>
+  );
+}
+
+export function FOMOLandingScreen() {
+  return (
+    <div className="fl">
+
+      {/* Nav */}
+      <nav className="fl__nav">
+        <div className="fl__nav-logo">PITCHR</div>
+        <div className="fl__nav-tag">Early Access</div>
+      </nav>
+
+      {/* Hero */}
+      <section className="fl__hero">
+        <div className="fl__hero-inner">
+
+          <div className="fl__scarcity-badge">
+            <span className="fl__scarcity-dot" />
+            {WAITLIST_COUNT.toLocaleString()} reps on the list — {(EARLY_ACCESS_LIMIT - WAITLIST_COUNT).toLocaleString()} spots left
+          </div>
+
+          <h1 className="fl__hero-h1">
+            The best salespeople<br />
+            in your market<br />
+            <span className="fl__hero-accent">found this before you.</span>
+          </h1>
+
+          <p className="fl__hero-sub">
+            Pitchr is real-time AI coaching that tells you exactly what to say the moment an objection hits —
+            mid-call, not post-mortem. Early access. Not open forever.
+          </p>
+
+          <WaitlistForm source="fomo-hero" />
+
+        </div>
+      </section>
+
+      {/* Pain */}
+      <section className="fl__pain">
+        <div className="fl__section-label">WHAT'S HAPPENING ON YOUR CALLS RIGHT NOW</div>
+        <div className="fl__pain-grid">
+          {PAIN_POINTS.map((p, i) => (
+            <div key={i} className="fl__pain-card" style={{ '--i': i } as React.CSSProperties}>
+              <div className="fl__pain-icon">{p.icon}</div>
+              <div className="fl__pain-headline">{p.headline}</div>
+              <p className="fl__pain-body">{p.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div className="fl__divider">
+        <span>What changes when you get access</span>
+      </div>
+
+      {/* Outcomes */}
+      <section className="fl__outcomes">
+        {OUTCOMES.map((o, i) => (
+          <div key={i} className="fl__outcome" style={{ '--i': i } as React.CSSProperties}>
+            <div className="fl__outcome-num">0{i + 1}</div>
+            <div className="fl__outcome-body">
+              <div className="fl__outcome-headline">{o.headline}</div>
+              <p className="fl__outcome-sub">{o.body}</p>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* Urgency CTA */}
+      <section className="fl__cta">
+        <div className="fl__cta-inner">
+          <div className="fl__cta-eyebrow">FOUNDING MEMBER ACCESS</div>
+          <h2 className="fl__cta-h2">
+            You're looking at this at {WAITLIST_COUNT.toLocaleString()}.<br />
+            Early access closes at {EARLY_ACCESS_LIMIT.toLocaleString()}.
+          </h2>
+          <p className="fl__cta-sub">
+            Founding members lock in the lowest price Pitchr will ever be.
+            Once we hit {EARLY_ACCESS_LIMIT.toLocaleString()}, it's gone.
+          </p>
+          <WaitlistForm source="fomo-cta" />
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="fl__footer">
+        <span>© 2026 Pitchr</span>
+        <span>pitchr.org</span>
+      </footer>
+
+    </div>
+  );
+}
