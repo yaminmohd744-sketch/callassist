@@ -106,9 +106,9 @@
   z-index: 1;
   padding: 80px 32px 100px;
   display: grid;
-  grid-template-columns: 220px 1fr 220px;
-  gap: 24px;
-  align-items: center;
+  grid-template-columns: 210px 1fr 210px;
+  gap: 32px;
+  align-items: stretch;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -123,40 +123,61 @@
 
 /* ── Floating boxes ───────────────────────────────────────────────────────── */
 .fl__floats {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-self: center;
+  position: relative;
+  height: 100%;
+  min-height: 460px;
 }
-
-.fl__floats--left  { align-items: flex-end; }
-.fl__floats--right { align-items: flex-start; }
 
 .fl__float {
+  position: absolute;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 12px 16px;
+  gap: 4px;
+  padding: 12px 14px;
   border-radius: 12px;
-  max-width: 200px;
-  animation: fl-fadein 0.5s calc(0.1s + var(--i, 0) * 0.1s) ease both,
-             fl-bob calc(4s + var(--i, 0) * 0.7s) ease-in-out infinite calc(var(--i, 0) * 0.4s);
-  transition: transform 0.2s;
+  width: 180px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  animation: fl-fadein 0.6s ease both;
 }
 
-.fl__float--bad {
-  background: rgba(255, 50, 50, 0.07);
-  border: 1px solid rgba(255, 50, 50, 0.22);
-}
+.fl__floats--left  .fl__float { right: 0; }
+.fl__floats--right .fl__float { left: 0; }
 
-.fl__float--good {
-  background: rgba(57, 211, 83, 0.07);
-  border: 1px solid rgba(57, 211, 83, 0.22);
+/* Scatter positions */
+.fl__floats--left  .fl__float:nth-child(1) { top: 0%;   right: 10px;  animation: fl-fadein .5s .0s ease both, fl-drift1 7s  3.0s ease-in-out infinite; }
+.fl__floats--left  .fl__float:nth-child(2) { top: 18%;  right: 40px;  animation: fl-fadein .5s .1s ease both, fl-drift2 9s  0.5s ease-in-out infinite; }
+.fl__floats--left  .fl__float:nth-child(3) { top: 37%;  right: 0px;   animation: fl-fadein .5s .2s ease both, fl-drift3 11s 1.5s ease-in-out infinite; }
+.fl__floats--left  .fl__float:nth-child(4) { top: 57%;  right: 30px;  animation: fl-fadein .5s .3s ease both, fl-drift1 8s  2.2s ease-in-out infinite; }
+.fl__floats--left  .fl__float:nth-child(5) { top: 76%;  right: 15px;  animation: fl-fadein .5s .4s ease both, fl-drift2 10s 0.0s ease-in-out infinite; }
+
+.fl__floats--right .fl__float:nth-child(1) { top: 3%;   left: 20px;   animation: fl-fadein .5s .0s ease both, fl-drift2 8s  1.0s ease-in-out infinite; }
+.fl__floats--right .fl__float:nth-child(2) { top: 21%;  left: 0px;    animation: fl-fadein .5s .1s ease both, fl-drift3 10s 2.5s ease-in-out infinite; }
+.fl__floats--right .fl__float:nth-child(3) { top: 40%;  left: 35px;   animation: fl-fadein .5s .2s ease both, fl-drift1 7s  0.8s ease-in-out infinite; }
+.fl__floats--right .fl__float:nth-child(4) { top: 59%;  left: 10px;   animation: fl-fadein .5s .3s ease both, fl-drift2 12s 3.5s ease-in-out infinite; }
+.fl__floats--right .fl__float:nth-child(5) { top: 78%;  left: 30px;   animation: fl-fadein .5s .4s ease both, fl-drift3 9s  1.2s ease-in-out infinite; }
+
+@keyframes fl-drift1 {
+  0%, 100% { transform: translate(0px, 0px); }
+  30%       { transform: translate(4px, -10px); }
+  70%       { transform: translate(-3px, -5px); }
+}
+@keyframes fl-drift2 {
+  0%, 100% { transform: translate(0px, 0px); }
+  40%       { transform: translate(-5px, -12px); }
+  75%       { transform: translate(3px, -4px); }
+}
+@keyframes fl-drift3 {
+  0%, 100% { transform: translate(0px, 0px); }
+  25%       { transform: translate(3px, -8px); }
+  60%       { transform: translate(-4px, -14px); }
+  85%       { transform: translate(2px, -6px); }
 }
 
 .fl__float-stat {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 900;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -168,16 +189,11 @@
 .fl__float-label {
   font-size: 11px;
   line-height: 1.4;
-  color: rgba(255, 255, 255, 0.45);
-}
-
-@keyframes fl-bob {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-6px); }
+  color: rgba(255, 255, 255, 0.4);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fl__float { animation: fl-fadein 0.5s ease both; }
+  .fl__float { animation: fl-fadein 0.5s ease both !important; }
 }
 
 .fl__scarcity-badge {
