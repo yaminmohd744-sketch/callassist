@@ -30,7 +30,6 @@ const UploadCallScreen = lazy(() => import('./screens/UploadCallScreen').then(m 
 const LeadsScreen      = lazy(() => import('./screens/LeadsScreen').then(m => ({ default: m.LeadsScreen })));
 const AuthScreen       = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })));
 const OnboardingScreen = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
-const WaitlistScreen   = lazy(() => import('./screens/WaitlistScreen').then(m => ({ default: m.WaitlistScreen })));
 
 // One-time migration: move localStorage outcomes into Supabase call_sessions rows
 async function migrateOutcomes(userId: string): Promise<void> {
@@ -87,32 +86,6 @@ function getOnboardingData(): OnboardingData {
 // True when running inside the Electron desktop app
 const isElectron = navigator.userAgent.includes('Electron');
 
-const PREVIEW_PASSWORD = 'pitchr2025';
-
-function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
-  const [val, setVal] = useState('');
-  const [err, setErr] = useState(false);
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (val === PREVIEW_PASSWORD) { onUnlock(); return; }
-    setErr(true); setVal('');
-    setTimeout(() => setErr(false), 1800);
-  }
-  return (
-    <div style={{ minHeight: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', fontFamily: 'monospace', letterSpacing: '0.14em', marginBottom: '8px' }}>PITCHR — PREVIEW</div>
-      <form onSubmit={submit} style={{ display: 'flex', gap: '8px' }}>
-        <input
-          type="password" value={val} onChange={e => setVal(e.target.value)}
-          placeholder="Password" autoFocus
-          style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${err ? '#ff4444' : 'rgba(255,255,255,0.12)'}`, borderRadius: '8px', padding: '11px 16px', color: '#fff', fontSize: '14px', outline: 'none', minWidth: '220px' }}
-        />
-        <button type="submit" style={{ background: 'linear-gradient(135deg,#814ac8,#df7afe)', border: 'none', borderRadius: '8px', padding: '11px 20px', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>→</button>
-      </form>
-      {err && <div style={{ color: '#ff6b6b', fontSize: '13px' }}>Incorrect password</div>}
-    </div>
-  );
-}
 
 const ALLOWED_IMAGE_REGEX = /^data:image\/(png|jpeg|webp|gif);base64,/;
 
@@ -141,7 +114,7 @@ const INITIAL_THEME = (
 ) as 'dark' | 'light';
 applyTheme(INITIAL_THEME);
 
-type Screen = 'landing' | 'waitlist' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
+type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call';
 
 // ─── App ─────────────────────────────────────────────────────────────────────
 
@@ -169,13 +142,7 @@ export function App() {
     applyTheme(next);
   }, [theme]);
 
-  const [screen, setScreen]             = useState<Screen>(() => {
-    if (isElectron) return 'auth';
-    const hasPreview = new URLSearchParams(window.location.search).has('preview');
-    const isUnlocked = sessionStorage.getItem('pitchr_preview') === '1';
-    if (hasPreview && isUnlocked) return 'landing';
-    return 'waitlist';
-  });
+  const [screen, setScreen]             = useState<Screen>(isElectron ? 'auth' : 'landing');
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
@@ -185,9 +152,6 @@ export function App() {
   const transitionShown = useRef(false);
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-  const [previewUnlocked, setPreviewUnlocked] = useState(() =>
-    sessionStorage.getItem('pitchr_preview') === '1'
-  );
 
   // Load profile pic from IndexedDB on mount
   useEffect(() => {
@@ -272,7 +236,7 @@ export function App() {
 
   // Guard: in the web app (non-Electron) bounce any non-landing screen back to landing.
   useEffect(() => {
-    if (!isElectron && screen !== 'landing' && screen !== 'waitlist' && screen !== 'auth') setScreen('landing');
+    if (!isElectron && screen !== 'landing' && screen !== 'auth') setScreen('landing');
   }, [screen]);
 
   // Guard: if we land on live-call or post-call without required state, go to dashboard.
@@ -346,56 +310,25 @@ export function App() {
   // In the browser, never block on auth — just show the landing page immediately.
   if (authLoading && isElectron) return <div className="app-loading" />;
 
-  // Web app: waitlist by default. Landing page accessible only via ?preview + password.
-  if (!isElectron) {
-    const hasPreviewParam = new URLSearchParams(window.location.search).has('preview');
-
-    if (hasPreviewParam && !previewUnlocked) {
-      return <PasswordGate onUnlock={() => {
-        sessionStorage.setItem('pitchr_preview', '1');
-        setPreviewUnlocked(true);
-        setScreen('landing');
-      }} />;
-    }
-
-    if (hasPreviewParam && previewUnlocked) {
-      if (screen === 'waitlist') {
-        return (
-          <ErrorBoundary>
-            <Suspense fallback={<div className="app-loading" />}>
-              <WaitlistScreen onBack={() => setScreen('landing')} />
-            </Suspense>
-          </ErrorBoundary>
-        );
-      }
-      return (
-        <>
-          <ErrorBoundary>
-            <LandingScreen
-              onDownload={() => {
-                const DESKTOP_PROTOCOL = 'pitchr://open' as const;
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = DESKTOP_PROTOCOL;
-                document.body.appendChild(iframe);
-                setTimeout(() => document.body.removeChild(iframe), 2000);
-                setTimeout(() => setScreen('auth'), 1800);
-              }}
-              onWaitlist={() => setScreen('waitlist')}
-            />
-          </ErrorBoundary>
-          <ThemeToggle theme={theme} onToggle={toggleTheme} />
-        </>
-      );
-    }
-
-    // Default for everyone: waitlist only
+  // In the web app, always show the landing page.
+  if (!isElectron && screen === 'landing') {
     return (
-      <ErrorBoundary>
-        <Suspense fallback={<div className="app-loading" />}>
-          <WaitlistScreen />
-        </Suspense>
-      </ErrorBoundary>
+      <>
+        <ErrorBoundary>
+          <LandingScreen
+            onDownload={() => {
+              const DESKTOP_PROTOCOL = 'pitchr://open' as const;
+              const iframe = document.createElement('iframe');
+              iframe.style.display = 'none';
+              iframe.src = DESKTOP_PROTOCOL;
+              document.body.appendChild(iframe);
+              setTimeout(() => document.body.removeChild(iframe), 2000);
+              setTimeout(() => setScreen('auth'), 1800);
+            }}
+          />
+        </ErrorBoundary>
+        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      </>
     );
   }
 
