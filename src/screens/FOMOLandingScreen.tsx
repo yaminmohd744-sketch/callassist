@@ -127,8 +127,19 @@ export function FOMOLandingScreen() {
 
       {/* Hero */}
       <section className="fl__hero">
-        <div className="fl__hero-inner">
 
+        {/* Left — red floating boxes */}
+        <div className="fl__floats fl__floats--left">
+          {WITHOUT.map((item, i) => (
+            <div key={i} className="fl__float fl__float--bad" style={{ '--i': i } as React.CSSProperties}>
+              <span className="fl__float-stat">{item.stat}</span>
+              <span className="fl__float-label">{item.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Center — hero content */}
+        <div className="fl__hero-inner">
           <h1 className="fl__hero-h1">
             The best salespeople<br />
             in your market<br />
@@ -141,41 +152,18 @@ export function FOMOLandingScreen() {
           </p>
 
           <WaitlistForm source="fomo-hero" />
-
-        </div>
-      </section>
-
-      {/* Compare */}
-      <section className="fl__compare">
-        <div className="fl__compare-col fl__compare-col--bad">
-          <div className="fl__compare-header">
-            <span className="fl__compare-dot fl__compare-dot--bad" />
-            Without Pitchr
-          </div>
-          <ul className="fl__compare-list">
-            {WITHOUT.map((item, i) => (
-              <li key={i} className="fl__compare-item fl__compare-item--bad" style={{ '--i': i } as React.CSSProperties}>
-                <span className="fl__compare-stat">{item.stat}</span>
-                <span className="fl__compare-label">{item.label}</span>
-              </li>
-            ))}
-          </ul>
         </div>
 
-        <div className="fl__compare-col fl__compare-col--good">
-          <div className="fl__compare-header">
-            <span className="fl__compare-dot fl__compare-dot--good" />
-            With Pitchr
-          </div>
-          <ul className="fl__compare-list">
-            {WITH.map((item, i) => (
-              <li key={i} className="fl__compare-item fl__compare-item--good" style={{ '--i': i } as React.CSSProperties}>
-                <span className="fl__compare-stat">{item.stat}</span>
-                <span className="fl__compare-label">{item.label}</span>
-              </li>
-            ))}
-          </ul>
+        {/* Right — green floating boxes */}
+        <div className="fl__floats fl__floats--right">
+          {WITH.map((item, i) => (
+            <div key={i} className="fl__float fl__float--good" style={{ '--i': i } as React.CSSProperties}>
+              <span className="fl__float-stat">{item.stat}</span>
+              <span className="fl__float-label">{item.label}</span>
+            </div>
+          ))}
         </div>
+
       </section>
 
       {/* Pain */}

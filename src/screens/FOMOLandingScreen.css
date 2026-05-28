@@ -104,19 +104,80 @@
 .fl__hero {
   position: relative;
   z-index: 1;
-  padding: 80px 24px 100px;
-  display: flex;
-  justify-content: center;
+  padding: 80px 32px 100px;
+  display: grid;
+  grid-template-columns: 220px 1fr 220px;
+  gap: 24px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .fl__hero-inner {
-  max-width: 720px;
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 0;
+}
+
+/* ── Floating boxes ───────────────────────────────────────────────────────── */
+.fl__floats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-self: center;
+}
+
+.fl__floats--left  { align-items: flex-end; }
+.fl__floats--right { align-items: flex-start; }
+
+.fl__float {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  max-width: 200px;
+  animation: fl-fadein 0.5s calc(0.1s + var(--i, 0) * 0.1s) ease both,
+             fl-bob calc(4s + var(--i, 0) * 0.7s) ease-in-out infinite calc(var(--i, 0) * 0.4s);
+  transition: transform 0.2s;
+}
+
+.fl__float--bad {
+  background: rgba(255, 50, 50, 0.07);
+  border: 1px solid rgba(255, 50, 50, 0.22);
+}
+
+.fl__float--good {
+  background: rgba(57, 211, 83, 0.07);
+  border: 1px solid rgba(57, 211, 83, 0.22);
+}
+
+.fl__float-stat {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.fl__float--bad  .fl__float-stat { color: #ff5555; }
+.fl__float--good .fl__float-stat { color: #39d353; }
+
+.fl__float-label {
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+@keyframes fl-bob {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl__float { animation: fl-fadein 0.5s ease both; }
 }
 
 .fl__scarcity-badge {
@@ -318,100 +379,6 @@
   font-size: 13px;
   color: rgba(255, 255, 255, 0.45);
   margin: 2px 0 0;
-}
-
-/* ── Compare ──────────────────────────────────────────────────────────────── */
-.fl__compare {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  max-width: 960px;
-  margin: 0 auto 80px;
-  padding: 0 24px;
-}
-
-.fl__compare-col {
-  border-radius: 20px;
-  padding: 32px 28px;
-}
-
-.fl__compare-col--bad {
-  background: rgba(255, 60, 60, 0.05);
-  border: 1px solid rgba(255, 60, 60, 0.18);
-}
-
-.fl__compare-col--good {
-  background: rgba(57, 211, 83, 0.05);
-  border: 1px solid rgba(57, 211, 83, 0.18);
-}
-
-.fl__compare-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 28px;
-}
-
-.fl__compare-col--bad  .fl__compare-header { color: rgba(255, 100, 100, 0.7); }
-.fl__compare-col--good .fl__compare-header { color: rgba(57, 211, 83, 0.7); }
-
-.fl__compare-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.fl__compare-dot--bad  { background: #ff4444; }
-.fl__compare-dot--good { background: #39d353; }
-
-.fl__compare-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.fl__compare-item {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  animation: fl-fadein 0.5s calc(0.05s + var(--i, 0) * 0.07s) ease both;
-}
-
-.fl__compare-item:last-child { border-bottom: none; }
-
-.fl__compare-stat {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  flex-shrink: 0;
-  min-width: 64px;
-}
-
-.fl__compare-item--bad  .fl__compare-stat { color: #ff5555; }
-.fl__compare-item--good .fl__compare-stat { color: #39d353; }
-
-.fl__compare-label {
-  font-size: 13px;
-  line-height: 1.45;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-@media (max-width: 700px) {
-  .fl__compare { grid-template-columns: 1fr; }
 }
 
 /* ── Pain section ─────────────────────────────────────────────────────────── */
@@ -628,7 +595,11 @@
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
 @media (max-width: 700px) {
   .fl__nav { padding: 0 20px; }
-  .fl__hero { padding: 56px 20px 72px; }
+  .fl__hero {
+    padding: 56px 20px 72px;
+    grid-template-columns: 1fr;
+  }
+  .fl__floats { display: none; }
   .fl__pain-grid { grid-template-columns: 1fr; }
   .fl__pain { padding-bottom: 60px; }
 
