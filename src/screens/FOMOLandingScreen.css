@@ -71,9 +71,7 @@
   justify-content: space-between;
   padding: 0 40px;
   height: 60px;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: transparent;
   border-bottom: none;
 }
 
