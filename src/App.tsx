@@ -393,7 +393,7 @@ export function App() {
     return (
       <ErrorBoundary>
         <Suspense fallback={<div className="app-loading" />}>
-          <WaitlistScreen onBack={() => {}} />
+          <WaitlistScreen />
         </Suspense>
       </ErrorBoundary>
     );
