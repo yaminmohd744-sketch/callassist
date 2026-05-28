@@ -614,6 +614,76 @@
   .fl__outcome { animation: none; }
 }
 
+/* ── Preview gate ─────────────────────────────────────────────────────────── */
+.fl__preview-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0 32px;
+}
+
+.fl__preview-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.12);
+  font-size: 11px;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+.fl__preview-btn:hover { color: rgba(255, 255, 255, 0.35); }
+
+.fl__preview-gate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  padding: 6px 6px 6px 16px;
+}
+
+.fl__preview-gate--shake {
+  animation: fl-shake 0.5s ease;
+  border-color: rgba(255, 68, 68, 0.5);
+}
+
+@keyframes fl-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+.fl__preview-input {
+  background: none;
+  border: none;
+  outline: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-family: var(--font-sans);
+  width: 110px;
+}
+.fl__preview-input::placeholder { color: rgba(255, 255, 255, 0.2); }
+
+.fl__preview-go {
+  background: rgba(129, 74, 200, 0.3);
+  border: none;
+  border-radius: 100px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #df7afe;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.fl__preview-go:hover { background: rgba(129, 74, 200, 0.55); }
+
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
 @media (max-width: 700px) {
   .fl__nav { padding: 0 20px; }

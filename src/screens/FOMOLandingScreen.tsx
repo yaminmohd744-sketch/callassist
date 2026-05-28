@@ -144,7 +144,47 @@ function WaitlistForm({ source }: { source: string }) {
   );
 }
 
-export function FOMOLandingScreen() {
+const PREVIEW_PASSWORD = 'pitchr2025';
+
+function PreviewGate({ onUnlock }: { onUnlock: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [pw, setPw] = useState('');
+  const [shake, setShake] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function attempt() {
+    if (pw === PREVIEW_PASSWORD) { onUnlock(); return; }
+    setShake(true);
+    setPw('');
+    setTimeout(() => setShake(false), 600);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  }
+
+  if (!open) {
+    return (
+      <button className="fl__preview-btn" onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 50); }}>
+        preview
+      </button>
+    );
+  }
+
+  return (
+    <div className={`fl__preview-gate${shake ? ' fl__preview-gate--shake' : ''}`}>
+      <input
+        ref={inputRef}
+        className="fl__preview-input"
+        type="password"
+        placeholder="password"
+        value={pw}
+        onChange={e => setPw(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') attempt(); if (e.key === 'Escape') setOpen(false); }}
+      />
+      <button className="fl__preview-go" onClick={attempt}>→</button>
+    </div>
+  );
+}
+
+export function FOMOLandingScreen({ onUnlock }: { onUnlock?: () => void }) {
   return (
     <div className="fl">
 
@@ -234,6 +274,11 @@ export function FOMOLandingScreen() {
         ))}
       </section>
 
+      {onUnlock && (
+        <div className="fl__preview-wrap">
+          <PreviewGate onUnlock={onUnlock} />
+        </div>
+      )}
 
     </div>
   );

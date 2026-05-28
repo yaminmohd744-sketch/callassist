@@ -22,6 +22,7 @@ import type { CallConfig, CallSession, CallOutcome, Lead, BusinessProfile, RepLe
 
 import { MarketingPlanScreen } from './screens/MarketingPlanScreen';
 import { FOMOLandingScreen } from './screens/FOMOLandingScreen';
+import { LandingScreen } from './screens/LandingScreen';
 const DashboardScreen  = lazy(() => import('./screens/DashboardScreen').then(m => ({ default: m.DashboardScreen })));
 const PreCallScreen    = lazy(() => import('./screens/PreCallScreen').then(m => ({ default: m.PreCallScreen })));
 const LiveCallScreen   = lazy(() => import('./screens/LiveCallScreen').then(m => ({ default: m.LiveCallScreen })));
@@ -115,7 +116,7 @@ const INITIAL_THEME = (
 ) as 'dark' | 'light';
 applyTheme(INITIAL_THEME);
 
-type Screen = 'landing' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call' | 'marketing-plan';
+type Screen = 'landing' | 'preview' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call' | 'marketing-plan';
 
 // ─── App ─────────────────────────────────────────────────────────────────────
 
@@ -237,7 +238,7 @@ export function App() {
 
   // Guard: in the web app (non-Electron) bounce any non-landing screen back to landing.
   useEffect(() => {
-    if (!isElectron && screen !== 'landing' && screen !== 'auth' && screen !== 'marketing-plan') setScreen('landing');
+    if (!isElectron && screen !== 'landing' && screen !== 'preview' && screen !== 'auth' && screen !== 'marketing-plan') setScreen('landing');
   }, [screen]);
 
   // Guard: if we land on live-call or post-call without required state, go to dashboard.
@@ -316,10 +317,32 @@ export function App() {
     return <MarketingPlanScreen onBack={() => setScreen('landing')} />;
   }
 
+  if (!isElectron && screen === 'preview') {
+    return (
+      <>
+        <ErrorBoundary>
+          <LandingScreen
+            onDownload={() => {
+              const DESKTOP_PROTOCOL = 'pitchr://open' as const;
+              const iframe = document.createElement('iframe');
+              iframe.style.display = 'none';
+              iframe.src = DESKTOP_PROTOCOL;
+              document.body.appendChild(iframe);
+              setTimeout(() => document.body.removeChild(iframe), 2000);
+              setTimeout(() => setScreen('auth'), 1800);
+            }}
+            onMarketingPlan={() => setScreen('marketing-plan')}
+          />
+        </ErrorBoundary>
+        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      </>
+    );
+  }
+
   if (!isElectron && screen === 'landing') {
     return (
       <ErrorBoundary>
-        <FOMOLandingScreen />
+        <FOMOLandingScreen onUnlock={() => setScreen('preview')} />
       </ErrorBoundary>
     );
   }
