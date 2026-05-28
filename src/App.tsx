@@ -169,7 +169,13 @@ export function App() {
     applyTheme(next);
   }, [theme]);
 
-  const [screen, setScreen]             = useState<Screen>(isElectron ? 'auth' : 'waitlist');
+  const [screen, setScreen]             = useState<Screen>(() => {
+    if (isElectron) return 'auth';
+    const hasPreview = new URLSearchParams(window.location.search).has('preview');
+    const isUnlocked = sessionStorage.getItem('pitchr_preview') === '1';
+    if (hasPreview && isUnlocked) return 'landing';
+    return 'waitlist';
+  });
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
