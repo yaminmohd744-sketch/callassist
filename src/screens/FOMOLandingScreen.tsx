@@ -2,8 +2,6 @@ import { useState, useRef } from 'react';
 import { joinWaitlist } from '../lib/waitlist';
 import './FOMOLandingScreen.css';
 
-const WAITLIST_COUNT = 1_847;
-const EARLY_ACCESS_LIMIT = 5_000;
 
 const PAIN_POINTS = [
   {
@@ -107,11 +105,6 @@ export function FOMOLandingScreen() {
       {/* Hero */}
       <section className="fl__hero">
         <div className="fl__hero-inner">
-
-          <div className="fl__scarcity-badge">
-            <span className="fl__scarcity-dot" />
-            {WAITLIST_COUNT.toLocaleString()} reps on the list — {(EARLY_ACCESS_LIMIT - WAITLIST_COUNT).toLocaleString()} spots left
-          </div>
 
           <h1 className="fl__hero-h1">
             The best salespeople<br />
