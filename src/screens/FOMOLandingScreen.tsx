@@ -1,6 +1,42 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { joinWaitlist } from '../lib/waitlist';
 import './FOMOLandingScreen.css';
+
+function StatCounter({ stat }: { stat: string }) {
+  const [display, setDisplay] = useState('0');
+  const ref = useRef<HTMLSpanElement>(null);
+  const hasRun = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const match = stat.match(/(\d+)/);
+    if (!match) { setDisplay(stat); return; }
+
+    const target = parseInt(match[1]);
+    const prefix = stat.slice(0, match.index ?? 0);
+    const suffix = stat.slice((match.index ?? 0) + match[1].length);
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting || hasRun.current) return;
+      hasRun.current = true;
+      const duration = 1400;
+      const start = performance.now();
+      const tick = (now: number) => {
+        const p = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        setDisplay(`${prefix}${Math.round(eased * target)}${suffix}`);
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, { threshold: 0.3 });
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [stat]);
+
+  return <span ref={ref}>{display}</span>;
+}
 
 
 const WITHOUT = [
@@ -132,7 +168,7 @@ export function FOMOLandingScreen() {
         <div className="fl__floats fl__floats--left">
           {WITHOUT.map((item, i) => (
             <div key={i} className="fl__float fl__float--bad" style={{ '--i': i } as React.CSSProperties}>
-              <span className="fl__float-stat">{item.stat}</span>
+              <span className="fl__float-stat"><StatCounter stat={item.stat} /></span>
               <span className="fl__float-label">{item.label}</span>
             </div>
           ))}
@@ -158,7 +194,7 @@ export function FOMOLandingScreen() {
         <div className="fl__floats fl__floats--right">
           {WITH.map((item, i) => (
             <div key={i} className="fl__float fl__float--good" style={{ '--i': i } as React.CSSProperties}>
-              <span className="fl__float-stat">{item.stat}</span>
+              <span className="fl__float-stat"><StatCounter stat={item.stat} /></span>
               <span className="fl__float-label">{item.label}</span>
             </div>
           ))}
