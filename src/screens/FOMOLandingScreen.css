@@ -7,11 +7,65 @@
   overflow-x: hidden;
 }
 
+/* ── Background orbs ─────────────────────────────────────────────────────── */
+.fl__bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.fl__bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(130px);
+  opacity: 0.2;
+}
+
+.fl__bg-orb--1 {
+  width: 700px;
+  height: 700px;
+  background: #814ac8;
+  top: -200px;
+  left: -180px;
+  animation: fl-float 16s ease-in-out infinite;
+}
+
+.fl__bg-orb--2 {
+  width: 500px;
+  height: 500px;
+  background: #df7afe;
+  top: 30%;
+  right: -150px;
+  animation: fl-float 20s ease-in-out infinite reverse;
+}
+
+.fl__bg-orb--3 {
+  width: 400px;
+  height: 400px;
+  background: #814ac8;
+  bottom: -100px;
+  left: 20%;
+  animation: fl-float 24s ease-in-out infinite;
+}
+
+@keyframes fl-float {
+  0%, 100% { transform: translate(0, 0); }
+  33%       { transform: translate(30px, -40px); }
+  66%       { transform: translate(-20px, 20px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl__bg-orb { animation: none; }
+}
+
 /* ── Nav ──────────────────────────────────────────────────────────────────── */
 .fl__nav {
   position: sticky;
   top: 0;
   z-index: 100;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -48,6 +102,8 @@
 
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 .fl__hero {
+  position: relative;
+  z-index: 1;
   padding: 80px 24px 100px;
   display: flex;
   justify-content: center;
@@ -266,6 +322,8 @@
 
 /* ── Pain section ─────────────────────────────────────────────────────────── */
 .fl__pain {
+  position: relative;
+  z-index: 1;
   padding: 0 24px 80px;
   max-width: 1040px;
   margin: 0 auto;
@@ -326,6 +384,8 @@
 
 /* ── Divider ──────────────────────────────────────────────────────────────── */
 .fl__divider {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -358,6 +418,8 @@
 
 /* ── Outcomes ─────────────────────────────────────────────────────────────── */
 .fl__outcomes {
+  position: relative;
+  z-index: 1;
   max-width: 760px;
   margin: 0 auto 100px;
   padding: 0 24px;

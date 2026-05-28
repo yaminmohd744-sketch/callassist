@@ -96,6 +96,13 @@ export function FOMOLandingScreen() {
   return (
     <div className="fl">
 
+      {/* Background */}
+      <div className="fl__bg" aria-hidden="true">
+        <div className="fl__bg-orb fl__bg-orb--1" />
+        <div className="fl__bg-orb fl__bg-orb--2" />
+        <div className="fl__bg-orb fl__bg-orb--3" />
+      </div>
+
       {/* Nav */}
       <nav className="fl__nav">
         <div className="fl__nav-logo">PITCHR</div>
