@@ -3,6 +3,22 @@ import { joinWaitlist } from '../lib/waitlist';
 import './FOMOLandingScreen.css';
 
 
+const WITHOUT = [
+  { stat: '60%', label: 'of reps freeze on the first objection' },
+  { stat: '3+',  label: 'buying signals missed per call on average' },
+  { stat: '73%', label: 'of follow-up emails never get sent' },
+  { stat: '2 hrs', label: 'lost every day to call admin and note-taking' },
+  { stat: '1 in 2', label: 'deals lost to a competitor while you were still thinking' },
+];
+
+const WITH = [
+  { stat: '<1s',  label: 'rebuttal on screen the moment they object' },
+  { stat: '100%', label: 'of buying signals flagged in real time' },
+  { stat: 'Auto', label: 'follow-up email drafted the moment you hang up' },
+  { stat: '0 min', label: 'spent on admin — calls logged and scored instantly' },
+  { stat: '+40%',  label: 'close rate improvement reported by early testers' },
+];
+
 const PAIN_POINTS = [
   {
     icon: '⊘',
@@ -126,6 +142,39 @@ export function FOMOLandingScreen() {
 
           <WaitlistForm source="fomo-hero" />
 
+        </div>
+      </section>
+
+      {/* Compare */}
+      <section className="fl__compare">
+        <div className="fl__compare-col fl__compare-col--bad">
+          <div className="fl__compare-header">
+            <span className="fl__compare-dot fl__compare-dot--bad" />
+            Without Pitchr
+          </div>
+          <ul className="fl__compare-list">
+            {WITHOUT.map((item, i) => (
+              <li key={i} className="fl__compare-item fl__compare-item--bad" style={{ '--i': i } as React.CSSProperties}>
+                <span className="fl__compare-stat">{item.stat}</span>
+                <span className="fl__compare-label">{item.label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="fl__compare-col fl__compare-col--good">
+          <div className="fl__compare-header">
+            <span className="fl__compare-dot fl__compare-dot--good" />
+            With Pitchr
+          </div>
+          <ul className="fl__compare-list">
+            {WITH.map((item, i) => (
+              <li key={i} className="fl__compare-item fl__compare-item--good" style={{ '--i': i } as React.CSSProperties}>
+                <span className="fl__compare-stat">{item.stat}</span>
+                <span className="fl__compare-label">{item.label}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
