@@ -3,7 +3,6 @@
 // error; a typo at the call site is silent data loss.
 
 export const STORAGE_KEYS = {
-  theme:          'theme',
   appLanguage:    'pp-app-language',
   onboarding:     'pp-onboarding',
   nextCallTip:    'pitchr:nextCallTip',

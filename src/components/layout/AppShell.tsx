@@ -32,7 +32,7 @@ export function AppShell({
   const t = useTranslations();
   const {
     appLanguage, onChangeLanguage, currentLangLabel,
-    userName, userEmail, theme, onToggleTheme,
+    userName, userEmail,
     totalCallSeconds, totalCallCount,
     profilePic, onProfilePicChange, onProfilePicError,
   } = useAppContext();
@@ -207,20 +207,6 @@ export function AppShell({
                   </div>
 
                   <div className="app-shell__profile-divider" />
-
-                  {/* Appearance */}
-                  <div className="app-shell__profile-section-label">{t.profile.appearance}</div>
-                  <div className="app-shell__profile-appearance">
-                    <span className={`app-shell__theme-label${theme === 'dark' ? ' app-shell__theme-label--active' : ''}`}>{t.profile.dark}</span>
-                    <button
-                      className={`app-shell__theme-toggle${theme === 'light' ? ' app-shell__theme-toggle--light' : ''}`}
-                      onClick={onToggleTheme}
-                      aria-label="Toggle theme"
-                    >
-                      <span className="app-shell__theme-knob" />
-                    </button>
-                    <span className={`app-shell__theme-label${theme === 'light' ? ' app-shell__theme-label--active' : ''}`}>{t.profile.light}</span>
-                  </div>
 
                   <div className="app-shell__profile-divider" />
 

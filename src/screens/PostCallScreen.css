@@ -509,12 +509,6 @@
   margin-top: 2px;
 }
 
-[data-theme="light"] .scorecard__score-label {
-  color: rgba(0, 0, 0, 0.55);
-}
-[data-theme="light"] .postcall__ann-text {
-  color: rgba(0, 0, 0, 0.55);
-}
 
 .scorecard__metrics {
   display: flex;

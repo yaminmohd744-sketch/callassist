@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { AppContext } from './contexts/AppContext';
 import * as Sentry from '@sentry/react';
-import { ThemeToggle }      from './components/ThemeToggle';
 import { AppShell }         from './components/layout/AppShell';
 import { ErrorBoundary }    from './components/ErrorBoundary';
-import { LoginTransitionOverlay } from './components/LoginTransitionOverlay';
 import { useAuth }          from './hooks/useAuth';
 import { useAppLanguage }   from './hooks/useAppLanguage';
 import { useToast }         from './lib/toast';
@@ -104,17 +102,9 @@ function getDisplayName(
   );
 }
 
-function applyTheme(t: 'dark' | 'light') {
-  document.documentElement.dataset.theme = t === 'light' ? 'light' : '';
-}
-
-// Read once at module scope for FOUC prevention and React state initialisation.
-// Falls back to system preference for first-time visitors.
-const INITIAL_THEME = (
-  localStorage.getItem(STORAGE_KEYS.theme) ??
-  (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
-) as 'dark' | 'light';
-applyTheme(INITIAL_THEME);
+// Clear any stale theme preference from old installs
+document.documentElement.removeAttribute('data-theme');
+try { localStorage.removeItem('theme'); } catch { /* storage unavailable */ }
 
 type Screen = 'landing' | 'preview' | 'auth' | 'dashboard' | 'analytics' | 'leads' | 'upload-call' | 'pre-call' | 'live-call' | 'post-call' | 'marketing-plan';
 
@@ -126,32 +116,17 @@ export function App() {
   const { appLanguage, setAppLanguage, currentLang } = useAppLanguage();
   const toast = useToast();
 
-  const [theme, setTheme] = useState<'dark' | 'light'>(INITIAL_THEME);
   const [businessProfile, setBusinessProfile] = useState<BusinessProfile | null>(() => loadBusinessProfile());
   const [learningProfile, setLearningProfile] = useState<RepLearningProfile | null>(() => loadLearningProfile());
   const [learningLog, setLearningLog] = useState<LearningLogEntry[]>(() => loadLearningLog());
-
-  const toggleTheme = useCallback(() => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    const overlay = document.createElement('div');
-    overlay.className = `theme-flash theme-flash--${next}`;
-    document.body.appendChild(overlay);
-    const removeOverlay = () => overlay.remove();
-    overlay.addEventListener('animationend', removeOverlay, { once: true });
-    setTimeout(removeOverlay, 600); // fallback: remove if animationend never fires
-    setTheme(next);
-    try { localStorage.setItem(STORAGE_KEYS.theme, next); } catch { /* storage full */ }
-    applyTheme(next);
-  }, [theme]);
 
   const [screen, setScreen]             = useState<Screen>(isElectron ? 'auth' : 'landing');
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);
-  const [showTransition, setShowTransition] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingVersion, setOnboardingVersion] = useState(0);
-  const transitionShown = useRef(false);
+  const transitionShown = useRef(false); // prevents double-firing onboarding check
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
@@ -188,13 +163,9 @@ export function App() {
     else Sentry.setUser(null);
 
     if (!authLoading && user && !transitionShown.current && isElectron) {
-      const hasOnboarded = !!localStorage.getItem(STORAGE_KEYS.onboarding);
-      if (!hasOnboarded) {
-        setShowOnboarding(true);
-      } else {
-        setShowTransition(true);
-      }
       transitionShown.current = true;
+      const hasOnboarded = !!localStorage.getItem(STORAGE_KEYS.onboarding);
+      if (!hasOnboarded) setShowOnboarding(true);
     }
   }, [user, authLoading]);
 
@@ -334,7 +305,6 @@ export function App() {
             onMarketingPlan={() => setScreen('marketing-plan')}
           />
         </ErrorBoundary>
-        <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </>
     );
   }
@@ -353,7 +323,6 @@ export function App() {
         <Suspense fallback={<div className="app-loading" />}>
           <AuthScreen onBack={isElectron ? () => {} : () => setScreen('landing')} />
         </Suspense>
-        <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </>
     );
   }
@@ -375,15 +344,12 @@ export function App() {
           setOnboardingVersion(v => v + 1);
           setAppLanguage(data.language as LanguageCode);
           setShowOnboarding(false);
-          setShowTransition(true);
         }} />
       </Suspense>
     );
   }
 
   const appContextValue = {
-    theme,
-    onToggleTheme: toggleTheme,
     appLanguage,
     onChangeLanguage: setAppLanguage,
     currentLangLabel: currentLang.label,
@@ -398,15 +364,6 @@ export function App() {
 
   return (
     <AppContext.Provider value={appContextValue}>
-      {showTransition && (
-        <LoginTransitionOverlay
-          userName={loginUserName}
-          onDone={() => setShowTransition(false)}
-        />
-      )}
-
-      {!isShell && <ThemeToggle theme={theme} onToggle={toggleTheme} />}
-
       {isShell && (
         <AppShell
           activeScreen={currentScreen}

@@ -2,8 +2,6 @@ import { createContext, useContext } from 'react';
 import type { LanguageCode } from '../lib/languages';
 
 export interface AppContextValue {
-  theme: 'dark' | 'light';
-  onToggleTheme: () => void;
   appLanguage: LanguageCode;
   onChangeLanguage: (code: LanguageCode) => void;
   currentLangLabel: string;

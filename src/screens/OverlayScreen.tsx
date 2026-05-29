@@ -60,7 +60,7 @@ export function OverlayScreen() {
         <div className="ov__brand">
           <span className="ov__dot" />
           <span className="ov__logo">
-            PITCH<span className="ov__logo-plus">PLUS</span>
+            PITCHR
           </span>
           {name && <span className="ov__prospect">· {name}</span>}
         </div>

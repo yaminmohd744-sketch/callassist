@@ -9,9 +9,6 @@
   overflow-y: auto;
 }
 
-[data-theme="light"] .lead-panel {
-  background: rgba(248, 248, 250, 0.70);
-}
 
 .lead-panel__section {
   padding: var(--space-4);

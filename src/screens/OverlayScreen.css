@@ -68,13 +68,6 @@
   white-space: nowrap;
 }
 
-.ov__logo-plus {
-  background: linear-gradient(135deg, #7c3aed, #c026d3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 .ov__prospect {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.45);

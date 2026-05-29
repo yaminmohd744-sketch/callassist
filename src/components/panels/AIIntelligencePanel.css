@@ -10,9 +10,6 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
-[data-theme="light"] .ai-panel {
-  background: rgba(240, 240, 243, 0.60);
-}
 
 .ai-panel__header {
   display: flex;

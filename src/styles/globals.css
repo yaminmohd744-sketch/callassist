@@ -1,35 +1,5 @@
 @import './tokens.css';
 
-/* ─── Theme transition flash ─────────────────────────────────────────────── */
-
-@keyframes theme-flash-light {
-  0%   { opacity: 0; }
-  20%  { opacity: 0.18; }
-  100% { opacity: 0; }
-}
-
-@keyframes theme-flash-dark {
-  0%   { opacity: 0; }
-  20%  { opacity: 0.22; }
-  100% { opacity: 0; }
-}
-
-.theme-flash {
-  position: fixed;
-  inset: 0;
-  z-index: 999999;
-  pointer-events: none;
-}
-
-.theme-flash--light {
-  background: #ffffff;
-  animation: theme-flash-light 0.55s cubic-bezier(0.25, 0, 0, 1) forwards;
-}
-
-.theme-flash--dark {
-  background: #050010;
-  animation: theme-flash-dark 0.55s cubic-bezier(0.25, 0, 0, 1) forwards;
-}
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -57,50 +27,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Light mode token overrides — duplicated here for Electron dev reliability ── */
-[data-theme="light"] {
-  --color-bg-base:       #ffffff;
-  --color-bg-surface:    #f5f5f7;
-  --color-bg-elevated:   #ebebed;
-  --color-bg-hover:      #e0e0e4;
-  --color-bg-glass:      rgba(255, 255, 255, 0.92);
-  --color-bg-glass-hi:   rgba(255, 255, 255, 0.98);
-  --color-border:        rgba(0, 0, 0, 0.10);
-  --color-border-subtle: rgba(0, 0, 0, 0.06);
-  --color-border-glass:  rgba(0, 0, 0, 0.07);
-  --color-border-bright: rgba(124, 58, 237, 0.40);
-  --color-accent-magenta:      #c026d3;
-  --color-accent-gradient:     linear-gradient(135deg, #7c3aed 0%, #c026d3 100%);
-  --color-accent-gradient-sub: linear-gradient(135deg, rgba(124,58,237,0.09) 0%, rgba(192,38,211,0.09) 100%);
-  --color-accent-purple-dim:   rgba(124, 58, 237, 0.08);
-  --color-accent-cyan-dim:     rgba(124, 58, 237, 0.08);
-  --color-prospect:            #c026d3;
-  --color-prospect-dim:        rgba(192, 38, 211, 0.08);
-  --color-accent-green:  #16a34a;
-  --color-accent-red:    #dc2626;
-  --color-accent-yellow: #ca8a04;
-  --color-accent-orange: #ea580c;
-  --color-text-primary:   #0a0a0a;
-  --color-text-secondary: rgba(10, 10, 10, 0.60);
-  --color-text-muted:     rgba(10, 10, 10, 0.42);
-  --color-text-accent:    #7c3aed;
-  --shadow-sm:   0 1px 3px  rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0,0,0,0.04);
-  --shadow-md:   0 4px 16px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(0,0,0,0.05);
-  --shadow-lg:   0 12px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0,0,0,0.06);
-  --shadow-xl:   0 24px 64px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0,0,0,0.07);
-  --glow-purple:  0 0 14px rgba(124,58,237,0.20);
-  --glow-magenta: 0 0 14px rgba(192,38,211,0.18);
-  --glow-combo:   0 0 14px rgba(124,58,237,0.15), 0 0 28px rgba(192,38,211,0.08);
-  --glow-cyan:    0 0 14px rgba(124,58,237,0.20);
-  --glow-red:     0 0 10px rgba(220,38,38,0.18);
-  --glow-green:   0 0 10px rgba(22,163,74,0.18);
-}
-
-/* Light mode: flat white — no floating blobs */
-[data-theme="light"] body {
-  background-image: none;
-  color: #0a0a0a;
-}
 
 button {
   font-family: var(--font-display);

@@ -59,9 +59,6 @@
   box-shadow: 0 0 10px rgba(239,68,68,0.4);
 }
 
-[data-theme="light"] .prob-meter__track {
-  background: rgba(0,0,0,0.06);
-}
 
 @media (prefers-reduced-motion: reduce) {
   .prob-meter *, .prob-meter *::before, .prob-meter *::after {

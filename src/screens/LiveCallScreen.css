@@ -3,6 +3,21 @@
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  background: var(--color-bg-base);
+  position: relative;
+}
+
+/* Purple-violet radial at the top — adds depth without noise */
+.live-call::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 280px;
+  background: radial-gradient(ellipse 70% 280px at 50% 0%, rgba(124, 58, 237, 0.13) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .live-call__panels {
@@ -82,13 +97,6 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   white-space: nowrap;
-}
-
-.live-call__bubble-logo .lp__logo-plus {
-  background: var(--color-accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .live-call__bubble-prospect {
@@ -415,13 +423,3 @@
   }
 }
 
-[data-theme="light"] .live-call__bubble {
-  box-shadow:
-    0 8px 32px rgba(80, 60, 30, 0.18),
-    0 0 0 1px rgba(124, 58, 237, 0.12),
-    0 0 24px rgba(124, 58, 237, 0.08);
-}
-
-[data-theme="light"] .live-call__summarising-overlay {
-  background: rgba(255, 255, 255, 0.82);
-}

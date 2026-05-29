@@ -1,7 +1,6 @@
-﻿import { useState, useMemo, useEffect, useRef } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { Button } from '../components/ui/Button';
 import type { CallSession } from '../types';
-import { loadRecording } from '../hooks/useCallRecorder';
 import { formatDuration, formatDateLong } from '../lib/formatters';
 import { useTranslations } from '../hooks/useTranslations';
 import { useAppContext } from '../contexts/AppContext';
@@ -64,14 +63,10 @@ function renderSummary(text: string) {
 
 export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenProps) {
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'summary' | 'transcript' | 'email' | 'scorecard' | 'replay' | 'share'>('summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'transcript' | 'email' | 'scorecard' | 'share'>('summary');
   const [prospectSummary, setProspectSummary] = useState<string | null>(null);
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [summaryCopied, setSummaryCopied] = useState(false);
-  const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
-  const recordingUrlRef = useRef<string | null>(null);
-  const [replayCurrentTime, setReplayCurrentTime] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [emailDraft, setEmailDraft] = useState(session.followUpEmail);
   const emailEdited = emailDraft !== session.followUpEmail;
 
@@ -96,26 +91,6 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
     ? Math.round((Math.min(objHandled / session.objectionsCount, 1)) * 100)
     : 100;
   const buyingSignals = session.suggestions.filter(s => s.type === 'close-attempt').length;
-
-  useEffect(() => {
-    if (activeTab !== 'replay' || !session.recordingKey || recordingUrl) return;
-    loadRecording(session.recordingKey).then(blob => {
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        setRecordingUrl(url);
-        recordingUrlRef.current = url;
-      }
-    }).catch(() => {});
-    // Only revoke on unmount or when the recording key changes — not on tab change.
-    // Revoking on tab change without clearing state would leave a stale revoked URL.
-    return () => {
-      if (recordingUrlRef.current) {
-        URL.revokeObjectURL(recordingUrlRef.current);
-        recordingUrlRef.current = null;
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session.recordingKey]);
 
   async function handleGenerateProspectSummary() {
     if (generatingSummary) return;
@@ -271,16 +246,6 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
           className={`postcall__tab ${activeTab === 'email' ? 'postcall__tab--active' : ''}`}
           onClick={() => setActiveTab('email')}
         >{t.postcall.followUp}</button>
-        {session.recordingKey && (
-          <button
-            role="tab"
-            aria-selected={activeTab === 'replay'}
-            id="postcall-tab-replay"
-            aria-controls="postcall-panel-replay"
-            className={`postcall__tab ${activeTab === 'replay' ? 'postcall__tab--active' : ''}`}
-            onClick={() => setActiveTab('replay')}
-          >▶ REPLAY</button>
-        )}
         <button
           role="tab"
           aria-selected={activeTab === 'scorecard'}
@@ -472,49 +437,6 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
           </div>
         )}
 
-        {activeTab === 'replay' && (
-          <div className="postcall__replay" role="tabpanel" id="postcall-panel-replay" aria-labelledby="postcall-tab-replay" tabIndex={0}>
-            <div className="postcall__ann"><div className="postcall__ann-stamp">CALL REPLAY</div><div className="postcall__ann-text">Listen back and sync with the full transcript</div></div>
-            {!recordingUrl ? (
-              <div className="postcall__replay-loading">
-                <div className="postcall__replay-loading-icon">▶</div>
-                <div>Loading recording…</div>
-              </div>
-            ) : (
-              <>
-                <audio
-                  ref={audioRef}
-                  src={recordingUrl}
-                  controls
-                  className="postcall__replay-audio"
-                  onTimeUpdate={e => setReplayCurrentTime((e.target as HTMLAudioElement).currentTime)}
-                />
-                <div className="postcall__replay-timeline">
-                  {session.transcript.map((entry, i) => {
-                    const isActive = replayCurrentTime >= entry.timestampSeconds &&
-                      (i === session.transcript.length - 1 || replayCurrentTime < session.transcript[i + 1].timestampSeconds);
-                    const mins = String(Math.floor(entry.timestampSeconds / 60)).padStart(2, '0');
-                    const secs = String(entry.timestampSeconds % 60).padStart(2, '0');
-                    return (
-                      <div
-                        key={entry.id}
-                        className={`postcall__replay-entry postcall__replay-entry--${entry.speaker}${isActive ? ' postcall__replay-entry--active' : ''}`}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => { if (audioRef.current) audioRef.current.currentTime = entry.timestampSeconds; }}
-                        onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && audioRef.current) { e.preventDefault(); audioRef.current.currentTime = entry.timestampSeconds; } }}
-                      >
-                        <span className="postcall__replay-ts">{mins}:{secs}</span>
-                        <span className="postcall__replay-speaker">{entry.speaker === 'rep' ? 'YOU' : 'PROSPECT'}</span>
-                        <span className="postcall__replay-text">{entry.text}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
-        )}
 
         {activeTab === 'share' && (
           <div className="postcall__share" role="tabpanel" id="postcall-panel-share" aria-labelledby="postcall-tab-share" tabIndex={0}>
