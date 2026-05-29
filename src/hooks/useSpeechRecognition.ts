@@ -4,8 +4,8 @@ import { FUNCTIONS_BASE, ANON_KEY, getAuthToken } from '../lib/api';
 
 const WATCHDOG_TIMEOUT_MS     = 10_000;
 const FLUSH_DEBOUNCE_MS       = 350;
-const TOKEN_CACHE_TTL_MS      = 50_000;
-const TOKEN_CACHE_HEADROOM_MS = 5_000;
+const TOKEN_CACHE_TTL_MS      = 3_500_000; // 58 min — key TTL is 1hr, refresh 2min early
+const TOKEN_CACHE_HEADROOM_MS = 120_000;   // refetch 2min before expiry
 
 let _deepgramTokenCache: { value: string; expiresAt: number } | null = null;
 export function clearDeepgramTokenCache() { _deepgramTokenCache = null; }

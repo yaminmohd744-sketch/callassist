@@ -48,7 +48,7 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({
           comment: "session-key",
           scopes: ["usage:write"],
-          time_to_live_in_seconds: 30,
+          time_to_live_in_seconds: 3600,
         }),
       }
     );
