@@ -77,7 +77,7 @@ const VIDEO_SCRIPTS = [
     script: [
       { type: 'avatar', text: `"Top SDRs have a tool most people in sales don't know about.\n\nAnd I'm going to show you exactly what it is."` },
       { type: 'screen', text: 'Pitchr opening, starting a call, coaching card appearing' },
-      { type: 'avatar', text: `"It's called Pitchr.\nIt listens to your sales calls in real time.\nThe moment a prospect throws an objection—\nthe exact rebuttal appears on your screen.\n\nBuying signal? Close prompt fires automatically.\nHesitation in your voice? Body language alert.\n\nIt's like having a sales coach who never sleeps\nwhispering in your ear on every single call."` },
+      { type: 'avatar', text: `"It's called Pitchr.\nIt listens to your sales calls in real time.\nThe moment a prospect throws an objection—\nthe exact rebuttal appears on your screen.\n\nBuying signal? Close prompt fires automatically.\n\nIt's like having a sales coach who never sleeps\nwhispering in your ear on every single call."` },
       { type: 'avatar', text: `"This is what separates the reps closing 70% from the ones closing 20%.\n\nNot the script. Not the product. The coaching, in real time.\n\n$39 a month. Free trial in bio."` },
     ],
   },
@@ -120,19 +120,6 @@ const VIDEO_SCRIPTS = [
       { type: 'avatar', text: `"If you're grinding it out solo — this one's for you.\nFree trial. Link in bio."` },
     ],
   },
-  {
-    id: '10',
-    title: 'The Body Language Card',
-    angle: 'Feature nobody else has — surprises people',
-    target: 'AE, any rep on video calls',
-    cta: 'Download',
-    script: [
-      { type: 'avatar', text: `"55% of communication is body language.\nYour prospects read yours — whether you know it or not.\n\nWhen you sound hesitant, they feel it.\nWhen you rush, they pull back.\nWhen you go quiet because you're nervous — they know."` },
-      { type: 'screen', text: 'Pitchr body language panel: confidence 84%, pace Good, filler words Low, alert "Hesitation detected — sound more certain"' },
-      { type: 'avatar', text: `"Pitchr reads your voice in real time.\nPace. Confidence. Filler words. Hesitation.\n\nWhen your tone shifts — it tells you before the prospect acts on it."` },
-      { type: 'avatar', text: `"No other sales tool does this.\n$39 a month. Start free today."` },
-    ],
-  },
 ];
 
 const HOOKS = [
@@ -171,7 +158,6 @@ const CAPTURE_LIST = [
   'Post-call summary — AI summary tab loading after call ends',
   'Follow-up email — full drafted email appearing in the email tab',
   'Live transcript — words appearing in real time as speech happens',
-  'Body language panel — confidence 84%, pace Good, filler words Low, hesitation alert',
   'Lead score — score appearing on contact card after call',
   'Pre-call setup — 30-second setup: name, pitch, language, start',
 ];

@@ -44,8 +44,6 @@ export interface AISuggestion {
   createdAt?: number;
   streaming?: boolean;
   isFallback?: boolean;
-  physicalAction?: string;
-  physicalIcon?: string;
   probabilityAtTime?: number; // close probability when this suggestion fired
 }
 

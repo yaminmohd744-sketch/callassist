@@ -9,17 +9,6 @@ const TYPE_LABEL: Record<SuggestionType, string> = {
   'discovery':          'GO DEEPER',
 };
 
-const PHYSICAL_LABEL: Record<string, string> = {
-  nod:     'NOD',
-  eye:     'EYE CONTACT',
-  lean:    'LEAN IN',
-  chin:    'CHIN UP',
-  quiet:   'STAY QUIET',
-  posture: 'SIT UP',
-  smile:   'SMILE',
-  pause:   'PAUSE',
-};
-
 function formatTime(seconds: number) {
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 }
@@ -30,7 +19,6 @@ interface SuggestionCardProps {
 
 export function SuggestionCard({ suggestion }: SuggestionCardProps) {
   const isStreaming = suggestion.streaming === true;
-  const hasPhysical = !!suggestion.physicalAction;
   const hasVerbal = !!suggestion.body;
 
   return (
@@ -46,22 +34,13 @@ export function SuggestionCard({ suggestion }: SuggestionCardProps) {
         <span className="suggestion-card__time">{formatTime(suggestion.timestampSeconds)}</span>
       </div>
 
-      {hasPhysical && (
-        <div className="suggestion-card__physical">
-          <span className="suggestion-card__physical-badge">
-            {PHYSICAL_LABEL[suggestion.physicalIcon ?? ''] ?? (suggestion.physicalIcon?.toUpperCase() ?? 'DO')}
-          </span>
-          <span className="suggestion-card__physical-text">{suggestion.physicalAction}</span>
-        </div>
-      )}
-
       {hasVerbal && (() => {
         const parts = suggestion.body.split('\n\n');
         const script = parts[0];
         const note   = parts.length > 1 ? parts.slice(1).join(' ') : null;
         return (
           <>
-            <div className={`suggestion-card__script${hasPhysical ? ' suggestion-card__script--below-physical' : ''}`}>
+            <div className="suggestion-card__script">
               {!isStreaming && <span className="suggestion-card__say-label">SAY</span>}
               <span className="suggestion-card__say-text">
                 {!isStreaming && '"'}{script}{!isStreaming && '"'}
@@ -84,7 +63,7 @@ export function SuggestionCard({ suggestion }: SuggestionCardProps) {
       {!isStreaming && suggestion.triggeredBy
         && !suggestion.triggeredBy.startsWith('quick-action')
         && suggestion.triggeredBy !== 'stage-advancement'
-        && !suggestion.triggeredBy.startsWith('body:') && (
+        && (
         <div className="suggestion-card__trigger">
           Triggered by: <em>"{suggestion.triggeredBy.slice(0, 60)}{suggestion.triggeredBy.length > 60 ? '...' : ''}"</em>
         </div>

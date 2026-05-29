@@ -39,7 +39,6 @@ const DEMO_SCENES = [
     stage: 'DISCOVERY',
     tone: 'DEFENSIVE',
     prospect: '"Honestly it\'s probably not a priority until Q3 — we\'re heads-down on a product launch right now."',
-    physicalAction: 'Stay quiet — let them finish.',
     say: 'That makes sense. If the manual reporting is costing your team two hours a week, what\'s the cost of waiting another quarter?',
     why: 'Reframes delay as an active cost — makes the status quo more painful than the change.',
     time: '02:03',
@@ -50,7 +49,6 @@ const DEMO_SCENES = [
     stage: 'DISCOVERY',
     tone: 'CURIOUS',
     prospect: '"Honestly, the reporting could be better..."',
-    physicalAction: 'Lean in — buying signal.',
     say: 'So if I showed you exactly how we fix that, would you be open to a 20-min demo this week?',
     why: 'Pain confirmed — bridge directly to the next step while urgency is live.',
     time: '06:17',
@@ -61,7 +59,6 @@ const DEMO_SCENES = [
     stage: 'CLOSE',
     tone: 'WARM',
     prospect: '"That actually sounds really interesting..."',
-    physicalAction: 'Slow down, smile.',
     say: 'Based on what we\'ve covered, does this solve the problem you described at the start?',
     why: 'Trial close while intent is high — gets a yes or surfaces a final objection.',
     time: '09:04',
@@ -92,12 +89,6 @@ const FEATURES = [
     title: 'Post-call analysis',
     desc: 'Full transcript, AI summary, lead score, and a ready-to-send personalised follow-up email generated the moment you hang up.',
     bullets: ['Full transcript saved', 'AI-generated follow-up email', 'Improvement suggestions'],
-  },
-  {
-    icon: '◈',
-    title: 'Body language',
-    desc: 'AI reads your tone, pacing, and vocal confidence in real time — alerting you when you sound hesitant, rushed, or too passive so you can course-correct mid-call.',
-    bullets: ['Vocal confidence scoring', 'Pace & filler-word alerts', 'Hesitation detection'],
   },
 ];
 
@@ -608,36 +599,6 @@ export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: Landi
                 <div className="demo-check-item demo-check-1"><span className="demo-check-icon">✓</span> Transcript saved</div>
                 <div className="demo-check-item demo-check-2"><span className="demo-check-icon">✓</span> AI summary generated</div>
                 <div className="demo-check-item demo-check-3"><span className="demo-check-icon">✓</span> Follow-up email ready</div>
-              </div>
-            </div>
-
-            {/* 05 Body language */}
-            <div className="lp__sv-frow" style={{ '--row-i': 4 } as React.CSSProperties}>
-              <span className="lp__sv-frow-num">05</span>
-              <div className="lp__sv-frow-body">
-                <h3 className="lp__sv-frow-title">{FEATURES[4].title}</h3>
-                <p className="lp__sv-frow-desc">{FEATURES[4].desc}</p>
-                <ul className="lp__sv-frow-bullets">
-                  {FEATURES[4].bullets.map((b, i) => <li key={i}>{b}</li>)}
-                </ul>
-              </div>
-              <div className="lp__sv-demo lp__sv-frow-demo">
-                <div className="demo-body-row">
-                  <span className="demo-body-label">Confidence</span>
-                  <div className="demo-body-bar-track"><div className="demo-body-bar demo-body-bar--confidence" /></div>
-                  <span className="demo-body-pct">84%</span>
-                </div>
-                <div className="demo-body-row">
-                  <span className="demo-body-label">Pace</span>
-                  <div className="demo-body-bar-track"><div className="demo-body-bar demo-body-bar--pace" /></div>
-                  <span className="demo-body-pct">Good</span>
-                </div>
-                <div className="demo-body-row">
-                  <span className="demo-body-label">Fillers</span>
-                  <div className="demo-body-bar-track"><div className="demo-body-bar demo-body-bar--fillers" /></div>
-                  <span className="demo-body-pct">Low</span>
-                </div>
-                <div className="demo-body-alert">⚠ Hesitation detected — sound more certain</div>
               </div>
             </div>
 
@@ -1371,10 +1332,6 @@ export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: Landi
                         </span>
                         <span className="lp__dd-suggestion-time">{DEMO_SCENES[desktopSceneIdx].time}</span>
                       </div>
-                      <div className="lp__dd-suggestion-do">
-                        <span className="lp__dd-do-label">DO</span>
-                        <span className="lp__dd-do-text">{DEMO_SCENES[desktopSceneIdx].physicalAction}</span>
-                      </div>
                       <div className="lp__dd-suggestion-say">
                         <span className="lp__dd-say-label">SAY</span>
                         <span className="lp__dd-say-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].say}&rdquo;</span>
@@ -1477,10 +1434,6 @@ export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: Landi
                 </div>
                 {/* Suggestion row */}
                 <div className="lp__dd-bubble-suggestion">
-                  <div className="lp__dd-bubble-do">
-                    <span className="lp__dd-bubble-do-label">DO</span>
-                    <span className="lp__dd-bubble-do-text">{DEMO_SCENES[desktopSceneIdx].physicalAction}</span>
-                  </div>
                   <div className="lp__dd-bubble-say">
                     <span className="lp__dd-bubble-say-label">SAY</span>
                     <span className="lp__dd-bubble-say-text">&ldquo;{DEMO_SCENES[desktopSceneIdx].say}&rdquo;</span>

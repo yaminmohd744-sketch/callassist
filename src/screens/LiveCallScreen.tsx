@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo, type MouseEvent as ReactMouseEvent } from 'react';
+﻿import { useState, useCallback, useRef, useEffect, useLayoutEffect, type MouseEvent as ReactMouseEvent } from 'react';
 import { useToast } from '../lib/toast';
 import { useTranslations } from '../hooks/useTranslations';
 import { Header } from '../components/layout/Header';
@@ -15,7 +15,6 @@ import type { CallConfig, CallSession, CallStatus, TranscriptEntry, TranscriptSp
 import { genId } from '../lib/id';
 import { saveDraft, loadDraft, clearDraft } from '../lib/callDraft';
 import { useCallRecorder } from '../hooks/useCallRecorder';
-import { useBodyLanguage } from '../hooks/useBodyLanguage';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { extractAutoNote, clearAutoNoteDedup } from '../lib/autoNotes';
 import type { AISuggestion } from '../types';
@@ -25,7 +24,6 @@ import './LiveCallScreen.css';
 const FILLER_WORDS = ['um', 'uh', 'like', 'you know', 'basically', 'literally', 'sort of', 'kind of', 'i mean', 'right'];
 const FILLER_PATTERNS = FILLER_WORDS.map(w => new RegExp(`\\b${w}\\b`, 'i'));
 
-const BODY_SUGGESTIONS_MAX = 10;
 const DRAFT_SAVE_INTERVAL_MS = 10_000;
 const FLIP_DEBOUNCE_MS = 400;
 const DEFAULT_TALK_RATIO = 0.5;
@@ -109,7 +107,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const startedAtRef = useRef(new Date().toISOString());
   const recordingKeyRef = useRef(startedAtRef.current);
   const { startRecording, stopRecording, isSupported: recordingSupported, recordingError } = useCallRecorder();
-  const [bodySuggestions, setBodySuggestions] = useState<AISuggestion[]>([]);
 
   const bubbleRef = useRef<HTMLDivElement>(null);
   const dragOffset = useRef<{ x: number; y: number } | null>(null);
@@ -156,21 +153,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const suggestionsRef = useRef(suggestions);
   useLayoutEffect(() => { suggestionsRef.current = suggestions; }, [suggestions]);
 
-  const latestAIScript = suggestions.length > 0 ? suggestions[suggestions.length - 1].body : undefined;
-  const onBodySuggestion = useCallback((s: AISuggestion) => {
-    setBodySuggestions(prev => [...prev.slice(-(BODY_SUGGESTIONS_MAX - 1)), s]);
-  }, []);
-  const { cameraError } = useBodyLanguage({
-    isActive: callStatus === 'active',
-    elapsedSeconds,
-    currentScript: latestAIScript,
-    onSuggestion: onBodySuggestion,
-  });
-
-  // Both sources append chronologically, so no sort needed (max ~18 items total)
-  const allSuggestions = useMemo(() => {
-    return [...suggestions, ...bodySuggestions];
-  }, [suggestions, bodySuggestions]);
+  const allSuggestions = suggestions;
 
   // Automatically classify each mic utterance as rep or prospect based on content.
   // Only prospect entries trigger AI analysis.
@@ -597,11 +580,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
               ⚠ {recordingError}
             </div>
           )}
-          {cameraError && (
-            <div className="livecall__mic-warning">
-              ⚠ {t.liveCall.bodyUnavailable(cameraError)}
-            </div>
-          )}
+
           <div className="live-call__panels" data-mobile={mobilePanel}>
             <ErrorBoundary>
               <TranscriptPanel
@@ -683,16 +662,10 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           </div>
           {latestSuggestion ? (
             <div className="live-call__bubble-suggestion">
-              {latestSuggestion.physicalAction && (
-                <div className="live-call__bubble-do">
-                  <span className="live-call__bubble-do-label">DO</span>
-                  <span className="live-call__bubble-do-text">{latestSuggestion.physicalAction}</span>
-                </div>
-              )}
               {latestSuggestion.body && (
                 <div className="live-call__bubble-say">
                   <span className="live-call__bubble-suggestion-label">
-                    {latestSuggestion.physicalAction ? 'SAY' : (suggestionTypeLabel[latestSuggestion.type] ?? 'NEXT')}
+                    {suggestionTypeLabel[latestSuggestion.type] ?? 'NEXT'}
                   </span>
                   <span className="live-call__bubble-suggestion-text">
                     {latestSuggestion.body.split('\n\n')[0]}

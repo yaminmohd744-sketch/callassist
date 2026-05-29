@@ -158,7 +158,7 @@
   background: rgba(255, 68, 68, 0.24);
 }
 
-/* ── Body row (suggestion / idle) ──────────────────────────────────────────── */
+/* ── Suggestion / idle row ──────────────────────────────────────────────────── */
 .ov__body {
   display: flex;
   align-items: flex-start;
@@ -193,7 +193,6 @@
 
 @keyframes ov-blink { 50% { opacity: 0; } }
 
-/* Idle state */
 .ov__body-dot {
   width: 6px;
   height: 6px;
