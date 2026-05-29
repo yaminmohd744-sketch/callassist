@@ -65,6 +65,7 @@ export async function analyzeTranscript(
   onStream?: StreamCallback,
   externalSignal?: AbortSignal
 ): Promise<AIAnalysisResult> {
+  let streamTimer: ReturnType<typeof setTimeout> | null = null;
   let suggestionId = '';
   let streamingShown = false;
   try {
@@ -76,7 +77,7 @@ export async function analyzeTranscript(
     } else {
       externalSignal?.addEventListener('abort', () => streamController.abort(), { once: true });
     }
-    const streamTimer = setTimeout(() => streamController.abort(), 50_000);
+    streamTimer = setTimeout(() => streamController.abort(), 50_000);
     const authToken = await getAuthToken();
     const res = await fetch(`${FUNCTIONS_BASE}/analyze-transcript`, {
       method: 'POST',
@@ -253,6 +254,7 @@ export async function analyzeTranscript(
       prospectTone: aiProspectTone,
     };
   } catch (err) {
+    if (streamTimer !== null) clearTimeout(streamTimer);
     if (streamingShown && onStream && suggestionId) {
       onStream({ id: suggestionId, type: 'tip', headline: '', body: '', triggeredBy: newEntry.text, timestampSeconds: elapsedSeconds, streaming: false });
     }

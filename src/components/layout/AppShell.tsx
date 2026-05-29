@@ -208,8 +208,6 @@ export function AppShell({
 
                   <div className="app-shell__profile-divider" />
 
-                  <div className="app-shell__profile-divider" />
-
                   {/* Sign out */}
                   <button
                     className="app-shell__profile-signout"

@@ -147,9 +147,11 @@ export function PostCallScreen({ session, onBack, onNewCall }: PostCallScreenPro
       buyingSignals: session.suggestions.filter(s => s.type === 'close-attempt').map(s => s.headline),
       aiSummary: session.aiSummary,
     };
-    await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-    setJsonCopied(true);
-    setTimeout(() => setJsonCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      setJsonCopied(true);
+      setTimeout(() => setJsonCopied(false), 2000);
+    } catch { /* clipboard unavailable — text is visible for manual copy */ }
   }
 
   function handleOpenMailto() {

@@ -166,7 +166,12 @@
       "Bash(gh api *)",
       "Bash(tasklist /FI \"PID eq 16912\" /FO LIST)",
       "PowerShell(Get-Process -Id 16912)",
-      "PowerShell(Get-Process -Id 16912 -ErrorAction SilentlyContinue)"
+      "PowerShell(Get-Process -Id 16912 -ErrorAction SilentlyContinue)",
+      "Bash(node c:\\\\Users\\\\User\\\\callassist\\\\.agents\\\\skills\\\\impeccable\\\\scripts\\\\load-context.mjs)",
+      "Bash(node \"c:\\\\Users\\\\User\\\\callassist\\\\.agents\\\\skills\\\\impeccable\\\\scripts\\\\load-context.mjs\")",
+      "Bash(del \"c:\\\\Users\\\\User\\\\callassist\\\\src\\\\components\\\\ThemeToggle.tsx\")",
+      "Bash(del \"c:\\\\Users\\\\User\\\\callassist\\\\src\\\\components\\\\ThemeToggle.css\")",
+      "Bash(node -e ' *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\callassist\\.claude\\skills"
