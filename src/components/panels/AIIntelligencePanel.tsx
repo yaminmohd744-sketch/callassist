@@ -33,10 +33,14 @@ export function AIIntelligencePanel({
   }), [t]);
 
   // Filter out suggestions older than 90 seconds so stale coaching doesn't linger.
+  // AI suggestions are prepended (newest at index 0); body suggestions are appended
+  // (newest at last index). Use reduce to find the highest timestamp regardless of order.
   const fresh = suggestions.filter(s =>
     s.createdAt === undefined || elapsedSeconds - s.createdAt <= SUGGESTION_TTL
   );
-  const activeCard = fresh.length > 0 ? fresh[fresh.length - 1] : null;
+  const activeCard = fresh.length > 0
+    ? fresh.reduce((a, b) => b.timestampSeconds >= a.timestampSeconds ? b : a)
+    : null;
 
   return (
     <div className="ai-panel">

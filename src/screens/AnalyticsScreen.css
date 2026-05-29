@@ -1156,3 +1156,88 @@
   min-width: 40px;
   text-align: right;
 }
+
+/* ─── Light theme ────────────────────────────────────────────────────────────*/
+
+[data-theme="light"] .analytics__tabs {
+  border-bottom-color: rgba(124, 58, 237, 0.14);
+}
+
+[data-theme="light"] .analytics__tab--active {
+  background: rgba(124, 58, 237, 0.08);
+  border-color: rgba(124, 58, 237, 0.25);
+}
+
+[data-theme="light"] .analytics__stat-card {
+  background: rgba(124, 58, 237, 0.06);
+  border-color: rgba(124, 58, 237, 0.20);
+  box-shadow: 0 0 24px rgba(124, 58, 237, 0.06), 0 2px 8px rgba(80, 60, 30, 0.08);
+}
+
+[data-theme="light"] .analytics__stat-card:hover {
+  background: rgba(124, 58, 237, 0.10);
+  border-color: rgba(124, 58, 237, 0.32);
+  box-shadow: 0 0 32px rgba(124, 58, 237, 0.10), 0 2px 8px rgba(80, 60, 30, 0.10);
+}
+
+[data-theme="light"] .analytics__chart-card {
+  background: rgba(124, 58, 237, 0.04);
+  border-color: rgba(124, 58, 237, 0.18);
+  box-shadow: 0 0 24px rgba(124, 58, 237, 0.05), 0 2px 8px rgba(80, 60, 30, 0.07);
+}
+
+[data-theme="light"] .analytics__chart-card:hover {
+  background: rgba(124, 58, 237, 0.08);
+  border-color: rgba(124, 58, 237, 0.30);
+  box-shadow: 0 0 32px rgba(124, 58, 237, 0.08), 0 2px 8px rgba(80, 60, 30, 0.09);
+}
+
+/* Bar tracks: rgba(255,255,255,…) invisible on cream — swap to warm neutral */
+[data-theme="light"] .analytics__bar-track {
+  background: rgba(0, 0, 0, 0.10);
+}
+
+[data-theme="light"] .analytics__obj-bar-track {
+  background: rgba(0, 0, 0, 0.09);
+}
+
+[data-theme="light"] .analytics__obj-close-track {
+  background: rgba(0, 0, 0, 0.09);
+}
+
+[data-theme="light"] .analytics__stage-dist-track {
+  background: rgba(0, 0, 0, 0.09);
+}
+
+[data-theme="light"] .analytics__day-bar-wrap {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .analytics__day-bar {
+  background: rgba(124, 58, 237, 0.28);
+}
+
+/* Activity grid: day numbers are white text — invisible on cream bg cells */
+[data-theme="light"] .analytics__activity-day {
+  color: rgba(0, 0, 0, 0.28);
+}
+
+/* On coloured cells (call/training/both) keep dark-ish text for contrast */
+[data-theme="light"] .analytics__activity-cell--both .analytics__activity-day,
+[data-theme="light"] .analytics__activity-cell--call .analytics__activity-day,
+[data-theme="light"] .analytics__activity-cell--training .analytics__activity-day {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Detail table: row dividers and hover were rgba(255,255,255,…) — invisible */
+[data-theme="light"] .analytics__detail-table td {
+  border-bottom-color: rgba(0, 0, 0, 0.07);
+}
+
+[data-theme="light"] .analytics__detail-table tr:hover td {
+  background: rgba(124, 58, 237, 0.03);
+}
+
+[data-theme="light"] .analytics__lb-row--you {
+  background: rgba(124, 58, 237, 0.04);
+}

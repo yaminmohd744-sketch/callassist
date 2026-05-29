@@ -56,7 +56,10 @@
   font-size: var(--font-size-md);
   font-weight: 900;
   letter-spacing: 0.06em;
-  color: var(--color-text-primary);
+  background: linear-gradient(135deg, #814ac8, #df7afe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: var(--space-2);
 }
 
@@ -246,3 +249,42 @@
   width: 100%;
 }
 .auth-forgot:hover { color: var(--color-text-primary); }
+
+/* ─── Light theme ─────────────────────────────────────────────── */
+
+[data-theme="light"] .auth-card {
+  background: rgba(255, 255, 255, 0.60);
+  border-color: rgba(124, 58, 237, 0.18);
+  box-shadow:
+    0 24px 80px rgba(124, 58, 237, 0.22),
+    0 8px 32px rgba(192, 38, 211, 0.12),
+    0 2px 8px rgba(124, 58, 237, 0.10);
+}
+
+[data-theme="light"] .auth-input {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.22);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .auth-input:focus {
+  border-color: var(--color-accent-purple);
+  background: #ffffff;
+}
+
+[data-theme="light"] .auth-btn--google {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.22);
+  color: var(--color-text-secondary);
+}
+
+[data-theme="light"] .auth-btn--google:hover:not(:disabled) {
+  border-color: rgba(0, 0, 0, 0.40);
+  background: #f9f7f3;
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .auth-divider::before,
+[data-theme="light"] .auth-divider::after {
+  background: rgba(0, 0, 0, 0.14);
+}

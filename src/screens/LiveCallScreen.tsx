@@ -541,7 +541,11 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     return () => window.removeEventListener('keydown', onKey);
   }, [minimized]);
 
-  const latestSuggestion = allSuggestions.length > 0 ? allSuggestions[allSuggestions.length - 1] : null;
+  // AI suggestions are prepended (newest at [0]); body suggestions are appended (newest at last).
+  // Use reduce to find the highest timestamp regardless of ordering.
+  const latestSuggestion = allSuggestions.length > 0
+    ? allSuggestions.reduce((a, b) => b.timestampSeconds >= a.timestampSeconds ? b : a)
+    : null;
   const stageLabelMap: Record<string, string> = {
     opener: 'OPENER', discovery: 'DISCOVERY', pitch: 'PITCH', close: 'CLOSE',
   };

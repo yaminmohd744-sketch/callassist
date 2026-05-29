@@ -15,9 +15,9 @@ const BASE_URL = isDev
 // Register custom URL protocol. On Windows in dev mode the electron binary
 // needs the app directory passed explicitly so the registry entry is correct.
 if (process.platform === 'win32') {
-  app.setAsDefaultProtocolClient('pitchbase', process.execPath, [path.resolve(__dirname, '..')]);
+  app.setAsDefaultProtocolClient('pitchr', process.execPath, [path.resolve(__dirname, '..')]);
 } else {
-  app.setAsDefaultProtocolClient('pitchbase');
+  app.setAsDefaultProtocolClient('pitchr');
 }
 
 // Enforce a single instance. If the user clicks the web button while the
@@ -165,30 +165,40 @@ function createMainWindow() {
   });
 }
 
-// Windows: a second instance was launched via the protocol URL.
-// Extract tokens immediately and send only the hash fragment — never the full
-// token-bearing URL — so raw credentials don't linger in IPC message history.
-app.on('second-instance', (_event, argv) => {
-  const url = argv.find(arg => arg.startsWith('pitchbase://'));
-  if (url && mainWindow) {
-    const hashIndex = url.indexOf('#');
-    const fragment = hashIndex !== -1 ? url.slice(hashIndex + 1) : '';
-    if (fragment.includes('access_token')) {
-      mainWindow.webContents.send('oauth-callback', fragment);
+// Extracts auth payload from a pitchr:// deep-link URL and forwards it to
+// the renderer. Handles both PKCE (code in query string) and legacy implicit
+// flow (access_token in hash fragment).
+function handleDeepLink(url) {
+  if (!mainWindow || !url.startsWith('pitchr://')) return;
+  try {
+    // Reconstruct as a parseable URL by swapping the custom scheme for https
+    const parsed = new URL(url.replace(/^pitchr:\/\//, 'https://pitchr.app/'));
+    const code = parsed.searchParams.get('code');
+    if (code) {
+      mainWindow.webContents.send('oauth-callback-code', code);
+      return;
     }
+  } catch { /* ignore parse errors */ }
+  // Fallback: legacy implicit flow — access_token in hash
+  const hashIndex = url.indexOf('#');
+  const fragment = hashIndex !== -1 ? url.slice(hashIndex + 1) : '';
+  if (fragment.includes('access_token')) {
+    mainWindow.webContents.send('oauth-callback', fragment);
   }
+}
+
+// Windows: a second instance was launched via the protocol URL.
+app.on('second-instance', (_event, argv) => {
+  const url = argv.find(arg => arg.startsWith('pitchr://'));
+  if (url) handleDeepLink(url);
   focusOrCreateWindow();
 });
 
 // macOS: protocol URL opens the app directly via 'open-url' event
 app.on('open-url', (event, url) => {
   event.preventDefault();
-  if (mainWindow && url.startsWith('pitchbase://')) {
-    const hashIndex = url.indexOf('#');
-    const fragment = hashIndex !== -1 ? url.slice(hashIndex + 1) : '';
-    if (fragment.includes('access_token')) {
-      mainWindow.webContents.send('oauth-callback', fragment);
-    }
+  handleDeepLink(url);
+  if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.focus();
   }

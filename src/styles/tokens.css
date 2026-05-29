@@ -101,58 +101,56 @@
   --transition-slow:   400ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ─── Light Theme — Warm Cream ───────────────────────────────────────────── */
+/* ─── Light Theme — Clean White ──────────────────────────────────────────── */
 
 [data-theme="light"] {
-  /* Backgrounds: warm parchment layers — base is barely-there warm white,
-     surfaces step down into progressively richer cream/tan */
-  --color-bg-base:       #faf8f4;
-  --color-bg-surface:    #f5f0e8;
-  --color-bg-elevated:   #ede8de;
-  --color-bg-hover:      #e4ddd0;
-  --color-bg-glass:      rgba(250, 248, 244, 0.88);
-  --color-bg-glass-hi:   rgba(245, 240, 232, 0.94);
+  /* Backgrounds: pure white base, stepping into clean light grays */
+  --color-bg-base:       #ffffff;
+  --color-bg-surface:    #f5f5f7;
+  --color-bg-elevated:   #ebebed;
+  --color-bg-hover:      #e0e0e4;
+  --color-bg-glass:      rgba(255, 255, 255, 0.92);
+  --color-bg-glass-hi:   rgba(255, 255, 255, 0.98);
 
-  /* Borders: warm amber-brown tint so they feel at home on cream */
-  --color-border:        rgba(100, 75, 40, 0.14);
-  --color-border-subtle: rgba(100, 75, 40, 0.07);
-  --color-border-glass:  rgba(100, 75, 40, 0.09);
+  /* Borders: clean black at low opacity */
+  --color-border:        rgba(0, 0, 0, 0.10);
+  --color-border-subtle: rgba(0, 0, 0, 0.06);
+  --color-border-glass:  rgba(0, 0, 0, 0.07);
   --color-border-bright: rgba(124, 58, 237, 0.40);
 
-  /* Accent overrides: purple unchanged; magenta + dims stay brand-consistent */
-  --color-accent-magenta:      #a21caf;
-  --color-accent-magenta-dim:  rgba(162, 28, 175, 0.07);
-  --color-accent-gradient:     linear-gradient(135deg, #7c3aed 0%, #a21caf 100%);
-  --color-accent-gradient-sub: linear-gradient(135deg, rgba(124,58,237,0.09) 0%, rgba(162,28,175,0.09) 100%);
+  /* Accents: identical to dark mode — purple stays purple */
+  --color-accent-magenta:      #c026d3;
+  --color-accent-magenta-dim:  rgba(192, 38, 211, 0.08);
+  --color-accent-gradient:     linear-gradient(135deg, #7c3aed 0%, #c026d3 100%);
+  --color-accent-gradient-sub: linear-gradient(135deg, rgba(124,58,237,0.09) 0%, rgba(192,38,211,0.09) 100%);
   --color-accent-purple-dim:   rgba(124, 58, 237, 0.08);
-  --color-accent-cyan-dim:     rgba(124, 58, 237, 0.07);
-  --color-prospect:            #7c3aed;
-  --color-prospect-dim:        rgba(124, 58, 237, 0.08);
+  --color-accent-cyan-dim:     rgba(124, 58, 237, 0.08);
+  --color-prospect:            #c026d3;
+  --color-prospect-dim:        rgba(192, 38, 211, 0.08);
 
-  /* Functional state colors: richer/deeper for cream backgrounds */
-  --color-accent-green:  #15803d;
-  --color-accent-red:    #b91c1c;
-  --color-accent-yellow: #a16207;
-  --color-accent-orange: #c2410c;
+  /* Functional colors: slightly deeper for readability on white */
+  --color-accent-green:  #16a34a;
+  --color-accent-red:    #dc2626;
+  --color-accent-yellow: #ca8a04;
+  --color-accent-orange: #ea580c;
 
-  /* Text: warm near-black — not cold, not blue-gray */
-  --color-text-primary:   #1a1510;
-  --color-text-secondary: rgba(26, 21, 16, 0.60);
-  --color-text-muted:     rgba(26, 21, 16, 0.36);
+  /* Text: near-black */
+  --color-text-primary:   #0a0a0a;
+  --color-text-secondary: rgba(10, 10, 10, 0.55);
+  --color-text-muted:     rgba(10, 10, 10, 0.35);
   --color-text-accent:    #7c3aed;
 
-  /* Shadows: warm amber-brown tinted — complement the cream rather than fight it */
-  --shadow-sm:   0 1px 3px  rgba(80, 60, 30, 0.10), 0 0 0 1px rgba(100,75,40,0.06);
-  --shadow-md:   0 4px 16px rgba(80, 60, 30, 0.12), 0 0 0 1px rgba(100,75,40,0.07);
-  --shadow-lg:   0 12px 40px rgba(80, 60, 30, 0.14), 0 0 0 1px rgba(100,75,40,0.08);
-  --shadow-xl:   0 24px 64px rgba(80, 60, 30, 0.16), 0 0 0 1px rgba(100,75,40,0.09);
+  /* Shadows: clean neutral gray */
+  --shadow-sm:   0 1px 3px  rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0,0,0,0.04);
+  --shadow-md:   0 4px 16px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(0,0,0,0.05);
+  --shadow-lg:   0 12px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0,0,0,0.06);
+  --shadow-xl:   0 24px 64px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0,0,0,0.07);
   --shadow-glow: 0 0 0 1px rgba(124,58,237,0.20), 0 4px 20px rgba(124,58,237,0.14);
 
-  /* Glows: softened — cream absorbs light, so glows are subtle */
   --glow-purple:  0 0 14px rgba(124,58,237,0.20);
-  --glow-magenta: 0 0 14px rgba(162,28,175,0.18);
-  --glow-combo:   0 0 14px rgba(124,58,237,0.15), 0 0 28px rgba(162,28,175,0.08);
+  --glow-magenta: 0 0 14px rgba(192,38,211,0.18);
+  --glow-combo:   0 0 14px rgba(124,58,237,0.15), 0 0 28px rgba(192,38,211,0.08);
   --glow-cyan:    0 0 14px rgba(124,58,237,0.20);
-  --glow-red:     0 0 10px rgba(185,28,28,0.16);
-  --glow-green:   0 0 10px rgba(21,128,61,0.16);
+  --glow-red:     0 0 10px rgba(220,38,38,0.18);
+  --glow-green:   0 0 10px rgba(22,163,74,0.18);
 }

@@ -158,7 +158,15 @@
       "PowerShell(Start-Process \"c:\\\\Users\\\\User\\\\callassist\\\\marketing\\\\carousels\\\\INDEX.md\")",
       "Bash(Invoke-WebRequest -Uri \"http://localhost:5173\" -UseBasicParsing -TimeoutSec 5)",
       "Bash(Select-Object -ExpandProperty StatusCode)",
-      "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,6\\\\}\" c:/Users/User/callassist/src/screens/DashboardScreen.css c:/Users/User/callassist/src/screens/PreCallScreen.css c:/Users/User/callassist/src/screens/LiveCallScreen.css c:/Users/User/callassist/src/screens/PostCallScreen.css)"
+      "Bash(grep -n \"#[0-9a-fA-F]\\\\{3,6\\\\}\" c:/Users/User/callassist/src/screens/DashboardScreen.css c:/Users/User/callassist/src/screens/PreCallScreen.css c:/Users/User/callassist/src/screens/LiveCallScreen.css c:/Users/User/callassist/src/screens/PostCallScreen.css)",
+      "WebFetch(domain:www.claap.io)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(npx vercel *)",
+      "Bash(gh api *)",
+      "Bash(tasklist /FI \"PID eq 16912\" /FO LIST)",
+      "PowerShell(Get-Process -Id 16912)",
+      "PowerShell(Get-Process -Id 16912 -ErrorAction SilentlyContinue)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\callassist\\.claude\\skills"

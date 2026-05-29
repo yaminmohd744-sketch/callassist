@@ -20,6 +20,7 @@ export interface ElectronAPI {
   onOverlayClosed:     (callback: () => void) => () => void;
   onTriggerEndCall:    (callback: () => void) => () => void;
   onOAuthCallback:     (callback: (url: string) => void) => () => void;
+  onOAuthCode:         (callback: (code: string) => void) => () => void;
 }
 
 declare global {

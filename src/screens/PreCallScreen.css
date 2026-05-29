@@ -56,7 +56,10 @@
   font-size: var(--font-size-md);
   font-weight: 900;
   letter-spacing: 0.06em;
-  color: var(--color-text-primary);
+  background: linear-gradient(135deg, #814ac8, #df7afe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .precall__title {

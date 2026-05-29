@@ -172,7 +172,7 @@ export function AppShell({
 
                   {/* User info */}
                   <div className="app-shell__profile-header">
-                    <div className="app-shell__profile-avatar-lg" onClick={handlePicClick} title="Change photo" role="button" aria-label="Change profile photo" tabIndex={0} onKeyDown={e => e.key === 'Enter' && handlePicClick()}>
+                    <button type="button" className="app-shell__profile-avatar-lg" onClick={handlePicClick} title="Change photo" aria-label="Change profile photo">
                       {profilePic
                         ? <img src={profilePic} alt="Profile" className="app-shell__avatar-img" />
                         : getInitials(userName || userEmail)
@@ -180,7 +180,7 @@ export function AppShell({
                       <div className="app-shell__avatar-edit-overlay">
                         <span aria-hidden="true">✎</span>
                       </div>
-                    </div>
+                    </button>
                     <div className="app-shell__profile-info">
                       {userName && <div className="app-shell__profile-name">{userName}</div>}
                       <div className="app-shell__profile-email">{userEmail}</div>

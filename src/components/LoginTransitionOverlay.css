@@ -126,7 +126,10 @@
   font-size: 60px;
   font-weight: 900;
   letter-spacing: 0.04em;
-  color: #fff;
+  background: linear-gradient(135deg, #814ac8, #df7afe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   animation: lto-logo-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
 }
 
@@ -198,4 +201,18 @@
 @keyframes lto-bar-fill {
   from { width: 0%;    }
   to   { width: 100%;  }
+}
+
+/* ─── Light Mode ─────────────────────────────────────────────────────────── */
+[data-theme="light"] .lto__welcome {
+  color: rgba(0, 0, 0, 0.70);
+}
+[data-theme="light"] .lto__welcome strong {
+  color: var(--color-text-primary);
+}
+[data-theme="light"] .lto__tagline {
+  color: rgba(0, 0, 0, 0.45);
+}
+[data-theme="light"] .lto__progress {
+  background: rgba(0, 0, 0, 0.10);
 }

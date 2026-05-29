@@ -6037,13 +6037,164 @@
 
 /* Nav: give it a subtle warm-cream backdrop when scrolled */
 [data-theme="light"] .lp__nav {
-  background: rgba(250, 248, 244, 0.85);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(100, 75, 40, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 /* Logo sym is white in dark mode — use text-primary in light */
 [data-theme="light"] .lp__logo-sym {
   color: var(--color-text-primary);
+}
+
+/* ─── NAV ─── */
+[data-theme="light"] .lp__nav-links button:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+[data-theme="light"] .lp__nav-signin {
+  border-color: rgba(0, 0, 0, 0.22);
+  color: var(--color-text-secondary);
+}
+[data-theme="light"] .lp__nav-signin:hover {
+  border-color: rgba(0, 0, 0, 0.40);
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-text-primary);
+}
+
+/* ─── BUTTONS ─── */
+[data-theme="light"] .lp__btn--ghost {
+  border-color: rgba(0, 0, 0, 0.22);
+  color: var(--color-text-secondary);
+}
+[data-theme="light"] .lp__btn--ghost:hover,
+[data-theme="light"] .lp__btn--ghost:focus-visible {
+  border-color: rgba(0, 0, 0, 0.40);
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-text-primary);
+}
+[data-theme="light"] .lp__btn--outline {
+  border-color: rgba(0, 0, 0, 0.22);
+}
+[data-theme="light"] .lp__btn--outline:hover,
+[data-theme="light"] .lp__btn--outline:focus-visible {
+  border-color: var(--color-accent-purple);
+}
+
+/* ─── DEMO STEP DOTS ─── */
+[data-theme="light"] .lp__ftab-stepdot-node {
+  border-color: rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.9);
+}
+[data-theme="light"] .lp__ftab-stepdot-label {
+  color: rgba(0, 0, 0, 0.45);
+}
+[data-theme="light"] .lp__ftab-stepdots-track {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* ─── TERMINAL / DEMO WINDOW ─── */
+[data-theme="light"] .lp__terminal {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.14);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.10);
+}
+[data-theme="light"] .lp__terminal-bar {
+  background: rgba(0, 0, 0, 0.06);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+[data-theme="light"] .lp__tline--prospect {
+  border-left-color: rgba(0, 0, 0, 0.18);
+}
+
+/* ─── FEATURE CARDS ─── */
+[data-theme="light"] .lp__feature-card {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(0, 0, 0, 0.10);
+}
+[data-theme="light"] .lp__feature-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(124, 58, 237, 0.25);
+}
+
+/* ─── TRAINING SECTION ─── */
+[data-theme="light"] .lp__mock-training {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(0, 0, 0, 0.10);
+}
+[data-theme="light"] .lp__mock-training-bar {
+  background: rgba(0, 0, 0, 0.08);
+}
+[data-theme="light"] .lp__training-mode-card {
+  background: rgba(255, 255, 255, 0.70);
+  border-color: rgba(0, 0, 0, 0.10);
+}
+
+/* ─── LANGUAGE CHIPS ─── */
+[data-theme="light"] .lp__lang-chip {
+  background: rgba(255, 255, 255, 0.70);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: var(--color-text-secondary);
+}
+[data-theme="light"] .lp__lang-chip:hover {
+  border-color: rgba(124, 58, 237, 0.35);
+  background: rgba(255, 255, 255, 0.95);
+}
+[data-theme="light"] .lp__lang-flag {
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+/* ─── PRICING ─── */
+[data-theme="light"] .lp__billing-toggle {
+  background: rgba(0, 0, 0, 0.07);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+[data-theme="light"] .lp__pricing-card {
+  background: rgba(255, 255, 255, 0.80);
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+[data-theme="light"] .lp__pricing-card--featured {
+  border-color: var(--color-accent-purple);
+  box-shadow: 0 8px 40px rgba(124, 58, 237, 0.15);
+}
+
+/* ─── COMPARE TABLE ─── */
+[data-theme="light"] .lp__compare-row {
+  border-bottom-color: rgba(0, 0, 0, 0.07);
+}
+[data-theme="light"] .lp__compare-row:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+[data-theme="light"] .lp__compare-us-col {
+  background: rgba(124, 58, 237, 0.04);
+}
+
+/* ─── FOOTER SOCIAL ─── */
+[data-theme="light"] .lp__footer-social a {
+  border-color: rgba(0, 0, 0, 0.18);
+  color: var(--color-text-secondary);
+}
+[data-theme="light"] .lp__footer-social a:hover {
+  border-color: rgba(124, 58, 237, 0.40);
+  color: var(--color-text-primary);
+}
+
+/* ─── SV LANG COL ─── */
+[data-theme="light"] .lp__sv-lang-col {
+  background: rgba(255, 255, 255, 0.70);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Demo mockup panels stay dark in light mode — they show the dark-mode UI */
+
+/* ─── MULTI-CALL TILES ─── */
+[data-theme="light"] .lp__mcall-tile-name {
+  color: var(--color-text-secondary);
+}
+
+/* ─── LESSON ITEMS ─── */
+[data-theme="light"] .lp__sv-lesson-item {
+  background: rgba(255, 255, 255, 0.70);
+  border-color: rgba(0, 0, 0, 0.07);
 }

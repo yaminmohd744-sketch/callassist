@@ -57,4 +57,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('oauth-callback', handler);
     return () => ipcRenderer.removeListener('oauth-callback', handler);
   },
+  onOAuthCode: (callback) => {
+    const handler = (_, code) => callback(code);
+    ipcRenderer.on('oauth-callback-code', handler);
+    return () => ipcRenderer.removeListener('oauth-callback-code', handler);
+  },
 });

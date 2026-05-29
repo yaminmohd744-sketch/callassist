@@ -43,10 +43,18 @@ export function useAuth() {
       window.history.replaceState(null, '', window.location.pathname);
     }
 
-    // Listen for OAuth fragment forwarded from Electron main process.
+    // Listen for OAuth fragment forwarded from Electron main process (legacy implicit flow).
     let removeOAuthListener: (() => void) | undefined;
     if (window.electronAPI?.onOAuthCallback) {
       removeOAuthListener = window.electronAPI.onOAuthCallback((fragment) => void handleOAuthFragment(fragment));
+    }
+
+    // Listen for PKCE auth code forwarded from Electron main process.
+    let removeCodeListener: (() => void) | undefined;
+    if (window.electronAPI?.onOAuthCode) {
+      removeCodeListener = window.electronAPI.onOAuthCode((code: string) => {
+        void supabase.auth.exchangeCodeForSession(code);
+      });
     }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -68,7 +76,9 @@ export function useAuth() {
 
     return () => {
       mounted = false;
-      try { removeOAuthListener?.(); } finally { subscription.unsubscribe(); }
+      removeOAuthListener?.();
+      removeCodeListener?.();
+      subscription.unsubscribe();
     };
   }, []);
 

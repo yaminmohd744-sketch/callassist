@@ -77,7 +77,10 @@
   font-size: var(--font-size-sm);
   font-weight: 900;
   letter-spacing: 0.06em;
-  color: var(--color-text-primary);
+  background: linear-gradient(135deg, #814ac8, #df7afe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   white-space: nowrap;
 }
 
@@ -410,4 +413,15 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+[data-theme="light"] .live-call__bubble {
+  box-shadow:
+    0 8px 32px rgba(80, 60, 30, 0.18),
+    0 0 0 1px rgba(124, 58, 237, 0.12),
+    0 0 24px rgba(124, 58, 237, 0.08);
+}
+
+[data-theme="light"] .live-call__summarising-overlay {
+  background: rgba(255, 255, 255, 0.82);
 }

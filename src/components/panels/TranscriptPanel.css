@@ -4,7 +4,7 @@
   background: rgba(10, 7, 20, 0.55);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-right: 1px solid rgba(124, 58, 237, 0.12);
+  border-right: 1px solid var(--color-border-subtle);
   width: var(--panel-left-width);
   flex-shrink: 0;
   overflow: hidden;
@@ -294,4 +294,8 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+[data-theme="light"] .transcript-panel {
+  background: rgba(248, 248, 250, 0.70);
 }

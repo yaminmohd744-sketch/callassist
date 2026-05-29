@@ -291,7 +291,7 @@ export function PreCallScreen({
 
         <div className="precall__header">
           <button className="precall__back" onClick={onBack}>← {t.common.back}</button>
-          <div className="precall__logo">Pitchr</div>
+          <div className="precall__logo">PITCHR</div>
         </div>
 
         <h2 className="precall__title">{t.precall.title}</h2>
