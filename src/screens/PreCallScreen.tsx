@@ -10,7 +10,7 @@ import { buildEnrichedContext } from '../lib/businessProfile';
 import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
 
-type StringConfigField = 'callGoal' | 'callType' | 'language' | 'prospectName';
+type StringConfigField = 'callGoal' | 'callType' | 'language' | 'prospectName' | 'meetingUrl';
 type StringConfigErrors = Partial<Record<StringConfigField, string>>;
 
 interface PreCallScreenProps {
@@ -40,6 +40,12 @@ const PLATFORM_CONTEXT: Record<CallPlatform, string> = {
   zoom:  'This call is on Zoom — screen sharing and video are available if needed.',
   meet:  'This call is on Google Meet — screen sharing and video are available if needed.',
   teams: 'This call is on Microsoft Teams — screen sharing and video are available if needed.',
+};
+
+const PLATFORM_URL_PLACEHOLDER: Partial<Record<CallPlatform, string>> = {
+  zoom:  'https://zoom.us/j/...',
+  meet:  'https://meet.google.com/xxx-xxx-xxx',
+  teams: 'https://teams.microsoft.com/l/meetup-join/...',
 };
 
 const CALL_TYPES: { value: CallType; label: string }[] = [
@@ -137,6 +143,7 @@ export function PreCallScreen({
 
   const [callType, setCallType]   = useState<CallType | undefined>(defaultConfig?.callType);
   const [platform, setPlatform]   = useState<CallPlatform | undefined>(defaultConfig?.platform);
+  const [meetingUrl, setMeetingUrl] = useState(defaultConfig?.meetingUrl ?? '');
   const [inCrm, setInCrm]         = useState<boolean | null>(null);
   const [leads, setLeads]        = useState<Lead[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
@@ -256,20 +263,22 @@ export function PreCallScreen({
       priorContext:  selectedLead?.priorContext ?? '',
       callType,
       platform,
+      meetingUrl:    meetingUrl.trim() || undefined,
       callGoal,
       yourPitch:     filledPerks.join('\n'),
       language,
       repContext,
     };
-  }, [perks, selectedLead, callType, platform, callGoal, language, businessProfile, learningProfile]);
+  }, [perks, selectedLead, callType, platform, meetingUrl, callGoal, language, businessProfile, learningProfile]);
 
   const handleSubmit = useCallback(() => {
     const newErrors: StringConfigErrors = {};
     if (!callGoal.trim()) newErrors.callGoal = t.errors?.required ?? 'Required';
     if (inCrm === true && !selectedLead) newErrors.prospectName = t.precall.crmRequired;
+    if (platform && platform !== 'phone' && !meetingUrl.trim()) newErrors.meetingUrl = t.errors?.required ?? 'Required';
     if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
     onStartCall(buildConfig());
-  }, [callGoal, inCrm, selectedLead, t, onStartCall, buildConfig]);
+  }, [callGoal, inCrm, selectedLead, platform, meetingUrl, t, onStartCall, buildConfig]);
 
   // Bypasses validation — starts the call with whatever has been filled in so far
   const handleSkip = useCallback(() => {
@@ -359,6 +368,41 @@ export function PreCallScreen({
               </button>
             ))}
           </div>
+
+          {/* ── Meeting URL (video platforms only) ── */}
+          {platform && platform !== 'phone' && (
+            <div className="precall__meeting-url-field">
+              <label htmlFor="precall-meeting-url" className="precall__section-label">
+                MEETING LINK <span className="precall__required" aria-hidden="true">*</span>
+              </label>
+              <div className={`precall__field${errors.meetingUrl ? ' precall__field--error' : ''}`}>
+                <input
+                  id="precall-meeting-url"
+                  className="precall__input precall__meeting-url-input"
+                  type="url"
+                  placeholder={PLATFORM_URL_PLACEHOLDER[platform] ?? 'https://...'}
+                  value={meetingUrl}
+                  aria-required="true"
+                  aria-invalid={!!errors.meetingUrl}
+                  aria-describedby={errors.meetingUrl ? 'precall-meeting-url-error' : undefined}
+                  onChange={e => {
+                    setMeetingUrl(e.target.value);
+                    if (errors.meetingUrl) setErrors(prev => { const next = { ...prev }; delete next.meetingUrl; return next; });
+                  }}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {errors.meetingUrl && (
+                  <span id="precall-meeting-url-error" className="precall__error" role="alert">
+                    {errors.meetingUrl}
+                  </span>
+                )}
+              </div>
+              <p className="precall__meeting-url-hint">
+                Pitchr will open the meeting inside the app when the call starts
+              </p>
+            </div>
+          )}
 
           {/* ── 3. Is the lead in CRM? ── */}
           <div id="precall-crm-label" className="precall__section-label">{t.precall.inCrmQuestion}</div>

@@ -103,12 +103,14 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [isSummarising, setIsSummarising] = useState(false);
   const [micWarning, setMicWarning] = useState(false);
   const [minimized, setMinimized] = useState(false);
+  const [meetingExpanded, setMeetingExpanded] = useState(false);
   const [draftRecovery, setDraftRecovery] = useState<{ transcript: TranscriptEntry[]; suggestions: AISuggestion[]; startedAt: string } | null>(null);
   const startedAtRef = useRef(new Date().toISOString());
   const recordingKeyRef = useRef(startedAtRef.current);
   const { startRecording, stopRecording, isSupported: recordingSupported, recordingError } = useCallRecorder();
 
   const bubbleRef = useRef<HTMLDivElement>(null);
+  const meetingContainerRef = useRef<HTMLDivElement>(null);
   const dragOffset = useRef<{ x: number; y: number } | null>(null);
   const dragListenersRef = useRef<{ move: (e: MouseEvent) => void; up: () => void } | null>(null);
   const flipDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -496,6 +498,22 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     }
   }, [stopListening, stopTimer, stopRecording, config, closeProbability, objectionsCount, elapsedSeconds, callStage, notes, onEndCall, t]);
 
+  // Mount/unmount the webview element for the embedded meeting panel.
+  // Using imperative DOM creation avoids TypeScript JSX issues with the non-standard <webview> tag.
+  useEffect(() => {
+    if (!meetingExpanded || !meetingContainerRef.current || !config.meetingUrl) return;
+    const container = meetingContainerRef.current;
+    if (container.querySelector('webview')) return; // already mounted
+    const wv = document.createElement('webview');
+    wv.setAttribute('src', config.meetingUrl);
+    wv.setAttribute('allowpopups', 'true');
+    // Spoof a Chrome UA so Zoom/Meet/Teams don't show an "unsupported browser" message
+    wv.setAttribute('useragent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36');
+    wv.style.cssText = 'width:100%;height:100%;display:block;';
+    container.appendChild(wv);
+    return () => { if (container.contains(wv)) container.removeChild(wv); };
+  }, [meetingExpanded, config.meetingUrl]);
+
   // Keep a stable ref so the overlay's trigger-end-call listener always calls the latest version.
   const handleEndCallRef = useRef(handleEndCall);
   useLayoutEffect(() => { handleEndCallRef.current = handleEndCall; });
@@ -581,6 +599,28 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
             </div>
           )}
 
+          {/* ── Pre-join meeting bar (visible until user clicks Join) ── */}
+          {config.meetingUrl && !meetingExpanded && (
+            <div className="live-call__meeting-bar">
+              <span className="live-call__meeting-platform-icon" aria-hidden="true">
+                {config.platform === 'zoom' ? '⬤' : config.platform === 'meet' ? '▶' : config.platform === 'teams' ? '⊞' : '◉'}
+              </span>
+              <span className="live-call__meeting-label">
+                {config.platform === 'zoom' ? 'Zoom' : config.platform === 'meet' ? 'Google Meet' : config.platform === 'teams' ? 'Teams' : 'Meeting'}
+              </span>
+              <span className="live-call__meeting-url-chip" title={config.meetingUrl}>
+                {config.meetingUrl.replace(/^https?:\/\//, '').substring(0, 52)}
+              </span>
+              <button
+                className="live-call__meeting-join-btn"
+                onClick={() => setMeetingExpanded(true)}
+                aria-label="Join meeting"
+              >
+                ↗ Join Meeting
+              </button>
+            </div>
+          )}
+
           <div className="live-call__panels" data-mobile={mobilePanel}>
             <ErrorBoundary>
               <TranscriptPanel
@@ -600,17 +640,38 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
                 elapsedSeconds={elapsedSeconds}
               />
             </ErrorBoundary>
-            <ErrorBoundary>
-              <LeadProfilePanel
-                config={config}
-                closeProbability={closeProbability}
-                objectionsCount={objectionsCount}
-                notes={notes}
-                noteInput={noteInput}
-                onNoteChange={setNoteInput}
-                onAddNote={handleAddNote}
-              />
-            </ErrorBoundary>
+            {meetingExpanded ? (
+              <div className="live-call__meeting-panel">
+                <div className="live-call__meeting-panel-header">
+                  <span className="live-call__meeting-platform-icon" aria-hidden="true">
+                    {config.platform === 'zoom' ? '⬤' : config.platform === 'meet' ? '▶' : config.platform === 'teams' ? '⊞' : '◉'}
+                  </span>
+                  <span className="live-call__meeting-label">
+                    {config.platform === 'zoom' ? 'Zoom' : config.platform === 'meet' ? 'Google Meet' : config.platform === 'teams' ? 'Teams' : 'Meeting'}
+                  </span>
+                  <button
+                    className="live-call__meeting-collapse-btn"
+                    onClick={() => setMeetingExpanded(false)}
+                    aria-label="Collapse meeting"
+                  >
+                    ↙ Collapse
+                  </button>
+                </div>
+                <div ref={meetingContainerRef} className="live-call__meeting-webview-container" />
+              </div>
+            ) : (
+              <ErrorBoundary>
+                <LeadProfilePanel
+                  config={config}
+                  closeProbability={closeProbability}
+                  objectionsCount={objectionsCount}
+                  notes={notes}
+                  noteInput={noteInput}
+                  onNoteChange={setNoteInput}
+                  onAddNote={handleAddNote}
+                />
+              </ErrorBoundary>
+            )}
           </div>
           <div className="live-call__mobile-tabs" role="tablist" aria-label="Panel tabs">
             {(['transcript', 'ai', 'lead'] as const).map(p => (

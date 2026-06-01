@@ -13,6 +13,7 @@ export interface CallConfig {
   prospectTitle?: string;  // their job title / role
   callType?: CallType;
   platform?: CallPlatform;
+  meetingUrl?: string;     // Zoom / Meet / Teams link — loaded in the embedded meeting panel
   priorContext?: string;   // research, previous interactions, expected objections
   repContext?: string;     // Business + learning profile block — ephemeral, not shown in UI
 }

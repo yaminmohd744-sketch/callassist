@@ -1,0 +1,74 @@
+.demo-tour {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.demo-tour__body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  /* The body takes the full viewport minus the nav bar height */
+  height: calc(100vh - 42px);
+}
+
+/* Give full-screen inner screens the right height */
+.demo-tour__body > .live-call,
+.demo-tour__body > .precall,
+.demo-tour__body > .post-call {
+  height: 100%;
+}
+
+/* ── Tour nav bar ─────────────────────────────────────────────────────────────*/
+
+.demo-tour__nav {
+  flex-shrink: 0;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 14px;
+  background: rgba(10, 10, 10, 0.97);
+  border-top: 1px solid rgba(129, 74, 200, 0.25);
+  backdrop-filter: blur(16px);
+  z-index: 9999;
+}
+
+.demo-tour__badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--color-accent-magenta, #df7afe);
+  padding: 2px 8px;
+  border: 1px solid rgba(223, 122, 254, 0.35);
+  border-radius: 4px;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.demo-tour__tab {
+  font-family: var(--font-display, sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--color-text-secondary, #888);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 11px;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+
+.demo-tour__tab:hover {
+  color: var(--color-text-primary, #fff);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.demo-tour__tab--active {
+  color: var(--color-accent-magenta, #df7afe);
+  background: rgba(223, 122, 254, 0.1);
+}

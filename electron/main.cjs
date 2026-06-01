@@ -128,7 +128,7 @@ function createMainWindow() {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true,
+      webviewTag: true, // enables <webview> for embedded meeting panels
     },
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     show: false,
@@ -208,13 +208,24 @@ app.whenReady().then(() => {
   // Grant microphone (and camera) permissions so getUserMedia and
   // webkitSpeechRecognition both work without a prompt.
   const { session } = require('electron');
+  const ALLOWED_PERMISSIONS = ['media', 'microphone', 'camera', 'audioCapture', 'videoCapture', 'speech-recognition', 'speechRecognition', 'display-capture', 'notifications'];
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
-    const allowed = ['media', 'microphone', 'camera', 'audioCapture', 'videoCapture', 'speech-recognition', 'speechRecognition'];
-    callback(allowed.includes(permission));
+    callback(ALLOWED_PERMISSIONS.includes(permission));
   });
   session.defaultSession.setPermissionCheckHandler((_webContents, permission) => {
-    const allowed = ['media', 'microphone', 'camera', 'audioCapture', 'videoCapture', 'speech-recognition', 'speechRecognition'];
-    return allowed.includes(permission);
+    return ALLOWED_PERMISSIONS.includes(permission);
+  });
+
+  // Grant the same permissions to any webview session (meeting panels use their own session)
+  app.on('web-contents-created', (_, contents) => {
+    if (contents.getType() === 'webview') {
+      contents.session.setPermissionRequestHandler((_wc, permission, callback) => {
+        callback(ALLOWED_PERMISSIONS.includes(permission));
+      });
+      contents.session.setPermissionCheckHandler((_wc, permission) => {
+        return ALLOWED_PERMISSIONS.includes(permission);
+      });
+    }
   });
 
   createMainWindow();

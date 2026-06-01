@@ -171,7 +171,13 @@
       "Bash(node \"c:\\\\Users\\\\User\\\\callassist\\\\.agents\\\\skills\\\\impeccable\\\\scripts\\\\load-context.mjs\")",
       "Bash(del \"c:\\\\Users\\\\User\\\\callassist\\\\src\\\\components\\\\ThemeToggle.tsx\")",
       "Bash(del \"c:\\\\Users\\\\User\\\\callassist\\\\src\\\\components\\\\ThemeToggle.css\")",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(railway status *)",
+      "PowerShell($procs = Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Sort-Object -Unique; if \\($procs\\) { $procs | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue; Write-Host \"Killed PID $_\" } } else { Write-Host \"No process on 5173\" })",
+      "PowerShell($procs = Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Sort-Object -Unique; if \\($procs\\) { $procs | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue; Write-Host \"Killed PID $_\" } } else { Write-Host \"Port 5173 free\" })",
+      "PowerShell($procs = Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Sort-Object -Unique; if \\($procs\\) { $procs | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue } }; Write-Host \"done\")",
+      "PowerShell($procs = Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Sort-Object -Unique; if \\($procs\\) { $procs | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue } }; cd c:\\\\Users\\\\User\\\\callassist; npm run electron:dev)",
+      "Bash(npx playwright *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\callassist\\.claude\\skills"

@@ -21,6 +21,9 @@ import type { CallConfig, CallSession, CallOutcome, Lead, BusinessProfile, RepLe
 import { MarketingPlanScreen } from './screens/MarketingPlanScreen';
 import { FOMOLandingScreen } from './screens/FOMOLandingScreen';
 import { LandingScreen } from './screens/LandingScreen';
+import { DemoTourScreen } from './screens/DemoTourScreen';
+import { AppSlidesScreen } from './screens/AppSlidesScreen';
+import { DashboardSlide } from './screens/DashboardSlide';
 const DashboardScreen  = lazy(() => import('./screens/DashboardScreen').then(m => ({ default: m.DashboardScreen })));
 const PreCallScreen    = lazy(() => import('./screens/PreCallScreen').then(m => ({ default: m.PreCallScreen })));
 const LiveCallScreen   = lazy(() => import('./screens/LiveCallScreen').then(m => ({ default: m.LiveCallScreen })));
@@ -278,6 +281,15 @@ export function App() {
 
   // Must be above all early returns — hooks cannot be called conditionally.
   const onboardingData = useMemo(() => getOnboardingData(), [onboardingVersion]);
+
+  // ── Demo tour (no auth required) — access via ?demo=1 ────────────────────
+  if (window.location.search.includes('demo=1')) return <DemoTourScreen />;
+
+  // ── App slides / carousel assets — access via ?slides=1 ──────────────────
+  if (window.location.search.includes('slides=1')) return <AppSlidesScreen />;
+
+  // ── Dashboard interactive slide — access via ?db-slide=1 ─────────────────
+  if (window.location.search.includes('db-slide=1')) return <DashboardSlide />;
 
   // ── Auth gate ──────────────────────────────────────────────────────────────
   // In the browser, never block on auth — just show the landing page immediately.

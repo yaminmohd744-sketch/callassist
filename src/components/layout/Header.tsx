@@ -27,13 +27,13 @@ export function Header({ prospectName, company, onEndCall, onMinimize }: HeaderP
 
       <div className="header__right">
         {onMinimize && (
-          <button className="header__minimize" onClick={onMinimize} aria-label="Share screen — minimize to bubble" title="Share screen — minimize to bubble">
+          <button className="header__minimize" onClick={onMinimize} aria-label="Minimize to floating bubble" title="Minimize to floating bubble">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.4"/>
               <path d="M4 9.5L7 6.5L10 9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M7 6.5V11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
             </svg>
-            {t.liveCall.shareScreen ?? 'Share Screen'}
+            Minimize
           </button>
         )}
         <Button variant="danger" size="sm" onClick={onEndCall}>

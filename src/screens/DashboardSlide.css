@@ -1,0 +1,227 @@
+/* ── Root ──────────────────────────────────────────────────────────────────── */
+
+.ds2 {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #000;
+  overflow: hidden;
+}
+
+/* ── Frame: contains the real app + all overlays ───────────────────────────── */
+
+.ds2__frame {
+  flex: 1;
+  position: relative;   /* anchor for all absolutely-positioned overlays */
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* The real AppShell fills the frame */
+.ds2__frame .app-shell {
+  height: 100%;
+}
+
+/* ── Dark vignette overlay — dims everything behind the spotlight ring ──────── */
+
+.ds2__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  z-index: 20;
+  transition: background 0.4s ease;
+}
+
+.ds2__overlay--active {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* ── Spotlight ring — sits on top of the dim layer, around the target ────────── */
+
+.ds2__ring {
+  position: absolute;
+  pointer-events: none;
+  z-index: 30;
+  border: 2px solid rgba(223, 122, 254, 0.85);
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 4px rgba(129, 74, 200, 0.18),
+    0 0 28px rgba(129, 74, 200, 0.3),
+    inset 0 0 0 1px rgba(223,122,254,0.06);
+  /* Smooth position/size transitions */
+  transition:
+    top    0.7s cubic-bezier(0.4, 0, 0.2, 1),
+    left   0.7s cubic-bezier(0.4, 0, 0.2, 1),
+    width  0.7s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Pop-in: scales down from slightly larger */
+  animation: ring-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes ring-pop {
+  from { opacity: 0; transform: scale(1.06); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Cursor ─────────────────────────────────────────────────────────────────── */
+
+.ds2__cursor {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.22), 0 2px 10px rgba(0,0,0,0.65);
+  pointer-events: none;
+  z-index: 50;
+  transform: translate(-50%, -50%);
+  transition:
+    top  0.9s cubic-bezier(0.4, 0, 0.2, 1),
+    left 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+    width  0.15s ease,
+    height 0.15s ease;
+}
+
+.ds2__cursor--clicking {
+  width: 9px;
+  height: 9px;
+  box-shadow: 0 0 0 3px rgba(223,122,254,0.55), 0 2px 14px rgba(223,122,254,0.45);
+}
+
+/* ── Annotation card ─────────────────────────────────────────────────────────── */
+
+.ds2__ann {
+  position: absolute;
+  z-index: 40;
+  pointer-events: none;
+  max-width: 260px;
+  min-width: 200px;
+  background: rgba(8, 4, 18, 0.95);
+  border: 1px solid rgba(129, 74, 200, 0.5);
+  border-radius: 10px;
+  padding: 11px 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(223,122,254,0.06);
+  backdrop-filter: blur(14px);
+  animation: ann-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes ann-pop {
+  from { opacity: 0; transform: translateY(-8px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Carets for each side */
+
+.ds2__ann--bottom::before,
+.ds2__ann--top::before,
+.ds2__ann--right::before,
+.ds2__ann--left::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: rgba(8, 4, 18, 0.95);
+}
+
+/* Bottom: caret points upward (on top of card) */
+.ds2__ann--bottom::before {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  border-left: 1px solid rgba(129,74,200,0.5);
+  border-top: 1px solid rgba(129,74,200,0.5);
+  border-radius: 2px 0 0 0;
+}
+
+/* Top: caret points downward (on bottom of card) */
+.ds2__ann--top::before {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  border-right: 1px solid rgba(129,74,200,0.5);
+  border-bottom: 1px solid rgba(129,74,200,0.5);
+  border-radius: 0 0 2px 0;
+}
+
+/* Right: caret points left (on left side of card) */
+.ds2__ann--right::before {
+  top: 20px;
+  left: -6px;
+  transform: rotate(45deg);
+  border-left: 1px solid rgba(129,74,200,0.5);
+  border-bottom: 1px solid rgba(129,74,200,0.5);
+  border-radius: 0 0 0 2px;
+}
+
+/* Left: caret points right (on right side of card) */
+.ds2__ann--left::after {
+  top: 20px;
+  right: -6px;
+  transform: rotate(45deg);
+  border-right: 1px solid rgba(129,74,200,0.5);
+  border-top: 1px solid rgba(129,74,200,0.5);
+  border-radius: 0 2px 0 0;
+}
+
+.ds2__ann-label {
+  font-family: var(--font-mono, monospace);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #df7afe;
+  background: rgba(129, 74, 200, 0.2);
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-bottom: 7px;
+}
+
+.ds2__ann-body {
+  font-family: var(--font-display, sans-serif);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+/* ── Bottom nav ──────────────────────────────────────────────────────────────── */
+
+.ds2__nav {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 14px 0 18px;
+  background: #000;
+  position: relative;
+  z-index: 2;
+}
+
+.ds2__nav-btn {
+  font-family: var(--font-display, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.ds2__nav-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+.ds2__nav-dots { display: flex; gap: 8px; align-items: center; }
+
+.ds2__nav-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: none; cursor: pointer; padding: 0;
+  transition: background 0.2s, transform 0.2s;
+}
+.ds2__nav-dot--active { background: #814ac8; transform: scale(1.35); }
+.ds2__nav-dot:hover:not(.ds2__nav-dot--active) { background: rgba(255,255,255,0.38); }

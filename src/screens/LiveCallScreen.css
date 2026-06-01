@@ -27,6 +27,122 @@
   min-height: 0;
 }
 
+/* ── Meeting bar (pre-join, above panels) ────────────────────────────────────*/
+.live-call__meeting-bar {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 44px;
+  padding: 0 16px;
+  gap: 10px;
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid rgba(129, 74, 200, 0.18);
+  position: relative;
+  z-index: 1;
+}
+
+.live-call__meeting-platform-icon {
+  font-size: 9px;
+  color: var(--color-accent-purple);
+  flex-shrink: 0;
+}
+
+.live-call__meeting-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.live-call__meeting-url-chip {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+
+.live-call__meeting-join-btn {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-magenta);
+  background: rgba(129, 74, 200, 0.10);
+  border: 1px solid rgba(129, 74, 200, 0.28);
+  border-radius: var(--border-radius-pill);
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+.live-call__meeting-join-btn:hover {
+  background: rgba(129, 74, 200, 0.22);
+  border-color: var(--color-accent-purple);
+  color: #fff;
+}
+
+/* ── Meeting panel (inside .live-call__panels, right slot) ───────────────────*/
+.live-call__meeting-panel {
+  display: flex;
+  flex-direction: column;
+  width: var(--panel-right-width);
+  flex-shrink: 0;
+  border-left: 1px solid var(--color-border-subtle);
+  background: #000;
+  overflow: hidden;
+}
+
+.live-call__meeting-panel-header {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 12px;
+  gap: 8px;
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.live-call__meeting-collapse-btn {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-pill);
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  white-space: nowrap;
+}
+.live-call__meeting-collapse-btn:hover {
+  color: var(--color-text-secondary);
+  border-color: var(--color-accent-purple);
+}
+
+.live-call__meeting-webview-container {
+  flex: 1;
+  width: 100%;
+  display: block;
+  background: #000;
+}
+
+
 /* ── Floating Bubble (share-screen minimize mode) ────────────────────────────*/
 .live-call__bubble {
   --_purple-a07: rgba(124, 58, 237, 0.07);

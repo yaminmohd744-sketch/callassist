@@ -561,6 +561,34 @@
   border-radius: var(--border-radius-pill);
 }
 
+/* ─── Meeting URL field ─────────────────────────────────────── */
+
+.precall__meeting-url-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: precall-fadein 0.18s ease both;
+}
+
+@keyframes precall-fadein {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+.precall__meeting-url-input {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+}
+
+.precall__meeting-url-hint {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* ─── Actions ──────────────────────────────────────────────── */
 
 .precall__actions {
