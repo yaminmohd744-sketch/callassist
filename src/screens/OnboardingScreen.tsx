@@ -9,9 +9,9 @@ import './OnboardingScreen.css';
 type AccountId = 'google-meet' | 'zoom' | 'teams';
 
 const OB_PLATFORMS: { id: AccountId; label: string; icon: string; desc: string; connectUrl: string }[] = [
-  { id: 'google-meet', label: 'Google Meet', icon: '▶', desc: 'Join and run Google Meet calls from directly inside Pitchr', connectUrl: 'https://meet.google.com' },
-  { id: 'zoom',        label: 'Zoom',        icon: '⬤', desc: 'Connect your Zoom account for one-click call joining',       connectUrl: 'https://zoom.us/signin' },
-  { id: 'teams',       label: 'Teams',       icon: '⊞', desc: 'Link Microsoft Teams for seamless call access',               connectUrl: 'https://teams.microsoft.com' },
+  { id: 'google-meet', label: 'Google Meet', icon: '▶', desc: 'Sign into your Google account so Meet calls load instantly inside Pitchr', connectUrl: 'https://accounts.google.com/signin' },
+  { id: 'zoom',        label: 'Zoom',        icon: '⬤', desc: 'Sign into Zoom so you can join calls without re-authenticating mid-call',   connectUrl: 'https://zoom.us/signin'             },
+  { id: 'teams',       label: 'Teams',       icon: '⊞', desc: 'Sign into Microsoft Teams so calls open seamlessly inside Pitchr',          connectUrl: 'https://teams.microsoft.com'        },
 ];
 
 function loadObConnected(): Set<AccountId> {

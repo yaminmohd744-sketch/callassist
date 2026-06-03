@@ -19,9 +19,9 @@ interface ConnectedAccount {
 }
 
 const ACCOUNTS: ConnectedAccount[] = [
-  { id: 'google-meet', label: 'Google Meet', icon: '▶', connectUrl: 'https://meet.google.com' },
-  { id: 'zoom',        label: 'Zoom',        icon: '⬤', connectUrl: 'https://zoom.us/signin'  },
-  { id: 'teams',       label: 'Teams',       icon: '⊞', connectUrl: 'https://teams.microsoft.com' },
+  { id: 'google-meet', label: 'Google Meet', icon: '▶', connectUrl: 'https://accounts.google.com/signin' },
+  { id: 'zoom',        label: 'Zoom',        icon: '⬤', connectUrl: 'https://zoom.us/signin'             },
+  { id: 'teams',       label: 'Teams',       icon: '⊞', connectUrl: 'https://teams.microsoft.com'        },
 ];
 
 function loadConnected(): Set<AccountId> {
