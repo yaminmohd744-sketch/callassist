@@ -62,4 +62,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('oauth-callback-code', handler);
     return () => ipcRenderer.removeListener('oauth-callback-code', handler);
   },
+  startZoomOAuth: (clientId, clientSecret) =>
+    ipcRenderer.invoke('zoom-start-oauth', { clientId, clientSecret }),
 });

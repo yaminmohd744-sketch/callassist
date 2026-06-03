@@ -1,5 +1,70 @@
 ﻿const { app, BrowserWindow, ipcMain, screen, shell } = require('electron');
 const path = require('path');
+const http  = require('http');
+const https = require('https');
+
+// ── Zoom OAuth helpers ────────────────────────────────────────────────────────
+
+const ZOOM_REDIRECT_URI = 'http://127.0.0.1:3456';
+
+// Spins up a one-shot local HTTP server that waits for Zoom to redirect back
+// with ?code=XXX, then closes itself and resolves with the code.
+function waitForZoomCallback() {
+  return new Promise((resolve, reject) => {
+    const server = http.createServer((req, res) => {
+      try {
+        const url = new URL(req.url, ZOOM_REDIRECT_URI);
+        const code  = url.searchParams.get('code');
+        const error = url.searchParams.get('error');
+        const html  = '<html><body style="background:#0a0a0a;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
+          (code
+            ? '<p style="font-size:18px">✓ Connected to Zoom — you can close this window and return to Pitchr.</p>'
+            : '<p style="font-size:18px">Authorization failed — please try again in Pitchr.</p>') +
+          '</body></html>';
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(html);
+      } catch { res.end(); }
+      server.close();
+      const code = new URL(req.url, ZOOM_REDIRECT_URI).searchParams.get('code');
+      if (code) resolve(code); else reject(new Error('zoom_oauth_cancelled'));
+    });
+    server.listen(3456, '127.0.0.1');
+    server.on('error', reject);
+    // Auto-close after 5 minutes
+    setTimeout(() => { server.close(); reject(new Error('zoom_oauth_timeout')); }, 300_000);
+  });
+}
+
+function exchangeZoomCode(code, clientId, clientSecret) {
+  return new Promise((resolve, reject) => {
+    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    const body = `grant_type=authorization_code&code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(ZOOM_REDIRECT_URI)}`;
+    const options = {
+      hostname: 'zoom.us',
+      path: '/oauth/token',
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    };
+    const req = https.request(options, res => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.access_token) resolve(parsed);
+          else reject(new Error(parsed.reason || 'zoom_token_exchange_failed'));
+        } catch (e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
 
 // Enable Chromium's speech recognition service inside Electron.
 // Without these flags webkitSpeechRecognition fires a 'network' error
@@ -70,9 +135,22 @@ function createOverlayWindow() {
 }
 
 ipcMain.on('open-external', (_, url) => {
-  // Validate it's a supabase OAuth URL before opening
-  if (typeof url === 'string' && url.startsWith('https://')) {
+  if (typeof url === 'string' && (url.startsWith('https://') || url.startsWith('http://127.0.0.1'))) {
     shell.openExternal(url);
+  }
+});
+
+// Zoom OAuth: start local server, open browser, exchange code for token
+ipcMain.handle('zoom-start-oauth', async (_, { clientId, clientSecret }) => {
+  try {
+    const callbackPromise = waitForZoomCallback();
+    const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(ZOOM_REDIRECT_URI)}`;
+    shell.openExternal(authUrl);
+    const code      = await callbackPromise;
+    const tokenData = await exchangeZoomCode(code, clientId, clientSecret);
+    return { success: true, tokenData };
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 });
 

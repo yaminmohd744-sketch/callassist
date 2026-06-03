@@ -5,6 +5,7 @@ import { useTranslations } from '../../hooks/useTranslations';
 import { useAppContext } from '../../contexts/AppContext';
 import { PitchrLogo } from '../ui/PitchrLogo';
 import { STORAGE_KEYS } from '../../lib/storageKeys';
+import { connectZoom, disconnectZoom, isZoomConnected } from '../../lib/zoomAuth';
 import './AppShell.css';
 
 // ── Connected accounts ────────────────────────────────────────────────────────
@@ -67,16 +68,28 @@ export function AppShell({
   } = useAppContext();
   const [langOpen, setLangOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [connected, setConnected] = useState<Set<AccountId>>(() => loadConnected());
+  const [connected, setConnected]   = useState<Set<AccountId>>(() => loadConnected());
   const [pending, setPending]       = useState<Set<AccountId>>(new Set());
+  const [connecting, setConnecting] = useState<AccountId | null>(null);
   const langRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const picInputRef = useRef<HTMLInputElement>(null);
 
-  // Step 1: open the sign-in URL and mark as pending
-  const openConnect = useCallback((acc: ConnectedAccount) => {
-    window.open(acc.connectUrl, '_blank');
-    setPending(prev => new Set(prev).add(acc.id));
+  // Step 1: start OAuth (real for Zoom, open URL for others)
+  const openConnect = useCallback(async (acc: ConnectedAccount) => {
+    if (acc.id === 'zoom') {
+      setConnecting('zoom');
+      const result = await connectZoom();
+      setConnecting(null);
+      if (result.success) {
+        setConnected(prev => { const n = new Set(prev); n.add('zoom'); saveConnected(n); return n; });
+      } else {
+        alert(`Zoom connection failed: ${result.error}`);
+      }
+    } else {
+      window.open(acc.connectUrl, '_blank');
+      setPending(prev => new Set(prev).add(acc.id));
+    }
   }, []);
 
   // Step 2: user confirms they've signed in
@@ -92,14 +105,24 @@ export function AppShell({
 
   // Disconnect
   const disconnect = useCallback((id: AccountId) => {
-    setConnected(prev => {
-      const next = new Set(prev);
-      next.delete(id);
-      saveConnected(next);
-      return next;
-    });
+    setConnected(prev => { const n = new Set(prev); n.delete(id); saveConnected(n); return n; });
     setPending(prev => { const n = new Set(prev); n.delete(id); return n; });
+    if (id === 'zoom') disconnectZoom().catch(() => {});
   }, []);
+
+  // Sync Zoom connection state from Supabase on mount
+  useEffect(() => {
+    isZoomConnected().then(live => {
+      setConnected(prev => {
+        const hadZoom = prev.has('zoom');
+        if (live === hadZoom) return prev;
+        const next = new Set(prev);
+        if (live) next.add('zoom'); else next.delete('zoom');
+        saveConnected(next);
+        return next;
+      });
+    }).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handlePicClick() { picInputRef.current?.click(); }
   function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -285,6 +308,10 @@ export function AppShell({
                             >
                               ✓ Connected
                             </button>
+                          ) : connecting === acc.id ? (
+                            <span className="app-shell__account-badge app-shell__account-badge--pending">
+                              Connecting…
+                            </span>
                           ) : isPending ? (
                             <button
                               className="app-shell__account-badge app-shell__account-badge--pending"
