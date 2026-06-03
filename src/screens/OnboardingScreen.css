@@ -343,6 +343,93 @@
 
 
 /* ── Ready summary ── */
+/* ─── Connect platforms step ─────────────────────────────────────────────── */
+
+.ob__platforms {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.ob__platform-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  transition: border-color 0.2s;
+}
+
+.ob__platform-card--connected {
+  border-color: rgba(57, 211, 83, 0.3);
+  background: rgba(57, 211, 83, 0.04);
+}
+
+.ob__platform-icon {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.5);
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.ob__platform-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ob__platform-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+
+.ob__platform-desc {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.ob__platform-btn {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--border-radius-pill);
+  padding: 6px 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ob__platform-btn--connect {
+  background: rgba(129, 74, 200, 0.15);
+  border-color: rgba(129, 74, 200, 0.4);
+  color: var(--color-accent-magenta);
+}
+.ob__platform-btn--connect:hover {
+  background: rgba(129, 74, 200, 0.25);
+}
+
+.ob__platform-btn--connected {
+  background: rgba(57, 211, 83, 0.12);
+  border-color: rgba(57, 211, 83, 0.3);
+  color: var(--color-accent-green);
+}
+.ob__platform-btn--connected:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--color-accent-red);
+}
+
+/* ─── Ready summary ──────────────────────────────────────────────────────── */
+
 .ob__ready-summary {
   width: 100%;
   background: rgba(255, 255, 255, 0.03);

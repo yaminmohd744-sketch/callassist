@@ -1,7 +1,27 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
+import { STORAGE_KEYS } from '../lib/storageKeys';
 import './OnboardingScreen.css';
+
+// ── Platforms (shared with AppShell) ─────────────────────────────────────────
+
+type AccountId = 'google-meet' | 'zoom' | 'teams';
+
+const OB_PLATFORMS: { id: AccountId; label: string; icon: string; desc: string; connectUrl: string }[] = [
+  { id: 'google-meet', label: 'Google Meet', icon: '▶', desc: 'Join and run Google Meet calls from directly inside Pitchr', connectUrl: 'https://meet.google.com' },
+  { id: 'zoom',        label: 'Zoom',        icon: '⬤', desc: 'Connect your Zoom account for one-click call joining',       connectUrl: 'https://zoom.us/signin' },
+  { id: 'teams',       label: 'Teams',       icon: '⊞', desc: 'Link Microsoft Teams for seamless call access',               connectUrl: 'https://teams.microsoft.com' },
+];
+
+function loadObConnected(): Set<AccountId> {
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEYS.connectedAccounts) ?? '[]') as AccountId[]); }
+  catch { return new Set(); }
+}
+
+function saveObConnected(set: Set<AccountId>) {
+  localStorage.setItem(STORAGE_KEYS.connectedAccounts, JSON.stringify([...set]));
+}
 
 interface OnboardingScreenProps {
   onDone: (data: OnboardingData) => void;
@@ -58,15 +78,16 @@ const COMPANY_CATEGORIES: Category[] = [
 
 const STEPS = [
   { title: 'Welcome to Pitchr'              },  // 0
-  { title: 'How long have you been selling?'},  // 1 NEW
+  { title: 'How long have you been selling?'},  // 1
   { title: 'Who are you selling for?'       },  // 2
   { title: 'What do you sell?'              },  // 3
   { title: 'Tell us about it'               },  // 4
   { title: 'Who do you sell to?'            },  // 5
   { title: 'Your competitive edge'          },  // 6
-  { title: 'What do you want to improve?'   },  // 7 NEW
+  { title: 'What do you want to improve?'   },  // 7
   { title: 'What language do you sell in?'  },  // 8
-  { title: "You're ready to close."         },  // 9
+  { title: 'Connect your call platforms'    },  // 9 NEW
+  { title: "You're ready to close."         },  // 10
 ];
 
 interface ExperienceOption {
@@ -121,6 +142,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
   const [experienceLevel, setExperienceLevel] = useState<'beginner' | 'intermediate' | 'experienced' | 'veteran' | null>(null);
   const [dealType, setDealType]               = useState<'transactional' | 'mid-market' | 'enterprise' | null>(null);
   const [topChallenges, setTopChallenges]     = useState<string[]>([]);
+  const [obConnected, setObConnected]         = useState<Set<AccountId>>(() => loadObConnected());
 
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -160,6 +182,15 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
     setSellingFor(val);
     setIndustry('');
     setIndustryOther('');
+  }
+
+  function toggleObAccount(id: AccountId) {
+    setObConnected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      saveObConnected(next);
+      return next;
+    });
   }
 
   function toggleChallenge(val: string) {
@@ -532,8 +563,55 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
           </div>
         )}
 
-        {/* ── Step 9: Ready ── */}
+        {/* ── Step 9: Connect platforms ── */}
         {step === 9 && (
+          <div className="ob__slide">
+            <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>Connect your call platforms.</h1>
+            <p className="ob__sub">
+              Link the tools you use before your first call — so you can join and get coached without any friction.
+              You can always do this later from your profile.
+            </p>
+            <div className="ob__platforms">
+              {OB_PLATFORMS.map(p => {
+                const isConnected = obConnected.has(p.id);
+                return (
+                  <div key={p.id} className={`ob__platform-card${isConnected ? ' ob__platform-card--connected' : ''}`}>
+                    <div className="ob__platform-icon">{p.icon}</div>
+                    <div className="ob__platform-info">
+                      <div className="ob__platform-name">{p.label}</div>
+                      <div className="ob__platform-desc">{p.desc}</div>
+                    </div>
+                    {isConnected ? (
+                      <button
+                        className="ob__platform-btn ob__platform-btn--connected"
+                        onClick={() => toggleObAccount(p.id)}
+                        title="Click to disconnect"
+                      >
+                        ✓ Connected
+                      </button>
+                    ) : (
+                      <button
+                        className="ob__platform-btn ob__platform-btn--connect"
+                        onClick={() => {
+                          window.open(p.connectUrl, '_blank');
+                          toggleObAccount(p.id);
+                        }}
+                      >
+                        Connect →
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="ob__hint ob__hint--center" style={{ marginTop: 16 }}>
+              Not using any of these? Skip and connect later from your profile.
+            </p>
+          </div>
+        )}
+
+        {/* ── Step 10: Ready ── */}
+        {step === 10 && (
           <div className="ob__slide ob__slide--center">
             <div className="ob__ready-icon" aria-hidden="true">✦</div>
             <h1 className="ob__h1" ref={headingRef} tabIndex={-1}>
