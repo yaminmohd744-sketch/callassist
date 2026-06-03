@@ -85,7 +85,7 @@ const STEPS: Step[] = [
     annotation: {
       label: 'AUTO-SAVED CALL HISTORY',
       body: 'Every session saved with full transcript, AI coaching summary, lead score, and a ready-to-send follow-up email.',
-      side: 'right',
+      side: 'top',
     },
     ms: 3600,
   },
@@ -192,16 +192,43 @@ export function DashboardSlide() {
   const ann  = step.annotation;
   const hasRing = ring !== null;
 
-  // Annotation position: attach to the correct side of the ring
+  // Annotation position: attach to the correct side of the ring, clamped within frame
   function annStyle(): React.CSSProperties {
     if (!ring || !ann) return {};
     const PAD = 12;
+    const ANN_W = 268;  // matches max-width in CSS
+    const frameW = frameRef.current?.clientWidth  ?? 1200;
+    const frameH = frameRef.current?.clientHeight ?? 800;
+
+    let top: number, left: number;
+    let transform = '';
+
     switch (ann.side) {
-      case 'bottom': return { top: ring.top + ring.height + PAD, left: ring.left + ring.width * 0.5, transform: 'translateX(-50%)' };
-      case 'top':    return { top: ring.top - PAD, left: ring.left + ring.width * 0.5, transform: 'translate(-50%, -100%)' };
-      case 'right':  return { top: ring.top + ring.height * 0.15, left: ring.left + ring.width + PAD };
-      case 'left':   return { top: ring.top + ring.height * 0.15, left: ring.left - PAD, transform: 'translateX(-100%)' };
+      case 'bottom':
+        top  = ring.top + ring.height + PAD;
+        left = ring.left + ring.width * 0.5;
+        transform = 'translateX(-50%)';
+        break;
+      case 'top':
+        top  = ring.top - PAD;
+        left = ring.left + ring.width * 0.5;
+        transform = 'translate(-50%, -100%)';
+        break;
+      case 'right':
+        top  = ring.top + ring.height * 0.15;
+        left = ring.left + ring.width + PAD;
+        break;
+      case 'left':
+        top  = ring.top + ring.height * 0.15;
+        left = ring.left - PAD - ANN_W;
+        break;
     }
+
+    // Clamp: never go past right or bottom edge of frame
+    const clampedLeft = Math.min(left!, frameW - ANN_W - 12);
+    const clampedTop  = Math.max(8, Math.min(top!, frameH - 160));
+
+    return { top: clampedTop, left: clampedLeft, transform };
   }
 
   return (
