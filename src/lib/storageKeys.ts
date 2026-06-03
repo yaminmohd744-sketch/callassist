@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   /** Per-user flag: localStorage CRM packages migrated to Supabase. */
   migratedPackages: (userId: string) => `pp-migrated-packages-${userId}`,
   businessProfile: 'pitchr:business-profile',
-  learningProfile: 'pitchr:learning-profile',
-  learningLog:     'pitchr:learning-log',
+  learningProfile:   'pitchr:learning-profile',
+  learningLog:       'pitchr:learning-log',
+  connectedAccounts: 'pitchr:connected-accounts',
 } as const;

@@ -1,10 +1,39 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { SUPPORTED_LANGUAGES } from '../../lib/languages';
 import { formatTotalTime } from '../../lib/formatters';
 import { useTranslations } from '../../hooks/useTranslations';
 import { useAppContext } from '../../contexts/AppContext';
 import { PitchrLogo } from '../ui/PitchrLogo';
+import { STORAGE_KEYS } from '../../lib/storageKeys';
 import './AppShell.css';
+
+// ── Connected accounts ────────────────────────────────────────────────────────
+
+type AccountId = 'google-meet' | 'zoom' | 'teams';
+
+interface ConnectedAccount {
+  id: AccountId;
+  label: string;
+  icon: string;
+  connectUrl: string;
+}
+
+const ACCOUNTS: ConnectedAccount[] = [
+  { id: 'google-meet', label: 'Google Meet', icon: '▶', connectUrl: 'https://meet.google.com' },
+  { id: 'zoom',        label: 'Zoom',        icon: '⬤', connectUrl: 'https://zoom.us/signin'  },
+  { id: 'teams',       label: 'Teams',       icon: '⊞', connectUrl: 'https://teams.microsoft.com' },
+];
+
+function loadConnected(): Set<AccountId> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEYS.connectedAccounts) ?? '[]') as AccountId[];
+    return new Set(raw);
+  } catch { return new Set(); }
+}
+
+function saveConnected(set: Set<AccountId>) {
+  localStorage.setItem(STORAGE_KEYS.connectedAccounts, JSON.stringify([...set]));
+}
 
 type ShellScreen = 'dashboard' | 'analytics' | 'leads';
 
@@ -38,9 +67,19 @@ export function AppShell({
   } = useAppContext();
   const [langOpen, setLangOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [connected, setConnected] = useState<Set<AccountId>>(() => loadConnected());
   const langRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const picInputRef = useRef<HTMLInputElement>(null);
+
+  const toggleAccount = useCallback((id: AccountId) => {
+    setConnected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      saveConnected(next);
+      return next;
+    });
+  }, []);
 
   function handlePicClick() { picInputRef.current?.click(); }
   function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -204,6 +243,41 @@ export function AppShell({
                         <strong>{formatTotalTime(totalCallSeconds)}</strong> {t.profile.totalOnPlatform}
                       </span>
                     </div>
+                  </div>
+
+                  <div className="app-shell__profile-divider" />
+
+                  {/* Connected accounts */}
+                  <div className="app-shell__profile-section-label">CONNECTED ACCOUNTS</div>
+                  <div className="app-shell__accounts">
+                    {ACCOUNTS.map(acc => {
+                      const isConnected = connected.has(acc.id);
+                      return (
+                        <div key={acc.id} className="app-shell__account-row">
+                          <span className="app-shell__account-icon">{acc.icon}</span>
+                          <span className="app-shell__account-label">{acc.label}</span>
+                          {isConnected ? (
+                            <button
+                              className="app-shell__account-badge app-shell__account-badge--connected"
+                              onClick={() => toggleAccount(acc.id)}
+                              title="Click to disconnect"
+                            >
+                              ✓ Connected
+                            </button>
+                          ) : (
+                            <button
+                              className="app-shell__account-badge app-shell__account-badge--disconnected"
+                              onClick={() => {
+                                window.open(acc.connectUrl, '_blank');
+                                toggleAccount(acc.id);
+                              }}
+                            >
+                              Connect now
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <div className="app-shell__profile-divider" />

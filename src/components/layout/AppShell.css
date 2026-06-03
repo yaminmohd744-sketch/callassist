@@ -497,6 +497,77 @@
 
 /* ── Sign out ── */
 
+/* ─── Connected accounts ──────────────────────────────────────────────────── */
+
+.app-shell__accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px 0 4px;
+}
+
+.app-shell__account-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 10px;
+  border-radius: var(--border-radius-sm);
+}
+
+.app-shell__account-icon {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.app-shell__account-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.app-shell__account-badge {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--border-radius-pill);
+  padding: 3px 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity 0.15s, background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.app-shell__account-badge--connected {
+  background: rgba(57, 211, 83, 0.12);
+  border-color: rgba(57, 211, 83, 0.3);
+  color: var(--color-accent-green);
+}
+.app-shell__account-badge--connected:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--color-accent-red);
+}
+.app-shell__account-badge--connected:hover::before {
+  content: '✕ Disconnect';
+}
+.app-shell__account-badge--connected:not(:hover) { }
+
+.app-shell__account-badge--disconnected {
+  background: rgba(129, 74, 200, 0.12);
+  border-color: rgba(129, 74, 200, 0.35);
+  color: var(--color-accent-magenta);
+}
+.app-shell__account-badge--disconnected:hover {
+  background: rgba(129, 74, 200, 0.2);
+}
+
+/* ─── Sign out ──────────────────────────────────────────────────────────────── */
+
 .app-shell__profile-signout {
   display: flex;
   align-items: center;
