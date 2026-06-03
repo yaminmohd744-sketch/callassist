@@ -99,6 +99,7 @@
   flex-direction: column;
   width: var(--panel-right-width);
   flex-shrink: 0;
+  min-height: 0;
   border-left: 1px solid var(--color-border-subtle);
   background: #000;
   overflow: hidden;
@@ -137,9 +138,18 @@
 
 .live-call__meeting-webview-container {
   flex: 1;
+  min-height: 0;
   width: 100%;
-  display: block;
+  display: flex;
+  flex-direction: column;
   background: #000;
+}
+
+.live-call__meeting-webview-container webview {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  display: block;
 }
 
 
