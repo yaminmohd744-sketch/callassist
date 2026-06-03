@@ -68,17 +68,37 @@ export function AppShell({
   const [langOpen, setLangOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [connected, setConnected] = useState<Set<AccountId>>(() => loadConnected());
+  const [pending, setPending]       = useState<Set<AccountId>>(new Set());
   const langRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const picInputRef = useRef<HTMLInputElement>(null);
 
-  const toggleAccount = useCallback((id: AccountId) => {
+  // Step 1: open the sign-in URL and mark as pending
+  const openConnect = useCallback((acc: ConnectedAccount) => {
+    window.open(acc.connectUrl, '_blank');
+    setPending(prev => new Set(prev).add(acc.id));
+  }, []);
+
+  // Step 2: user confirms they've signed in
+  const confirmConnected = useCallback((id: AccountId) => {
+    setPending(prev => { const n = new Set(prev); n.delete(id); return n; });
     setConnected(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      next.add(id);
       saveConnected(next);
       return next;
     });
+  }, []);
+
+  // Disconnect
+  const disconnect = useCallback((id: AccountId) => {
+    setConnected(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      saveConnected(next);
+      return next;
+    });
+    setPending(prev => { const n = new Set(prev); n.delete(id); return n; });
   }, []);
 
   function handlePicClick() { picInputRef.current?.click(); }
@@ -252,6 +272,7 @@ export function AppShell({
                   <div className="app-shell__accounts">
                     {ACCOUNTS.map(acc => {
                       const isConnected = connected.has(acc.id);
+                      const isPending   = pending.has(acc.id);
                       return (
                         <div key={acc.id} className="app-shell__account-row">
                           <span className="app-shell__account-icon">{acc.icon}</span>
@@ -259,18 +280,22 @@ export function AppShell({
                           {isConnected ? (
                             <button
                               className="app-shell__account-badge app-shell__account-badge--connected"
-                              onClick={() => toggleAccount(acc.id)}
+                              onClick={() => disconnect(acc.id)}
                               title="Click to disconnect"
                             >
                               ✓ Connected
                             </button>
+                          ) : isPending ? (
+                            <button
+                              className="app-shell__account-badge app-shell__account-badge--pending"
+                              onClick={() => confirmConnected(acc.id)}
+                            >
+                              I've signed in ✓
+                            </button>
                           ) : (
                             <button
                               className="app-shell__account-badge app-shell__account-badge--disconnected"
-                              onClick={() => {
-                                window.open(acc.connectUrl, '_blank');
-                                toggleAccount(acc.id);
-                              }}
+                              onClick={() => openConnect(acc)}
                             >
                               Connect now
                             </button>

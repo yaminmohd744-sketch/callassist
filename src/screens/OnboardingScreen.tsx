@@ -143,6 +143,7 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
   const [dealType, setDealType]               = useState<'transactional' | 'mid-market' | 'enterprise' | null>(null);
   const [topChallenges, setTopChallenges]     = useState<string[]>([]);
   const [obConnected, setObConnected]         = useState<Set<AccountId>>(() => loadObConnected());
+  const [obPending,   setObPending]           = useState<Set<AccountId>>(new Set());
 
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -184,13 +185,24 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
     setIndustryOther('');
   }
 
-  function toggleObAccount(id: AccountId) {
+  function openObConnect(p: typeof OB_PLATFORMS[0]) {
+    window.open(p.connectUrl, '_blank');
+    setObPending(prev => new Set(prev).add(p.id));
+  }
+
+  function confirmObConnected(id: AccountId) {
+    setObPending(prev => { const n = new Set(prev); n.delete(id); return n; });
     setObConnected(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      next.add(id);
       saveObConnected(next);
       return next;
     });
+  }
+
+  function disconnectOb(id: AccountId) {
+    setObConnected(prev => { const n = new Set(prev); n.delete(id); saveObConnected(n); return n; });
+    setObPending(prev => { const n = new Set(prev); n.delete(id); return n; });
   }
 
   function toggleChallenge(val: string) {
@@ -584,18 +596,22 @@ export function OnboardingScreen({ onDone }: OnboardingScreenProps) {
                     {isConnected ? (
                       <button
                         className="ob__platform-btn ob__platform-btn--connected"
-                        onClick={() => toggleObAccount(p.id)}
+                        onClick={() => disconnectOb(p.id)}
                         title="Click to disconnect"
                       >
                         ✓ Connected
                       </button>
+                    ) : obPending.has(p.id) ? (
+                      <button
+                        className="ob__platform-btn ob__platform-btn--pending"
+                        onClick={() => confirmObConnected(p.id)}
+                      >
+                        I've signed in ✓
+                      </button>
                     ) : (
                       <button
                         className="ob__platform-btn ob__platform-btn--connect"
-                        onClick={() => {
-                          window.open(p.connectUrl, '_blank');
-                          toggleObAccount(p.id);
-                        }}
+                        onClick={() => openObConnect(p)}
                       >
                         Connect →
                       </button>

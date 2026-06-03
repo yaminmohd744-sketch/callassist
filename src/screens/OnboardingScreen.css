@@ -428,6 +428,21 @@
   color: var(--color-accent-red);
 }
 
+.ob__platform-btn--pending {
+  background: rgba(234, 179, 8, 0.12);
+  border-color: rgba(234, 179, 8, 0.35);
+  color: #eab308;
+  animation: ob-badge-pulse 1.8s ease-in-out infinite;
+}
+.ob__platform-btn--pending:hover {
+  background: rgba(234, 179, 8, 0.22);
+}
+
+@keyframes ob-badge-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+
 /* ─── Ready summary ──────────────────────────────────────────────────────── */
 
 .ob__ready-summary {

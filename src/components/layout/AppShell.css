@@ -566,6 +566,21 @@
   background: rgba(129, 74, 200, 0.2);
 }
 
+.app-shell__account-badge--pending {
+  background: rgba(234, 179, 8, 0.12);
+  border-color: rgba(234, 179, 8, 0.35);
+  color: #eab308;
+  animation: badge-pulse 1.8s ease-in-out infinite;
+}
+.app-shell__account-badge--pending:hover {
+  background: rgba(234, 179, 8, 0.22);
+}
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+
 /* ─── Sign out ──────────────────────────────────────────────────────────────── */
 
 .app-shell__profile-signout {
