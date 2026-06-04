@@ -1,5 +1,5 @@
 # Pitchr — Competitor Research
-_Generated: 2026-05-27_
+_Generated: 2026-05-27 | Updated: 2026-06-03 (live web research pass)_
 
 ---
 
@@ -178,6 +178,78 @@ _Generated: 2026-05-27_
 
 ---
 
+## Updated Competitor Data (June 2026 Research Pass)
+
+### Gong — confirmed pricing update
+- 2025 contracts moving to flat $50,000 annual platform fee
+- Forced bundled packages: no longer possible to buy conversation intelligence only
+- Implementation now often 8+ weeks with required RevOps support
+- 60–70% adoption at 3–6 months — teams pay for unused features
+- Gong Forecast rated ~4/10 by revenue leaders vs dedicated forecasting tools
+- Used by managers to micromanage (talk ratios, timestamp nitpicking) not to coach
+- NO real-time coaching — confirmed post-call only
+
+### Chorus by ZoomInfo — confirmed issues
+- Bot does not always join promptly — misses opening of call
+- Transcription accuracy: 80–90% — not good enough for verbatim quotes
+- Locked into annual contracts, $8K+ before knowing if team adopts it
+- No customization options — complex pricing model
+- Post-call only — confirmed zero real-time capability
+
+### Salesloft — confirmed issues
+- Merged with Clari in late 2025 — combined entity has created product uncertainty
+- Dialer is a paid add-on: #1 complaint with 95 G2 mentions
+- Sync errors with Salesforce requiring manual cleanup
+- Contract terms designed to make leaving difficult
+- G2: 4.5/5 — Trustpilot: 2.2/5 (the gap tells you who's reviewing where)
+
+### Wingman/Clari Copilot — confirmed positioning
+- Accelerator plan: ~$1,080/user/year; Enterprise: ~$1,320/user/year
+- Works primarily on Zoom/Teams video calls — phone call support limited
+- English-only — no multilingual support confirmed
+- Transcription struggles with accents, speaker ID
+- No built-in CRM
+
+### Salesken — confirmed issues
+- Custom pricing only; no self-serve
+- Occasional lag during calls (makes real-time coaching ineffective)
+- Limited report customization; steep learning curve
+- No built-in CRM
+- Primarily inside sales/video — not standalone phone
+
+### Avoma — confirmed issues
+- 73% of users cite reliability as #1 issue (500+ reviews analyzed)
+- Transcription accuracy: ~80% vs 95%+ modern AI standard
+- Bot fails to join, joins late, or drops mid-call
+- No real-time coaching — records and summarizes only
+- Add-on costs push effective price to $59–$79/user
+
+### Fireflies.ai — confirmed issues
+- AI credit system makes costs unpredictable
+- Bot crashes Zoom calls and continues rejoining after removal
+- Joins meetings unannounced — disrupts prospect experience
+- Transcription quality inconsistent across accents
+- No real-time coaching capability
+
+---
+
+## Updated Competitive Matrix (June 2026)
+
+| Competitor | Real-Time? | Phone Calls? | Languages | CRM Built-In | Price Tier |
+|---|---|---|---|---|---|
+| Gong | No | No | Limited | No | $$$$ |
+| Chorus | No | No | Limited | No | $$$$ |
+| Salesloft | No | Add-on | No | No | $$$ |
+| Wingman/Clari | Yes | No | English only | No | $$$ |
+| Salesken | Yes | Partial | Unclear | No | $$$ |
+| Avoma | No | No | Limited | No | $$ |
+| Fireflies | No | No | 100+ (transcript only) | No | $ |
+| **Pitchr** | **Yes** | **Yes** | **10 languages** | **Yes** | **$$** |
+
+**Single biggest gap:** No competitor delivers real-time AI coaching on regular phone calls across multiple languages at SMB-accessible pricing with a built-in CRM. Every real-time tool (Wingman, Salesken) is video-call-only, English-only, and enterprise-priced.
+
+---
+
 ## SDR / Sales Rep Pain Points (Research-Backed)
 
 **Core fears:**
@@ -224,5 +296,38 @@ _Generated: 2026-05-27_
 5. 3–5 hashtags max: #salestips #SDR #coldcalling #salescoach #salesrep
 
 **Hashtag targets:** #salestips #SDR #coldcalling #salescoaching #salesrep #B2Bsales #AE #closingdeals #saas #pitchr
+
+---
+
+## Additional Social Content Intelligence (June 2026 Research Pass)
+
+### Instagram Carousel Engagement Stats
+- Carousels: highest engagement of any format at 1.92% avg
+- Reels: 0.50% | Static images: 0.45%
+- Carousels with image + video: 2.33% engagement
+- Comment-to-DM automation: 12–18% conversion rate
+- Optimal specs: 8–10 slides, 1080x1350px portrait
+- Hook slide must earn the swipe within 0.3 seconds
+
+### TikTok B2B Strategy
+- High-reach, low-intent — builds familiarity, converts later via retargeting
+- Carousels work as "mini slide decks" — test which insights spark interest
+- Demand creation platform, not direct response
+- Content that shows "thinking" outperforms content that shows product
+
+### Hook Formulas That Drive Saves (Sales Niche)
+- Shock + pain: "Your [process] is killing your [outcome]"
+- Bold statement: "Most SDRs lose deals in the first 30 seconds"
+- Number-led: "5 things top AEs do that you're not doing"
+- Identity threat: "If you're still doing [old thing] in 2025 you're leaving money on the table"
+- Outcome promise: "How I booked 12 meetings in one morning"
+- Secret reveal: "What your manager won't tell you about objection handling"
+
+### Top Save-Triggers in Sales Content
+- Objection response scripts (saved for reference)
+- Before/after call frameworks
+- Stats that validate struggle
+- Tool comparisons that make the reader feel informed
+- "Day in the life" showing what top reps actually use
 
 ---

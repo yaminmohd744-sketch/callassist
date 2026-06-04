@@ -1,5 +1,5 @@
 # Pitchr — Marketing Strategy
-_Generated: 2026-05-27_
+_Generated: 2026-05-27 | Updated: 2026-06-03 (live research refresh)_
 
 ---
 
