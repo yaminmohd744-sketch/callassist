@@ -49,7 +49,7 @@ export function LeadProfilePanel({ config, closeProbability, objectionsCount, no
           <webview
             src={config.meetingUrl}
             partition="persist:meeting"
-            allowpopups="true"
+            allowpopups={true}
             useragent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
             className="lead-panel__meeting-webview"
           />
