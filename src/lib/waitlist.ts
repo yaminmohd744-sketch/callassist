@@ -1,6 +1,6 @@
-import { supabase } from './supabase';
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]{2,}\.[a-zA-Z]{2,}$/;
+
+const FUNCTION_URL = `${(import.meta.env.VITE_SUPABASE_URL as string) || ''}/functions/v1/waitlist-signup`;
 
 export type WaitlistResult =
   | { ok: true }
@@ -10,14 +10,19 @@ export async function joinWaitlist(email: string, source = 'landing'): Promise<W
   const trimmed = email.trim().toLowerCase();
   if (!EMAIL_RE.test(trimmed)) return { ok: false, reason: 'invalid-email' };
 
-  const { error } = await supabase
-    .from('waitlist')
-    .insert({ email: trimmed, source });
-
-  if (!error) return { ok: true };
-
-  // Postgres unique-violation code
-  if (error.code === '23505') return { ok: false, reason: 'already-on-list' };
-
-  return { ok: false, reason: 'error' };
+  try {
+    const res = await fetch(FUNCTION_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: trimmed, source }),
+    });
+    const data = await res.json() as { success?: boolean; error?: string };
+    if (!res.ok || !data.success) {
+      if (data.error?.toLowerCase().includes('already')) return { ok: false, reason: 'already-on-list' };
+      return { ok: false, reason: 'error' };
+    }
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: 'error' };
+  }
 }
