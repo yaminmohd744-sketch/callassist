@@ -1,0 +1,307 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 13: The Objection Behind the Objection</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.objection-heard {
+  background: rgba(255,68,68,0.08);
+  border: 1.5px solid rgba(255,68,68,0.25);
+  border-radius: 16px;
+  padding: 20px 28px;
+}
+.objection-heard p {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  color: rgba(255,68,68,0.85);
+  font-style: italic;
+  line-height: 1.45;
+}
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.label-red { color: rgba(255,68,68,0.7); }
+.label-magenta { color: var(--magenta); }
+.label-purple { color: var(--purple); }
+.meaning-text {
+  font-family: var(--font-body);
+  font-size: 21px;
+  color: var(--magenta);
+  font-weight: 600;
+  line-height: 1.45;
+}
+.move-text {
+  font-family: var(--font-body);
+  font-size: 19px;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.6;
+}
+.three-part {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.obj-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+.master-quote {
+  border: 2px solid rgba(129,74,200,0.5);
+  border-radius: 20px;
+  padding: 32px 36px;
+  background: rgba(129,74,200,0.08);
+  position: relative;
+}
+.master-quote::before {
+  content: '\201C';
+  position: absolute;
+  top: -20px;
+  left: 28px;
+  font-size: 80px;
+  color: var(--purple);
+  opacity: 0.4;
+  font-family: var(--font-display);
+  line-height: 1;
+}
+.bubble-bg {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50% 50% 50% 0;
+  border: 2px solid rgba(129,74,200,0.12);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 13 — The Objection Behind the Objection · Tactical · AE / Closer</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black bg-noise">
+    <div class="brand-mark">Pitchr</div>
+    <div class="bubble-bg"></div>
+    <div class="deco-circle deco-blur" style="width:400px;height:400px;background:var(--purple);bottom:-150px;left:-100px;"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:24px;position:relative;z-index:1;">
+      <p style="font-family:var(--font-mono);font-size:20px;color:rgba(255,68,68,0.7);font-style:italic;">When they say...</p>
+      <div style="border:2px solid rgba(255,68,68,0.3);border-radius:20px;padding:28px 48px;background:rgba(255,68,68,0.06);">
+        <p style="font-family:var(--font-mono);font-size:34px;color:rgba(255,68,68,0.85);font-style:italic;">&ldquo;it's too expensive&rdquo;</p>
+      </div>
+      <div style="width:2px;height:40px;background:rgba(129,74,200,0.4);"></div>
+      <h1 class="t-display c-near-white" style="font-size:48px;max-width:720px;line-height:1.1;">they don't mean<br><span class="grad-text">what you think</span>.</h1>
+      <p class="t-body-sm c-muted" style="font-style:italic;">Here's what they actually mean — and what to say.</p>
+    </div>
+    <div class="slide-num">1 / 10</div>
+  </div>
+
+  <!-- Slide 2: Why objections are never what they sound like -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:350px;height:350px;background:var(--magenta);top:-100px;right:-80px;opacity:0.15;"></div>
+    <div class="col gap-m" style="max-width:820px;">
+      <h2 class="t-display t-sm c-magenta" style="font-size:40px;">Why objections are never what they sound like.</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="line-height:1.7;font-size:20px;">An objection is a door that's slightly open. "Too expensive" is not a financial statement — it's an emotional one. The prospect is telling you they haven't yet connected your price to their pain.</p>
+      <div class="card-purple">
+        <p class="t-body c-near-white" style="font-weight:700;font-size:26px;">The objection is a request for more value.</p>
+      </div>
+      <p class="t-body-sm c-magenta" style="font-weight:700;">The reps who understand this never argue about price.</p>
+    </div>
+    <div class="slide-num">2 / 10</div>
+  </div>
+
+  <!-- Slide 3: Too expensive -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:38px;">Objection 1</h2>
+      <div class="three-part">
+        <div>
+          <p class="section-label label-red">They say</p>
+          <div class="objection-heard"><p>&ldquo;It's too expensive.&rdquo;</p></div>
+        </div>
+        <div class="obj-divider"></div>
+        <div>
+          <p class="section-label label-magenta">They mean</p>
+          <p class="meaning-text">&ldquo;I don't see the value clearly enough yet.&rdquo; They're comparing your price to their current understanding — not to their budget.</p>
+        </div>
+        <div class="obj-divider"></div>
+        <div>
+          <p class="section-label label-purple">Your move</p>
+          <div class="card" style="padding:18px 22px;">
+            <p class="move-text">&ldquo;What would it need to do for the price to feel justified?&rdquo;</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">3 / 10</div>
+  </div>
+
+  <!-- Slide 4: Need to think -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:38px;">Objection 2</h2>
+      <div class="three-part">
+        <div>
+          <p class="section-label label-red">They say</p>
+          <div class="objection-heard"><p>&ldquo;I need to think about it.&rdquo;</p></div>
+        </div>
+        <div class="obj-divider"></div>
+        <div>
+          <p class="section-label label-magenta">They mean</p>
+          <p class="meaning-text">&ldquo;I'm not convinced — but I don't want conflict.&rdquo; This is the most common and most avoided objection.</p>
+        </div>
+        <div class="obj-divider"></div>
+        <div>
+          <p class="section-label label-purple">Your move</p>
+          <div class="card" style="padding:18px 22px;">
+            <p class="move-text">&ldquo;What specifically is making you hesitant? Is it the timing, the budget, or something about the fit?&rdquo;</p>
+          </div>
+        </div>
+      </div>
+      <p style="font-family:var(--font-body);font-size:19px;font-weight:700;color:var(--near-white);margin-top:4px;">Name the thing they're avoiding.</p>
+    </div>
+    <div class="slide-num">4 / 10</div>
+  </div>
+
+  <!-- Slide 5: Send info -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:38px;">Objection 3</h2>
+      <div class="three-part">
+        <div>
+          <p class="section-label label-red">They say</p>
+          <div class="objection-heard"><p>&ldquo;Send me some information.&rdquo;</p></div>
+        </div>
+        <div class="obj-divider"></div>
+        <div>
+          <p class="section-label label-magenta">They mean</p>
+          <p class="meaning-text">&ldquo;I want to get off the phone without being rude.&rdquo; This is not an invitation — it's a polite hang-up.</p>
+        </div>
+        <div class="obj-divider"></div>
+        <div>
+          <p class="section-label label-purple">Your move</p>
+          <div class="card" style="padding:18px 22px;">
+            <p class="move-text">&ldquo;Of course — what specific part would be most useful? I want to make sure it's relevant to what you mentioned earlier.&rdquo;</p>
+          </div>
+        </div>
+      </div>
+      <p style="font-family:var(--font-body);font-size:18px;font-weight:800;color:var(--red);margin-top:4px;">Do not send a PDF.</p>
+    </div>
+    <div class="slide-num">5 / 10</div>
+  </div>
+
+  <!-- Slide 6: Already have a solution -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:38px;">Objection 4</h2>
+      <div class="three-part">
+        <div>
+          <p class="section-label label-red">They say</p>
+          <div class="objection-heard"><p>&ldquo;We already have a solution.&rdquo;</p></div>
+        </div>
+        <div class="obj-divider"></div>
+        <div>
+          <p class="section-label label-magenta">They mean</p>
+          <p class="meaning-text">&ldquo;I don't understand what makes you different.&rdquo; They're not dismissing you — they haven't seen your differentiation yet.</p>
+        </div>
+        <div class="obj-divider"></div>
+        <div>
+          <p class="section-label label-purple">Your move</p>
+          <div class="card" style="padding:18px 22px;">
+            <p class="move-text">&ldquo;What does your current solution do well? And where does it fall short?&rdquo; Let them name the gap. Then show them exactly where you live.</p>
+          </div>
+        </div>
+      </div>
+      <p style="font-family:var(--font-body);font-size:19px;font-weight:700;color:var(--magenta);">Let them name the gap.</p>
+    </div>
+    <div class="slide-num">6 / 10</div>
+  </div>
+
+  <!-- Slide 7: Not a good time -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:38px;">Objection 5</h2>
+      <div class="three-part">
+        <div>
+          <p class="section-label label-red">They say</p>
+          <div class="objection-heard"><p>&ldquo;Now isn't a good time.&rdquo;</p></div>
+        </div>
+        <div class="obj-divider"></div>
+        <div>
+          <p class="section-label label-magenta">They mean</p>
+          <p class="meaning-text">&ldquo;This isn't a priority right now.&rdquo; Timing objections aren't about time — they're about urgency. The problem hasn't become painful enough to act on yet.</p>
+        </div>
+        <div class="obj-divider"></div>
+        <div>
+          <p class="section-label label-purple">Your move</p>
+          <div class="card" style="padding:18px 22px;">
+            <p class="move-text">&ldquo;What would need to change in the next 90 days for this to become a priority?&rdquo; You're understanding what creates the trigger.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">7 / 10</div>
+  </div>
+
+  <!-- Slide 8: The pattern -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:400px;height:400px;background:var(--purple);bottom:-150px;right:-80px;opacity:0.2;"></div>
+    <div class="col gap-m" style="max-width:820px;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:40px;">The pattern underneath every objection.</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="line-height:1.7;font-size:20px;">Every objection has the same structure: they're protecting themselves from a decision they haven't yet justified. Your job is never to argue, dismiss, or bulldoze.</p>
+      <div class="card-purple">
+        <p style="font-family:var(--font-body);font-size:22px;color:var(--magenta);font-weight:700;line-height:1.45;">Understand what they need to feel safe making the decision.</p>
+      </div>
+      <p style="font-family:var(--font-body);font-size:19px;color:rgba(255,255,255,0.7);font-style:italic;">Discovery doesn't end at the pitch. It continues through every objection.</p>
+    </div>
+    <div class="slide-num">8 / 10</div>
+  </div>
+
+  <!-- Slide 9: The master question -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:350px;height:350px;background:var(--magenta);top:-100px;left:-80px;opacity:0.12;"></div>
+    <div class="col gap-l" style="max-width:820px;">
+      <h2 class="t-display t-sm c-magenta" style="font-size:36px;">The one question that handles<br>almost every objection.</h2>
+      <div class="master-quote">
+        <p class="t-display c-near-white" style="font-size:34px;line-height:1.3;">&ldquo;Help me understand — what's making you hesitant about moving forward?&rdquo;</p>
+      </div>
+      <p style="font-family:var(--font-body);font-size:19px;color:rgba(255,255,255,0.7);font-style:italic;text-align:center;">The close was right there — on the other side of the question.</p>
+    </div>
+    <div class="slide-num">9 / 10</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <div style="position:absolute;opacity:0.08;font-size:200px;bottom:60px;right:60px;line-height:1;">💬</div>
+    <p class="t-label c-white" style="opacity:0.7">Start your free trial</p>
+    <h2 class="t-display t-md c-white" style="max-width:780px;font-size:50px;">Pitchr surfaces the real objection mid-call.</h2>
+    <div class="cta-btn">Try Pitchr Free →</div>
+    <p class="cta-url">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">10 / 10</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+

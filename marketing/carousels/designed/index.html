@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=Syne:wght@700;800&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple: #814ac8;
+    --magenta: #df7afe;
+    --black: #000;
+    --surface: #0a0a0a;
+    --elevated: #111;
+    --near-white: #f0ebff;
+    --grad: linear-gradient(135deg, #814ac8, #df7afe);
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'Figtree', sans-serif;
+    --font-mono: 'Fragment Mono', monospace;
+  }
+
+  body {
+    background: var(--black);
+    color: var(--near-white);
+    font-family: var(--font-body);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    padding: 48px 64px 40px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 800;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-meta {
+    font-size: 14px;
+    color: #444;
+    font-weight: 500;
+    font-family: var(--font-mono);
+  }
+  header h1 {
+    font-family: var(--font-display);
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--near-white);
+    margin-top: 12px;
+  }
+  header h1 span {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-left { display: flex; flex-direction: column; gap: 8px; }
+  .header-sub {
+    font-size: 16px;
+    color: #555;
+    margin-top: 8px;
+    max-width: 480px;
+    line-height: 1.6;
+  }
+
+  /* ── Category filter ── */
+  .filter-bar {
+    padding: 24px 64px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #111;
+  }
+  .filter-btn {
+    padding: 8px 18px;
+    border-radius: 100px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border: 1px solid #222;
+    background: transparent;
+    color: #555;
+    transition: all .2s;
+  }
+  .filter-btn:hover { border-color: var(--purple); color: var(--magenta); }
+  .filter-btn.active {
+    background: var(--grad);
+    border-color: transparent;
+    color: #fff;
+  }
+
+  /* ── Grid ── */
+  .grid {
+    padding: 48px 64px 80px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid #1a1a1a;
+    border-radius: 20px;
+    overflow: hidden;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    transition: border-color .2s, transform .2s;
+    cursor: pointer;
+  }
+  .card:hover {
+    border-color: rgba(129,74,200,.4);
+    transform: translateY(-2px);
+  }
+
+  .card-thumb {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--elevated);
+  }
+  .card-thumb-inner {
+    font-family: var(--font-display);
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    z-index: 1;
+    text-align: center;
+    padding: 0 24px;
+  }
+  .card-thumb-num {
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #333;
+  }
+  .card-thumb-glow {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: var(--purple);
+    filter: blur(80px);
+    opacity: 0.2;
+  }
+  .card-thumb-slides {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #333;
+  }
+
+  .card-body {
+    padding: 20px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+  .card-cat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    width: fit-content;
+    background: rgba(129,74,200,.12);
+    color: var(--magenta);
+    border: 1px solid rgba(129,74,200,.2);
+  }
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--near-white);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .card-persona {
+    font-size: 13px;
+    color: #444;
+    font-weight: 500;
+  }
+  .card-open {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .open-btn {
+    padding: 10px 20px;
+    border-radius: 100px;
+    background: var(--grad);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: opacity .2s;
+  }
+  .open-btn:hover { opacity: .85; }
+  .slide-count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #333;
+  }
+
+  /* ── How to use banner ── */
+  .how-to {
+    margin: 0 64px 0;
+    padding: 24px 32px;
+    background: rgba(129,74,200,.08);
+    border: 1px solid rgba(129,74,200,.15);
+    border-radius: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .how-to-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .how-to h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--near-white);
+    margin-bottom: 6px;
+  }
+  .how-to p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+  }
+  .how-to strong { color: var(--magenta); }
+
+  /* ── Footer ── */
+  footer {
+    padding: 32px 64px;
+    border-top: 1px solid #111;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  footer span { font-size: 13px; color: #333; font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo">Pitchr</div>
+    <h1>Carousel <span>Library</span></h1>
+    <p class="header-sub">20 Instagram carousels — open any, export all slides as PNG, post to Instagram.</p>
+  </div>
+  <div class="header-meta">20 carousels · 6 categories · pitchr.org</div>
+</header>
+
+<div class="how-to">
+  <div class="how-to-icon">→</div>
+  <div>
+    <h3>How to export & post</h3>
+    <p>Click <strong>Open Carousel</strong> on any card below. The carousel opens in a new tab showing all slides. Use the <strong>⬇ All Slides (ZIP)</strong> button at the bottom of the page to download every slide as a PNG file. Unzip, upload to Instagram as a carousel post.</p>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-cat="all">All (20)</button>
+  <button class="filter-btn" data-cat="Humour">Humour</button>
+  <button class="filter-btn" data-cat="Data">Data</button>
+  <button class="filter-btn" data-cat="Tactical">Tactical</button>
+  <button class="filter-btn" data-cat="Education">Education</button>
+  <button class="filter-btn" data-cat="Mindset">Mindset</button>
+  <button class="filter-btn" data-cat="Career">Career</button>
+  <button class="filter-btn" data-cat="Empathy">Empathy</button>
+  <button class="filter-btn" data-cat="Trend">Trend</button>
+  <button class="filter-btn" data-cat="Pop Culture">Pop Culture</button>
+  <button class="filter-btn" data-cat="Broad">Broad</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>
+  <span>Pitchr — pitchr.org</span>
+  <span>marketing/carousels/designed/</span>
+</footer>
+
+<script>
+const carousels = [
+  { n:'01', title:'Things Every SDR Has Said', cat:'Humour',      persona:'SDR / BDR',       hook:'Self-recognition',  slides:10 },
+  { n:'02', title:'The Income Math',            cat:'Data',        persona:'All',             hook:'Aspiration',        slides:9  },
+  { n:'03', title:'What Nobody Tells You',      cat:'Honest',      persona:'All',             hook:'Validation',        slides:10 },
+  { n:'04', title:'Rejection Math',             cat:'Mindset',     persona:'SDR',             hook:'Empowerment',       slides:9  },
+  { n:'05', title:'Sales Movies: Right vs Wrong',cat:'Pop Culture',persona:'All',             hook:'Curiosity',         slides:9  },
+  { n:'06', title:'Green Flags vs Red Flags',   cat:'Career',      persona:'All',             hook:'Fear + Relief',     slides:10 },
+  { n:'07', title:'The 30-Second Rule',         cat:'Tactical',    persona:'SDR',             hook:'Curiosity',         slides:9  },
+  { n:'08', title:'AI Is Changing Sales',       cat:'Trend',       persona:'All',             hook:'Aspiration',        slides:9  },
+  { n:'09', title:'What Elite Closers Listen For',cat:'Education', persona:'AE',              hook:'Aspiration',        slides:9  },
+  { n:'10', title:'Salary Transparency',        cat:'Data',        persona:'All',             hook:'Curiosity',         slides:9  },
+  { n:'11', title:'The Follow-Up Formula',      cat:'Tactical',    persona:'SDR',             hook:'Validation',        slides:9  },
+  { n:'12', title:'Things Sales Taught Me',     cat:'Broad',       persona:'All',             hook:'Aspiration',        slides:10 },
+  { n:'13', title:'The Objection Behind the Objection',cat:'Education',persona:'AE / SDR',   hook:'Curiosity',         slides:10 },
+  { n:'14', title:'Cold Calling Anxiety',       cat:'Empathy',     persona:'SDR',             hook:'Validation',        slides:9  },
+  { n:'15', title:'Anatomy of a Perfect Sales Call',cat:'Education',persona:'AE',            hook:'Aspiration',        slides:9  },
+  { n:'16', title:'Sales vs Normal Jobs',       cat:'Humour',      persona:'All',             hook:'Humour',            slides:9  },
+  { n:'17', title:'Body Language on Video Calls',cat:'Tactical',   persona:'AE',              hook:'Fear',              slides:9  },
+  { n:'18', title:'The Modern Sales Tech Stack',cat:'Education',   persona:'Manager',         hook:'Curiosity',         slides:9  },
+  { n:'19', title:'Numbers That Will Shock You',cat:'Data',        persona:'All',             hook:'Shock',             slides:9  },
+  { n:'20', title:'First 90 Days in Sales',     cat:'Broad',       persona:'SDR',             hook:'Aspiration',        slides:10 },
+];
+
+const thumbWords = {
+  '01':'Every SDR has said this.', '02':'$40k','03':'The truth.','04':'8×','05':'Hollywood lied.',
+  '06':'🚩 vs ✅','07':'0:30','08':'AI','09':'43%','10':'$180k',
+  '11':'80%','12':'Life lessons.','13':'What they really mean.','14':'The anxiety is real.',
+  '15':'11:00','16':'Sales vs normal.','17':'Before you speak.','18':'The stack.','19':'Stats.','20':'90 days.'
+};
+
+function renderGrid(filter) {
+  const grid = document.getElementById('grid');
+  const visible = filter === 'all' ? carousels : carousels.filter(c => c.cat.toLowerCase() === filter.toLowerCase() || (filter === 'Broad' && c.cat === 'Broad') || (filter === 'Honest' && c.cat === 'Honest'));
+
+  // Always show all if no match
+  const list = visible.length ? visible : carousels;
+
+  grid.innerHTML = list.map(c => `
+    <div class="card" data-cat="${c.cat}">
+      <div class="card-thumb">
+        <div class="card-thumb-glow"></div>
+        <span class="card-thumb-num">carousel-${c.n}</span>
+        <div class="card-thumb-inner">${thumbWords[c.n]}</div>
+        <span class="card-thumb-slides">${c.slides} slides</span>
+      </div>
+      <div class="card-body">
+        <span class="card-cat">${c.cat}</span>
+        <div class="card-title">${c.title}</div>
+        <div class="card-persona">${c.persona} · ${c.hook}</div>
+        <div class="card-open">
+          <a class="open-btn" href="carousel-${c.n}.html" target="_blank">Open & Export →</a>
+          <span class="slide-count">${c.slides} slides</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+renderGrid('all');
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderGrid(btn.dataset.cat);
+  });
+});
+</script>
+</body>
+</html>

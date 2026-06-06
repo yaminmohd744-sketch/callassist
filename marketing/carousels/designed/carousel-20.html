@@ -1,0 +1,485 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 20: First 90 Days in a Sales Job</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.roadmap-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+  position: relative;
+}
+.roadmap-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: var(--grad);
+}
+.roadmap-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 6px;
+}
+.phase-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.phase-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.bullet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+.bullet-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.bullet-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--purple);
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+.bullet-dot.magenta { background: var(--magenta); }
+.bullet-text {
+  font-family: var(--font-body);
+  font-size: 20px;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.45;
+}
+.two-rep {
+  display: flex;
+  gap: 24px;
+}
+.rep-card {
+  flex: 1;
+  padding: 24px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rep-card.loud { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+.rep-card.quiet { background: rgba(129,74,200,0.1); border: 1.5px solid rgba(129,74,200,0.3); }
+.rep-label { font-family: var(--font-body); font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.rep-label.loud-l { color: rgba(255,255,255,0.35); }
+.rep-label.quiet-l { color: var(--magenta); }
+.rep-desc { font-family: var(--font-body); font-size: 18px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+.objection-table {
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.obj-header {
+  display: flex;
+  background: rgba(129,74,200,0.12);
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.obj-header-cell {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+.obj-header-cell:first-child { flex: 1.2; color: var(--magenta); }
+.obj-header-cell:last-child { flex: 2; color: rgba(255,255,255,0.4); }
+.obj-row {
+  display: flex;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  gap: 16px;
+  align-items: flex-start;
+}
+.obj-row:last-child { border-bottom: none; }
+.obj-row:nth-child(odd) { background: rgba(255,255,255,0.02); }
+.obj-cell { font-family: var(--font-body); font-size: 16px; line-height: 1.45; }
+.obj-cell:first-child { flex: 1.2; color: var(--near-white); font-weight: 600; }
+.obj-cell:last-child { flex: 2; color: rgba(255,255,255,0.6); }
+.script-phases {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.script-phase-box {
+  flex: 1;
+  padding: 20px;
+  border-radius: 14px;
+  text-align: center;
+}
+.script-phase-box.constrained { border: 1.5px solid rgba(129,74,200,0.35); background: rgba(129,74,200,0.08); }
+.script-phase-box.expanded { border: 2px solid var(--magenta); background: rgba(223,122,254,0.08); }
+.phase-arrow { color: var(--magenta); font-size: 28px; flex-shrink: 0; }
+.diagnose-row {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0;
+}
+.d-box {
+  flex: 1;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(129,74,200,0.3);
+  background: rgba(129,74,200,0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.d-label { font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--magenta); letter-spacing: -0.01em; }
+.d-desc { font-family: var(--font-body); font-size: 14px; color: rgba(255,255,255,0.4); }
+.reset-icons {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  margin: 16px 0;
+}
+.reset-icon-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.reset-emoji { font-size: 48px; }
+.reset-label { font-family: var(--font-body); font-size: 16px; color: rgba(255,255,255,0.4); }
+.summary-blocks {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.summary-block {
+  flex: 1;
+  padding: 20px 18px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sb-1 { background: var(--purple); }
+.sb-2 { background: linear-gradient(135deg, rgba(129,74,200,0.6), rgba(223,122,254,0.4)); border: 1px solid rgba(223,122,254,0.3); }
+.sb-3 { background: rgba(223,122,254,0.15); border: 1.5px solid rgba(223,122,254,0.4); }
+.sb-label { font-family: var(--font-mono); font-size: 13px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.08em; }
+.sb-title { font-family: var(--font-display); font-size: 18px; font-weight: 800; color: white; }
+.sb-bullets { display: flex; flex-direction: column; gap: 4px; }
+.sb-bullet { font-family: var(--font-body); font-size: 14px; color: rgba(255,255,255,0.8); }
+.ninety-bg {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 280px;
+  font-weight: 700;
+  opacity: 0.04;
+  color: white;
+  right: 40px;
+  bottom: 60px;
+  line-height: 1;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 20 — First 90 Days in a Sales Job · Guide / Story · SDR / New Rep</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black bg-noise">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:450px;height:450px;background:var(--purple);top:-150px;right:-100px;opacity:0.2;"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:24px;">
+      <span class="tag tag-purple">The roadmap nobody gives you</span>
+      <h1 class="t-display c-near-white" style="font-size:54px;line-height:1.1;max-width:800px;">Nobody gives you <span class="grad-text">this roadmap</span> when you start a sales job.</h1>
+      <p class="t-body-sm c-muted" style="font-style:italic;font-size:20px;">Your first 90 days, mapped.</p>
+      <div style="display:flex;gap:16px;margin-top:16px;">
+        <div style="background:rgba(129,74,200,0.2);border:1.5px solid rgba(129,74,200,0.4);border-radius:12px;padding:14px 24px;text-align:center;">
+          <p style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--purple);">30</p>
+          <p style="font-family:var(--font-body);font-size:13px;color:rgba(255,255,255,0.4);margin-top:2px;">Listen</p>
+        </div>
+        <div style="background:rgba(129,74,200,0.15);border:1.5px solid rgba(129,74,200,0.3);border-radius:12px;padding:14px 24px;text-align:center;">
+          <p style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:rgba(129,74,200,0.7);">60</p>
+          <p style="font-family:var(--font-body);font-size:13px;color:rgba(255,255,255,0.4);margin-top:2px;">Run</p>
+        </div>
+        <div style="background:rgba(223,122,254,0.1);border:1.5px solid rgba(223,122,254,0.3);border-radius:12px;padding:14px 24px;text-align:center;">
+          <p style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--magenta);">90</p>
+          <p style="font-family:var(--font-body);font-size:13px;color:rgba(255,255,255,0.4);margin-top:2px;">Prove</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">1 / 10</div>
+  </div>
+
+  <!-- Slide 2: Days 1-30 -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <div>
+        <div class="roadmap-bar"><div class="roadmap-fill" style="width:33%;"></div></div>
+        <div class="roadmap-labels"><span>Day 1</span><span>30</span><span>60</span><span>90</span></div>
+      </div>
+      <div class="phase-header">
+        <div class="phase-icon">👂</div>
+        <div>
+          <p class="t-label c-purple" style="font-size:13px;margin-bottom:4px;">Days 1–30</p>
+          <h2 class="t-display t-sm c-near-white" style="font-size:40px;">Shut up and listen.</h2>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="font-size:19px;line-height:1.6;">Your job in the first 30 days is not to perform. It's to understand. Map how the team actually works vs. how it's supposed to work. Those are almost always different.</p>
+      <div class="bullet-list">
+        <div class="bullet-item"><div class="bullet-dot"></div><p class="bullet-text">Shadow every rep who'll let you</p></div>
+        <div class="bullet-item"><div class="bullet-dot"></div><p class="bullet-text">Listen to 10 recorded calls minimum</p></div>
+        <div class="bullet-item"><div class="bullet-dot"></div><p class="bullet-text">Ask &ldquo;what do you wish you'd known?&rdquo; — 3 people</p></div>
+      </div>
+      <p style="font-family:var(--font-body);font-size:19px;font-weight:700;color:var(--magenta);font-style:italic;">Don't pitch your ideas for improvement yet.</p>
+    </div>
+    <div class="slide-num">2 / 10</div>
+  </div>
+
+  <!-- Slide 3: Shadow the right rep -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <h2 class="t-display t-sm c-magenta" style="font-size:36px;">Shadow the top rep, not the best talker.</h2>
+      <div class="divider"></div>
+      <div class="two-rep">
+        <div class="rep-card loud">
+          <p class="rep-label loud-l">The loud rep</p>
+          <p class="rep-desc">Confident energy. High volume presence. Easy to mistake for elite.</p>
+          <p style="font-family:var(--font-body);font-size:14px;color:rgba(255,255,255,0.3);font-style:italic;">Watch them if you want.</p>
+        </div>
+        <div class="rep-card quiet">
+          <p class="rep-label quiet-l">The quiet closer ✦</p>
+          <p class="rep-desc">Consistently hits quota with the least drama. Has a process. Not winging it. Built something repeatable.</p>
+          <p style="font-family:var(--font-body);font-size:14px;color:var(--magenta);font-style:italic;font-weight:600;">Study this one.</p>
+        </div>
+      </div>
+      <div class="card-purple" style="margin-top:4px;">
+        <p style="font-family:var(--font-body);font-size:22px;font-weight:700;color:var(--near-white);">They've built something repeatable. And quiet.</p>
+        <p style="font-family:var(--font-body);font-size:16px;color:rgba(255,255,255,0.55);margin-top:6px;">That's what you're learning to replicate.</p>
+      </div>
+    </div>
+    <div class="slide-num">3 / 10</div>
+  </div>
+
+  <!-- Slide 4: Objection library -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <div>
+        <span class="tag tag-purple" style="margin-bottom:12px;display:inline-flex;">Days 1–30 — Bonus Task</span>
+        <h2 class="t-display t-sm c-near-white" style="font-size:36px;margin-top:12px;">Build your personal objection library.</h2>
+      </div>
+      <p class="t-body-sm c-white" style="font-size:18px;">Every call — live or recorded — write down every objection. By day 30 you should have 15–20 with at least two response approaches each.</p>
+      <div class="objection-table">
+        <div class="obj-header">
+          <span class="obj-header-cell">Objection</span>
+          <span class="obj-header-cell">Response approaches</span>
+        </div>
+        <div class="obj-row">
+          <span class="obj-cell">Too expensive</span>
+          <span class="obj-cell">Reframe to ROI / Ask what value would justify it</span>
+        </div>
+        <div class="obj-row">
+          <span class="obj-cell">Not right time</span>
+          <span class="obj-cell">Ask what would need to change / create urgency</span>
+        </div>
+        <div class="obj-row">
+          <span class="obj-cell">Already have a solution</span>
+          <span class="obj-cell">Ask where it falls short / surface the gap</span>
+        </div>
+      </div>
+      <div class="card-purple" style="text-align:center;">
+        <p style="font-family:var(--font-body);font-size:22px;font-weight:700;color:var(--magenta);">This is your first competitive advantage.</p>
+      </div>
+    </div>
+    <div class="slide-num">4 / 10</div>
+  </div>
+
+  <!-- Slide 5: Days 31-60 -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <div>
+        <div class="roadmap-bar"><div class="roadmap-fill" style="width:66%;"></div></div>
+        <div class="roadmap-labels"><span>Day 1</span><span>30</span><span>60</span><span>90</span></div>
+      </div>
+      <div class="phase-header">
+        <div class="phase-icon">📊</div>
+        <div>
+          <p class="t-label c-purple" style="font-size:13px;margin-bottom:4px;">Days 31–60</p>
+          <h2 class="t-display t-sm c-near-white" style="font-size:38px;">Run calls. Track everything.</h2>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="font-size:18px;line-height:1.6;">Your job is to generate data, not just dials. Track these four things every single week:</p>
+      <div class="bullet-list">
+        <div class="bullet-item"><div class="bullet-dot magenta"></div><p class="bullet-text">Your talk-to-listen ratio</p></div>
+        <div class="bullet-item"><div class="bullet-dot magenta"></div><p class="bullet-text">Where in the call you're losing people</p></div>
+        <div class="bullet-item"><div class="bullet-dot magenta"></div><p class="bullet-text">Which objections you're handling vs. dropping</p></div>
+        <div class="bullet-item"><div class="bullet-dot magenta"></div><p class="bullet-text">Which openings get you past 60 seconds</p></div>
+      </div>
+      <p style="font-family:var(--font-body);font-size:18px;font-weight:700;color:var(--magenta);font-style:italic;">The review habit. Every week without fail.</p>
+    </div>
+    <div class="slide-num">5 / 10</div>
+  </div>
+
+  <!-- Slide 6: Script personalisation -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <div>
+        <span class="tag tag-purple" style="margin-bottom:12px;display:inline-flex;">Days 31–60 — Script Timing</span>
+        <h2 class="t-display t-sm c-magenta" style="font-size:36px;margin-top:12px;">When to personalise your script.</h2>
+      </div>
+      <p class="t-body-sm c-white" style="font-size:18px;line-height:1.6;">Not before you've run 50 calls with the standard one. Scripts aren't cages — but they're important scaffolding while you're learning the structure.</p>
+      <div class="script-phases">
+        <div class="script-phase-box constrained">
+          <p style="font-family:var(--font-mono);font-size:13px;color:var(--purple);text-transform:uppercase;margin-bottom:8px;">Calls 1–50</p>
+          <p style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--near-white);">Standard Script</p>
+          <p style="font-family:var(--font-body);font-size:14px;color:rgba(255,255,255,0.4);margin-top:6px;">Learn the structure</p>
+        </div>
+        <div class="phase-arrow">→</div>
+        <div class="script-phase-box expanded">
+          <p style="font-family:var(--font-mono);font-size:13px;color:var(--magenta);text-transform:uppercase;margin-bottom:8px;">Calls 50+</p>
+          <p style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--magenta);">Your Version</p>
+          <p style="font-family:var(--font-body);font-size:14px;color:rgba(255,255,255,0.4);margin-top:6px;">Adapt from data</p>
+        </div>
+      </div>
+      <div class="card">
+        <p style="font-family:var(--font-body);font-size:18px;color:rgba(255,255,255,0.7);font-style:italic;">&ldquo;Premature personalisation is just excuses to improvise poorly.&rdquo;</p>
+      </div>
+    </div>
+    <div class="slide-num">6 / 10</div>
+  </div>
+
+  <!-- Slide 7: Days 61-90 -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <div>
+        <div class="roadmap-bar"><div class="roadmap-fill" style="width:100%;"></div></div>
+        <div class="roadmap-labels"><span>Day 1</span><span>30</span><span>60</span><span style="color:var(--magenta);">90 ✓</span></div>
+      </div>
+      <div class="phase-header">
+        <div class="phase-icon">🎯</div>
+        <div>
+          <p class="t-label c-purple" style="font-size:13px;margin-bottom:4px;">Days 61–90</p>
+          <h2 class="t-display t-sm c-near-white" style="font-size:36px;">Diagnose. Improve. Prove.</h2>
+        </div>
+      </div>
+      <div class="diagnose-row">
+        <div class="d-box"><div class="d-label">Diagnose</div><div class="d-desc">Pull your numbers from 60 days of data</div></div>
+        <div style="color:var(--magenta);font-size:24px;flex-shrink:0;align-self:center;">→</div>
+        <div class="d-box"><div class="d-label">Improve</div><div class="d-desc">Find the one metric furthest from team average</div></div>
+        <div style="color:var(--magenta);font-size:24px;flex-shrink:0;align-self:center;">→</div>
+        <div class="d-box"><div class="d-label">Prove</div><div class="d-desc">Show your manager with data, not effort</div></div>
+      </div>
+      <div class="card-purple">
+        <p style="font-family:var(--font-mono);font-size:18px;color:var(--magenta);font-style:italic;line-height:1.45;">&ldquo;Not 'I'm working hard.' But: 'Here's my stage-2 conversion rate — and here's what I'm doing to move it.'&rdquo;</p>
+      </div>
+    </div>
+    <div class="slide-num">7 / 10</div>
+  </div>
+
+  <!-- Slide 8: Avoiding burnout -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:350px;height:350px;background:var(--magenta);top:-80px;right:-80px;opacity:0.12;"></div>
+    <div class="col gap-m" style="max-width:820px;position:relative;z-index:1;">
+      <h2 class="t-display t-sm c-magenta" style="font-size:40px;">How to not burn out in your first 90 days.</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="font-size:19px;line-height:1.7;">The reps who last are not the ones who work the most hours in month one. They're the ones who set a hard stop — and use the hour before bed for something that has nothing to do with sales.</p>
+      <div class="reset-icons">
+        <div class="reset-icon-wrap"><div class="reset-emoji">🏋️</div><div class="reset-label">Gym</div></div>
+        <div class="reset-icon-wrap"><div class="reset-emoji">📖</div><div class="reset-label">Reading</div></div>
+        <div class="reset-icon-wrap"><div class="reset-emoji">🚶</div><div class="reset-label">Walking</div></div>
+      </div>
+      <div class="card">
+        <p style="font-family:var(--font-body);font-size:22px;font-weight:700;color:var(--near-white);line-height:1.4;">You cannot process the emotional weight of rejection without a reset routine.</p>
+      </div>
+      <p class="t-body c-magenta" style="font-weight:800;font-size:22px;text-align:center;">Build it before you need it.</p>
+    </div>
+    <div class="slide-num">8 / 10</div>
+  </div>
+
+  <!-- Slide 9: Summary -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:34px;">The 90-day roadmap. 📌 Save this.</h2>
+      <div class="summary-blocks">
+        <div class="summary-block sb-1">
+          <p class="sb-label">Days 1–30</p>
+          <p class="sb-title">Listen</p>
+          <div class="sb-bullets">
+            <p class="sb-bullet">→ Shadow every rep</p>
+            <p class="sb-bullet">→ 10 recorded calls</p>
+            <p class="sb-bullet">→ Build objection library</p>
+          </div>
+        </div>
+        <div class="summary-block sb-2">
+          <p class="sb-label">Days 31–60</p>
+          <p class="sb-title">Run</p>
+          <div class="sb-bullets">
+            <p class="sb-bullet">→ Track 4 metrics weekly</p>
+            <p class="sb-bullet">→ Standard script first</p>
+            <p class="sb-bullet">→ Review every Friday</p>
+          </div>
+        </div>
+        <div class="summary-block sb-3">
+          <p class="sb-label" style="color:rgba(223,122,254,0.8);">Days 61–90</p>
+          <p class="sb-title" style="color:var(--magenta);">Prove</p>
+          <div class="sb-bullets">
+            <p class="sb-bullet">→ Diagnose your numbers</p>
+            <p class="sb-bullet">→ Improve one metric</p>
+            <p class="sb-bullet">→ Show data, not effort</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-purple" style="text-align:center;margin-top:4px;">
+        <p style="font-family:var(--font-body);font-size:21px;font-weight:700;color:var(--near-white);">Do enough of this and you'll be in the<br><span style="color:var(--magenta);">top quartile of new hires by Q2.</span></p>
+      </div>
+    </div>
+    <div class="slide-num">9 / 10</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <div class="ninety-bg">90</div>
+    <p class="t-label c-white" style="opacity:0.7">Start your free trial</p>
+    <h2 class="t-display t-md c-white" style="max-width:780px;font-size:46px;">New to sales or not — Pitchr compresses the learning curve.</h2>
+    <div class="cta-btn">Try Pitchr Free →</div>
+    <p class="cta-url">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">10 / 10</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+

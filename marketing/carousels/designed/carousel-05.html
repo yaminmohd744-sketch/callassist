@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 05: Sales Movies</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* Film grain overlay */
+.film-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+.film-strip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: repeating-linear-gradient(90deg, transparent 0px, transparent 40px, rgba(129,74,200,0.12) 40px, rgba(129,74,200,0.12) 50px);
+  border-top: 1px solid rgba(129,74,200,0.15);
+}
+.verdict-wrong {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red);
+  padding: 8px 18px;
+  border: 2px solid rgba(255,68,68,0.4);
+  border-radius: var(--radius-pill);
+  background: rgba(255,68,68,0.08);
+}
+.verdict-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green);
+  padding: 8px 18px;
+  border: 2px solid rgba(57,211,83,0.4);
+  border-radius: var(--radius-pill);
+  background: rgba(57,211,83,0.08);
+}
+.verdict-scene {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--magenta);
+  padding: 8px 18px;
+  border: 2px solid rgba(223,122,254,0.4);
+  border-radius: var(--radius-pill);
+  background: rgba(223,122,254,0.08);
+}
+.movie-quote {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-style: italic;
+  color: var(--near-white);
+  line-height: 1.4;
+  border-left: 4px solid var(--purple);
+  padding-left: 24px;
+  margin: 20px 0;
+}
+.reality-body {
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.65;
+}
+.payoff-line {
+  font-family: var(--font-body);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--magenta);
+  margin-top: 16px;
+}
+.hook-clapper {
+  font-size: 80px;
+  opacity: 0.25;
+  position: absolute;
+  bottom: 80px;
+  right: 72px;
+  filter: grayscale(1);
+}
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 05 — Sales Movies: Hollywood vs Reality · Pop Culture · All Reps</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black film-grain">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:600px;height:600px;background:#3d1f6e;top:-200px;left:-200px;"></div>
+    <div class="deco-circle deco-blur" style="width:400px;height:400px;background:var(--purple);bottom:-150px;right:-100px;opacity:0.4;"></div>
+    <div class="col center" style="width:100%;gap:24px;position:relative;z-index:2;">
+      <span class="tag tag-white">🎬 Hollywood vs Reality</span>
+      <h1 class="t-display t-xl c-near-white" style="text-align:center;max-width:860px;">What Hollywood gets wrong about sales</h1>
+      <p class="t-body c-magenta" style="text-align:center;font-style:italic;">(And the one thing they actually nailed.)</p>
+    </div>
+    <div class="hook-clapper">🎬</div>
+    <div class="film-strip"></div>
+    <div class="slide-num">1 / 9</div>
+  </div>
+
+  <!-- Slide 2: Always Be Closing -->
+  <div class="slide bg-surface film-grain">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;position:relative;z-index:2;">
+      <div class="verdict-wrong">✕ Wrong</div>
+      <h2 class="t-display t-sm c-near-white">"Always Be Closing" — Glengarry Glen Ross</h2>
+      <div class="movie-quote">Pressure, intimidate, never stop pitching.</div>
+      <p class="reality-body">What the data says: top closers talk <strong>43% of the time</strong> and ask 3× more questions than average reps. Aggressive closing kills deals.</p>
+      <p class="payoff-line">Curious closing wins them.</p>
+    </div>
+    <div class="film-strip"></div>
+    <div class="slide-num">2 / 9</div>
+  </div>
+
+  <!-- Slide 3: Boiler Room -->
+  <div class="slide bg-elevated film-grain">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;position:relative;z-index:2;">
+      <div class="verdict-wrong">✕ Wrong</div>
+      <h2 class="t-display t-sm c-near-white">"I'm not hanging up until you say yes" — Boiler Room</h2>
+      <div class="movie-quote">Persistence is pressure. Pressure is persuasion.</div>
+      <p class="reality-body">What actually happens: it triggers the amygdala, makes the prospect defensive, and guarantees the deal is dead — even if they say yes in the moment.</p>
+      <p class="payoff-line"><span style="color:var(--near-white);font-weight:800;">Makes the prospect defensive.</span> Every time.</p>
+    </div>
+    <div class="film-strip"></div>
+    <div class="slide-num">3 / 9</div>
+  </div>
+
+  <!-- Slide 4: Wolf of Wall Street -->
+  <div class="slide bg-dark-grad film-grain">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;position:relative;z-index:2;">
+      <div class="verdict-right">✓ Actually Right</div>
+      <h2 class="t-display t-sm c-near-white">The suit, the pitch, the confidence — Wolf of Wall Street</h2>
+      <div class="movie-quote" style="border-left-color:var(--green);">Presence, preparation, and belief in what you're selling are real.</div>
+      <p class="reality-body">Confidence is contagious. The way you carry yourself before you say a word absolutely affects the call.</p>
+      <p class="payoff-line" style="color:var(--green);font-size:28px;">This part? True.</p>
+    </div>
+    <div class="film-strip"></div>
+    <div class="slide-num">4 / 9</div>
+  </div>
+
+  <!-- Slide 5: Coffee is for closers -->
+  <div class="slide bg-elevated film-grain">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;position:relative;z-index:2;">
+      <div>
+        <span class="verdict-wrong">✕ Wrong</span>
+        <span class="t-body-sm c-muted" style="margin-left:12px;">(and expensive)</span>
+      </div>
+      <h2 class="t-display t-sm c-near-white">"Coffee is for closers" — Glengarry Glen Ross</h2>
+      <div class="movie-quote">Fear-based management. Results justify everything.</div>
+      <p class="reality-body">What the data says: fear-based management increases turnover by <span class="payoff-line" style="display:inline;font-size:inherit;margin:0;color:var(--magenta);">48%</span> and decreases win rates.</p>
+      <p class="payoff-line">The culture it represents is a liability.</p>
+    </div>
+    <div class="film-strip"></div>
+    <div class="slide-num">5 / 9</div>
+  </div>
+
+  <!-- Slide 6: Lone wolf -->
+  <div class="slide bg-surface film-grain">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;position:relative;z-index:2;">
+      <div class="verdict-wrong">✕ Wrong</div>
+      <h2 class="t-display t-sm c-near-white">The lone wolf who wins everything alone</h2>
+      <div class="movie-quote">The best rep is a force of nature who needs no one.</div>
+      <p class="reality-body">Top-performing teams are collaborative, data-sharing, coaching-driven.</p>
+      <p class="payoff-line">The lone wolf closes some deals. The team-oriented rep builds a career.</p>
+    </div>
+    <div class="film-strip"></div>
+    <div class="slide-num">6 / 9</div>
+  </div>
+
+  <!-- Slide 7: The missing scene -->
+  <div class="slide bg-elevated film-grain">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;position:relative;z-index:2;">
+      <div class="verdict-scene">🔍 The Missing Scene</div>
+      <h2 class="t-display t-sm c-magenta">The discovery scene — no sales movie has one.</h2>
+      <div class="movie-quote" style="border-left-color:var(--magenta);">In every Hollywood version, someone pitches and someone buys. Nobody asks questions. Nobody listens.</div>
+      <p class="reality-body">In reality, <strong>70% of the call</strong> should be the prospect talking.</p>
+      <p class="payoff-line" style="color:var(--near-white);font-size:26px;">Discovery is where deals are won.</p>
+    </div>
+    <div class="film-strip"></div>
+    <div class="slide-num">7 / 9</div>
+  </div>
+
+  <!-- Slide 8: What sales actually looks like -->
+  <div class="slide bg-surface film-grain">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:500px;height:500px;background:var(--purple);bottom:-200px;left:-200px;opacity:0.2;"></div>
+    <div class="col" style="gap:32px;max-width:900px;position:relative;z-index:2;">
+      <div class="divider"></div>
+      <h2 class="t-display t-sm c-near-white">What sales actually looks like in 2026</h2>
+      <p class="reality-body">No yelling. No intimidation. No boardroom showdowns at 11pm.<br><br>It's curiosity, preparation, active listening, and knowing exactly what to say when the moment turns.</p>
+      <p class="payoff-line" style="font-style:italic;">"It's quieter than the movies. And the commission is better."</p>
+    </div>
+    <div class="film-strip"></div>
+    <div class="slide-num">8 / 9</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <p class="t-label c-white" style="opacity:0.7">START YOUR FREE TRIAL</p>
+    <h2 class="t-display t-md c-white" style="max-width:800px;text-align:center;">Real sales in 2026 looks nothing like the movies. Pitchr is built for it.</h2>
+    <div class="cta-btn">Try Pitchr Free →</div>
+    <p class="cta-url">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">9 / 9</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+

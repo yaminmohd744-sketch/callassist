@@ -1,0 +1,401 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 11: The Follow-Up Formula</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.seq-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  position: relative;
+}
+.seq-row + .seq-row { margin-top: 16px; }
+.seq-row::before {
+  content: '';
+  position: absolute;
+  left: 27px;
+  top: 52px;
+  width: 2px;
+  height: calc(100% + 16px);
+  background: rgba(129,74,200,0.3);
+  border-left: 2px dashed rgba(129,74,200,0.35);
+}
+.seq-row:last-child::before { display: none; }
+.seq-dot {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(129,74,200,0.2);
+  border: 2px solid rgba(129,74,200,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--magenta);
+  flex-shrink: 0;
+}
+.seq-content { flex: 1; padding-top: 12px; }
+.seq-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--purple);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+.seq-text {
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--near-white);
+  line-height: 1.35;
+}
+.step-badge {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 16px;
+  display: block;
+}
+.num-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+.num-dot {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.num-dot.stop { background: rgba(255,68,68,0.25); color: #ff4444; border: 2px solid rgba(255,68,68,0.4); }
+.num-dot.gap  { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.08); }
+.num-dot.deal { border: 2px solid rgba(129,74,200,0.4); background: rgba(129,74,200,0.15); }
+.num-dot.deal-bright { border: 2px solid rgba(223,122,254,0.5); background: rgba(223,122,254,0.2); color: var(--magenta); }
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 14px 0;
+}
+.check-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(129,74,200,0.2);
+  border: 1.5px solid rgba(129,74,200,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.checklist-item + .checklist-item { border-top: 1px solid rgba(255,255,255,0.06); }
+.callout-box {
+  border-left: 3px solid var(--purple);
+  background: rgba(129,74,200,0.08);
+  border-radius: 0 16px 16px 0;
+  padding: 20px 24px;
+}
+.strikethrough { text-decoration: line-through; color: rgba(255,68,68,0.7); }
+.channel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.channel-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 16px 20px;
+}
+.channel-emoji { font-size: 26px; }
+.channel-info { flex: 1; }
+.channel-name { font-family: var(--font-body); font-size: 17px; font-weight: 700; color: var(--near-white); }
+.channel-note { font-family: var(--font-body); font-size: 14px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+.timeline-ref {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tl-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+.tl-row:nth-child(odd) { background: rgba(255,255,255,0.03); }
+.tl-day { font-family: var(--font-mono); font-size: 14px; color: var(--purple); min-width: 60px; }
+.tl-action { font-family: var(--font-body); font-size: 18px; color: var(--near-white); font-weight: 500; }
+.breakup-box {
+  border: 1.5px solid rgba(129,74,200,0.4);
+  border-radius: 20px;
+  padding: 28px 32px;
+  background: rgba(129,74,200,0.07);
+}
+.ghost-nums {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  opacity: 0.07;
+}
+.ghost-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: white;
+}
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 11 — The Follow-Up Formula · Tactical · SDR / AE</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black bg-noise">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:500px;height:500px;background:var(--purple);top:-150px;right:-150px;"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:28px;">
+      <div class="stat-num grad-text" style="font-size:120px;">80%</div>
+      <p class="t-body c-near-white" style="max-width:700px;font-weight:600;font-size:26px;">of sales happen between contact <span style="color:var(--magenta);font-weight:800;">5 and 12</span>.</p>
+      <p class="t-body-sm c-muted" style="font-style:italic;">Most reps stop at 2. Here's why — and what to do instead.</p>
+      <div class="num-row" style="margin-top:16px;">
+        <div class="num-dot stop">1</div>
+        <div class="num-dot stop">2</div>
+        <div class="num-dot gap">3</div>
+        <div class="num-dot gap">4</div>
+        <div class="num-dot deal" style="color:rgba(129,74,200,0.9);">5</div>
+        <div class="num-dot deal" style="color:rgba(150,90,210,0.9);">6</div>
+        <div class="num-dot deal" style="color:rgba(170,100,220,0.9);">7</div>
+        <div class="num-dot deal" style="color:rgba(190,110,230,0.9);">8</div>
+        <div class="num-dot deal" style="color:rgba(200,115,235,0.9);">9</div>
+        <div class="num-dot deal-bright">10</div>
+        <div class="num-dot deal-bright" style="font-size:13px;">11</div>
+        <div class="num-dot deal-bright" style="font-size:13px;">12</div>
+      </div>
+      <div style="display:flex;gap:24px;align-items:center;font-size:13px;font-family:var(--font-mono);color:rgba(255,255,255,0.35);">
+        <span style="color:rgba(255,68,68,0.7);">● Most reps stop here</span>
+        <span style="color:rgba(129,74,200,0.6);">● Deals happen here</span>
+      </div>
+    </div>
+    <div class="slide-num">1 / 9</div>
+  </div>
+
+  <!-- Slide 2 -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:400px;height:400px;background:var(--magenta);bottom:-200px;left:-100px;opacity:0.15;"></div>
+    <div class="col gap-m">
+      <p class="t-label c-magenta">Why they stop</p>
+      <h2 class="t-display t-sm c-near-white" style="font-size:40px;">Why most reps stop at 2.</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="line-height:1.7;">It feels rude to follow up a third time. It feels desperate at four. Nobody trained you on what to say on touch 6. And when the prospect goes quiet, the silence reads like rejection — so you protect yourself by giving up first.</p>
+      <div class="card-purple" style="margin-top:8px;">
+        <p class="t-body c-near-white" style="font-size:26px;">Meanwhile, your prospect is <span style="color:var(--magenta);font-weight:800;">just busy</span>.</p>
+      </div>
+    </div>
+    <div class="slide-num">2 / 9</div>
+  </div>
+
+  <!-- Slide 3: Touch 1 -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m">
+      <span class="step-badge">Touch 1 — Day 0</span>
+      <h2 class="t-display t-sm c-near-white" style="font-size:36px;">The first follow-up:<br>confirm and add value.</h2>
+      <div class="divider"></div>
+      <div style="border-top:1px solid rgba(255,255,255,0.07);">
+        <div class="checklist-item">
+          <div class="check-marker">✓</div>
+          <div>
+            <p class="t-body-sm c-near-white" style="font-weight:700;">Recap their words (not yours)</p>
+            <p class="t-body-sm c-muted" style="font-size:16px;">What mattered most to them — in their language</p>
+          </div>
+        </div>
+        <div class="checklist-item">
+          <div class="check-marker">✓</div>
+          <div>
+            <p class="t-body-sm c-near-white" style="font-weight:700;">One relevant resource</p>
+            <p class="t-body-sm c-muted" style="font-size:16px;">Specific to the problem they named</p>
+          </div>
+        </div>
+        <div class="checklist-item">
+          <div class="check-marker">✓</div>
+          <div>
+            <p class="t-body-sm c-near-white" style="font-weight:700;">One clear ask</p>
+            <p class="t-body-sm c-muted" style="font-size:16px;">A specific next step, not a vague "let me know"</p>
+          </div>
+        </div>
+      </div>
+      <p class="t-body c-magenta" style="font-size:22px;font-weight:800;margin-top:4px;">Time it 2 hours post-call. Move fast. ⚡</p>
+    </div>
+    <div class="slide-num">3 / 9</div>
+  </div>
+
+  <!-- Slide 4: Touch 2 -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:350px;height:350px;background:var(--purple);top:-100px;right:-80px;opacity:0.2;"></div>
+    <div class="col gap-m">
+      <span class="step-badge">Touch 2 — Day 3</span>
+      <h2 class="t-display t-sm c-near-white" style="font-size:36px;">A new data point,<br>not a nudge.</h2>
+      <div class="divider"></div>
+      <div class="card" style="margin-bottom:4px;">
+        <p class="t-body-sm c-white" style="font-style:italic;font-size:22px;" class="strikethrough">&ldquo;<span style="text-decoration:line-through;color:rgba(255,68,68,0.7);">Just checking in</span>&rdquo;</p>
+        <p class="t-body-sm c-muted" style="font-size:15px;margin-top:8px;">Says: I have nothing new. Please respond anyway.</p>
+      </div>
+      <div class="callout-box">
+        <p class="t-body-sm c-magenta" style="font-weight:700;font-size:20px;">Instead: share something new.</p>
+        <p class="t-body-sm c-white" style="font-size:17px;margin-top:8px;line-height:1.6;">A case study from their industry. An insight from a similar conversation. A stat they'd actually care about. Make them glad they opened it.</p>
+      </div>
+    </div>
+    <div class="slide-num">4 / 9</div>
+  </div>
+
+  <!-- Slide 5: Touch 3 -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m">
+      <span class="step-badge">Touch 3 — Day 7</span>
+      <h2 class="t-display t-sm c-near-white" style="font-size:36px;">Challenge their<br>status quo.</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="line-height:1.6;">By touch 3, they've either forgotten you or are avoiding you. Either way — pattern interrupt.</p>
+      <div style="border:1.5px solid rgba(129,74,200,0.5);border-radius:18px;padding:24px 28px;background:rgba(129,74,200,0.08);">
+        <p class="t-label c-purple" style="margin-bottom:10px;font-size:13px;">The question to ask</p>
+        <p style="font-family:var(--font-mono);font-size:19px;color:var(--magenta);line-height:1.5;">&ldquo;If [problem] stays unresolved for the next 90 days, what does that cost you?&rdquo;</p>
+      </div>
+      <p class="t-body c-near-white" style="font-size:22px;font-weight:700;">It restarts the conversation by restarting the pain.</p>
+    </div>
+    <div class="slide-num">5 / 9</div>
+  </div>
+
+  <!-- Slide 6: Touches 4-6 -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:350px;height:350px;background:var(--magenta);bottom:-120px;right:-80px;opacity:0.12;"></div>
+    <div class="col gap-m">
+      <span class="step-badge">Touches 4–6 — Days 10–21</span>
+      <h2 class="t-display t-sm c-near-white" style="font-size:34px;">Vary the channel.<br>Email only is lazy.</h2>
+      <div class="channel-grid">
+        <div class="channel-item">
+          <span class="channel-emoji">💼</span>
+          <div class="channel-info">
+            <div class="channel-name">LinkedIn</div>
+            <div class="channel-note">Personalised note — not generic</div>
+          </div>
+        </div>
+        <div class="channel-item">
+          <span class="channel-emoji">📞</span>
+          <div class="channel-info">
+            <div class="channel-name">Voicemail</div>
+            <div class="channel-note">8am — rarely blocked</div>
+          </div>
+        </div>
+        <div class="channel-item">
+          <span class="channel-emoji">🎥</span>
+          <div class="channel-info">
+            <div class="channel-name">Video email</div>
+            <div class="channel-note">90 seconds, direct to camera</div>
+          </div>
+        </div>
+        <div class="channel-item">
+          <span class="channel-emoji">✉️</span>
+          <div class="channel-info">
+            <div class="channel-name">Physical note</div>
+            <div class="channel-note">If the deal is large enough</div>
+          </div>
+        </div>
+      </div>
+      <p class="t-body c-magenta" style="font-weight:800;font-size:22px;text-align:center;">Persistence with respect.</p>
+    </div>
+    <div class="slide-num">6 / 9</div>
+  </div>
+
+  <!-- Slide 7: Break-up email -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m">
+      <span class="step-badge">Touch 8+ — The break-up email</span>
+      <h2 class="t-display t-sm c-magenta" style="font-size:36px;">The email with the highest<br>response rate.</h2>
+      <div class="breakup-box">
+        <p class="t-body-sm c-white" style="line-height:1.75;font-size:19px;font-style:italic;">&ldquo;I've reached out a few times without hearing back. I don't want to clutter your inbox if timing isn't right — so this is my last note unless you want to reconnect. No pressure, no hard feelings. If things change: [your email].&rdquo;</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--magenta);border-top:none;border-right:none;border-bottom:none;border-radius:0 12px 12px 0;">
+        <p class="t-body-sm c-near-white" style="font-weight:700;font-size:20px;">Higher response rate than touches 3–7 combined.</p>
+      </div>
+    </div>
+    <div class="slide-num">7 / 9</div>
+  </div>
+
+  <!-- Slide 8: Summary timeline -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:12px;">
+      <h2 class="t-display" style="font-size:30px;color:var(--near-white);margin-bottom:4px;">The sequence. Save this. 📌</h2>
+      <div class="timeline-ref">
+        <div class="tl-row"><span class="tl-day">Day 0</span><span class="tl-action">Confirm + recap — 2h post call</span></div>
+        <div class="tl-row"><span class="tl-day">Day 3</span><span class="tl-action">New data point — not a nudge</span></div>
+        <div class="tl-row"><span class="tl-day">Day 7</span><span class="tl-action">Challenge their status quo</span></div>
+        <div class="tl-row"><span class="tl-day">Day 10</span><span class="tl-action">LinkedIn + personalised note</span></div>
+        <div class="tl-row"><span class="tl-day">Day 14</span><span class="tl-action">Voicemail — 8am</span></div>
+        <div class="tl-row"><span class="tl-day">Day 17</span><span class="tl-action">Video email — 90 seconds</span></div>
+        <div class="tl-row"><span class="tl-day">Day 21</span><span class="tl-action">New industry insight</span></div>
+        <div class="tl-row"><span class="tl-day">Day 28+</span><span class="tl-action">Break-up email</span></div>
+      </div>
+      <div style="margin-top:16px;padding:18px 24px;background:rgba(223,122,254,0.1);border-radius:14px;border:1.5px solid rgba(223,122,254,0.25);">
+        <p class="t-body c-magenta" style="font-weight:800;font-size:22px;">You need to do more than 2.</p>
+      </div>
+    </div>
+    <div class="slide-num">8 / 9</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <div class="ghost-nums">
+      <div class="ghost-dot">1</div><div class="ghost-dot">2</div><div class="ghost-dot">3</div>
+      <div class="ghost-dot">4</div><div class="ghost-dot">5</div><div class="ghost-dot">6</div>
+      <div class="ghost-dot">7</div><div class="ghost-dot">8</div>
+    </div>
+    <p class="t-label c-white" style="opacity:0.7">Start your free trial</p>
+    <h2 class="t-display t-md c-white" style="max-width:780px;font-size:50px;">Pitchr drafts your follow-up email automatically after every call.</h2>
+    <div class="cta-btn">Try Pitchr Free →</div>
+    <p class="cta-url">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">9 / 9</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+

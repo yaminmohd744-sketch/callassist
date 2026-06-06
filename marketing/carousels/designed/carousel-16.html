@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 16: Sales vs Normal Jobs</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.compare-split {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+.compare-left {
+  flex: 1;
+  background: rgba(255,255,255,0.02);
+}
+.compare-right {
+  flex: 1;
+  background: rgba(129,74,200,0.06);
+}
+.compare-divider-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: rgba(129,74,200,0.3);
+  transform: translateX(-50%);
+  z-index: 2;
+}
+.compare-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  width: 100%;
+  gap: 0;
+  padding: 0;
+  height: 100%;
+  align-items: stretch;
+}
+.col-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--slide-pad);
+  gap: 20px;
+}
+.col-header {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.col-header-normal { color: rgba(57,211,83,0.8); }
+.col-header-sales { color: var(--magenta); }
+.col-body-text {
+  font-family: var(--font-body);
+  font-size: 22px;
+  line-height: 1.55;
+  font-weight: 500;
+}
+.col-body-normal { color: rgba(255,255,255,0.6); }
+.col-body-sales { color: var(--near-white); }
+.slide-topic {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--near-white);
+  line-height: 1.1;
+  text-align: center;
+  margin-bottom: 12px;
+}
+.full-content {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--slide-pad);
+  justify-content: center;
+}
+.compare-slide {
+  padding: 0 !important;
+  justify-content: flex-start !important;
+}
+.topic-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  padding: 28px 72px;
+  z-index: 4;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 16 — Sales vs Normal Jobs · Humour / Relatable · All</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black bg-noise">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:600px;height:600px;background:var(--purple);top:-200px;left:-200px;opacity:0.15;"></div>
+    <div class="deco-circle deco-blur" style="width:400px;height:400px;background:var(--magenta);bottom:-150px;right:-100px;opacity:0.1;"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px;position:relative;z-index:1;">
+      <h1 class="t-display c-near-white" style="font-size:68px;line-height:1.05;">Sales vs.<br><span class="grad-text">normal jobs</span>.</h1>
+      <p class="t-body-sm c-muted" style="font-style:italic;font-size:22px;">Nobody prepared me for this.</p>
+      <div style="display:flex;gap:32px;opacity:0.15;margin-top:20px;">
+        <span style="font-size:60px;">🏢</span>
+        <span style="font-size:60px;">📞</span>
+      </div>
+    </div>
+    <div class="slide-num">1 / 9</div>
+  </div>
+
+  <!-- Slide 2: Monday morning -->
+  <div class="slide bg-surface compare-slide">
+    <div class="brand-mark" style="z-index:5;">Pitchr</div>
+    <div class="compare-split"><div class="compare-left"></div><div class="compare-right"></div></div>
+    <div class="compare-divider-line"></div>
+    <div class="topic-bar">
+      <p class="slide-topic">📅 Monday morning.</p>
+    </div>
+    <div class="compare-content" style="padding-top:130px;">
+      <div class="col-side">
+        <p class="col-header col-header-normal">Normal job</p>
+        <p class="col-body-text col-body-normal">Your Monday is fine. It's just a Monday. Nothing happened over the weekend that affects your Tuesday.</p>
+      </div>
+      <div class="col-side" style="border-left:2px solid rgba(129,74,200,0.2);">
+        <p class="col-header col-header-sales">Sales</p>
+        <p class="col-body-text col-body-sales">Depends entirely on Friday's close rate — and whether your champion is still employed at the prospect company.</p>
+      </div>
+    </div>
+    <div class="slide-num" style="z-index:5;">2 / 9</div>
+  </div>
+
+  <!-- Slide 3: Payday -->
+  <div class="slide bg-elevated compare-slide">
+    <div class="brand-mark" style="z-index:5;">Pitchr</div>
+    <div class="compare-split"><div class="compare-left"></div><div class="compare-right"></div></div>
+    <div class="compare-divider-line"></div>
+    <div class="topic-bar">
+      <p class="slide-topic">💰 Payday.</p>
+    </div>
+    <div class="compare-content" style="padding-top:130px;">
+      <div class="col-side">
+        <p class="col-header col-header-normal">Normal job</p>
+        <p class="col-body-text col-body-normal">Predictable. Stable. Boring. Your salary arrives as agreed, on a predictable date, for a predictable amount.</p>
+      </div>
+      <div class="col-side" style="border-left:2px solid rgba(129,74,200,0.2);">
+        <p class="col-header col-header-sales">Sales</p>
+        <p class="col-body-text col-body-sales">A mystery even to you until the commission statement arrives. Somewhere between &ldquo;taking the family on holiday&rdquo; and &ldquo;stress-eating crackers at 11pm.&rdquo;</p>
+      </div>
+    </div>
+    <div class="slide-num" style="z-index:5;">3 / 9</div>
+  </div>
+
+  <!-- Slide 4: Manager's favourite phrase -->
+  <div class="slide bg-surface compare-slide">
+    <div class="brand-mark" style="z-index:5;">Pitchr</div>
+    <div class="compare-split"><div class="compare-left"></div><div class="compare-right"></div></div>
+    <div class="compare-divider-line"></div>
+    <div class="topic-bar">
+      <p class="slide-topic">👔 Your manager's favourite phrase.</p>
+    </div>
+    <div class="compare-content" style="padding-top:130px;">
+      <div class="col-side">
+        <p class="col-header col-header-normal">Normal job</p>
+        <p class="col-body-text col-body-normal">&ldquo;Great work on that project. The team really appreciates it.&rdquo;</p>
+      </div>
+      <div class="col-side" style="border-left:2px solid rgba(129,74,200,0.2);">
+        <p class="col-header col-header-sales">Sales</p>
+        <p class="col-body-text col-body-sales" style="color:var(--magenta);font-weight:700;">&ldquo;How's your pipeline looking?&rdquo;</p>
+        <p style="font-family:var(--font-body);font-size:16px;color:rgba(255,255,255,0.4);font-style:italic;margin-top:4px;">Definitely also thinking it during your birthday lunch.</p>
+      </div>
+    </div>
+    <div class="slide-num" style="z-index:5;">4 / 9</div>
+  </div>
+
+  <!-- Slide 5: Lunch break -->
+  <div class="slide bg-elevated compare-slide">
+    <div class="brand-mark" style="z-index:5;">Pitchr</div>
+    <div class="compare-split"><div class="compare-left"></div><div class="compare-right"></div></div>
+    <div class="compare-divider-line"></div>
+    <div class="topic-bar">
+      <p class="slide-topic">🥙 Lunch break.</p>
+    </div>
+    <div class="compare-content" style="padding-top:130px;">
+      <div class="col-side">
+        <p class="col-header col-header-normal">Normal job</p>
+        <p class="col-body-text col-body-normal" style="font-size:36px;font-weight:800;opacity:0.5;">Lunch.</p>
+        <p style="font-family:var(--font-body);font-size:16px;color:rgba(255,255,255,0.3);font-style:italic;">Just… lunch.</p>
+      </div>
+      <div class="col-side" style="border-left:2px solid rgba(129,74,200,0.2);">
+        <p class="col-header col-header-sales">Sales</p>
+        <p class="col-body-text col-body-sales" style="font-size:18px;">Eating while updating CRM, scheduling follow-ups, and wondering if you should call that prospect back now or wait until 2pm when they said they'd be free, which they definitely won't be, so you call at 2pm anyway and get voicemail.</p>
+      </div>
+    </div>
+    <div class="slide-num" style="z-index:5;">5 / 9</div>
+  </div>
+
+  <!-- Slide 6: End of quarter -->
+  <div class="slide bg-surface compare-slide">
+    <div class="brand-mark" style="z-index:5;">Pitchr</div>
+    <div class="compare-split"><div class="compare-left"></div><div class="compare-right"></div></div>
+    <div class="compare-divider-line"></div>
+    <div class="topic-bar">
+      <p class="slide-topic">📊 End of quarter.</p>
+    </div>
+    <div class="compare-content" style="padding-top:130px;">
+      <div class="col-side">
+        <p class="col-header col-header-normal">Normal job</p>
+        <p class="col-body-text col-body-normal">&ldquo;Oh, is it end of quarter?&rdquo; <br><span style="font-size:32px;opacity:0.3;">🤷</span></p>
+      </div>
+      <div class="col-side" style="border-left:2px solid rgba(129,74,200,0.2);">
+        <p class="col-header col-header-sales">Sales</p>
+        <p class="col-body-text col-body-sales">&ldquo;I have a spreadsheet. It has colours.&rdquo;</p>
+        <p style="font-family:var(--font-body);font-size:16px;color:var(--magenta);font-style:italic;margin-top:12px;">Somehow this is your favourite part.</p>
+      </div>
+    </div>
+    <div class="slide-num" style="z-index:5;">6 / 9</div>
+  </div>
+
+  <!-- Slide 7: Asking for a raise -->
+  <div class="slide bg-elevated compare-slide">
+    <div class="brand-mark" style="z-index:5;">Pitchr</div>
+    <div class="compare-split"><div class="compare-left"></div><div class="compare-right"></div></div>
+    <div class="compare-divider-line"></div>
+    <div class="topic-bar">
+      <p class="slide-topic">💸 Asking for a raise.</p>
+    </div>
+    <div class="compare-content" style="padding-top:130px;">
+      <div class="col-side">
+        <p class="col-header col-header-normal">Normal job</p>
+        <p class="col-body-text col-body-normal">6–8 weeks. Awkward HR meeting. 3% cost-of-living adjustment. Unchanged.</p>
+      </div>
+      <div class="col-side" style="border-left:2px solid rgba(129,74,200,0.2);">
+        <p class="col-header col-header-sales">Sales</p>
+        <p class="col-body-text col-body-sales" style="color:var(--magenta);font-weight:700;">Hit quota. Math negotiates for you.</p>
+        <p style="font-family:var(--font-body);font-size:16px;color:rgba(255,255,255,0.5);margin-top:8px;">120% of quota = the conversation happened automatically.</p>
+      </div>
+    </div>
+    <div class="slide-num" style="z-index:5;">7 / 9</div>
+  </div>
+
+  <!-- Slide 8: The thing about sales people -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:500px;height:500px;background:var(--purple);bottom:-200px;right:-100px;opacity:0.2;"></div>
+    <div class="col gap-m" style="max-width:820px;position:relative;z-index:1;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:42px;">The thing about sales people.</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="font-size:20px;line-height:1.75;">We chose the hardest version of working for a living. The income is unpredictable. The emotional labour is real. The Mondays depend on Fridays.</p>
+      <div class="card-purple" style="margin-top:4px;">
+        <p class="t-display c-magenta" style="font-size:44px;font-weight:800;line-height:1.1;">The ceiling is removed.</p>
+      </div>
+      <p class="t-body-sm c-white" style="font-size:18px;font-style:italic;color:rgba(255,255,255,0.7);">The people who last aren't the ones who found it easy — they're the ones who found the chaos worth it.</p>
+    </div>
+    <div class="slide-num">8 / 9</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <p class="t-label c-white" style="opacity:0.7">Start your free trial</p>
+    <h2 class="t-display t-md c-white" style="max-width:780px;font-size:48px;">The one thing that makes the Monday better: Pitchr.</h2>
+    <div class="cta-btn">Try Pitchr Free →</div>
+    <p class="cta-url">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">9 / 9</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+

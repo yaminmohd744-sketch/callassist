@@ -1,0 +1,264 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 02: The Income Math</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.pct-watermark {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 480px;
+  line-height: 1;
+  color: var(--purple);
+  opacity: 0.07;
+  right: -60px;
+  bottom: -60px;
+  pointer-events: none;
+  user-select: none;
+}
+.calc-line {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  color: rgba(255,255,255,0.9);
+  line-height: 1.8;
+}
+.calc-result {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--magenta);
+  line-height: 1.8;
+}
+.hr-purple {
+  width: 100%;
+  height: 2px;
+  background: var(--purple);
+  border: none;
+  margin: 12px 0;
+}
+.delta-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  border: 2px solid var(--purple);
+  border-radius: var(--radius);
+  padding: 20px 32px;
+  margin-top: 24px;
+}
+.delta-num {
+  font-family: var(--font-mono);
+  font-size: 48px;
+  color: var(--magenta);
+  font-weight: 700;
+}
+.delta-label {
+  font-family: var(--font-body);
+  font-size: 20px;
+  color: rgba(255,255,255,0.7);
+}
+.delta-box-grad {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  background: var(--grad);
+  border-radius: var(--radius);
+  padding: 24px 40px;
+  margin-top: 24px;
+}
+.bullet-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-body);
+  font-size: 26px;
+  color: var(--white);
+  font-weight: 500;
+}
+.bullet-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--purple);
+  flex-shrink: 0;
+}
+.moment-line {
+  font-family: var(--font-body);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 2;
+}
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 02 — The Income Math · Data · SDR / AE / Commission Reps</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black bg-noise">
+    <div class="brand-mark">Pitchr</div>
+    <div class="pct-watermark">%</div>
+    <div class="deco-circle deco-blur" style="width:400px;height:400px;background:var(--purple);top:-100px;left:-100px;"></div>
+    <div class="col center" style="width:100%;gap:28px;">
+      <div class="stat-block center">
+        <span class="stat-num grad-text">10% → 20%</span>
+        <span class="stat-label" style="text-align:center;">close rate difference on 200 calls/month</span>
+      </div>
+      <div class="divider"></div>
+      <h2 class="t-display t-sm c-near-white" style="text-align:center;">The difference is <span class="grad-text">$48,000 / year.</span></h2>
+      <p class="t-body c-magenta" style="font-style:italic;text-align:center;">The math will make you uncomfortable.</p>
+    </div>
+    <div class="slide-num">1 / 9</div>
+  </div>
+
+  <!-- Slide 2: Setup -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:32px;max-width:840px;">
+      <p class="t-label c-purple">THE SETUP</p>
+      <p class="t-body c-near-white" style="line-height:1.75;">
+        You're an AE. Average contract value: <span class="c-magenta" style="font-weight:700;">$2,000.</span><br>
+        You run <span class="c-magenta" style="font-weight:700;">200 calls</span> a month.<br>
+        You close at <span class="c-magenta" style="font-weight:700;">10%.</span><br>
+        That's 20 deals. <span class="c-magenta" style="font-weight:700;">$40,000</span> in revenue.<br><br>
+        Now watch what happens when you get<br>1% better each month.
+      </p>
+    </div>
+    <div class="slide-num">2 / 9</div>
+  </div>
+
+  <!-- Slide 3: 10% close rate -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:800px;">
+      <h2 class="t-display t-sm c-near-white">10% close rate</h2>
+      <div class="card" style="background:rgba(255,255,255,0.04);">
+        <div class="col" style="gap:4px;">
+          <p class="calc-line">200 calls × 10%  = 20 deals</p>
+          <p class="calc-line">20 deals × $2,000 = $40,000 rev</p>
+          <p class="calc-line">Commission (10%)</p>
+          <hr class="hr-purple">
+          <p class="calc-result">$4,000 / month</p>
+          <p class="calc-result">$48,000 / year</p>
+        </div>
+      </div>
+      <p class="t-body-sm c-muted">This is your baseline. Every rep starts here.</p>
+    </div>
+    <div class="slide-num">3 / 9</div>
+  </div>
+
+  <!-- Slide 4: 15% close rate -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:800px;">
+      <h2 class="t-display t-sm c-near-white">15% close rate</h2>
+      <div class="card">
+        <div class="col" style="gap:4px;">
+          <p class="calc-line">200 calls × 15%  = 30 deals</p>
+          <p class="calc-line">30 deals × $2,000 = $60,000 rev</p>
+          <p class="calc-line">Commission (10%)</p>
+          <hr class="hr-purple">
+          <p class="calc-result">$6,000 / month</p>
+          <p class="calc-result">$72,000 / year</p>
+        </div>
+      </div>
+      <div class="delta-box">
+        <span style="font-size:28px;">↑</span>
+        <div class="col" style="gap:4px;">
+          <span class="delta-num">+$24,000</span>
+          <span class="delta-label">more per year · from 5% more closes</span>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">4 / 9</div>
+  </div>
+
+  <!-- Slide 5: 20% close rate -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:500px;height:500px;background:var(--magenta);bottom:-200px;right:-200px;opacity:0.15;"></div>
+    <div class="col" style="gap:24px;max-width:800px;">
+      <h2 class="t-display t-sm c-near-white">20% close rate</h2>
+      <div class="card">
+        <div class="col" style="gap:4px;">
+          <p class="calc-line">200 calls × 20%  = 40 deals</p>
+          <p class="calc-line">40 deals × $2,000 = $80,000 rev</p>
+          <p class="calc-line">Commission (10%)</p>
+          <hr class="hr-purple">
+          <p class="calc-result">$8,000 / month</p>
+          <p class="calc-result">$96,000 / year</p>
+        </div>
+      </div>
+      <div class="delta-box-grad">
+        <span style="font-family:var(--font-mono);font-size:52px;color:#fff;font-weight:700;">+$48,000</span>
+        <span style="font-family:var(--font-body);font-size:20px;color:rgba(255,255,255,0.85);">more per year · from doubling close rate</span>
+      </div>
+    </div>
+    <div class="slide-num">5 / 9</div>
+  </div>
+
+  <!-- Slide 6: Don't need to double it -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:36px;max-width:860px;">
+      <h2 class="t-display t-sm c-near-white">And you don't need to double it.</h2>
+      <p class="t-body c-white">Going from 10% to 12% close rate adds <span class="c-magenta" style="font-weight:700;">$19,200</span> to your annual commission. That's:</p>
+      <div class="col" style="gap:20px;">
+        <div class="bullet-item"><div class="bullet-dot"></div>One family holiday</div>
+        <div class="bullet-item"><div class="bullet-dot"></div>A down payment contribution</div>
+        <div class="bullet-item"><div class="bullet-dot"></div>A paid-off credit card</div>
+      </div>
+      <p class="t-body c-magenta" style="font-weight:700;">Two percentage points.</p>
+    </div>
+    <div class="slide-num">6 / 9</div>
+  </div>
+
+  <!-- Slide 7: Where does close rate come from -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:32px;max-width:860px;">
+      <h2 class="t-display t-sm c-magenta">Where does close rate actually come from?</h2>
+      <p class="t-body c-white">Not scripts. Not personality. Not luck.<br><br>Top closers lose deals because of one thing: not knowing what to say in the critical moments.</p>
+      <div class="col" style="gap:16px;">
+        <p class="moment-line">The objection.</p>
+        <p class="moment-line">The silence.</p>
+        <p class="moment-line">The "let me think about it."</p>
+      </div>
+      <p class="t-body c-muted">That's where rate lives.</p>
+    </div>
+    <div class="slide-num">7 / 9</div>
+  </div>
+
+  <!-- Slide 8: Bridge -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:700px;height:700px;background:var(--purple);top:-200px;left:-300px;opacity:0.18;"></div>
+    <div class="col center" style="width:100%;gap:32px;">
+      <div class="stat-block center">
+        <span class="stat-num grad-text">1% better</span>
+        <span class="stat-num" style="font-size:56px;"> = $19,000 more.</span>
+      </div>
+      <div class="divider"></div>
+      <p class="t-body c-white" style="text-align:center;max-width:740px;">That's the math. The only question is what you're doing between now and 1% better.</p>
+    </div>
+    <div class="slide-num">8 / 9</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <p class="t-label c-white" style="opacity:0.7">START YOUR FREE TRIAL</p>
+    <h2 class="t-display t-md c-white" style="max-width:780px;text-align:center;">A 1% improvement changes your paycheck. Pitchr finds it.</h2>
+    <div class="cta-btn">Try Pitchr Free →</div>
+    <p class="cta-url">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">9 / 9</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+

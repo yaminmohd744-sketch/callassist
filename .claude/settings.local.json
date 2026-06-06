@@ -180,7 +180,8 @@
       "Bash(npx playwright *)",
       "Bash(cat railway.json)",
       "Bash(cat railway.toml)",
-      "WebFetch(domain:resont.com)"
+      "WebFetch(domain:resont.com)",
+      "PowerShell(\\(Get-Content \"c:\\\\Users\\\\User\\\\callassist\\\\src\\\\screens\\\\LandingScreen.tsx\" | Measure-Object -Line\\).Lines)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\callassist\\.claude\\skills"

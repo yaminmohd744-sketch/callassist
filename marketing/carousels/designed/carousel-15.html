@@ -1,0 +1,344 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 15: Anatomy of a Perfect Sales Call</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.timeline-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+.timeline-fill {
+  height: 100%;
+  background: var(--grad);
+  border-radius: 5px;
+  transition: width 0.3s;
+}
+.phase-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--purple);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.timestamp {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  color: var(--purple);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.timeline-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--grad);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.callout-quote {
+  border-left: 3px solid var(--purple);
+  background: rgba(129,74,200,0.08);
+  border-radius: 0 14px 14px 0;
+  padding: 18px 24px;
+}
+.callout-quote p {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--magenta);
+  font-style: italic;
+  line-height: 1.5;
+}
+.objection-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.obj-them {
+  background: rgba(255,68,68,0.08);
+  border: 1px solid rgba(255,68,68,0.2);
+  border-radius: 12px;
+  padding: 14px 20px;
+}
+.obj-them p { font-family: var(--font-mono); font-size: 18px; color: rgba(255,68,68,0.8); font-style:italic; }
+.obj-us {
+  background: rgba(129,74,200,0.08);
+  border: 1px solid rgba(129,74,200,0.25);
+  border-radius: 12px;
+  padding: 14px 20px;
+}
+.obj-us p { font-family: var(--font-mono); font-size: 18px; color: var(--magenta); }
+.tl-segments {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  height: 10px;
+}
+.tl-seg {
+  height: 100%;
+  border-radius: 3px;
+  flex: 1;
+  background: rgba(255,255,255,0.1);
+}
+.tl-seg.active { background: var(--grad); }
+.tl-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 4px;
+}
+.tl-complete {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 16px;
+}
+.phase-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.phase-time-mini { font-family: var(--font-mono); font-size: 13px; color: rgba(255,255,255,0.35); min-width: 80px; }
+.phase-seg { height: 8px; border-radius: 4px; }
+.phase-name-mini { font-family: var(--font-body); font-size: 14px; color: rgba(255,255,255,0.5); min-width: 120px; }
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 15 — Anatomy of a Perfect Sales Call · Tactical / Story · AE / SDR</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black bg-noise">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:450px;height:450px;background:var(--magenta);top:-150px;right:-100px;opacity:0.15;"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:28px;">
+      <p class="t-label c-muted">The best call I ever heard</p>
+      <div class="stat-num grad-text" style="font-size:130px;">11:00</div>
+      <h1 class="t-display c-near-white" style="font-size:42px;max-width:740px;line-height:1.15;">The best sales call I ever heard lasted <span style="color:var(--magenta);">11 minutes</span>.</h1>
+      <p class="t-body-sm c-muted" style="font-style:italic;">Here's exactly what happened, minute by minute.</p>
+      <div style="width:100%;max-width:700px;">
+        <div class="timeline-bar"><div class="timeline-fill" style="width:5%;"></div></div>
+        <div class="tl-labels"><span>0:00</span><span>11:00</span></div>
+      </div>
+    </div>
+    <div class="slide-num">1 / 9</div>
+  </div>
+
+  <!-- Slide 2: 0:00 - 0:30 Opening -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <div>
+        <p class="phase-label">0:00 – 0:30 | Opening</p>
+        <div class="tl-segments">
+          <div class="tl-seg active"></div>
+          <div class="tl-seg"></div><div class="tl-seg"></div><div class="tl-seg"></div>
+          <div class="tl-seg"></div><div class="tl-seg"></div><div class="tl-seg"></div>
+        </div>
+      </div>
+      <h2 class="t-display t-sm c-near-white" style="font-size:38px;">The Opening</h2>
+      <p class="t-body-sm c-white" style="font-size:19px;line-height:1.65;">The rep didn't apologise for calling. Didn't ask if it was a good time. Said:</p>
+      <div class="callout-quote">
+        <p>&ldquo;Hey [Name] — I know this is cold, but I've got a specific reason for reaching out. Give me 30 seconds and I'll tell you why.&rdquo;</p>
+      </div>
+      <p style="font-family:var(--font-body);font-size:21px;font-weight:700;color:var(--near-white);">From a position of mutual respect,<br>not begged permission.</p>
+    </div>
+    <div class="slide-num">2 / 9</div>
+  </div>
+
+  <!-- Slide 3: 0:30 - 2:00 Permission -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <div>
+        <p class="phase-label">0:30 – 2:00 | Permission + Agenda</p>
+        <div class="tl-segments">
+          <div class="tl-seg active" style="flex:0.5;"></div>
+          <div class="tl-seg active"></div>
+          <div class="tl-seg"></div><div class="tl-seg"></div>
+          <div class="tl-seg"></div><div class="tl-seg"></div><div class="tl-seg"></div>
+        </div>
+      </div>
+      <h2 class="t-display t-sm c-near-white" style="font-size:38px;">Permission + Agenda</h2>
+      <p class="t-body-sm c-white" style="font-size:19px;line-height:1.65;">Two things happened: they gave a reason to stay on, and made it feel collaborative instead of adversarial.</p>
+      <div class="callout-quote">
+        <p>&ldquo;I work with [role] at companies like yours dealing with [problem]. If it's relevant, I'd like to ask a few questions — takes about 10 minutes, and I'll tell you honestly if I think we can help. Sound fair?&rdquo;</p>
+      </div>
+      <p style="font-family:var(--font-body);font-size:21px;font-weight:700;color:var(--magenta);">Collaborative instead of adversarial.</p>
+    </div>
+    <div class="slide-num">3 / 9</div>
+  </div>
+
+  <!-- Slide 4: 2:00 - 5:00 Discovery -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:300px;height:300px;background:var(--purple);top:-80px;right:-60px;opacity:0.2;"></div>
+    <div class="col gap-m" style="max-width:860px;">
+      <div>
+        <p class="phase-label">2:00 – 5:00 | Discovery</p>
+        <div class="tl-segments">
+          <div class="tl-seg active" style="flex:0.5;"></div>
+          <div class="tl-seg active"></div>
+          <div class="tl-seg active" style="flex:2;"></div>
+          <div class="tl-seg"></div><div class="tl-seg"></div><div class="tl-seg"></div>
+        </div>
+      </div>
+      <h2 class="t-display t-sm c-near-white" style="font-size:36px;">Discovery — Three Questions. No More.</h2>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="number-badge" style="width:36px;height:36px;font-size:16px;flex-shrink:0;">1</div>
+          <p style="font-family:var(--font-mono);font-size:19px;color:var(--near-white);">&ldquo;What does your current process look like?&rdquo;</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="number-badge" style="width:36px;height:36px;font-size:16px;flex-shrink:0;">2</div>
+          <p style="font-family:var(--font-mono);font-size:19px;color:var(--near-white);">&ldquo;Where does it break down?&rdquo;</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="number-badge" style="width:36px;height:36px;font-size:16px;flex-shrink:0;">3</div>
+          <p style="font-family:var(--font-mono);font-size:19px;color:var(--near-white);">&ldquo;What have you tried so far?&rdquo;</p>
+        </div>
+      </div>
+      <div class="card-purple" style="margin-top:4px;">
+        <p style="font-family:var(--font-body);font-size:22px;font-weight:700;color:var(--magenta);">The prospect had sold themselves on the problem.</p>
+      </div>
+    </div>
+    <div class="slide-num">4 / 9</div>
+  </div>
+
+  <!-- Slide 5: 5:00 - 7:00 Presentation -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <div>
+        <p class="phase-label">5:00 – 7:00 | Presentation</p>
+        <div class="tl-segments">
+          <div class="tl-seg active" style="flex:0.5;"></div>
+          <div class="tl-seg active"></div>
+          <div class="tl-seg active" style="flex:2;"></div>
+          <div class="tl-seg active" style="flex:1.5;"></div>
+          <div class="tl-seg"></div><div class="tl-seg"></div>
+        </div>
+      </div>
+      <h2 class="t-display t-sm c-near-white" style="font-size:36px;">Presentation — Two Minutes. A Mirror.</h2>
+      <p class="t-body-sm c-white" style="font-size:18px;line-height:1.65;">Not a feature dump. They demoed the two things the prospect had described as their exact pain points.</p>
+      <div class="callout-quote">
+        <p>&ldquo;Based on what you told me, the two things that sound most relevant are [X] and [Y]. Let me show you those specifically.&rdquo;</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p style="font-family:var(--font-mono);font-size:26px;color:var(--magenta);font-style:italic;">&ldquo;That's exactly what we need.&rdquo;</p>
+        <p style="font-family:var(--font-body);font-size:15px;color:rgba(255,255,255,0.4);margin-top:8px;">The moment the deal turned.</p>
+      </div>
+    </div>
+    <div class="slide-num">5 / 9</div>
+  </div>
+
+  <!-- Slide 6: 7:00 - 9:00 Objection Handling -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <div>
+        <p class="phase-label">7:00 – 9:00 | Objection Handling</p>
+        <div class="tl-segments">
+          <div class="tl-seg active" style="flex:0.5;"></div>
+          <div class="tl-seg active"></div>
+          <div class="tl-seg active" style="flex:2;"></div>
+          <div class="tl-seg active" style="flex:1.5;"></div>
+          <div class="tl-seg active" style="flex:1.5;"></div>
+          <div class="tl-seg"></div>
+        </div>
+      </div>
+      <h2 class="t-display t-sm c-near-white" style="font-size:36px;">Objection Handling</h2>
+      <div class="objection-pair">
+        <div class="obj-them"><p>&ldquo;The price is a bit higher than we expected.&rdquo;</p></div>
+        <div style="display:flex;justify-content:center;font-size:20px;color:rgba(255,255,255,0.2);">↓</div>
+        <div class="obj-us"><p>&ldquo;Totally fair — let me ask you something. Over the last year, what has [this problem] cost you in time and resources?&rdquo;</p></div>
+      </div>
+      <p style="font-family:var(--font-body);font-size:20px;font-weight:700;color:var(--near-white);">They walked themselves to the price justification. The rep didn't need to.</p>
+    </div>
+    <div class="slide-num">6 / 9</div>
+  </div>
+
+  <!-- Slide 7: 9:00 - 11:00 Close -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:860px;">
+      <div>
+        <p class="phase-label">9:00 – 11:00 | Close + Next Steps</p>
+        <div class="tl-segments">
+          <div class="tl-seg active" style="flex:0.5;"></div>
+          <div class="tl-seg active"></div>
+          <div class="tl-seg active" style="flex:2;"></div>
+          <div class="tl-seg active" style="flex:1.5;"></div>
+          <div class="tl-seg active" style="flex:1.5;"></div>
+          <div class="tl-seg active" style="flex:1.5;"></div>
+        </div>
+      </div>
+      <h2 class="t-display t-sm c-near-white" style="font-size:36px;">Close + Next Steps</h2>
+      <p class="t-body-sm c-white" style="font-size:18px;">Not "what do you think?" Not "are you interested?" A specific, low-friction yes/no question:</p>
+      <div class="callout-quote" style="background:rgba(129,74,200,0.12);border-left-color:var(--magenta);">
+        <p style="color:var(--near-white);font-size:22px;">&ldquo;So — does it make sense to put together a proposal based on what we've covered?&rdquo;</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p style="font-family:var(--font-body);font-size:22px;font-weight:700;color:var(--magenta);">The deal closed two weeks later.</p>
+      </div>
+    </div>
+    <div class="slide-num">7 / 9</div>
+  </div>
+
+  <!-- Slide 8: What made it perfect -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:400px;height:400px;background:var(--magenta);bottom:-150px;left:-100px;opacity:0.12;"></div>
+    <div class="col gap-m" style="max-width:820px;">
+      <h2 class="t-display t-sm c-magenta" style="font-size:40px;">What made it perfect<br>wasn't the words.</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="font-size:19px;line-height:1.7;">It was the structure. Every phase had a job. Every question earned the next one.</p>
+      <div class="card-purple">
+        <p style="font-family:var(--font-body);font-size:24px;font-weight:700;color:var(--near-white);line-height:1.4;">The prospect did most of the talking — and left the call feeling heard, not sold to.</p>
+      </div>
+      <div class="tl-segments" style="margin-top:8px;">
+        <div class="tl-seg active" style="flex:0.5;"></div>
+        <div class="tl-seg active"></div>
+        <div class="tl-seg active" style="flex:2;"></div>
+        <div class="tl-seg active" style="flex:1.5;"></div>
+        <div class="tl-seg active" style="flex:1.5;"></div>
+        <div class="tl-seg active" style="flex:1.5;"></div>
+      </div>
+      <div class="tl-labels"><span>0:00</span><span>2:00</span><span>5:00</span><span>7:00</span><span>9:00</span><span>11:00</span></div>
+    </div>
+    <div class="slide-num">8 / 9</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <p class="t-label c-white" style="opacity:0.7">Start your free trial</p>
+    <h2 class="t-display t-md c-white" style="max-width:780px;font-size:50px;">Pitchr guides you through this structure in real time.</h2>
+    <div style="display:flex;gap:4px;width:600px;max-width:80%;margin:0 auto;">
+      <div class="tl-seg" style="flex:0.5;background:rgba(255,255,255,0.5);height:10px;border-radius:4px;"></div>
+      <div class="tl-seg" style="background:rgba(255,255,255,0.5);height:10px;border-radius:4px;"></div>
+      <div class="tl-seg" style="flex:2;background:rgba(255,255,255,0.5);height:10px;border-radius:4px;"></div>
+      <div class="tl-seg" style="flex:1.5;background:rgba(255,255,255,0.5);height:10px;border-radius:4px;"></div>
+      <div class="tl-seg" style="flex:1.5;background:rgba(255,255,255,0.5);height:10px;border-radius:4px;"></div>
+      <div class="tl-seg" style="flex:1.5;background:rgba(255,255,255,0.5);height:10px;border-radius:4px;"></div>
+    </div>
+    <div class="cta-btn">Try Pitchr Free →</div>
+    <p class="cta-url">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">9 / 9</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+

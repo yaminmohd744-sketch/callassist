@@ -1,0 +1,324 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 09: What Elite Closers Listen For</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* Pie chart built with conic-gradient */
+.pie-chart {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: conic-gradient(var(--purple) 0deg 155deg, var(--magenta) 155deg 360deg);
+  position: relative;
+  flex-shrink: 0;
+}
+.pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+}
+.legend-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.signal-label {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 8px;
+}
+.signal-headline {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--near-white);
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+.signal-card {
+  background: rgba(129,74,200,0.08);
+  border: 1px solid rgba(129,74,200,0.2);
+  border-left: 4px solid var(--purple);
+  border-radius: var(--radius);
+  padding: 20px 28px;
+}
+.signal-example {
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-style: italic;
+  color: var(--magenta);
+  line-height: 1.5;
+}
+.signal-verdict {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--purple);
+  margin-bottom: 6px;
+}
+.signal-body {
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.6;
+  margin-top: 16px;
+}
+.what-to-do {
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--near-white);
+  margin-top: 16px;
+}
+.three-levels {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+.level-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.level-bar {
+  height: 10px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+.level-text {
+  font-family: var(--font-body);
+  font-size: 20px;
+  color: rgba(255,255,255,0.85);
+}
+.payoff-big {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--near-white);
+  margin-top: 20px;
+}
+.sonar-ring {
+  position: absolute;
+  border: 2px solid rgba(129,74,200,0.15);
+  border-radius: 50%;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 09 — What Elite Closers Listen For · Tactical / Education · AE / Closers</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black bg-noise">
+    <div class="brand-mark">Pitchr</div>
+    <div class="sonar-ring" style="width:500px;height:500px;top:290px;left:290px;"></div>
+    <div class="sonar-ring" style="width:700px;height:700px;top:190px;left:190px;opacity:0.5;"></div>
+    <div class="deco-circle deco-blur" style="width:500px;height:500px;background:var(--purple);bottom:-200px;right:-200px;opacity:0.25;"></div>
+    <div class="col center" style="width:100%;gap:32px;position:relative;z-index:1;">
+      <div class="stat-block center">
+        <span class="stat-num grad-text">43%</span>
+        <span class="stat-label" style="text-align:center;">of the time — that's how much top salespeople talk</span>
+      </div>
+      <div class="row gap-m" style="justify-content:center;">
+        <div class="pie-chart"></div>
+        <div class="pie-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--purple);"></div>43% — they talk</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--magenta);"></div>57% — they listen</div>
+        </div>
+      </div>
+      <p class="t-body c-magenta" style="text-align:center;font-style:italic;">Here's what they do with the other 57%.</p>
+    </div>
+    <div class="slide-num">1 / 9</div>
+  </div>
+
+  <!-- Slide 2: Listening isn't passive -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:32px;max-width:900px;">
+      <h2 class="t-display t-sm c-magenta">Listening isn't passive. It's the most active part of selling.</h2>
+      <p class="signal-body">When a rep goes quiet, most prospects assume the rep is thinking about what to say next. The top 1% are doing something else entirely — they're decoding. Finding the signal in the noise.</p>
+      <div class="signal-card">
+        <p class="signal-example">"The real answers are in what's said between the answers."</p>
+      </div>
+    </div>
+    <div class="slide-num">2 / 9</div>
+  </div>
+
+  <!-- Slide 3: Budget signals -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;">
+      <p class="signal-label">Signal Type 1: Budget</p>
+      <p class="signal-headline">Budget signals — what to listen for.</p>
+      <div class="col" style="gap:16px;">
+        <div class="signal-card">
+          <p class="signal-verdict" style="color:var(--green);">Direct</p>
+          <p class="signal-example">"We have budget approved."</p>
+        </div>
+        <div class="signal-card">
+          <p class="signal-verdict">Indirect</p>
+          <p class="signal-example">"We had a similar tool last year but the cost came up during renewal."</p>
+        </div>
+        <div class="signal-card" style="border-left-color:rgba(255,255,255,0.2);">
+          <p class="signal-verdict" style="color:rgba(255,255,255,0.4);">Buried (easiest to miss)</p>
+          <p class="signal-example" style="color:rgba(223,122,254,0.5);">"Our CFO is very focused on ROI this quarter."</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">3 / 9</div>
+  </div>
+
+  <!-- Slide 4: Timeline signals -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;">
+      <p class="signal-label">Signal Type 2: Timeline</p>
+      <p class="signal-headline">Timeline signals — what to listen for.</p>
+      <div class="col" style="gap:16px;">
+        <div class="signal-card">
+          <p class="signal-verdict" style="color:var(--green);">Active timeline</p>
+          <p class="signal-example">"We need to have something in place before Q3."</p>
+        </div>
+        <div class="signal-card">
+          <p class="signal-verdict">Delayed pain</p>
+          <p class="signal-example">"We've been looking at this for a while."</p>
+        </div>
+        <div class="signal-card">
+          <p class="signal-verdict" style="color:var(--magenta);">Hidden deadline</p>
+          <p class="signal-example">"I have a board review in 6 weeks."</p>
+        </div>
+      </div>
+      <p class="what-to-do">When you hear timeline language, <span style="color:var(--magenta);">you've found the hook for every follow-up.</span></p>
+    </div>
+    <div class="slide-num">4 / 9</div>
+  </div>
+
+  <!-- Slide 5: Authority signals -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;">
+      <p class="signal-label">Signal Type 3: Authority</p>
+      <p class="signal-headline">Authority signals — who actually decides.</p>
+      <div class="col" style="gap:16px;">
+        <div class="signal-card">
+          <p class="signal-verdict" style="color:rgba(255,68,68,0.8);">Not the decision-maker</p>
+          <p class="signal-example">"I'll need to loop in my manager."</p>
+        </div>
+        <div class="signal-card">
+          <p class="signal-verdict">Influence, not authority</p>
+          <p class="signal-example">"My team would need to be on board."</p>
+        </div>
+        <div class="signal-card" style="border-left-color:var(--green);">
+          <p class="signal-verdict" style="color:var(--green);">Champion + closer in one</p>
+          <p class="signal-example">"I can move on this."</p>
+        </div>
+      </div>
+      <p class="what-to-do" style="color:var(--magenta);">Map the org before you pitch.</p>
+    </div>
+    <div class="slide-num">5 / 9</div>
+  </div>
+
+  <!-- Slide 6: Pain intensity -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;">
+      <p class="signal-label">Signal Type 4: Pain Intensity</p>
+      <p class="signal-headline">How much does it actually hurt?</p>
+      <div class="three-levels">
+        <div class="level-row">
+          <div class="level-bar" style="width:120px;background:var(--purple);opacity:0.5;"></div>
+          <p class="level-text" style="color:rgba(255,255,255,0.6);">Low — <em style="font-size:18px;">"It's a bit of an issue."</em></p>
+        </div>
+        <div class="level-row">
+          <div class="level-bar" style="width:220px;background:var(--purple);"></div>
+          <p class="level-text" style="color:var(--magenta);">Medium — <em style="font-size:18px;">"It's costing us time every week."</em></p>
+        </div>
+        <div class="level-row">
+          <div class="level-bar" style="width:360px;background:linear-gradient(90deg,var(--purple),var(--magenta));"></div>
+          <p class="level-text" style="color:var(--near-white);font-weight:700;">High — <em style="font-size:18px;">"We brought in a consultant last month."</em></p>
+        </div>
+      </div>
+      <p class="what-to-do">The intensity of the pain <span style="color:var(--magenta);">predicts the speed of the sale.</span></p>
+    </div>
+    <div class="slide-num">6 / 9</div>
+  </div>
+
+  <!-- Slide 7: Competitor signals -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;">
+      <p class="signal-label">Signal Type 5: Competitor Mentions</p>
+      <p class="signal-headline">Competitor signals — what they reveal.</p>
+      <div class="col" style="gap:16px;">
+        <div class="signal-card">
+          <p class="signal-verdict">Live evaluation</p>
+          <p class="signal-example">"We're also looking at [Competitor]."</p>
+        </div>
+        <div class="signal-card">
+          <p class="signal-verdict" style="color:rgba(255,68,68,0.7);">Previous failure</p>
+          <p class="signal-example">"We tried [Competitor] before."</p>
+        </div>
+        <div class="signal-card">
+          <p class="signal-verdict">Switching cost mindset</p>
+          <p class="signal-example">"Our current provider is [Competitor]."</p>
+        </div>
+      </div>
+      <p class="what-to-do" style="color:var(--magenta);">These change your entire approach.</p>
+    </div>
+    <div class="slide-num">7 / 9</div>
+  </div>
+
+  <!-- Slide 8: How to get better at listening -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:600px;height:600px;background:var(--purple);bottom:-250px;left:-200px;opacity:0.2;"></div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <h2 class="t-display t-sm c-magenta">The easiest way to get better at listening.</h2>
+      <p class="signal-body">After every call, write down three things the prospect said that you didn't fully explore. Not the objections — the off-hand comments. The "well, ideally…" statements. The "we've been meaning to…" clauses.</p>
+      <div class="signal-card" style="border-left-color:var(--magenta);">
+        <p class="signal-example" style="font-size:22px;">These are the threads you pull in the follow-up.</p>
+      </div>
+      <p class="payoff-big">That's where the deal actually lives.</p>
+    </div>
+    <div class="slide-num">8 / 9</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <div class="sonar-ring" style="width:600px;height:600px;border-color:rgba(255,255,255,0.1);top:240px;left:240px;"></div>
+    <div class="sonar-ring" style="width:900px;height:900px;border-color:rgba(255,255,255,0.05);top:90px;left:90px;"></div>
+    <p class="t-label c-white" style="opacity:0.7;position:relative;z-index:1;">START YOUR FREE TRIAL</p>
+    <h2 class="t-display t-md c-white" style="max-width:780px;text-align:center;position:relative;z-index:1;">Pitchr detects these signals mid-call and tells you what they mean.</h2>
+    <div class="cta-btn" style="position:relative;z-index:1;">Try Pitchr Free →</div>
+    <p class="cta-url" style="position:relative;z-index:1;">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">9 / 9</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+

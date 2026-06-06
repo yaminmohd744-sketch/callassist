@@ -1,0 +1,265 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 08: AI Is Changing Sales</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* Circuit-line texture watermark */
+.circuit-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='2' height='30' fill='rgba(129,74,200,0.08)'/%3E%3Crect x='10' y='40' width='40' height='2' fill='rgba(129,74,200,0.08)'/%3E%3Crect x='50' y='20' width='2' height='22' fill='rgba(129,74,200,0.08)'/%3E%3Crect x='50' y='20' width='30' height='2' fill='rgba(129,74,200,0.08)'/%3E%3Crect x='78' y='20' width='2' height='60' fill='rgba(129,74,200,0.08)'/%3E%3Crect x='30' y='70' width='50' height='2' fill='rgba(129,74,200,0.08)'/%3E%3Ccircle cx='10' cy='10' r='3' fill='rgba(129,74,200,0.15)'/%3E%3Ccircle cx='50' cy='40' r='3' fill='rgba(129,74,200,0.15)'/%3E%3Ccircle cx='80' cy='20' r='3' fill='rgba(129,74,200,0.15)'/%3E%3Ccircle cx='80' cy='70' r='3' fill='rgba(129,74,200,0.15)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+.section-label {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 4px;
+}
+.use-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+}
+.use-body {
+  font-family: var(--font-body);
+  font-size: 21px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.6;
+}
+.use-headline {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--near-white);
+  margin-bottom: 10px;
+}
+.bullet-mag {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  font-family: var(--font-body);
+  font-size: 22px;
+  color: rgba(255,255,255,0.9);
+  line-height: 1.5;
+}
+.bullet-dot-mag {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--magenta);
+  margin-top: 10px;
+  flex-shrink: 0;
+}
+.pill-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  background: rgba(17,17,17,0.8);
+  border: 1px solid rgba(129,74,200,0.4);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--white);
+}
+.after-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 8px;
+}
+.warning-headline {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--red);
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+.italic-quote {
+  font-family: var(--font-body);
+  font-size: 26px;
+  font-style: italic;
+  color: var(--magenta);
+  font-weight: 600;
+  border-left: 4px solid var(--magenta);
+  padding-left: 24px;
+  margin: 20px 0;
+}
+.shift-body {
+  font-family: var(--font-body);
+  font-size: 24px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.88);
+  line-height: 1.65;
+}
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 08 — AI Is Changing Sales · Future / Trend · All Reps</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black bg-noise circuit-bg">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:700px;height:700px;background:var(--purple);top:-250px;right:-250px;opacity:0.25;"></div>
+    <div class="deco-circle deco-blur" style="width:400px;height:400px;background:var(--purple);bottom:-150px;left:-100px;opacity:0.15;"></div>
+    <div class="col center" style="width:100%;gap:28px;position:relative;z-index:1;">
+      <h1 class="t-display t-xl c-near-white" style="text-align:center;max-width:880px;">
+        <span class="grad-text">AI</span> isn't taking your sales job.
+      </h1>
+      <p class="t-body c-magenta" style="text-align:center;font-style:italic;max-width:760px;">It's separating the reps who adapt from those who don't.</p>
+    </div>
+    <div class="slide-num">1 / 9</div>
+  </div>
+
+  <!-- Slide 2: The rep being replaced -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:32px;max-width:900px;">
+      <h2 class="t-display t-sm c-magenta">The rep being replaced isn't you. It's a version of you.</h2>
+      <p class="shift-body">The version that spends 2 hours a day on manual data entry. That has no system for following up. That forgets what the prospect said on the last call. That can't explain why some calls work and others don't.</p>
+      <div class="card" style="border-left:4px solid var(--magenta);">
+        <p class="t-body c-near-white" style="font-weight:700;">AI is replacing the inefficient version of every rep.</p>
+      </div>
+    </div>
+    <div class="slide-num">2 / 9</div>
+  </div>
+
+  <!-- Slide 3: Before the call -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <p class="section-label">Before the call</p>
+      <h2 class="t-display t-sm c-near-white">How top reps are using AI before the call.</h2>
+      <div class="col" style="gap:20px;">
+        <div class="use-card">
+          <div class="icon-circle icon-grad" style="flex-shrink:0;">⚡</div>
+          <div>
+            <p class="use-headline">Research in 3 minutes, not 30.</p>
+            <p class="use-body">Prospect data, company news, and likely pain points — all surfaced before they even dial.</p>
+          </div>
+        </div>
+        <div class="use-card">
+          <div class="icon-circle icon-grad" style="flex-shrink:0;">🎯</div>
+          <div>
+            <p class="use-headline">Personalised opening lines.</p>
+            <p class="use-body">Generated from the prospect's recent activity, not a generic template.</p>
+          </div>
+        </div>
+        <div class="use-card">
+          <div class="icon-circle icon-grad" style="flex-shrink:0;">🛡️</div>
+          <div>
+            <p class="use-headline">Objections mapped in advance.</p>
+            <p class="use-body">Industry-specific, company-size aware. Not guessing. Prepared.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-num">3 / 9</div>
+  </div>
+
+  <!-- Slide 4: During the call -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <p class="section-label">During the call</p>
+      <h2 class="t-display t-sm c-near-white">How top reps are using AI during the call.</h2>
+      <p class="shift-body">Real-time transcription catches what you miss when you're thinking about what to say next. AI surfaces objection-handling prompts. It detects buying signals mid-call when they're still actionable.</p>
+      <div class="col" style="gap:16px;margin-top:8px;">
+        <div class="bullet-mag"><div class="bullet-dot-mag"></div><span>Timeline language</span></div>
+        <div class="bullet-mag"><div class="bullet-dot-mag"></div><span>Budget mentions</span></div>
+        <div class="bullet-mag"><div class="bullet-dot-mag"></div><span>Competitor references</span></div>
+      </div>
+    </div>
+    <div class="slide-num">4 / 9</div>
+  </div>
+
+  <!-- Slide 5: After the call -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <p class="section-label">After the call</p>
+      <h2 class="t-display t-sm c-near-white">How top reps are using AI after the call.</h2>
+      <p class="shift-body">The best reps spend their post-call time on strategy — not admin. AI does the admin.</p>
+      <div class="after-grid">
+        <div class="pill-badge">📋 Call summary</div>
+        <div class="pill-badge">📊 CRM auto-fill</div>
+        <div class="pill-badge">✉️ Follow-up draft</div>
+        <div class="pill-badge">🔔 Next-step reminder</div>
+      </div>
+    </div>
+    <div class="slide-num">5 / 9</div>
+  </div>
+
+  <!-- Slide 6: Pattern recognition -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:600px;height:600px;background:var(--purple);top:-200px;right:-200px;opacity:0.15;"></div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <h2 class="t-display t-sm c-magenta">AI for pattern recognition — the edge nobody's talking about.</h2>
+      <p class="shift-body">When you review 50 of your own calls with an AI lens, patterns emerge. The objections that come up after a specific opener. The question that consistently moves deals forward. The silence length that precedes a close.</p>
+      <div class="card">
+        <p class="t-body c-near-white" style="font-weight:700;">These patterns exist in your data right now.</p>
+        <p class="t-body c-magenta" style="font-weight:800;margin-top:8px;">Most reps never find them.</p>
+      </div>
+    </div>
+    <div class="slide-num">6 / 9</div>
+  </div>
+
+  <!-- Slide 7: Reps who will struggle -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <p class="warning-headline">The reps who will struggle in the next 3 years.</p>
+      <p class="shift-body">Not the ones who can't close. The ones who refuse to use tools that would make them better.</p>
+      <div class="italic-quote">"I don't need AI — I've been doing this for 10 years."</div>
+      <p class="shift-body">Ten years of unanalysed habit isn't experience. <strong>It's repetition.</strong></p>
+      <p class="t-body c-magenta" style="font-weight:700;">AI turns repetition into insight.</p>
+    </div>
+    <div class="slide-num">7 / 9</div>
+  </div>
+
+  <!-- Slide 8: The shift is happening -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:600px;height:600px;background:var(--purple);bottom:-250px;left:-200px;opacity:0.2;"></div>
+    <div class="col" style="gap:32px;max-width:900px;">
+      <h2 class="t-display t-sm c-near-white">The shift is already happening.</h2>
+      <p class="shift-body">The reps adapting now are building a <span style="color:var(--magenta);font-weight:700;">compounding advantage.</span> Every call they analyse is a rep they're getting ahead of. Every objection they handle better is a deal their competitor's rep is losing.</p>
+      <p class="shift-body">The window to get ahead isn't closing — but it's not standing open forever.</p>
+      <div class="divider"></div>
+      <p class="t-body c-magenta" style="font-weight:700;font-size:26px;">The question isn't if you'll use AI. It's which AI.</p>
+    </div>
+    <div class="slide-num">8 / 9</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide circuit-bg">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <p class="t-label c-white" style="opacity:0.7">START YOUR FREE TRIAL</p>
+    <h2 class="t-display t-md c-white" style="max-width:780px;text-align:center;">Pitchr is the AI that works during your call. Not just before it.</h2>
+    <div class="cta-btn">Try Pitchr Free →</div>
+    <p class="cta-url">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">9 / 9</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,294 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 06: Green Flags vs Red Flags</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.flag-card-red {
+  background: rgba(255,68,68,0.06);
+  border: 1px solid rgba(255,68,68,0.2);
+  border-left: 5px solid var(--red);
+  border-radius: var(--radius);
+  padding: 36px 40px;
+  width: 100%;
+}
+.flag-card-green {
+  background: rgba(57,211,83,0.06);
+  border: 1px solid rgba(57,211,83,0.2);
+  border-left: 5px solid var(--green);
+  border-radius: var(--radius);
+  padding: 36px 40px;
+  width: 100%;
+}
+.flag-label-red {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+.flag-label-green {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+.flag-headline {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--near-white);
+  line-height: 1.15;
+  margin-top: 12px;
+  margin-bottom: 20px;
+}
+.flag-body {
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.65;
+}
+.punch-line {
+  font-family: var(--font-body);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--magenta);
+  margin-top: 16px;
+}
+.punch-line-green {
+  font-family: var(--font-body);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--green);
+  margin-top: 16px;
+}
+.red-glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: rgba(255,68,68,0.4);
+  border-radius: 0;
+  pointer-events: none;
+}
+.green-glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: rgba(57,211,83,0.4);
+  pointer-events: none;
+}
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  font-family: var(--font-body);
+  font-size: 22px;
+  color: rgba(255,255,255,0.9);
+  line-height: 1.5;
+}
+.checklist-num {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--purple);
+  min-width: 36px;
+  flex-shrink: 0;
+}
+.hook-icons {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  margin-top: 32px;
+}
+.hook-icon-red {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(255,68,68,0.12);
+  border: 2px solid rgba(255,68,68,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+}
+.hook-icon-green {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(57,211,83,0.12);
+  border: 2px solid rgba(57,211,83,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+}
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 06 — Green Flags vs Red Flags · Career · SDR / AE Considering Job Changes</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black bg-noise">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:400px;height:400px;background:rgba(255,68,68,0.4);top:-100px;left:-100px;opacity:0.2;filter:blur(100px);"></div>
+    <div class="deco-circle deco-blur" style="width:400px;height:400px;background:rgba(57,211,83,0.4);bottom:-100px;right:-100px;opacity:0.2;filter:blur(100px);"></div>
+    <div class="col center" style="width:100%;gap:28px;">
+      <h1 class="t-display t-xl c-near-white" style="text-align:center;max-width:840px;">Before you accept that sales job, check for these.</h1>
+      <p class="t-body c-magenta" style="text-align:center;font-style:italic;">Red flags that cost you 6 months of your career.</p>
+      <div class="hook-icons">
+        <div class="hook-icon-red">🚩</div>
+        <div class="t-display t-md c-muted">vs</div>
+        <div class="hook-icon-green">✅</div>
+      </div>
+    </div>
+    <div class="slide-num">1 / 10</div>
+  </div>
+
+  <!-- Slide 2: Red Flag 1 -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="red-glow"></div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <span class="flag-label-red">🚩 Red Flag</span>
+      <div class="flag-card-red">
+        <p class="flag-headline">"We have an amazing culture here."</p>
+        <p class="flag-body">Translation: The base pay is below market and we're hoping vibes compensate. Always ask: what's the base? What's the realistic OTE based on actual rep performance — not top performers?</p>
+        <p class="punch-line">Culture doesn't pay rent.</p>
+      </div>
+    </div>
+    <div class="slide-num">2 / 10</div>
+  </div>
+
+  <!-- Slide 3: Red Flag 2 -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="red-glow"></div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <span class="flag-label-red">🚩 Red Flag</span>
+      <div class="flag-card-red">
+        <p class="flag-headline">"Uncapped commission!"</p>
+        <p class="flag-body">On a $20 average order value. Or with an 8-month sales cycle and a 3% close rate. Uncapped commission is only meaningful if the mechanics underneath it are real.</p>
+        <p class="punch-line">Ask: What did the median rep make in commission last year?</p>
+      </div>
+    </div>
+    <div class="slide-num">3 / 10</div>
+  </div>
+
+  <!-- Slide 4: Red Flag 3 -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="red-glow"></div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <span class="flag-label-red">🚩 Red Flag</span>
+      <div class="flag-card-red">
+        <p class="flag-headline">"We'll train you — don't worry."</p>
+        <p class="flag-body">Translation: we have a 3-day Zoom onboarding, a shared Google Drive, and a manager who expects you to figure it out. Ask: is there a defined 30/60/90? Do you shadow calls before you run them?</p>
+        <p class="punch-line">That's on you to build from scratch.</p>
+      </div>
+    </div>
+    <div class="slide-num">4 / 10</div>
+  </div>
+
+  <!-- Slide 5: Red Flag 4 -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="red-glow"></div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <span class="flag-label-red">🚩 Red Flag</span>
+      <div class="flag-card-red">
+        <p class="flag-headline">The hiring manager can't tell you who their best rep is.</p>
+        <p class="flag-body">If they can't immediately name a top performer and explain what makes them effective — there's no coaching culture. Good sales organisations celebrate their best reps openly and are specific about why they win.</p>
+        <p class="punch-line">Vagueness about performance is a signal.</p>
+      </div>
+    </div>
+    <div class="slide-num">5 / 10</div>
+  </div>
+
+  <!-- Slide 6: Green Flag 1 -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="green-glow"></div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <span class="flag-label-green">✅ Green Flag</span>
+      <div class="flag-card-green">
+        <p class="flag-headline">They can describe the ICP in two sentences.</p>
+        <p class="flag-body">"We sell to VP of Operations at mid-market logistics companies, 200–1,000 employees, dealing with routing inefficiency." If they can say that clearly — they know who they're selling to.</p>
+        <p class="punch-line-green">Your pipeline won't be full of accidental meetings.</p>
+      </div>
+    </div>
+    <div class="slide-num">6 / 10</div>
+  </div>
+
+  <!-- Slide 7: Green Flag 2 -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="green-glow"></div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <span class="flag-label-green">✅ Green Flag</span>
+      <div class="flag-card-green">
+        <p class="flag-headline">The manager was a top rep — and still coaches actively.</p>
+        <p class="flag-body">The best sales managers were excellent individual contributors who chose to grow others. If your manager can jump on a call with you and <em>demonstrate</em> — not just advise — you'll learn faster than any training programme.</p>
+        <p class="punch-line-green">Demonstrate — not just advise.</p>
+      </div>
+    </div>
+    <div class="slide-num">7 / 10</div>
+  </div>
+
+  <!-- Slide 8: Green Flag 3 -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="green-glow"></div>
+    <div class="col" style="gap:28px;max-width:900px;">
+      <span class="flag-label-green">✅ Green Flag</span>
+      <div class="flag-card-green">
+        <p class="flag-headline">There's a real tech stack and a CRM everyone actually uses.</p>
+        <p class="flag-body">Salesforce with actual data in it. A dialer. A sequencing tool. If reps are logging calls in spreadsheets and <span style="color:var(--magenta);font-style:italic;">"we're implementing Salesforce soon"</span> — the ops infrastructure doesn't exist.</p>
+        <p class="punch-line-green">No data, no coaching, no accountability.</p>
+      </div>
+    </div>
+    <div class="slide-num">8 / 10</div>
+  </div>
+
+  <!-- Slide 9: Questions checklist -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:32px;max-width:900px;">
+      <h2 class="t-display t-sm c-near-white">5 questions to ask in every sales interview.</h2>
+      <div class="col" style="gap:20px;">
+        <div class="checklist-item"><span class="checklist-num">1.</span><span>What % of reps hit OTE last year?</span></div>
+        <div class="checklist-item"><span class="checklist-num">2.</span><span>What's the average ramp time?</span></div>
+        <div class="checklist-item"><span class="checklist-num">3.</span><span>Can I speak to a current rep — not chosen by the recruiter?</span></div>
+        <div class="checklist-item"><span class="checklist-num">4.</span><span>What does the first 90 days look like in writing?</span></div>
+        <div class="checklist-item"><span class="checklist-num">5.</span><span>What percentage of reps hit quota last year?</span></div>
+      </div>
+      <p class="t-body-sm c-magenta" style="font-weight:700;">Screenshot this. Use it before you sign anything.</p>
+    </div>
+    <div class="slide-num">9 / 10</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <p class="t-label c-white" style="opacity:0.7">START YOUR FREE TRIAL</p>
+    <h2 class="t-display t-md c-white" style="max-width:780px;text-align:center;">Whatever team you're on, Pitchr makes your calls better.</h2>
+    <div class="cta-btn">Try Pitchr Free →</div>
+    <p class="cta-url">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">10 / 10</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+

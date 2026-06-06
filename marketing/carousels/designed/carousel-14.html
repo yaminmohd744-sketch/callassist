@@ -1,0 +1,296 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 14: Cold Calling Anxiety Is Real</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.phone-visual {
+  width: 140px;
+  height: 220px;
+  border: 2.5px solid rgba(129,74,200,0.4);
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(129,74,200,0.06);
+  position: relative;
+  margin: 0 auto;
+}
+.phone-screen {
+  width: 100px;
+  height: 150px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cursor-blink {
+  width: 3px;
+  height: 28px;
+  background: rgba(129,74,200,0.8);
+  border-radius: 2px;
+  animation: blink 1.2s step-end infinite;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+.phone-button {
+  width: 36px;
+  height: 5px;
+  background: rgba(129,74,200,0.3);
+  border-radius: 3px;
+  margin-top: 14px;
+}
+.hesitation-text {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: rgba(129,74,200,0.6);
+  text-align: center;
+  margin-top: 20px;
+  letter-spacing: 0.05em;
+}
+.stat-highlight {
+  display: inline;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--magenta);
+  font-size: 30px;
+}
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.step-item:last-child { border-bottom: none; }
+.step-num {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(129,74,200,0.2);
+  border: 1.5px solid rgba(129,74,200,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--purple);
+  flex-shrink: 0;
+}
+.step-detail { flex: 1; }
+.step-title { font-family: var(--font-body); font-size: 22px; font-weight: 700; color: var(--near-white); }
+.step-sub { font-family: var(--font-body); font-size: 15px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+.gap-visual {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 20px 0;
+}
+.gap-block {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.gap-feeling { background: rgba(129,74,200,0.15); border-radius:12px 0 0 12px; color: rgba(255,255,255,0.6); padding: 0 20px; flex:1; }
+.gap-arrow { color: var(--magenta); font-size: 24px; padding: 0 12px; }
+.gap-dial { background: rgba(57,211,83,0.12); border-radius: 0 12px 12px 0; color: var(--green); padding: 0 20px; flex:1; }
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 14 — Cold Calling Anxiety Is Real · Empathy · SDR / New Rep</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black bg-noise">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:500px;height:500px;background:var(--purple);top:-200px;left:-100px;opacity:0.2;"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:32px;position:relative;z-index:1;">
+      <h1 class="t-display c-near-white" style="font-size:52px;line-height:1.1;max-width:800px;">Nobody talks about the <span style="color:var(--purple);">anxiety</span> of picking up the phone.</h1>
+      <p class="t-display c-magenta" style="font-size:36px;font-style:italic;font-weight:800;">Let's.</p>
+      <div class="phone-visual">
+        <div class="phone-screen">
+          <div class="cursor-blink"></div>
+        </div>
+        <div class="phone-button"></div>
+      </div>
+    </div>
+    <div class="slide-num">1 / 9</div>
+  </div>
+
+  <!-- Slide 2: The moment before you dial -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:820px;">
+      <h2 class="t-display t-sm c-magenta" style="font-size:42px;">The moment before you dial.</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="line-height:1.8;font-size:21px;">You know the feeling. You have the number. You have the script. And you just sit there for three seconds. Maybe five. The tab stays open. The phone is in your hand. And something in your chest says "not yet."</p>
+      <div class="card-purple" style="margin-top:8px;">
+        <p class="t-body c-near-white" style="font-size:28px;font-weight:700;line-height:1.3;">This isn't weakness.</p>
+        <p class="t-body-sm c-white" style="font-size:18px;margin-top:8px;color:rgba(255,255,255,0.7);">It's your nervous system doing exactly what it's designed to do when it senses social risk.</p>
+      </div>
+    </div>
+    <div class="slide-num">2 / 9</div>
+  </div>
+
+  <!-- Slide 3: It has a name -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:820px;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:42px;">It has a name.</h2>
+      <div style="display:inline-block;">
+        <p class="t-display c-purple" style="font-size:52px;font-weight:800;">Call reluctance.</p>
+      </div>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="line-height:1.7;font-size:19px;">Research by Dudley &amp; Goodson identified 12 distinct types. It's not correlated with intelligence, work ethic, or desire to succeed. It's a specific learned response to anticipated social rejection.</p>
+      <div style="display:flex;gap:32px;margin-top:4px;">
+        <div class="stat-block">
+          <div class="stat-highlight">40%</div>
+          <p class="stat-label" style="font-size:16px;">of experienced reps</p>
+        </div>
+        <div style="width:1px;background:rgba(255,255,255,0.1);"></div>
+        <div class="stat-block">
+          <div class="stat-highlight">80%</div>
+          <p class="stat-label" style="font-size:16px;">of new reps</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:4px;">
+        <p style="font-family:var(--font-body);font-size:22px;font-weight:700;color:var(--near-white);">Learned responses can be unlearned.</p>
+      </div>
+    </div>
+    <div class="slide-num">3 / 9</div>
+  </div>
+
+  <!-- Slide 4: The research -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:350px;height:350px;background:var(--purple);bottom:-100px;right:-80px;opacity:0.18;"></div>
+    <div class="col gap-m" style="max-width:820px;">
+      <h2 class="t-display t-sm c-magenta" style="font-size:38px;">What the research actually says about rejection.</h2>
+      <div class="divider"></div>
+      <div class="card">
+        <p style="font-family:var(--font-body);font-size:22px;font-weight:700;color:var(--near-white);line-height:1.45;">The brain processes social rejection in the <span style="color:var(--magenta);">same neural pathway</span> as physical pain.</p>
+      </div>
+      <p class="t-body-sm c-white" style="line-height:1.7;font-size:19px;">A cold call hang-up activates the same region as being physically hurt. You're not being dramatic.</p>
+      <p style="font-family:var(--font-body);font-size:19px;color:rgba(255,255,255,0.65);font-style:italic;line-height:1.5;">Your brain is doing exactly what it evolved to do — in a world where the stakes of a dial were much higher than voicemail.</p>
+    </div>
+    <div class="slide-num">4 / 9</div>
+  </div>
+
+  <!-- Slide 5: Experienced reps still feel it -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:820px;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:40px;">Experienced reps still feel it.</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="line-height:1.7;font-size:20px;">They do. They just don't let it make the decision. The hesitation before call 2,000 is smaller than before call 10 — but it's still there.</p>
+      <div class="gap-visual">
+        <div class="gap-block gap-feeling">The feeling</div>
+        <div class="gap-arrow">→</div>
+        <div class="gap-block gap-dial">The dial</div>
+      </div>
+      <div class="card-purple">
+        <p style="font-family:var(--font-body);font-size:24px;font-weight:700;color:var(--magenta);line-height:1.3;">The gap between the feeling<br>and the dial.</p>
+        <p style="font-family:var(--font-body);font-size:18px;color:rgba(255,255,255,0.7);margin-top:8px;font-style:italic;">Top reps have narrowed it to seconds.</p>
+      </div>
+    </div>
+    <div class="slide-num">5 / 9</div>
+  </div>
+
+  <!-- Slide 6: The physical reset -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col gap-m" style="max-width:820px;">
+      <h2 class="t-display t-sm c-magenta" style="font-size:40px;">The physical reset<br>(it works).</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="font-size:18px;">Before a difficult call — do these three things:</p>
+      <div style="margin-top:4px;">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-detail">
+            <div class="step-title">3 slow breaths</div>
+            <div class="step-sub">Activates your parasympathetic nervous system</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-detail">
+            <div class="step-title">Drop your shoulders deliberately</div>
+            <div class="step-sub">Reduces tension held from the last call</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-detail">
+            <div class="step-title">Relax your jaw</div>
+            <div class="step-sub">Reduces cortisol within 60 seconds — measurably</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:4px;text-align:center;">
+        <p style="font-family:var(--font-body);font-size:24px;font-weight:800;color:var(--near-white);">Calm sounds different on the phone.</p>
+        <p style="font-family:var(--font-body);font-size:16px;color:rgba(255,255,255,0.5);margin-top:4px;">Prospects can hear it.</p>
+      </div>
+    </div>
+    <div class="slide-num">6 / 9</div>
+  </div>
+
+  <!-- Slide 7: Rewire your relationship -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:350px;height:350px;background:var(--magenta);top:-80px;right:-80px;opacity:0.12;"></div>
+    <div class="col gap-m" style="max-width:820px;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:38px;">How to rewire your<br>relationship with the dial.</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="line-height:1.7;font-size:19px;">Don't set outcome goals for the first 20 calls of a session. Set process goals: &ldquo;My goal is to open well and ask one good question.&rdquo;</p>
+      <div class="card-purple">
+        <p style="font-family:var(--font-body);font-size:24px;font-weight:700;color:var(--magenta);line-height:1.4;">Remove the result from the equation.</p>
+      </div>
+      <p class="t-body-sm c-white" style="line-height:1.7;font-size:18px;">When your brain learns that a dial doesn't require a yes to be a success, the anticipation anxiety drops dramatically.</p>
+      <p style="font-family:var(--font-body);font-size:16px;color:rgba(255,255,255,0.4);font-style:italic;">You're retraining the threat model.</p>
+    </div>
+    <div class="slide-num">7 / 9</div>
+  </div>
+
+  <!-- Slide 8: You're not alone -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:600px;height:600px;background:var(--purple);bottom:-300px;left:-200px;opacity:0.15;"></div>
+    <div class="col gap-m" style="max-width:820px;">
+      <h2 class="t-display t-sm c-near-white" style="font-size:44px;">You're not alone in this.</h2>
+      <div class="divider"></div>
+      <p class="t-body-sm c-white" style="line-height:1.8;font-size:20px;">Some of the most successful sales professionals I know have called in sick to avoid a dial block. Have refreshed email for an hour instead of picking up the phone. Have driven to a sales call feeling like they might have a panic attack.</p>
+      <p class="t-body-sm c-white" style="font-size:20px;font-style:italic;">And they're still doing it.</p>
+      <div style="margin-top:8px;">
+        <p class="t-display c-magenta" style="font-size:56px;font-weight:800;line-height:1.1;">Alongside it.</p>
+      </div>
+    </div>
+    <div class="slide-num">8 / 9</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <p class="t-label c-white" style="opacity:0.7">Start your free trial</p>
+    <h2 class="t-display t-md c-white" style="max-width:800px;font-size:44px;">Pitchr gives you confidence on every call — because you always know what to say next.</h2>
+    <div class="cta-btn">Try Pitchr Free →</div>
+    <p class="cta-url">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">9 / 9</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+

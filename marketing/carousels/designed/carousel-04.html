@@ -1,0 +1,243 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitchr — Carousel 04: Rejection Math</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.dot-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 32px;
+}
+.dot-no {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--purple);
+  opacity: 0.7;
+}
+.dot-yes {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--magenta);
+  box-shadow: 0 0 32px rgba(223,122,254,0.5);
+}
+.insight-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-left: 4px solid var(--purple);
+  border-radius: var(--radius);
+  padding: 32px 40px;
+  width: 100%;
+}
+.payoff {
+  font-family: var(--font-body);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--near-white);
+  margin-top: 16px;
+}
+.key-phrase {
+  color: var(--magenta);
+  font-weight: 700;
+}
+.list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  font-family: var(--font-body);
+  font-size: 24px;
+  color: rgba(255,255,255,0.9);
+  line-height: 1.5;
+}
+.list-num {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--purple);
+  min-width: 36px;
+  flex-shrink: 0;
+}
+.callout-price {
+  font-family: var(--font-mono);
+  font-size: 100px;
+  line-height: 1;
+  color: var(--near-white);
+  letter-spacing: -0.03em;
+}
+.mono-calc {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  color: rgba(255,255,255,0.7);
+  margin-top: 8px;
+}
+.payoff-big {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--near-white);
+  margin-top: 28px;
+}
+</style>
+</head>
+<body>
+<div class="carousel">
+  <p class="carousel-label">Carousel 04 — Rejection Math · Psychology / Mindset · SDR / All Reps</p>
+
+  <!-- Slide 1: Hook -->
+  <div class="slide bg-black bg-noise">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:600px;height:600px;background:var(--purple);top:-200px;right:-200px;"></div>
+    <div class="col center" style="width:100%;gap:28px;">
+      <h1 class="t-display t-xl c-near-white" style="text-align:center;max-width:900px;">
+        You need to hear <span class="grad-text">no 8 times</span> before you hear yes.
+      </h1>
+      <p class="t-body c-white" style="text-align:center;font-style:italic;">Here's why that's actually great news.</p>
+      <div class="dot-row">
+        <div class="dot-no"></div>
+        <div class="dot-no"></div>
+        <div class="dot-no"></div>
+        <div class="dot-no"></div>
+        <div class="dot-no"></div>
+        <div class="dot-no"></div>
+        <div class="dot-no"></div>
+        <div class="dot-yes"></div>
+      </div>
+    </div>
+    <div class="slide-num">1 / 9</div>
+  </div>
+
+  <!-- Slide 2: The number isn't the point -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:32px;max-width:900px;">
+      <div class="number-badge">1</div>
+      <div class="insight-card">
+        <h2 class="t-display t-sm c-near-white">The number isn't the point.</h2>
+        <p class="t-body c-white" style="margin-top:20px;">Whether it's 8 or 12 or 5 — every elite closer in every industry has a ratio. A certain number of no's per yes.</p>
+        <p class="payoff">The reps who struggle aren't hearing more no's. They're <span class="key-phrase">treating each no as a surprise instead of a step.</span></p>
+      </div>
+    </div>
+    <div class="slide-num">2 / 9</div>
+  </div>
+
+  <!-- Slide 3: Top closers hear more no's -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:32px;max-width:900px;">
+      <div class="number-badge">2</div>
+      <div class="insight-card" style="border-left-color:var(--magenta);">
+        <h2 class="t-display t-sm c-magenta">Top closers hear more no's. Not fewer.</h2>
+        <p class="t-body c-white" style="margin-top:20px;">The reps at the top of the leaderboard aren't getting lucky. They're making more calls, which means more rejection. The difference is their relationship with the no.</p>
+        <p class="payoff" style="color:var(--near-white);">It doesn't drain them — it fuels the next dial.</p>
+      </div>
+    </div>
+    <div class="slide-num">3 / 9</div>
+  </div>
+
+  <!-- Slide 4: Rejection is exposure therapy -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:32px;max-width:900px;">
+      <div class="number-badge">3</div>
+      <div class="insight-card">
+        <h2 class="t-display t-sm c-near-white">Rejection is exposure therapy in real time.</h2>
+        <p class="t-body c-white" style="margin-top:20px;">Repeated exposure to a feared stimulus reduces its emotional intensity. The 50th cold call is easier than the 5th — not because you care less — because...</p>
+        <p class="payoff key-phrase" style="font-style:italic;">"Your nervous system has updated its threat model."</p>
+      </div>
+    </div>
+    <div class="slide-num">4 / 9</div>
+  </div>
+
+  <!-- Slide 5: Cost of one avoided call -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:24px;max-width:900px;">
+      <div class="number-badge">4</div>
+      <h2 class="t-display t-sm c-magenta">What does one avoided call actually cost?</h2>
+      <div class="card">
+        <div class="col" style="gap:12px;">
+          <span class="callout-price">$300</span>
+          <p class="mono-calc">15% close rate × $2,000 ACV = $300 expected value per call</p>
+        </div>
+      </div>
+      <p class="t-body c-white">When you skip a dial because you "don't feel ready" — that's $300 in expected commission you just <span style="font-weight:800;">chose not to earn.</span></p>
+    </div>
+    <div class="slide-num">5 / 9</div>
+  </div>
+
+  <!-- Slide 6: Elite athletes -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:32px;max-width:900px;">
+      <div class="number-badge">5</div>
+      <div class="insight-card">
+        <h2 class="t-display t-sm c-near-white">Elite athletes fail more than amateurs. On purpose.</h2>
+        <p class="t-body c-white" style="margin-top:20px;">Michael Jordan missed more shots than most players ever take. Serena Williams hit more double faults than most players ever serve.</p>
+        <p class="payoff key-phrase">"The volume of failure is a feature, not a bug."</p>
+        <p class="t-body c-white" style="margin-top:12px;">You can't improve what you don't attempt.</p>
+      </div>
+    </div>
+    <div class="slide-num">6 / 9</div>
+  </div>
+
+  <!-- Slide 7: How to rewire -->
+  <div class="slide bg-elevated">
+    <div class="brand-mark">Pitchr</div>
+    <div class="col" style="gap:36px;max-width:900px;">
+      <h2 class="t-display t-sm c-near-white">How to rewire your relationship with rejection.</h2>
+      <div class="col" style="gap:24px;">
+        <div class="list-item"><span class="list-num">1.</span><span>Before each call, say: "This might be a no. That's fine."</span></div>
+        <div class="list-item"><span class="list-num">2.</span><span>After a rejection, name one thing you did well.</span></div>
+        <div class="list-item"><span class="list-num">3.</span><span>Track your ratio — data makes no's feel logical, not random.</span></div>
+        <div class="list-item"><span class="list-num">4.</span><span>Debrief fast. Move on faster.</span></div>
+      </div>
+    </div>
+    <div class="slide-num">7 / 9</div>
+  </div>
+
+  <!-- Slide 8: Every no is data -->
+  <div class="slide bg-surface">
+    <div class="brand-mark">Pitchr</div>
+    <div class="deco-circle deco-blur" style="width:600px;height:600px;background:var(--purple);bottom:-200px;right:-200px;opacity:0.2;"></div>
+    <div class="col" style="gap:32px;max-width:900px;">
+      <div class="number-badge">6</div>
+      <h2 class="t-display t-sm c-magenta">Every no is data. If you collect it.</h2>
+      <p class="t-body c-white">Most reps absorb rejection emotionally and move on without learning anything. The top 1% treat every lost call as a dataset.</p>
+      <div class="card">
+        <p class="t-body c-white">What objection came up? At what point? What did I say before it? What would I say differently?</p>
+      </div>
+      <p class="payoff-big">That's how 8 no's becomes 6.</p>
+    </div>
+    <div class="slide-num">8 / 9</div>
+  </div>
+
+  <!-- CTA Slide -->
+  <div class="slide cta-slide">
+    <div class="brand-mark" style="-webkit-text-fill-color:white;background:none;color:white;">Pitchr</div>
+    <div class="dot-row" style="margin-bottom:8px;">
+      <div class="dot-no" style="opacity:0.5;background:rgba(255,255,255,0.4);width:40px;height:40px;"></div>
+      <div class="dot-no" style="opacity:0.5;background:rgba(255,255,255,0.4);width:40px;height:40px;"></div>
+      <div class="dot-no" style="opacity:0.5;background:rgba(255,255,255,0.4);width:40px;height:40px;"></div>
+      <div class="dot-no" style="opacity:0.5;background:rgba(255,255,255,0.4);width:40px;height:40px;"></div>
+      <div class="dot-no" style="opacity:0.5;background:rgba(255,255,255,0.4);width:40px;height:40px;"></div>
+      <div class="dot-no" style="opacity:0.5;background:rgba(255,255,255,0.4);width:40px;height:40px;"></div>
+      <div class="dot-no" style="opacity:0.5;background:rgba(255,255,255,0.4);width:40px;height:40px;"></div>
+      <div class="dot-yes" style="background:white;box-shadow:0 0 32px rgba(255,255,255,0.4);"></div>
+    </div>
+    <p class="t-label c-white" style="opacity:0.7">START YOUR FREE TRIAL</p>
+    <h2 class="t-display t-md c-white" style="max-width:780px;text-align:center;">Pitchr makes every no a learning moment — in real time.</h2>
+    <div class="cta-btn">Try Pitchr Free →</div>
+    <p class="cta-url">pitchr.org</p>
+    <div class="slide-num" style="color:rgba(255,255,255,0.4);">9 / 9</div>
+  </div>
+
+</div>
+<script src="export.js"></script>
+</body>
+</html>
+
