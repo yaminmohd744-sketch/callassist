@@ -20,8 +20,7 @@ function getRefFromUrl(): string {
   } catch { return ''; }
 }
 
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string) || '';
-const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/waitlist-signup`;
+const FUNCTION_URL = 'https://ovxajejzqaktpomyadgo.supabase.co/functions/v1/waitlist-signup';
 
 export function WaitlistModal({ onClose }: Props) {
   const [step, setStep]         = useState<'form' | 'success'>('form');

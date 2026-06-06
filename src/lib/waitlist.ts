@@ -1,6 +1,6 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]{2,}\.[a-zA-Z]{2,}$/;
 
-const FUNCTION_URL = `${(import.meta.env.VITE_SUPABASE_URL as string) || ''}/functions/v1/waitlist-signup`;
+const FUNCTION_URL = 'https://ovxajejzqaktpomyadgo.supabase.co/functions/v1/waitlist-signup';
 
 export type WaitlistResult =
   | { ok: true }
