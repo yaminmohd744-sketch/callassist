@@ -79,13 +79,13 @@ function buildWelcomeEmail(firstName: string, position: number, referralCode: st
 <tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
 
-  <!-- Logo -->
-  <tr><td style="padding-bottom:24px;">
-    <span style="font-size:22px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#814ac8,#df7afe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:#814ac8;">Pitchr</span>
+  <!-- Logo bar — mirrors app top nav -->
+  <tr><td style="padding-bottom:24px;background:linear-gradient(180deg,rgba(129,74,200,0.18) 0%,rgba(129,74,200,0) 100%);border-bottom:1px solid rgba(129,74,200,0.35);border-radius:8px 8px 0 0;padding:16px 20px 16px;">
+    <span style="font-size:20px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#814ac8,#df7afe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:#814ac8;">PITCHR</span>
   </td></tr>
 
   <!-- Main card — rectangle with glowing purple border -->
-  <tr><td class="card" style="background:#ffffff;border:2px solid #814ac8;border-radius:12px;padding:40px 36px;box-shadow:0 0 24px rgba(129,74,200,0.35),0 0 48px rgba(129,74,200,0.15);">
+  <tr><td class="card" style="background:#ffffff;border:2px solid #814ac8;border-top:none;border-radius:0 0 12px 12px;padding:36px 36px 40px;box-shadow:0 0 32px rgba(129,74,200,0.4),0 0 64px rgba(129,74,200,0.18),0 0 2px rgba(223,122,254,0.3);">
 
     <p class="card-label" style="margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:2px;color:#814ac8;text-transform:uppercase;">Waitlist confirmed</p>
     <h1 class="card-heading" style="margin:0 0 14px;font-size:28px;font-weight:800;color:#111111;line-height:1.2;">You're in${position <= 100 ? ", early" : ""}, ${firstName}.</h1>
