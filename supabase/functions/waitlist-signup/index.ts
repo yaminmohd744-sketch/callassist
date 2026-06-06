@@ -81,11 +81,11 @@ function buildWelcomeEmail(firstName: string, position: number, referralCode: st
 
   <!-- Logo -->
   <tr><td style="padding-bottom:24px;">
-    <span class="logo-text" style="font-size:20px;font-weight:800;letter-spacing:-0.5px;color:#814ac8;">Pitchr</span>
+    <span style="font-size:22px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#814ac8,#df7afe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:#814ac8;">Pitchr</span>
   </td></tr>
 
-  <!-- Main card — rectangle with permanent purple border -->
-  <tr><td class="card" style="background:#ffffff;border:2px solid #814ac8;border-radius:12px;padding:40px 36px;">
+  <!-- Main card — rectangle with glowing purple border -->
+  <tr><td class="card" style="background:#ffffff;border:2px solid #814ac8;border-radius:12px;padding:40px 36px;box-shadow:0 0 24px rgba(129,74,200,0.35),0 0 48px rgba(129,74,200,0.15);">
 
     <p class="card-label" style="margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:2px;color:#814ac8;text-transform:uppercase;">Waitlist confirmed</p>
     <h1 class="card-heading" style="margin:0 0 14px;font-size:28px;font-weight:800;color:#111111;line-height:1.2;">You're in${position <= 100 ? ", early" : ""}, ${firstName}.</h1>
