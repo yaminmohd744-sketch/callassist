@@ -4,7 +4,9 @@ import { TermsOfService } from './legal/TermsOfService';
 import { CookiePolicy } from './legal/CookiePolicy';
 import { PricingSection } from './landing/PricingSection';
 import { BlogSection } from './landing/BlogSection';
+import { CarouselLibrarySection } from './landing/CarouselLibrarySection';
 import { PitchrLogo } from '../components/ui/PitchrLogo';
+import { WaitlistModal } from '../components/waitlist/WaitlistModal';
 import './LandingScreen.css';
 
 interface LandingScreenProps {
@@ -13,7 +15,7 @@ interface LandingScreenProps {
   onMarketingPlan?: () => void;
 }
 
-type SectionId = 'features' | 'languages' | 'pricing' | 'download' | 'changelog' | 'help' | 'about' | 'blog' | 'contact' | 'privacy' | 'terms' | 'cookies';
+type SectionId = 'features' | 'languages' | 'pricing' | 'download' | 'changelog' | 'help' | 'about' | 'blog' | 'contact' | 'privacy' | 'terms' | 'cookies' | 'carousels';
 
 const SPOTLIGHT_STEP_MS    = 1400; // stagger between spotlight phases
 const DEMO_ADVANCE_LONG_MS = 6500; // normal demo step delay (step 0 includes spotlight sequence)
@@ -266,7 +268,9 @@ function WinLogo() {
 }
 
 
-export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: LandingScreenProps) {
+export function LandingScreen({ onDownload, onWaitlist: _onWaitlist, onMarketingPlan }: LandingScreenProps) {
+  const [showWaitlist, setShowWaitlist]         = useState(false);
+  const openWaitlist = () => setShowWaitlist(true);
   const [visibleFrames, setVisibleFrames]       = useState(1);
   const [menuOpen, setMenuOpen]                 = useState(false);
   const [featureTabIdx, setFeatureTabIdx]       = useState(0);
@@ -449,11 +453,6 @@ export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: Landi
     restartFeatureInterval();
   }
 
-  function scrollTo(id: string) {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    setMenuOpen(false);
-  }
-
   function goSection(id: SectionId) {
     setActiveSection(id);
     setMenuOpen(false);
@@ -489,6 +488,7 @@ export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: Landi
           <div className={`lp__nav-links ${menuOpen ? 'lp__nav-links--open' : ''}`}>
             <button onClick={() => goSection('features')}>Features</button>
             <button onClick={() => goSection('pricing')}>Pricing</button>
+            <button onClick={() => goSection('carousels')}>Content Kit</button>
           </div>
         )}
 
@@ -927,6 +927,17 @@ export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: Landi
     );
   }
 
+  // ─── Carousel Library section view ────────────────────────────────────────
+
+  if (activeSection === 'carousels') {
+    return (
+      <div className="lp">
+        {nav}
+        <CarouselLibrarySection />
+      </div>
+    );
+  }
+
   // ─── Blog section view ─────────────────────────────────────────────────────
 
   if (activeSection === 'blog') {
@@ -1027,15 +1038,9 @@ export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: Landi
             <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
               <WinLogo /> Get for Windows
             </button>
-            {onWaitlist ? (
-              <button className="lp__btn lp__btn--ghost" onClick={onWaitlist}>
-                Join the waitlist →
-              </button>
-            ) : (
-              <button className="lp__btn lp__btn--ghost" onClick={() => scrollTo('how-it-works')}>
-                See how it works →
-              </button>
-            )}
+            <button className="lp__btn lp__btn--ghost" onClick={openWaitlist}>
+              Join the waitlist →
+            </button>
           </div>
           <p className="lp__hero-note">
             ✓ No credit card required &nbsp;·&nbsp; ✓ 7-day money-back guarantee
@@ -1789,11 +1794,9 @@ export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: Landi
           <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
             <WinLogo /> Get for Windows
           </button>
-          {onWaitlist && (
-            <button className="lp__btn lp__btn--ghost lp__cta-banner-wl" onClick={onWaitlist}>
-              Join the waitlist →
-            </button>
-          )}
+          <button className="lp__btn lp__btn--ghost lp__cta-banner-wl" onClick={openWaitlist}>
+            Join the waitlist →
+          </button>
         </div>
         <p className="lp__cta-banner-note">No credit card · 7-day money-back · Windows 10 &amp; 11</p>
       </section>
@@ -1822,6 +1825,7 @@ export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: Landi
             <div className="lp__footer-col-title">Resources</div>
             <button className="lp__footer-link" onClick={() => goSection('languages')}>Languages</button>
             <button className="lp__footer-link" onClick={() => goSection('help')}>Help Center</button>
+            <button className="lp__footer-link" onClick={() => goSection('carousels')}>Content Kit</button>
           </div>
 
           {/* Company */}
@@ -1857,6 +1861,8 @@ export function LandingScreen({ onDownload, onWaitlist, onMarketingPlan }: Landi
           </div>
         </div>
       </footer>
+
+      {showWaitlist && <WaitlistModal onClose={() => setShowWaitlist(false)} />}
 
     </div>
   );
