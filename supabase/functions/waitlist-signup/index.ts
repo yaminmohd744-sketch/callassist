@@ -27,12 +27,10 @@ function generateReferralCode(): string {
 }
 
 function positionSvg(pos: number): string {
-  const text = `#${pos}`;
-  const w = text.length <= 2 ? 60 : text.length <= 3 ? 84 : 110;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="52" viewBox="0 0 ${w} 52" style="display:block;overflow:visible"><defs><linearGradient id="ng" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#814ac8"/><stop offset="100%" stop-color="#df7afe"/></linearGradient></defs><text x="0" y="45" font-family="'Clash Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="42" font-weight="700" fill="url(#ng)">${text}</text></svg>`;
+  return `<p style="margin:0;font-size:42px;font-weight:700;line-height:1.1;font-family:'Clash Display',-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:linear-gradient(135deg,#814ac8,#df7afe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:#814ac8;">#${pos}</p>`;
 }
 
-const PITCHR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="28" viewBox="0 0 120 28" style="display:block;overflow:visible"><defs><linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#814ac8"/><stop offset="100%" stop-color="#df7afe"/></linearGradient></defs><text x="0" y="23" font-family="'Clash Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="22" font-weight="700" letter-spacing="2" fill="url(#tg)">PITCHR</text></svg>`;
+const PITCHR_SVG = `<span style="font-family:'Clash Display',-apple-system,BlinkMacSystemFont,Arial,sans-serif;font-size:22px;font-weight:700;letter-spacing:2px;display:inline-block;background:linear-gradient(135deg,#814ac8,#df7afe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:#814ac8;">PITCHR</span>`;
 
 function buildWelcomeEmail(firstName: string, position: number, referralCode: string): string {
   const referralUrl = `${APP_URL}?ref=${referralCode}`;
@@ -115,7 +113,7 @@ function buildWelcomeEmail(firstName: string, position: number, referralCode: st
       <tr><td style="padding:26px 28px 0;">
 
         <p style="margin:0 0 7px;font-size:10px;font-weight:700;letter-spacing:2px;color:#814ac8;text-transform:uppercase;">Waitlist confirmed</p>
-        <h1 class="heading" style="margin:0 0 10px;font-size:24px;font-weight:800;color:#111111;line-height:1.25;">You're in${position <= 100 ? " early" : ""}, ${firstName}.</h1>
+        <h1 class="heading" style="margin:0 0 10px;font-size:24px;font-weight:800;color:#111111;line-height:1.25;">You're in${position <= 100 ? " early" : ""}${firstName ? `, ${firstName}` : ""}.</h1>
         <p class="sub" style="margin:0 0 22px;font-size:14px;color:#555555;line-height:1.65;">
           You're ${positionText} on the Pitchr waitlist. We're building the AI coach that tells you exactly what to say on every call, in real time, before the prospect hangs up.
         </p>
@@ -229,7 +227,7 @@ Deno.serve(async (req: Request) => {
     .select("*", { count: "exact", head: true });
 
   const pos = position ?? 1;
-  const firstName = name.split(" ")[0] || "there";
+  const firstName = name.split(" ")[0] || "";
 
   // Send welcome email (non-blocking — don't fail signup if email fails)
   if (RESEND_API_KEY) {
