@@ -29,10 +29,10 @@ function generateReferralCode(): string {
 function positionSvg(pos: number): string {
   const text = `#${pos}`;
   const w = text.length <= 2 ? 60 : text.length <= 3 ? 84 : 110;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="52" viewBox="0 0 ${w} 52" style="display:block;overflow:visible"><defs><linearGradient id="ng" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#814ac8"/><stop offset="100%" stop-color="#df7afe"/></linearGradient></defs><text x="0" y="45" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="42" font-weight="900" fill="url(#ng)">${text}</text></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="52" viewBox="0 0 ${w} 52" style="display:block;overflow:visible"><defs><linearGradient id="ng" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#814ac8"/><stop offset="100%" stop-color="#df7afe"/></linearGradient></defs><text x="0" y="45" font-family="'Clash Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="42" font-weight="700" fill="url(#ng)">${text}</text></svg>`;
 }
 
-const PITCHR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="88" height="22" viewBox="0 0 88 22" style="display:block;overflow:visible"><defs><linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#814ac8"/><stop offset="100%" stop-color="#df7afe"/></linearGradient></defs><text x="0" y="18" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="18" font-weight="800" letter-spacing="1.5" fill="url(#tg)">PITCHR</text></svg>`;
+const PITCHR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="28" viewBox="0 0 120 28" style="display:block;overflow:visible"><defs><linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#814ac8"/><stop offset="100%" stop-color="#df7afe"/></linearGradient></defs><text x="0" y="23" font-family="'Clash Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="22" font-weight="700" letter-spacing="2" fill="url(#tg)">PITCHR</text></svg>`;
 
 function buildWelcomeEmail(firstName: string, position: number, referralCode: string): string {
   const referralUrl = `${APP_URL}?ref=${referralCode}`;
@@ -47,6 +47,7 @@ function buildWelcomeEmail(firstName: string, position: number, referralCode: st
 <meta name="supported-color-schemes" content="light dark">
 <title>You're on the Pitchr waitlist</title>
 <style>
+  @import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
   /* === Default: LIGHT === */
   body, .wrap { background:#ede8f5 !important; }
   .card {
@@ -95,7 +96,7 @@ function buildWelcomeEmail(firstName: string, position: number, referralCode: st
   }
 </style>
 </head>
-<body class="wrap" style="margin:0;padding:0;background:#ede8f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<body class="wrap" style="margin:0;padding:0;background:#ede8f5;font-family:'Clash Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 <table class="wrap" width="100%" cellpadding="0" cellspacing="0" style="background:#ede8f5;padding:40px 16px;">
 <tr><td align="center">
 <table width="540" cellpadding="0" cellspacing="0" style="max-width:540px;width:100%;">
@@ -105,16 +106,7 @@ function buildWelcomeEmail(firstName: string, position: number, referralCode: st
     <!-- Logo row -->
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr><td class="logo-row" style="padding:20px 28px 18px;border-bottom:1px solid rgba(129,74,200,0.22);background:linear-gradient(180deg,rgba(129,74,200,0.07) 0%,rgba(129,74,200,0) 100%);border-radius:12px 12px 0 0;">
-        <table cellpadding="0" cellspacing="0"><tr>
-          <td style="padding-right:10px;vertical-align:middle;">
-            <svg width="30" height="30" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#814ac8"/><stop offset="100%" stop-color="#df7afe"/></linearGradient></defs>
-              <rect width="100" height="100" rx="22" fill="#0a0a0a"/>
-              <path fill-rule="evenodd" fill="url(#pg)" d="M 26 22 Q 26 14 32 14 L 54 14 C 78 14 78 62 54 62 L 44 62 L 44 82 Q 44 88 37 88 Q 26 88 26 82 Z M 44 28 L 53 28 C 65 28 65 50 53 50 L 44 50 Z"/>
-            </svg>
-          </td>
-          <td style="vertical-align:middle;">${PITCHR_SVG}</td>
-        </tr></table>
+        ${PITCHR_SVG}
       </td></tr>
     </table>
 
@@ -125,7 +117,7 @@ function buildWelcomeEmail(firstName: string, position: number, referralCode: st
         <p style="margin:0 0 7px;font-size:10px;font-weight:700;letter-spacing:2px;color:#814ac8;text-transform:uppercase;">Waitlist confirmed</p>
         <h1 class="heading" style="margin:0 0 10px;font-size:24px;font-weight:800;color:#111111;line-height:1.25;">You're in${position <= 100 ? " early" : ""}, ${firstName}.</h1>
         <p class="sub" style="margin:0 0 22px;font-size:14px;color:#555555;line-height:1.65;">
-          You're ${positionText} on the Pitchr waitlist. We're building the AI coach that tells you exactly what to say on every call — in real time, before the prospect hangs up.
+          You're ${positionText} on the Pitchr waitlist. We're building the AI coach that tells you exactly what to say on every call, in real time, before the prospect hangs up.
         </p>
 
         <!-- Position -->
@@ -147,17 +139,11 @@ function buildWelcomeEmail(firstName: string, position: number, referralCode: st
         </table>
 
         <!-- What's next -->
-        <p class="label" style="margin:0 0 10px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888888;">What happens next</p>
+        <p class="label" style="margin:0 0 10px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888888;">What's next</p>
         <table width="100%" cellpadding="0" cellspacing="0">
-          <tr><td class="item" style="padding:9px 0;border-bottom:1px solid #e8dff5;font-size:13px;color:#444444;">
-            <span style="color:#814ac8;font-weight:700;">→</span>&nbsp;&nbsp;App preview sent before anyone else
-          </td></tr>
-          <tr><td class="item" style="padding:9px 0;border-bottom:1px solid #e8dff5;font-size:13px;color:#444444;">
-            <span style="color:#814ac8;font-weight:700;">→</span>&nbsp;&nbsp;Early access 2 weeks before public launch
-          </td></tr>
-          <tr><td class="item" style="padding:9px 0;font-size:13px;color:#444444;">
-            <span style="color:#814ac8;font-weight:700;">→</span>&nbsp;&nbsp;Founding member discount locked in for life
-          </td></tr>
+          <tr><td class="item" style="padding:9px 0;border-bottom:1px solid #e8dff5;font-size:13px;color:#444444;"><strong>First to know</strong> the moment Pitchr drops</td></tr>
+          <tr><td class="item" style="padding:9px 0;border-bottom:1px solid #e8dff5;font-size:13px;color:#444444;">Early <strong>offers and deals</strong> before anyone else sees them</td></tr>
+          <tr><td class="item" style="padding:9px 0;font-size:13px;color:#444444;">We'll keep you <strong>in the loop</strong> as we build. No spam, ever.</td></tr>
         </table>
 
       </td></tr>
