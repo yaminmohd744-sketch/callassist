@@ -37,99 +37,117 @@ function buildWelcomeEmail(firstName: string, position: number, referralCode: st
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>You're on the Pitchr waitlist</title>
 <style>
-  /* Light mode defaults */
-  body { background:#f4f4f5 !important; }
-  .email-body { background:#f4f4f5 !important; }
-  .card { background:#ffffff !important; color:#111111 !important; }
-  .card-label { color:#814ac8 !important; }
-  .card-heading { color:#111111 !important; }
-  .card-sub { color:#555555 !important; }
-  .divider { border-color:#e5e5e5 !important; }
-  .pos-box { background:#f8f5ff !important; border-color:#d8c4f5 !important; }
-  .pos-label { color:#888888 !important; }
-  .ref-box { background:#f8f5ff !important; border-color:#d8c4f5 !important; }
-  .ref-url { background:#ede9f7 !important; color:#814ac8 !important; border-color:#d8c4f5 !important; }
-  .next-label { color:#888888 !important; }
-  .next-item { color:#444444 !important; border-color:#e5e5e5 !important; }
-  .footer-text { color:#999999 !important; }
-  .footer-link { color:#814ac8 !important; }
-  .logo-text { color:#814ac8 !important; }
+  body, .wrap { background:#0d0d0d !important; }
 
-  /* Dark mode overrides */
-  @media (prefers-color-scheme: dark) {
-    body { background:#0a0a0a !important; }
-    .email-body { background:#0a0a0a !important; }
-    .card { background:#111111 !important; color:#ffffff !important; }
-    .card-heading { color:#ffffff !important; }
-    .card-sub { color:#999999 !important; }
-    .divider { border-color:#222222 !important; }
-    .pos-box { background:#1a1025 !important; border-color:#3a1d6e !important; }
-    .pos-label { color:#666666 !important; }
-    .ref-box { background:#1a1025 !important; border-color:#3a1d6e !important; }
-    .ref-url { background:#0d0a14 !important; color:#df7afe !important; border-color:#2a1a3e !important; }
-    .next-label { color:#555555 !important; }
-    .next-item { color:#aaaaaa !important; border-color:#1a1a1a !important; }
-    .footer-text { color:#444444 !important; }
-    .footer-link { color:#814ac8 !important; }
+  .card {
+    background:#111111 !important;
+    border:2px solid #5a2d9a !important;
+    border-radius:14px !important;
+    box-shadow:0 0 0 1px rgba(129,74,200,0.5),0 0 24px rgba(129,74,200,0.55),0 0 56px rgba(129,74,200,0.28),0 0 80px rgba(223,122,254,0.1) !important;
+  }
+  .logo-sep { border-color:rgba(129,74,200,0.25) !important; }
+  .heading { color:#ffffff !important; }
+  .sub { color:#999999 !important; }
+  .label { color:#666666 !important; }
+  .pos-box { background:#1a1025 !important; border-color:#3d1f70 !important; }
+  .ref-box { background:#1a1025 !important; border-color:#3d1f70 !important; }
+  .ref-url { background:#0d0a14 !important; color:#c084f5 !important; border-color:#2a1a3e !important; }
+  .item { color:#aaaaaa !important; border-color:#222222 !important; }
+  .footer { color:#3a3a3a !important; }
+
+  @media (prefers-color-scheme: light) {
+    body, .wrap { background:#f0edf7 !important; }
+    .card {
+      background:#ffffff !important;
+      border-color:#814ac8 !important;
+      box-shadow:0 0 0 1px rgba(129,74,200,0.3),0 0 20px rgba(129,74,200,0.2),0 0 40px rgba(129,74,200,0.1) !important;
+    }
+    .heading { color:#111111 !important; }
+    .sub { color:#555555 !important; }
+    .label { color:#888888 !important; }
+    .pos-box { background:#f5f0ff !important; border-color:#cdb4f0 !important; }
+    .ref-box { background:#f5f0ff !important; border-color:#cdb4f0 !important; }
+    .ref-url { background:#ede6fa !important; color:#6b3db0 !important; border-color:#cdb4f0 !important; }
+    .item { color:#444444 !important; border-color:#e8e0f5 !important; }
+    .footer { color:#999999 !important; }
   }
 </style>
 </head>
-<body class="email-body" style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-<table class="email-body" width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
+<body class="wrap" style="margin:0;padding:0;background:#0d0d0d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<table class="wrap" width="100%" cellpadding="0" cellspacing="0" style="background:#0d0d0d;padding:40px 16px;">
 <tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
 
-  <!-- Logo bar — mirrors app top nav -->
-  <tr><td style="padding-bottom:24px;background:linear-gradient(180deg,rgba(129,74,200,0.18) 0%,rgba(129,74,200,0) 100%);border-bottom:1px solid rgba(129,74,200,0.35);border-radius:8px 8px 0 0;padding:16px 20px 16px;">
-    <span style="font-size:20px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#814ac8,#df7afe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:#814ac8;">PITCHR</span>
-  </td></tr>
+  <!-- Single unified card — everything inside -->
+  <tr><td class="card" style="background:#111111;border:2px solid #5a2d9a;border-radius:14px;padding:0;box-shadow:0 0 0 1px rgba(129,74,200,0.5),0 0 24px rgba(129,74,200,0.55),0 0 56px rgba(129,74,200,0.28);">
 
-  <!-- Main card — rectangle with glowing purple border -->
-  <tr><td class="card" style="background:#ffffff;border:2px solid #814ac8;border-top:none;border-radius:0 0 12px 12px;padding:36px 36px 40px;box-shadow:0 0 32px rgba(129,74,200,0.4),0 0 64px rgba(129,74,200,0.18),0 0 2px rgba(223,122,254,0.3);">
-
-    <p class="card-label" style="margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:2px;color:#814ac8;text-transform:uppercase;">Waitlist confirmed</p>
-    <h1 class="card-heading" style="margin:0 0 14px;font-size:28px;font-weight:800;color:#111111;line-height:1.2;">You're in${position <= 100 ? ", early" : ""}, ${firstName}.</h1>
-    <p class="card-sub" style="margin:0 0 32px;font-size:15px;color:#555555;line-height:1.6;">
-      You're ${positionText} on the Pitchr waitlist. We're building the AI coach that tells you exactly what to say on every call — in real time, before the prospect hangs up.
-    </p>
-
-    <!-- Position -->
-    <table class="pos-box" width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ff;border:1px solid #d8c4f5;border-radius:10px;margin-bottom:24px;">
-      <tr><td style="padding:20px 24px;">
-        <p class="pos-label" style="margin:0 0 4px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#888888;font-weight:600;">Your position</p>
-        <p style="margin:0;font-size:44px;font-weight:900;color:#814ac8;line-height:1;">#${position}</p>
-      </td></tr>
-    </table>
-
-    <!-- Referral -->
-    <table class="ref-box" width="100%" cellpadding="0" cellspacing="0" style="background:#f8f5ff;border:1px solid #d8c4f5;border-radius:10px;margin-bottom:32px;">
-      <tr><td style="padding:20px 24px;">
-        <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#814ac8;">Move up the list →</p>
-        <p class="card-sub" style="margin:0 0 14px;font-size:13px;color:#555555;line-height:1.5;">Share your link. Every signup through it bumps you higher.</p>
-        <p class="ref-url" style="margin:0 0 14px;background:#ede9f7;border:1px solid #d8c4f5;border-radius:6px;padding:10px 12px;font-size:12px;color:#814ac8;font-family:monospace;word-break:break-all;">${referralUrl}</p>
-        <a href="${referralUrl}" style="display:inline-block;background:linear-gradient(135deg,#814ac8,#df7afe);color:#ffffff;text-decoration:none;border-radius:100px;padding:11px 22px;font-size:13px;font-weight:700;">Share your link</a>
-      </td></tr>
-    </table>
-
-    <!-- What's next -->
-    <p class="next-label" style="margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#888888;">What happens next</p>
+    <!-- Logo row inside card -->
     <table width="100%" cellpadding="0" cellspacing="0">
-      <tr><td class="next-item" style="padding:10px 0;border-bottom:1px solid #e5e5e5;font-size:14px;color:#444444;">
-        <span style="color:#814ac8;font-weight:700;">→</span>&nbsp;&nbsp;App preview sent before anyone else
-      </td></tr>
-      <tr><td class="next-item" style="padding:10px 0;border-bottom:1px solid #e5e5e5;font-size:14px;color:#444444;">
-        <span style="color:#814ac8;font-weight:700;">→</span>&nbsp;&nbsp;Early access 2 weeks before public launch
-      </td></tr>
-      <tr><td class="next-item" style="padding:10px 0;font-size:14px;color:#444444;">
-        <span style="color:#814ac8;font-weight:700;">→</span>&nbsp;&nbsp;Founding member discount locked in for life
+      <tr><td class="logo-sep" style="padding:22px 32px 20px;border-bottom:1px solid rgba(129,74,200,0.2);">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="padding-right:10px;vertical-align:middle;">
+            <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#814ac8"/><stop offset="100%" stop-color="#df7afe"/></linearGradient></defs>
+              <rect width="100" height="100" rx="22" fill="#0a0a0a"/>
+              <path fill-rule="evenodd" fill="url(#pg)" d="M 26 22 Q 26 14 32 14 L 54 14 C 78 14 78 62 54 62 L 44 62 L 44 82 Q 44 88 37 88 Q 26 88 26 82 Z M 44 28 L 53 28 C 65 28 65 50 53 50 L 44 50 Z"/>
+            </svg>
+          </td>
+          <td style="vertical-align:middle;">
+            <span style="font-size:18px;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,#814ac8,#df7afe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:#814ac8;">PITCHR</span>
+          </td>
+        </tr></table>
       </td></tr>
     </table>
 
-  </td></tr>
+    <!-- Content -->
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr><td style="padding:32px 32px 0;">
 
-  <!-- Footer -->
-  <tr><td style="padding:20px 0 0;text-align:center;">
-    <p class="footer-text" style="margin:0;font-size:12px;color:#999999;">You signed up at <a class="footer-link" href="${APP_URL}" style="color:#814ac8;text-decoration:none;">pitchr.org</a> · © 2026 Pitchr</p>
+        <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:2px;color:#814ac8;text-transform:uppercase;">Waitlist confirmed</p>
+        <h1 class="heading" style="margin:0 0 12px;font-size:26px;font-weight:800;color:#ffffff;line-height:1.2;">You're in${position <= 100 ? ", early" : ""}, ${firstName}.</h1>
+        <p class="sub" style="margin:0 0 28px;font-size:14px;color:#999999;line-height:1.6;">
+          You're ${positionText} on the Pitchr waitlist. We're building the AI coach that tells you exactly what to say on every call — in real time, before the prospect hangs up.
+        </p>
+
+        <!-- Position -->
+        <table class="pos-box" width="100%" cellpadding="0" cellspacing="0" style="background:#1a1025;border:1px solid #3d1f70;border-radius:10px;margin-bottom:16px;">
+          <tr><td style="padding:18px 22px;">
+            <p class="label" style="margin:0 0 4px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#666666;font-weight:600;">Your position</p>
+            <p style="margin:0;font-size:42px;font-weight:900;line-height:1;background:linear-gradient(135deg,#814ac8,#df7afe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:#814ac8;">#${position}</p>
+          </td></tr>
+        </table>
+
+        <!-- Referral -->
+        <table class="ref-box" width="100%" cellpadding="0" cellspacing="0" style="background:#1a1025;border:1px solid #3d1f70;border-radius:10px;margin-bottom:28px;">
+          <tr><td style="padding:18px 22px;">
+            <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#c084f5;">Move up the list →</p>
+            <p class="sub" style="margin:0 0 12px;font-size:13px;color:#999999;line-height:1.5;">Share your link. Every signup through it bumps you higher.</p>
+            <p class="ref-url" style="margin:0 0 12px;background:#0d0a14;border:1px solid #2a1a3e;border-radius:6px;padding:9px 12px;font-size:11px;color:#c084f5;font-family:monospace;word-break:break-all;">${referralUrl}</p>
+            <a href="${referralUrl}" style="display:inline-block;background:linear-gradient(135deg,#814ac8,#df7afe);color:#ffffff;text-decoration:none;border-radius:100px;padding:10px 22px;font-size:13px;font-weight:700;">Share your link</a>
+          </td></tr>
+        </table>
+
+        <!-- What's next -->
+        <p class="label" style="margin:0 0 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#666666;">What happens next</p>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td class="item" style="padding:9px 0;border-bottom:1px solid #222222;font-size:13px;color:#aaaaaa;">
+            <span style="color:#814ac8;font-weight:700;">→</span>&nbsp;&nbsp;App preview sent before anyone else
+          </td></tr>
+          <tr><td class="item" style="padding:9px 0;border-bottom:1px solid #222222;font-size:13px;color:#aaaaaa;">
+            <span style="color:#814ac8;font-weight:700;">→</span>&nbsp;&nbsp;Early access 2 weeks before public launch
+          </td></tr>
+          <tr><td class="item" style="padding:9px 0;font-size:13px;color:#aaaaaa;">
+            <span style="color:#814ac8;font-weight:700;">→</span>&nbsp;&nbsp;Founding member discount locked in for life
+          </td></tr>
+        </table>
+
+      </td></tr>
+      <!-- Footer inside card -->
+      <tr><td style="padding:24px 32px 28px;text-align:center;">
+        <p class="footer" style="margin:0;font-size:11px;color:#3a3a3a;">You signed up at <a href="${APP_URL}" style="color:#814ac8;text-decoration:none;">pitchr.org</a> · © 2026 Pitchr</p>
+      </td></tr>
+    </table>
+
   </td></tr>
 
 </table>
