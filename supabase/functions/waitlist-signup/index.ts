@@ -30,7 +30,7 @@ function positionSvg(pos: number): string {
   return `<p style="margin:0;font-size:42px;font-weight:700;line-height:1.1;font-family:'Clash Display',-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:linear-gradient(135deg,#814ac8,#df7afe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:#814ac8;">#${pos}</p>`;
 }
 
-const PITCHR_SVG = `<span style="font-family:'Clash Display',-apple-system,BlinkMacSystemFont,Arial,sans-serif;font-size:22px;font-weight:700;letter-spacing:2px;display:inline-block;background:linear-gradient(135deg,#814ac8,#df7afe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:#814ac8;">PITCHR</span>`;
+const PITCHR_SVG = `<img src="${APP_URL}/pitchr-email-logo.png" alt="PITCHR" width="140" height="30" style="display:block;border:0;outline:none;" />`;
 
 function buildWelcomeEmail(firstName: string, position: number, referralCode: string): string {
   const referralUrl = `${APP_URL}?ref=${referralCode}`;
