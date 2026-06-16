@@ -11,7 +11,7 @@
   z-index: 100;
   background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(129, 74, 200, 0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   padding: 16px 48px;
   display: flex;
   align-items: center;
@@ -32,8 +32,8 @@
   flex-shrink: 0;
 }
 .mplan__back:hover {
-  border-color: #814ac8;
-  color: #df7afe;
+  border-color: #111111;
+  color: #555555;
 }
 
 .mplan__header-title {
@@ -44,7 +44,7 @@
 }
 
 .mplan__badge {
-  background: linear-gradient(135deg, #814ac8, #df7afe);
+  background: linear-gradient(135deg, #111111, #555555);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -58,7 +58,7 @@
   font-size: 18px;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #fff 0%, #df7afe 100%);
+  background: linear-gradient(135deg, #fff 0%, #555555 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -74,7 +74,7 @@
 .mplan__nav {
   display: flex;
   gap: 0;
-  border-bottom: 1px solid rgba(129, 74, 200, 0.18);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.10);
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(12px);
   padding: 0 48px;
@@ -103,14 +103,14 @@
 }
 .mplan__nav-btn--active {
   color: #fff;
-  border-bottom-color: #814ac8;
+  border-bottom-color: #111111;
 }
 
 .mplan__nav-num {
   font-size: 22px;
   font-weight: 900;
   line-height: 1;
-  background: linear-gradient(135deg, #814ac8, #df7afe);
+  background: linear-gradient(135deg, #111111, #555555);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -140,7 +140,7 @@
   color: rgba(255, 255, 255, 0.3);
 }
 .mplan__nav-btn--active .mplan__nav-sub {
-  color: rgba(223, 122, 254, 0.6);
+  color: rgba(0, 0, 0, 0.35);
 }
 
 .mplan__body {
@@ -159,13 +159,13 @@
   gap: 16px;
   margin-bottom: 32px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(129, 74, 200, 0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .mplan__section-num {
   font-size: 48px;
   font-weight: 900;
-  background: linear-gradient(135deg, #814ac8, #df7afe);
+  background: linear-gradient(135deg, #111111, #555555);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -201,7 +201,7 @@
   transition: border-color 0.2s;
 }
 .mplan__video-card:hover {
-  border-color: rgba(129, 74, 200, 0.3);
+  border-color: rgba(0, 0, 0, 0.18);
 }
 
 .mplan__video-card-header {
@@ -215,7 +215,7 @@
 .mplan__video-num {
   font-size: 32px;
   font-weight: 900;
-  background: linear-gradient(135deg, #814ac8, #df7afe);
+  background: linear-gradient(135deg, #111111, #555555);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -251,9 +251,9 @@
 }
 
 .mplan__tag--target {
-  background: rgba(129, 74, 200, 0.15);
-  color: #df7afe;
-  border: 1px solid rgba(129, 74, 200, 0.3);
+  background: rgba(0, 0, 0, 0.09);
+  color: #555555;
+  border: 1px solid rgba(0, 0, 0, 0.18);
 }
 
 .mplan__tag--cta {
@@ -263,7 +263,7 @@
 }
 
 .mplan__tag--platform { border: none; font-weight: 700; }
-.mplan__tag--instagram { background: rgba(223, 122, 254, 0.15); color: #df7afe; }
+.mplan__tag--instagram { background: rgba(0, 0, 0, 0.09); color: #555555; }
 .mplan__tag--tiktok { background: rgba(57, 211, 83, 0.1); color: #39d353; }
 
 .mplan__video-script {
@@ -291,8 +291,8 @@
 }
 
 .mplan__script-line--avatar .mplan__script-label {
-  background: rgba(129, 74, 200, 0.2);
-  color: #df7afe;
+  background: rgba(0, 0, 0, 0.12);
+  color: #555555;
 }
 
 .mplan__script-line--screen .mplan__script-label {
@@ -331,13 +331,13 @@
   transition: border-color 0.2s;
 }
 .mplan__hook:hover {
-  border-color: rgba(129, 74, 200, 0.3);
+  border-color: rgba(0, 0, 0, 0.18);
 }
 
 .mplan__hook-num {
   font-size: 12px;
   font-weight: 700;
-  color: rgba(129, 74, 200, 0.7);
+  color: rgba(0, 0, 0, 0.40);
   flex-shrink: 0;
   min-width: 24px;
   margin-top: 1px;
@@ -393,7 +393,7 @@
 
 .mplan__month-card {
   background: #0a0a0a;
-  border: 1px solid rgba(129, 74, 200, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 12px;
   padding: 20px;
 }
@@ -401,7 +401,7 @@
 .mplan__month-label {
   font-size: 13px;
   font-weight: 700;
-  background: linear-gradient(135deg, #814ac8, #df7afe);
+  background: linear-gradient(135deg, #111111, #555555);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -449,7 +449,7 @@
 .mplan__cta-primary {
   font-size: 13px;
   font-weight: 600;
-  color: #df7afe;
+  color: #555555;
 }
 
 .mplan__cta-secondary {
@@ -465,7 +465,7 @@
 
 .mplan__cta-script-card {
   background: #0a0a0a;
-  border: 1px solid rgba(129, 74, 200, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 12px;
   padding: 20px;
 }
@@ -473,7 +473,7 @@
 .mplan__cta-script-label {
   font-size: 11px;
   font-weight: 700;
-  color: rgba(129, 74, 200, 0.8);
+  color: rgba(0, 0, 0, 0.45);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 10px;

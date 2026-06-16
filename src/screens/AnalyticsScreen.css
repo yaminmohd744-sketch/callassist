@@ -747,6 +747,24 @@
   align-items: center;
 }
 
+/* ─── Dark-mode: permanent white glow on stats and chart cards ──────────── */
+
+[data-theme="dark"] .analytics__stat-card {
+  box-shadow: 0 0 36px rgba(255, 255, 255, 0.16), 0 4px 16px rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .analytics__stat-card:hover {
+  box-shadow: 0 0 48px rgba(255, 255, 255, 0.24), 0 6px 24px rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .analytics__chart-card {
+  box-shadow: 0 0 36px rgba(255, 255, 255, 0.12), 0 4px 16px rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .analytics__chart-card:hover {
+  box-shadow: 0 0 48px rgba(255, 255, 255, 0.20), 0 6px 24px rgba(255, 255, 255, 0.10);
+}
+
 .analytics__team-input {
   flex: 1;
   background: var(--color-bg-elevated);

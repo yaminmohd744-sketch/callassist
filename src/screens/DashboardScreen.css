@@ -552,3 +552,13 @@
   }
 }
 
+/* ─── Dark-mode: permanent white glow on stat cards only ─────────────────── */
+
+[data-theme="dark"] .dashboard__stat-card {
+  box-shadow: 0 0 36px rgba(255, 255, 255, 0.16), 0 4px 16px rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .dashboard__stat-card:hover {
+  box-shadow: 0 0 48px rgba(255, 255, 255, 0.24), 0 6px 24px rgba(255, 255, 255, 0.14);
+}
+

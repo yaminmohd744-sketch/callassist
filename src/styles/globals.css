@@ -29,7 +29,9 @@ button {
   border: none;
   background: none;
   color: inherit;
+  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
 
 input, textarea, select, pre {
   font-family: var(--font-display);

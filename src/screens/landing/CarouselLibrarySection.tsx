@@ -464,17 +464,14 @@ function injectFonts() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 const C = {
-  black:     '#ffffff',
-  surface:   '#f7f7f7',
-  elevated:  '#efefef',
-  purple:    '#111111',
-  magenta:   '#111111',
-  nearWhite: '#111111',
-  white:     '#ffffff',
-  green:     '#16a34a',
-  red:       '#dc2626',
-  grad:      'linear-gradient(135deg, #111111 0%, #333333 100%)',
-  gradDark:  'linear-gradient(135deg, #ffffff 0%, #efefef 50%, #111111 100%)',
+  white:    '#ffffff',
+  surface:  '#f8f8f8',
+  elevated: '#f0f0f0',
+  black:    '#0a0a0a',
+  green:    '#16a34a',
+  red:      '#dc2626',
+  grad:     'linear-gradient(135deg, #0a0a0a 0%, #2d2d2d 100%)',
+  gradDark: 'linear-gradient(135deg, #0a0a0a 0%, #1e1e1e 50%, #3a3a3a 100%)',
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -483,7 +480,7 @@ const C = {
 
 function getBg(bg: Slide['bg']): string {
   switch (bg) {
-    case 'black':       return C.black;
+    case 'black':       return C.white;
     case 'surface':     return C.surface;
     case 'elevated':    return C.elevated;
     case 'grad':        return C.grad;
@@ -508,7 +505,7 @@ function G({ children }: { children: React.ReactNode }) {
 }
 
 // Big decorative ambient glow blob
-function Glow({ x, y, size = 480, color = C.purple, opacity = 0.28 }: {
+function Glow({ x, y, size = 480, color = C.black, opacity = 0.28 }: {
   x: string; y: string; size?: number; color?: string; opacity?: number;
 }) {
   return (
@@ -528,9 +525,9 @@ function Tag({ children }: { children: React.ReactNode }) {
       padding: '12px 28px', borderRadius: '100px',
       fontFamily: "'Clash Display', system-ui, sans-serif", fontSize: '20px', fontWeight: 700,
       letterSpacing: '0.07em', textTransform: 'uppercase',
-      color: C.magenta,
-      background: 'rgba(124,58,237,0.15)',
-      border: '1px solid rgba(124,58,237,0.35)',
+      color: C.black,
+      background: 'rgba(10,10,10,0.06)',
+      border: '1px solid rgba(10,10,10,0.15)',
       width: 'fit-content', zIndex: 1,
     }}>{children}</div>
   );
@@ -557,18 +554,18 @@ function Divider() {
 // Dark card container
 function Card({ children, variant = 'default' }: { children: React.ReactNode; variant?: 'default' | 'purple' | 'mono' | 'red' | 'green' }) {
   const borderColor = {
-    default: 'rgba(255,255,255,0.07)',
-    purple:  'rgba(124,58,237,0.4)',
-    mono:    'rgba(255,255,255,0.06)',
-    red:     'rgba(255,68,68,0.35)',
-    green:   'rgba(57,211,83,0.35)',
+    default: 'rgba(10,10,10,0.10)',
+    purple:  'rgba(10,10,10,0.22)',
+    mono:    'rgba(10,10,10,0.07)',
+    red:     'rgba(220,38,38,0.30)',
+    green:   'rgba(22,163,74,0.30)',
   }[variant];
   const bg = {
-    default: 'rgba(255,255,255,0.04)',
-    purple:  'rgba(124,58,237,0.14)',
-    mono:    'rgba(255,255,255,0.03)',
-    red:     'rgba(255,68,68,0.08)',
-    green:   'rgba(57,211,83,0.08)',
+    default: 'rgba(10,10,10,0.03)',
+    purple:  'rgba(10,10,10,0.06)',
+    mono:    'rgba(10,10,10,0.02)',
+    red:     'rgba(220,38,38,0.06)',
+    green:   'rgba(22,163,74,0.06)',
   }[variant];
   return (
     <div style={{
@@ -579,7 +576,7 @@ function Card({ children, variant = 'default' }: { children: React.ReactNode; va
 }
 
 // Card section label (THEY SAY / SAY THIS etc.)
-function CardLabel({ children, color = C.magenta }: { children: React.ReactNode; color?: string }) {
+function CardLabel({ children, color = C.black }: { children: React.ReactNode; color?: string }) {
   return (
     <div style={{
       fontFamily: "'Clash Display', system-ui, sans-serif", fontSize: '16px', fontWeight: 700,
@@ -631,9 +628,9 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
   }, []);
 
   const isGrad    = slide.bg === 'grad' || slide.bg === 'purple-dark';
-  const textPrimary = C.nearWhite;
-  const textMuted   = 'rgba(240,235,255,0.55)';
-  const textBody    = isGrad ? 'rgba(255,255,255,0.82)' : 'rgba(240,235,255,0.72)';
+  const textPrimary = isGrad ? '#ffffff' : C.black;
+  const textMuted   = isGrad ? 'rgba(255,255,255,0.45)' : 'rgba(10,10,10,0.45)';
+  const textBody    = isGrad ? 'rgba(255,255,255,0.80)' : 'rgba(10,10,10,0.70)';
 
   // Shared root canvas
   const root: React.CSSProperties = {
@@ -654,9 +651,7 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
       position: 'absolute', top: '56px', right: '72px',
       fontFamily: "'Clash Display', system-ui, sans-serif", fontWeight: 800, fontSize: '28px',
       letterSpacing: '0.08em', textTransform: 'uppercase', zIndex: 2,
-      background: C.grad,
-      WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-      backgroundClip: 'text',
+      color: isGrad ? C.white : C.black,
     }}>Pitchr</div>
   );
 
@@ -665,7 +660,7 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
     <div style={{
       position: 'absolute', bottom: '56px', right: '72px',
       fontFamily: "'Fragment Mono', monospace", fontSize: '20px',
-      color: isGrad ? 'rgba(255,255,255,0.22)' : 'rgba(240,235,255,0.18)',
+      color: isGrad ? 'rgba(255,255,255,0.30)' : 'rgba(10,10,10,0.25)',
       zIndex: 2,
     }}>{index + 1} / {total}</div>
   );
@@ -695,7 +690,7 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: '10px',
               padding: '24px 60px', borderRadius: '100px',
-              background: C.white, color: C.purple,
+              background: C.white, color: C.black,
               fontFamily: "'Clash Display', system-ui, sans-serif", fontSize: '28px', fontWeight: 800,
               letterSpacing: '-0.01em', marginTop: '8px',
             }}>Join the Waitlist →</div>
@@ -711,15 +706,15 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
     return (
       <div ref={wrapRef} style={{ width: '100%', aspectRatio: '1', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}>
         <div style={root}>
-          <Glow x="-160px" y="-120px" size={520} color={C.purple} opacity={0.32} />
-          <Glow x="680px" y="680px" size={400} color={C.magenta} opacity={0.18} />
+          <Glow x="-160px" y="-120px" size={520} color={C.black} opacity={0.04} />
+          <Glow x="680px" y="680px" size={400} color={C.black} opacity={0.03} />
           {brand}{slideNum}
           {/* Giant decorative quote or symbol */}
           <div style={{
             position: 'absolute', bottom: '60px', left: '72px',
             fontFamily: "'Clash Display', system-ui, sans-serif", fontWeight: 800,
             fontSize: '320px', lineHeight: 1, opacity: 0.04,
-            color: C.white, userSelect: 'none', zIndex: 0,
+            color: C.black, userSelect: 'none', zIndex: 0,
           }}>%</div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 1, gap: '20px' }}>
             <Divider />
@@ -746,7 +741,7 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
     return (
       <div ref={wrapRef} style={{ width: '100%', aspectRatio: '1', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}>
         <div style={root}>
-          <Glow x="-100px" y="-100px" size={500} color={C.purple} opacity={0.28} />
+          <Glow x="-100px" y="-100px" size={500} color={C.black} opacity={0.04} />
           {brand}{slideNum}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 1, gap: '16px' }}>
             <div style={{ fontFamily: "'Clash Display', system-ui, sans-serif", fontSize: '22px', fontWeight: 600, color: textMuted, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{slide.headline}</div>
@@ -769,13 +764,13 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
     return (
       <div ref={wrapRef} style={{ width: '100%', aspectRatio: '1', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}>
         <div style={root}>
-          <Glow x="-120px" y="-80px" size={440} color={C.purple} opacity={0.22} />
+          <Glow x="-120px" y="-80px" size={440} color={C.black} opacity={0.04} />
           {brand}{slideNum}
           {slide.num !== undefined && <NumBadge n={slide.num} />}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 1, gap: '20px', marginTop: slide.num !== undefined ? '24px' : 0 }}>
             {/* They Say card */}
             <Card variant="mono">
-              <CardLabel color="rgba(240,235,255,0.38)">They say</CardLabel>
+              <CardLabel color="rgba(10,10,10,0.40)">They say</CardLabel>
               <div style={{
                 fontFamily: "'Clash Display', system-ui, sans-serif", fontWeight: 700,
                 fontSize: '46px', lineHeight: 1.2, color: textPrimary,
@@ -785,14 +780,14 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
             {/* They Mean */}
             {slide.meaning && (
               <Card variant="default">
-                <CardLabel color="rgba(240,235,255,0.38)">They mean</CardLabel>
+                <CardLabel color="rgba(10,10,10,0.40)">They mean</CardLabel>
                 <div style={{ fontFamily: "'Clash Display', system-ui, sans-serif", fontWeight: 600, fontSize: '34px', lineHeight: 1.45, color: textBody }}>{slide.meaning}</div>
               </Card>
             )}
             {/* Say This */}
             {slide.response && (
               <Card variant="purple">
-                <CardLabel color={C.magenta}>Say this instead</CardLabel>
+                <CardLabel color={C.black}>Say this instead</CardLabel>
                 <div style={{ fontFamily: "'Clash Display', system-ui, sans-serif", fontWeight: 700, fontSize: '34px', lineHeight: 1.45, color: textPrimary }}>{slide.response}</div>
               </Card>
             )}
@@ -807,7 +802,7 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
     return (
       <div ref={wrapRef} style={{ width: '100%', aspectRatio: '1', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}>
         <div style={root}>
-          <Glow x="-100px" y="-80px" size={440} color={C.purple} opacity={0.2} />
+          <Glow x="-100px" y="-80px" size={440} color={C.black} opacity={0.04} />
           {brand}{slideNum}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 1, gap: '32px' }}>
             {slide.headline && (
@@ -836,7 +831,7 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
     return (
       <div ref={wrapRef} style={{ width: '100%', aspectRatio: '1', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}>
         <div style={root}>
-          <Glow x="-100px" y="-80px" size={440} color={C.purple} opacity={0.22} />
+          <Glow x="-100px" y="-80px" size={440} color={C.black} opacity={0.04} />
           {brand}{slideNum}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 1, gap: '24px' }}>
             {slide.headline && (
@@ -869,8 +864,8 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
   return (
     <div ref={wrapRef} style={{ width: '100%', aspectRatio: '1', position: 'relative', overflow: 'hidden', borderRadius: '20px' }}>
       <div style={root}>
-        <Glow x="-140px" y="-100px" size={520} color={C.purple} opacity={isGrad ? 0 : 0.26} />
-        {slide.bg === 'black' && <Glow x="640px" y="700px" size={380} color={C.magenta} opacity={0.14} />}
+        <Glow x="-140px" y="-100px" size={520} color={C.black} opacity={isGrad ? 0 : 0.04} />
+        {slide.bg === 'black' && <Glow x="640px" y="700px" size={380} color={C.black} opacity={0.03} />}
         {brand}{slideNum}
 
         {slide.num !== undefined && <NumBadge n={slide.num} />}
@@ -899,7 +894,7 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
 
           {/* Sub-text / italic */}
           {slide.sub && !slide.body && (
-            <div style={{ fontFamily: "'Clash Display', system-ui, sans-serif", fontWeight: 700, fontSize: '36px', fontStyle: 'italic', color: isGrad ? 'rgba(255,255,255,0.65)' : C.magenta, lineHeight: 1.4 }}>{slide.sub}</div>
+            <div style={{ fontFamily: "'Clash Display', system-ui, sans-serif", fontWeight: 700, fontSize: '36px', fontStyle: 'italic', color: isGrad ? 'rgba(255,255,255,0.65)' : 'rgba(10,10,10,0.55)', lineHeight: 1.4 }}>{slide.sub}</div>
           )}
 
           {/* Body */}

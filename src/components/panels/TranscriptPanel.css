@@ -1,13 +1,18 @@
 .transcript-panel {
   display: flex;
   flex-direction: column;
-  background: rgba(10, 7, 20, 0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-right: 1px solid var(--color-border-subtle);
+  background: #ffffff;
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
   width: var(--panel-left-width);
   flex-shrink: 0;
   overflow: hidden;
+}
+
+[data-theme="dark"] .transcript-panel {
+  background: rgba(10, 7, 20, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right-color: var(--color-border-subtle);
 }
 
 .transcript-panel__header {

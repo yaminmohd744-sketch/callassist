@@ -24,7 +24,11 @@
   padding: var(--space-8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 8px 64px rgba(129, 74, 200, 0.4), 0 24px 80px rgba(223, 122, 254, 0.15), 0 2px 16px rgba(129, 74, 200, 0.25);
+  box-shadow: 0 8px 64px rgba(0, 0, 0, 0.18), 0 2px 16px rgba(0, 0, 0, 0.10);
+}
+
+[data-theme="dark"] .precall__card {
+  box-shadow: 0 8px 64px rgba(255, 255, 255, 0.14), 0 2px 16px rgba(255, 255, 255, 0.07);
 }
 
 .precall__header {
@@ -57,10 +61,11 @@
   font-size: var(--font-size-md);
   font-weight: 900;
   letter-spacing: 0.06em;
-  background: linear-gradient(135deg, #814ac8, #df7afe);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #111111;
+}
+
+[data-theme="dark"] .precall__logo {
+  color: #ffffff;
 }
 
 .precall__title {

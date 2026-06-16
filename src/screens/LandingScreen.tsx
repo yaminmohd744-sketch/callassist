@@ -270,6 +270,17 @@ function WinLogo() {
 
 
 export function LandingScreen({ onDownload, onWaitlist: _onWaitlist, onMarketingPlan }: LandingScreenProps) {
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('pitchr-theme');
+    if (saved) return saved === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('pitchr-theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
+
   const [showWaitlist, setShowWaitlist]         = useState(false);
   const openWaitlist = () => setShowWaitlist(true);
   const [visibleFrames, setVisibleFrames]       = useState(1);
@@ -494,6 +505,14 @@ export function LandingScreen({ onDownload, onWaitlist: _onWaitlist, onMarketing
         )}
 
         <div className="lp__nav-actions">
+          <button
+            className="lp__theme-toggle"
+            onClick={() => setIsDark(d => !d)}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDark ? '☀' : '☽'}
+          </button>
           <button
             className="lp__win-btn lp__nav-cta-win"
             onClick={onDownload}

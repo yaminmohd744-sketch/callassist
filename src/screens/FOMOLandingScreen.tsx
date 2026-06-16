@@ -185,6 +185,17 @@ function PreviewGate({ onUnlock }: { onUnlock: () => void }) {
 }
 
 export function FOMOLandingScreen({ onUnlock }: { onUnlock?: () => void }) {
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('pitchr-theme');
+    if (saved) return saved === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('pitchr-theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
+
   return (
     <div className="fl">
 
@@ -198,7 +209,17 @@ export function FOMOLandingScreen({ onUnlock }: { onUnlock?: () => void }) {
       {/* Nav */}
       <nav className="fl__nav">
         <div className="fl__nav-logo">PITCHR</div>
-        <div className="fl__nav-tag">Early Access</div>
+        <div className="fl__nav-right">
+          <div className="fl__nav-tag">Early Access</div>
+          <button
+            className="fl__theme-toggle"
+            onClick={() => setIsDark(d => !d)}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDark ? '☀' : '☽'}
+          </button>
+        </div>
       </nav>
 
       {/* Hero */}
