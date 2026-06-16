@@ -98,14 +98,15 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US', sy
   const [interimText, setInterimText]   = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const wsRef             = useRef<WebSocket | null>(null);
-  const watchdogTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef       = useRef<MediaStream | null>(null);
-  const wsrRef          = useRef<WSR | null>(null); // Web Speech Recognition fallback
-  const activeRef       = useRef(false);
-  const audioCtxRef     = useRef<AudioContext | null>(null);
-  const sysStreamRef    = useRef<MediaStream | null | undefined>(systemAudioStream);
+  const wsRef               = useRef<WebSocket | null>(null);
+  const watchdogTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mediaRecorderRef    = useRef<MediaRecorder | null>(null);
+  const streamRef           = useRef<MediaStream | null>(null);
+  const wsrRef              = useRef<WSR | null>(null); // Web Speech Recognition fallback
+  const activeRef           = useRef(false);
+  const audioCtxRef         = useRef<AudioContext | null>(null);
+  const sysStreamRef        = useRef<MediaStream | null | undefined>(systemAudioStream);
+  const wsrNetworkErrRef    = useRef(0); // consecutive Web Speech network errors
   const onFinalRef      = useRef(onFinalTranscript);
   useLayoutEffect(() => { onFinalRef.current = onFinalTranscript; }, [onFinalTranscript]);
   useLayoutEffect(() => { sysStreamRef.current = systemAudioStream; }, [systemAudioStream]);
@@ -162,6 +163,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US', sy
     recognition.lang           = language;
 
     recognition.onresult = (e) => {
+      wsrNetworkErrRef.current = 0; // reset on any successful result
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
         if (r.isFinal) {
@@ -178,13 +180,22 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US', sy
       if (!activeRef.current || wsrRef.current !== recognition) return;
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
         setIsListening(false);
-        setErrorMessage('Microphone access denied — allow mic in your OS settings.');
+        setErrorMessage('Microphone access denied — allow mic in System Preferences > Privacy > Microphone.');
       } else if (e.error === 'audio-capture') {
         setIsListening(false);
         setErrorMessage('No microphone found — plug one in and try again.');
       } else if (e.error === 'network') {
-        // Network errors are transient — the onend handler will auto-restart.
-        // Don't kill isListening or show an error; let it silently retry.
+        // In Electron production builds, webkitSpeechRecognition always returns
+        // 'network' because Google's API keys aren't bundled. After 3 consecutive
+        // failures, stop retrying and show a clear error so the user isn't stuck
+        // staring at "Listening" with nothing happening.
+        wsrNetworkErrRef.current += 1;
+        if (wsrNetworkErrRef.current >= 3) {
+          setIsListening(false);
+          setErrorMessage('Speech recognition unavailable — microphone is active but the transcription service could not connect. Ensure Deepgram is configured in your Supabase project.');
+          wsrRef.current = null;
+          try { recognition.abort(); } catch { /* ignore */ }
+        }
       } else if (e.error === 'aborted') {
         // Aborted by us (stopListening) — ignore.
       } else {
@@ -235,6 +246,8 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US', sy
 
     audioCtxRef.current?.close().catch(() => {});
     audioCtxRef.current = null;
+
+    wsrNetworkErrRef.current = 0;
 
     setIsListening(false);
     setInterimText('');
@@ -332,6 +345,9 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US', sy
           try {
             const ctx = new AudioContext();
             audioCtxRef.current = ctx;
+            // AudioContext starts suspended in many browsers due to autoplay policy.
+            // Resume it immediately so audio actually flows through the graph.
+            if (ctx.state === 'suspended') await ctx.resume();
             const dest = ctx.createMediaStreamDestination();
             ctx.createMediaStreamSource(stream).connect(dest);
             ctx.createMediaStreamSource(sysStream!).connect(dest);

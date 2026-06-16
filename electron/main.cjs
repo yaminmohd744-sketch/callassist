@@ -105,7 +105,7 @@ function exchangeZoomCode(code, clientId, clientSecret) {
 // Enable Chromium's speech recognition service inside Electron.
 // Without these flags webkitSpeechRecognition fires a 'network' error
 // because the renderer can't reach Google's speech endpoint.
-app.commandLine.appendSwitch('enable-features', 'WebSpeechAPI,AudioServiceOutOfProcess');
+app.commandLine.appendSwitch('enable-features', 'WebSpeechAPI');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 const isDev = !!process.defaultApp || process.env.NODE_ENV !== 'production';
