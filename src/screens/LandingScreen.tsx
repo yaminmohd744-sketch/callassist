@@ -11,7 +11,6 @@ import './LandingScreen.css';
 
 interface LandingScreenProps {
   onDownload: () => void;
-  onDownloadMac?: () => void;
   onWaitlist?: () => void;
   onMarketingPlan?: () => void;
 }
@@ -268,16 +267,9 @@ function WinLogo() {
   );
 }
 
-function MacLogo() {
-  return (
-    <svg width="15" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ flexShrink: 0 }}>
-      <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.54 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.029 1.52-.065 2.09-.987 3.925-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/>
-    </svg>
-  );
-}
 
 
-export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitlist, onMarketingPlan }: LandingScreenProps) {
+export function LandingScreen({ onDownload, onWaitlist: _onWaitlist, onMarketingPlan }: LandingScreenProps) {
   const [showWaitlist, setShowWaitlist]         = useState(false);
   const openWaitlist = () => setShowWaitlist(true);
   const [visibleFrames, setVisibleFrames]       = useState(1);
@@ -502,16 +494,12 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
         )}
 
         <div className="lp__nav-actions">
-          <div className="lp__nav-cta-win lp__nav-dl-wrap">
-            <button className="lp__win-btn" onClick={onDownload}>
-              <WinLogo /> Windows
-            </button>
-            {onDownloadMac && (
-              <button className="lp__win-btn lp__win-btn--mac" onClick={onDownloadMac}>
-                <MacLogo /> macOS
-              </button>
-            )}
-          </div>
+          <button
+            className="lp__win-btn lp__nav-cta-win"
+            onClick={onDownload}
+          >
+            <WinLogo /> Get for Windows
+          </button>
           <button className="lp__nav-burger" onClick={() => setMenuOpen(o => !o)} aria-label="menu">
             <span /><span /><span />
           </button>
@@ -624,16 +612,9 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
           </div>
 
           <div className="lp__sv-cta">
-            <div className="lp__dl-btns">
-              <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
-                <WinLogo /> Get for Windows
-              </button>
-              {onDownloadMac && (
-                <button className="lp__win-btn lp__win-btn--lg lp__win-btn--mac" onClick={onDownloadMac}>
-                  <MacLogo /> Get for Mac
-                </button>
-              )}
-            </div>
+            <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+              <WinLogo /> Get for Windows
+            </button>
             <p className="lp__sv-cta-note">No credit card · 7-day money-back</p>
           </div>
         </div>
@@ -692,16 +673,9 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
           </div>
 
           <div className="lp__sv-cta">
-            <div className="lp__dl-btns">
-              <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
-                <WinLogo /> Get for Windows
-              </button>
-              {onDownloadMac && (
-                <button className="lp__win-btn lp__win-btn--lg lp__win-btn--mac" onClick={onDownloadMac}>
-                  <MacLogo /> Get for Mac
-                </button>
-              )}
-            </div>
+            <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+              <WinLogo /> Get for Windows
+            </button>
             <p className="lp__sv-cta-note">No credit card · 10 languages from day one</p>
           </div>
         </div>
@@ -712,7 +686,7 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
   // ─── Pricing section view ──────────────────────────────────────────────────
 
   if (activeSection === 'pricing') {
-    return <PricingSection billingCycle={billingCycle} setBillingCycle={setBillingCycle} openFaq={openFaq} setOpenFaq={setOpenFaq} onDownload={onDownload} onDownloadMac={onDownloadMac} nav={nav} />;
+    return <PricingSection billingCycle={billingCycle} setBillingCycle={setBillingCycle} openFaq={openFaq} setOpenFaq={setOpenFaq} onDownload={onDownload} nav={nav} />;
   }
 
   // ─── Download section view ────────────────────────────────────────────────
@@ -726,14 +700,14 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
             <div className="lp__sv-label">DOWNLOAD</div>
             <h2 className="lp__sv-h2">One install.<br />Always ready to sell.</h2>
             <p className="lp__sv-sub">
-              Pitchr is a native desktop app for Windows and Mac. Install it once and it's always a click away —
+              Pitchr is a native Windows desktop app. Install it once and it's always a click away —
               no browser tab, no extension, no lag. Just open and coach.
             </p>
           </div>
 
           <div className="lp__info-grid">
             {[
-              { icon: '◎', title: 'Windows & Mac', desc: 'Built for Windows 10 & 11 and macOS. Installs like any app and runs in the background — no browser needed.' },
+              { icon: '◎', title: 'Windows native', desc: 'Built for Windows 10 & 11. Installs like any app and runs in the background — no browser needed.' },
               { icon: '◈', title: 'Lightweight', desc: 'Minimal CPU and memory footprint. Runs alongside Zoom, Teams, or any call software without slowdown.' },
               { icon: '✦', title: 'Any call type', desc: 'Phone calls, Zoom, Teams, Google Meet — anything you can speak into your microphone.' },
               { icon: '▣', title: 'Always on', desc: 'Stays in your system tray ready to launch. One click and you\'re live before the first ring.' },
@@ -748,7 +722,7 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
 
           <div className="lp__sv-howto">
             {[
-              { num: '01', title: 'Download the app', desc: 'Click Download Free and run the installer. Takes under a minute on Windows or Mac.' },
+              { num: '01', title: 'Download the app', desc: 'Click Download Free and run the installer. Takes under a minute on any Windows 10 or 11 machine.' },
               { num: '02', title: 'Create your account', desc: 'Sign up inside the app in 30 seconds. No credit card required for the free plan.' },
               { num: '03', title: 'Allow microphone', desc: 'Grant microphone permission once. Pitchr never records without your explicit start.' },
               { num: '04', title: 'Start your call', desc: 'Enter your prospect\'s details, hit Start, and get live coaching the moment they speak.' },
@@ -762,17 +736,10 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
           </div>
 
           <div className="lp__sv-cta">
-            <div className="lp__dl-btns">
-              <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
-                <WinLogo /> Get for Windows
-              </button>
-              {onDownloadMac && (
-                <button className="lp__win-btn lp__win-btn--lg lp__win-btn--mac" onClick={onDownloadMac}>
-                  <MacLogo /> Get for Mac
-                </button>
-              )}
-            </div>
-            <p className="lp__sv-cta-note">No credit card · Windows &amp; Mac · Free to start</p>
+            <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+              <WinLogo /> Get for Windows
+            </button>
+            <p className="lp__sv-cta-note">No credit card · Windows 10 &amp; 11 · Free to start</p>
           </div>
         </div>
       </div>
@@ -951,16 +918,9 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
           </div>
 
           <div className="lp__sv-cta">
-            <div className="lp__dl-btns">
-              <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
-                <WinLogo /> Get for Windows
-              </button>
-              {onDownloadMac && (
-                <button className="lp__win-btn lp__win-btn--lg lp__win-btn--mac" onClick={onDownloadMac}>
-                  <MacLogo /> Get for Mac
-                </button>
-              )}
-            </div>
+            <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
+              <WinLogo /> Get for Windows
+            </button>
             <p className="lp__sv-cta-note">Free plan · No credit card required</p>
           </div>
         </div>
@@ -1073,17 +1033,12 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
           </h1>
           <p className="lp__hero-sub">
             Real-time coaching. Post-call AI analysis. Works on phone calls,
-            Zoom, Teams, Meet - in 10 languages. Windows &amp; Mac desktop app.
+            Zoom, Teams, Meet - in 10 languages. Native Windows desktop app.
           </p>
           <div className="lp__hero-actions">
             <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
               <WinLogo /> Get for Windows
             </button>
-            {onDownloadMac && (
-              <button className="lp__win-btn lp__win-btn--lg lp__win-btn--mac" onClick={onDownloadMac}>
-                <MacLogo /> Get for Mac
-              </button>
-            )}
             <button className="lp__btn lp__btn--ghost" onClick={openWaitlist}>
               Join the waitlist →
             </button>
@@ -1122,7 +1077,7 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
 
       {/* ── Trust bar ── */}
       <div className="lp__trust reveal">
-        <div className="lp__trust-item">✓ Windows &amp; Mac</div>
+        <div className="lp__trust-item">✓ Windows 10 &amp; 11</div>
         <div className="lp__trust-sep" />
         <div className="lp__trust-item">✓ 7-day money-back guarantee</div>
         <div className="lp__trust-sep" />
@@ -1789,10 +1744,7 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>
-            <div className="lp__dl-btns lp__dl-btns--pricing lp__pricing-cta">
-              <button className="lp__win-btn lp__win-btn--outline" onClick={onDownload}><WinLogo /> Windows</button>
-              {onDownloadMac && <button className="lp__win-btn lp__win-btn--outline lp__win-btn--mac" onClick={onDownloadMac}><MacLogo /> Mac</button>}
-            </div>
+            <button className="lp__win-btn lp__win-btn--outline lp__pricing-cta" onClick={onDownload}><WinLogo /> Get for Windows</button>
           </div>
 
           {/* PLUS */}
@@ -1808,10 +1760,7 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>
-            <div className="lp__dl-btns lp__dl-btns--pricing lp__pricing-cta">
-              <button className="lp__win-btn" onClick={onDownload}><WinLogo /> Windows</button>
-              {onDownloadMac && <button className="lp__win-btn lp__win-btn--mac" onClick={onDownloadMac}><MacLogo /> Mac</button>}
-            </div>
+            <button className="lp__win-btn lp__pricing-cta" onClick={onDownload}><WinLogo /> Get for Windows</button>
           </div>
 
           {/* PRO */}
@@ -1826,10 +1775,7 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
                 <li key={i} className="lp__pricing-feature lp__pricing-feature--yes"><span className="lp__pricing-check">✓</span>{f}</li>
               ))}
             </ul>
-            <div className="lp__dl-btns lp__dl-btns--pricing lp__pricing-cta">
-              <button className="lp__win-btn lp__win-btn--outline" onClick={onDownload}><WinLogo /> Windows</button>
-              {onDownloadMac && <button className="lp__win-btn lp__win-btn--outline lp__win-btn--mac" onClick={onDownloadMac}><MacLogo /> Mac</button>}
-            </div>
+            <button className="lp__win-btn lp__win-btn--outline lp__pricing-cta" onClick={onDownload}><WinLogo /> Get for Windows</button>
           </div>
 
         </div>
@@ -1849,16 +1795,11 @@ export function LandingScreen({ onDownload, onDownloadMac, onWaitlist: _onWaitli
           <button className="lp__win-btn lp__win-btn--lg" onClick={onDownload}>
             <WinLogo /> Get for Windows
           </button>
-          {onDownloadMac && (
-            <button className="lp__win-btn lp__win-btn--lg lp__win-btn--mac" onClick={onDownloadMac}>
-              <MacLogo /> Get for Mac
-            </button>
-          )}
           <button className="lp__btn lp__btn--ghost lp__cta-banner-wl" onClick={openWaitlist}>
             Join the waitlist →
           </button>
         </div>
-        <p className="lp__cta-banner-note">No credit card · 7-day money-back · Windows &amp; Mac</p>
+        <p className="lp__cta-banner-note">No credit card · 7-day money-back · Windows 10 &amp; 11</p>
       </section>
 
       {/* ── Footer ── */}

@@ -25,11 +25,10 @@ interface PricingSectionProps {
   openFaq: number | null;
   setOpenFaq: (i: number | null) => void;
   onDownload: () => void;
-  onDownloadMac?: () => void;
   nav: ReactNode;
 }
 
-export function PricingSection({ billingCycle, setBillingCycle, openFaq, setOpenFaq, onDownload, onDownloadMac, nav }: PricingSectionProps) {
+export function PricingSection({ billingCycle, setBillingCycle, openFaq, setOpenFaq, onDownload, nav }: PricingSectionProps) {
   const yearly = billingCycle === 'yearly';
   const PLANS = [
     {
@@ -145,16 +144,12 @@ export function PricingSection({ billingCycle, setBillingCycle, openFaq, setOpen
                   </li>
                 ))}
               </ul>
-              <div className="lp__dl-btns lp__dl-btns--pricing lp__pricing-cta">
-                <button className={`lp__btn lp__btn--${plan.ctaStyle}`} onClick={onDownload}>
-                  Windows
-                </button>
-                {onDownloadMac && (
-                  <button className={`lp__btn lp__btn--${plan.ctaStyle}`} onClick={onDownloadMac}>
-                    Mac
-                  </button>
-                )}
-              </div>
+              <button
+                className={`lp__btn lp__btn--${plan.ctaStyle} lp__pricing-cta`}
+                onClick={onDownload}
+              >
+                {plan.cta}
+              </button>
             </div>
           ))}
         </div>

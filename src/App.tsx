@@ -302,34 +302,16 @@ export function App() {
 
   if (!isElectron && screen === 'preview') {
     const WIN_DOWNLOAD_URL = 'https://github.com/yaminmohd744-sketch/callassist/releases/latest/download/Pitchr-Setup.exe';
-    const MAC_DOWNLOAD_URL = 'https://github.com/yaminmohd744-sketch/callassist/releases/latest/download/Pitchr.dmg';
 
-    const handleDownloadWin = () => {
-      // Try to open already-installed app first; also trigger direct file download
+    const handleDownload = () => {
       const iframe = document.createElement('iframe');
       iframe.style.display = 'none';
       iframe.src = 'pitchr://open';
       document.body.appendChild(iframe);
       setTimeout(() => document.body.removeChild(iframe), 2000);
-      // Trigger the actual .exe download
       const a = document.createElement('a');
       a.href = WIN_DOWNLOAD_URL;
       a.download = 'Pitchr-Setup.exe';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    };
-
-    const handleDownloadMac = () => {
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = 'pitchr://open';
-      document.body.appendChild(iframe);
-      setTimeout(() => document.body.removeChild(iframe), 2000);
-      // Trigger the actual .dmg download
-      const a = document.createElement('a');
-      a.href = MAC_DOWNLOAD_URL;
-      a.download = 'Pitchr.dmg';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -339,8 +321,7 @@ export function App() {
       <>
         <ErrorBoundary>
           <LandingScreen
-            onDownload={handleDownloadWin}
-            onDownloadMac={handleDownloadMac}
+            onDownload={handleDownload}
             onMarketingPlan={() => setScreen('marketing-plan')}
           />
         </ErrorBoundary>

@@ -9,37 +9,6 @@ permissions:
   contents: write
 
 jobs:
-  build-mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - run: npm ci
-
-      - name: Build Vite + Electron (Mac DMG)
-        run: npx tsc -b && npx vite build && npx electron-builder --mac dmg --publish never
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false
-          SKIP_NOTARIZATION: true
-
-      - name: Find and rename DMG
-        run: |
-          DMG=$(find release -name "*.dmg" ! -name "*.blockmap" | head -1)
-          echo "Found: $DMG"
-          cp "$DMG" release/Pitchr.dmg
-
-      - uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          files: release/Pitchr.dmg
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   build-win:
     runs-on: windows-latest
     steps:
