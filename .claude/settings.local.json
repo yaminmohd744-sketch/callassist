@@ -256,11 +256,24 @@
       "Bash(python3 -m http.server 4444 --bind 127.0.0.1)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:4444/bw-preview.html)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:4444/bw-preview.html)",
-      "Bash(xargs sed -i '' -e 's/#7c3aed/#111111/g' -e 's/#c026d3/#111111/g' -e 's/#6d28d9/#000000/g' -e 's/rgba\\(124, 58, 237/rgba\\(0, 0, 0/g' -e 's/rgba\\(124,58,237/rgba\\(0,0,0/g' -e 's/rgba\\(192, 38, 211/rgba\\(0, 0, 0/g' -e 's/rgba\\(192,38,211/rgba\\(0,0,0/g' -e 's/rgba\\(90,40,180/rgba\\(0,0,0/g' -e 's/rgba\\(120,30,160/rgba\\(0,0,0/g' -e 's/rgba\\(80,30,170/rgba\\(0,0,0/g' -e 's/rgba\\(110,25,155/rgba\\(0,0,0/g' -e 's/#f0ebff/#111111/g' -e 's/#0a0714/#f7f7f7/g' -e 's/#05030f/#ffffff/g' -e 's/#100c1e/#efefef/g' -e 's/#18132b/#e8e8e8/g')"
+      "Bash(xargs sed -i '' -e 's/#7c3aed/#111111/g' -e 's/#c026d3/#111111/g' -e 's/#6d28d9/#000000/g' -e 's/rgba\\(124, 58, 237/rgba\\(0, 0, 0/g' -e 's/rgba\\(124,58,237/rgba\\(0,0,0/g' -e 's/rgba\\(192, 38, 211/rgba\\(0, 0, 0/g' -e 's/rgba\\(192,38,211/rgba\\(0,0,0/g' -e 's/rgba\\(90,40,180/rgba\\(0,0,0/g' -e 's/rgba\\(120,30,160/rgba\\(0,0,0/g' -e 's/rgba\\(80,30,170/rgba\\(0,0,0/g' -e 's/rgba\\(110,25,155/rgba\\(0,0,0/g' -e 's/#f0ebff/#111111/g' -e 's/#0a0714/#f7f7f7/g' -e 's/#05030f/#ffffff/g' -e 's/#100c1e/#efefef/g' -e 's/#18132b/#e8e8e8/g')",
+      "Bash(pkill -f \"electron\")",
+      "Bash(npm run *)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(sleep 8 && cat /tmp/electron-dev.log | head -40)",
+      "Read(//private/tmp/**)",
+      "Bash(nohup npm run electron:dev)",
+      "Bash(echo \"Started PID $!\")",
+      "Bash(pkill -f \"electron:dev\")",
+      "Bash(lsof -ti:5173)",
+      "Bash(echo \"PID $!\")",
+      "Bash(nohup npm run electron:dev > /tmp/pitchr-dev.log 2>&1 & echo \"PID $!\")",
+      "Bash(awk '{print $1, $2, $11, $12}')"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\callassist\\.claude\\skills",
-      "C:\\Users\\User\\.claude\\skills"
+      "C:\\Users\\User\\.claude\\skills",
+      "/private/tmp"
     ]
   }
 }

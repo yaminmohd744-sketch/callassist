@@ -22,6 +22,7 @@
   z-index: 100;
   background: transparent;
   border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  overflow: visible;
 }
 
 /* Gradient shimmer line at bottom */
@@ -35,9 +36,20 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0,0,0,0.6) 25%,
-    rgba(0,0,0,0.7) 55%,
-    rgba(0,0,0,0.4) 80%,
+    rgba(0,0,0,0.5) 25%,
+    rgba(0,0,0,0.6) 55%,
+    rgba(0,0,0,0.3) 80%,
+    transparent 100%
+  );
+}
+
+[data-theme="dark"] .app-shell__topnav::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.12) 25%,
+    rgba(255,255,255,0.18) 55%,
+    rgba(255,255,255,0.08) 80%,
     transparent 100%
   );
 }
@@ -79,12 +91,22 @@
 
 .app-shell__tab:hover {
   color: var(--color-text-secondary);
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .app-shell__tab--active {
   color: var(--color-text-primary);
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+[data-theme="dark"] .app-shell__tab:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="dark"] .app-shell__tab--active {
+  background: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 6px 28px rgba(255, 255, 255, 0.40), 0 2px 8px rgba(255, 255, 255, 0.20);
 }
 
 /* Solid accent underline on active tab */
@@ -224,6 +246,27 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+}
+
+.app-shell__theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius-pill);
+  background: none;
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text-muted);
+  font-size: 15px;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+  flex-shrink: 0;
+}
+.app-shell__theme-toggle:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+  background: var(--color-bg-elevated);
 }
 
 .app-shell__btn-ghost {

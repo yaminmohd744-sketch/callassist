@@ -13,11 +13,17 @@
   font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: 0.07em;
-  background: linear-gradient(135deg, #814ac8, #df7afe);
+  background: linear-gradient(135deg, #333333, #000000);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   line-height: 1;
+}
+
+[data-theme="dark"] .pitchr-logo__word {
+  background: linear-gradient(135deg, #aaaaaa, #ffffff);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 .pitchr-logo--sm .pitchr-logo__word { font-size: 14px; }

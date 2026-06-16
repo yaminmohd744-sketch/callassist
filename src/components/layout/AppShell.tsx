@@ -68,6 +68,10 @@ export function AppShell({
   } = useAppContext();
   const [langOpen, setLangOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('pitchr-theme');
+    return saved ? saved === 'dark' : false;
+  });
   const [connected, setConnected]   = useState<Set<AccountId>>(() => loadConnected());
   const [pending, setPending]       = useState<Set<AccountId>>(new Set());
   const [connecting, setConnecting] = useState<AccountId | null>(null);
@@ -122,6 +126,17 @@ export function AppShell({
         return next;
       });
     }).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('pitchr-theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
+
+  // Apply saved theme immediately on mount (before first render)
+  useEffect(() => {
+    const saved = localStorage.getItem('pitchr-theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handlePicClick() { picInputRef.current?.click(); }
@@ -215,6 +230,15 @@ export function AppShell({
               </div>
             )}
           </div>
+
+          <button
+            className="app-shell__theme-toggle"
+            onClick={() => setIsDark(d => !d)}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDark ? '☀' : '◗'}
+          </button>
 
           <button className="app-shell__btn-ghost" onClick={onUploadCall}>{t.nav.upload}</button>
           <button className="app-shell__btn-primary" onClick={onStartCall}>{t.nav.newCall}</button>
