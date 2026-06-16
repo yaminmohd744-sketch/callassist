@@ -21,6 +21,7 @@ export interface ElectronAPI {
   onTriggerEndCall:    (callback: () => void) => () => void;
   onOAuthCallback:     (callback: (url: string) => void) => () => void;
   onOAuthCode:         (callback: (code: string) => void) => () => void;
+  startGoogleServer:   () => void;
 }
 
 declare global {

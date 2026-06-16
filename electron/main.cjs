@@ -3,6 +3,43 @@ const path = require('path');
 const http  = require('http');
 const https = require('https');
 
+// ── Google OAuth helpers ──────────────────────────────────────────────────────
+
+const GOOGLE_REDIRECT_URI = 'http://127.0.0.1:3457';
+
+function waitForGoogleCallback() {
+  return new Promise((resolve, reject) => {
+    const server = http.createServer((req, res) => {
+      let code;
+      try {
+        const url = new URL(req.url, GOOGLE_REDIRECT_URI);
+        code = url.searchParams.get('code');
+      } catch { /* ignore */ }
+      const html = '<html><body style="background:#0a0a0a;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
+        (code
+          ? '<p style="font-size:18px">✓ Signed in — you can close this window and return to Pitchr.</p>'
+          : '<p style="font-size:18px">Sign in failed — please try again in Pitchr.</p>') +
+        '</body></html>';
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(html);
+      server.close();
+      if (code) resolve(code); else reject(new Error('google_oauth_cancelled'));
+    });
+    server.listen(3457, '127.0.0.1');
+    server.on('error', reject);
+    setTimeout(() => { server.close(); reject(new Error('google_oauth_timeout')); }, 300_000);
+  });
+}
+
+ipcMain.on('google-start-server', async () => {
+  try {
+    const code = await waitForGoogleCallback();
+    if (mainWindow) mainWindow.webContents.send('oauth-callback-code', code);
+  } catch {
+    // Silently ignore cancellations; the renderer will just stay on the auth screen
+  }
+});
+
 // ── Zoom OAuth helpers ────────────────────────────────────────────────────────
 
 const ZOOM_REDIRECT_URI = 'http://127.0.0.1:3456';

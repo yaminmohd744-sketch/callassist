@@ -8,8 +8,9 @@ interface AuthScreenProps {
   onBack?: () => void;
 }
 
-// Deep-link URI used as the OAuth redirect target in Electron.
-const ELECTRON_REDIRECT_URI = 'pitchr://auth';
+// Local server URI used as the OAuth redirect target in Electron.
+// A one-shot HTTP server on this port catches the code and forwards it via IPC.
+const ELECTRON_REDIRECT_URI = 'http://127.0.0.1:3457';
 
 // Maps Supabase error codes to safe, non-enumerating user-facing messages.
 function safeAuthError(err: { message: string; code?: string }): string {
@@ -95,6 +96,7 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
 
   async function handleGoogle() {
     clearMessages();
+    setLoading(true);
     const { data, error: err } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -102,24 +104,26 @@ export function AuthScreen({ onBack }: AuthScreenProps) {
         skipBrowserRedirect: true,
       },
     });
+    setLoading(false);
     if (err) { setError(safeAuthError(err)); return; }
-    if (data?.url) {
-      // Validate the URL is a safe HTTPS URL before passing it to the system browser.
-      try {
-        const parsed = new URL(data.url);
-        if (parsed.protocol !== 'https:') throw new Error('insecure');
-      } catch {
-        setError('Something went wrong. Please try again.');
-        return;
-      }
-      // Open in system browser so the user's saved Google accounts are visible.
-      if (window.electronAPI?.openExternal) {
-        window.electronAPI.openExternal(data.url);
-      } else {
-        window.open(data.url, '_blank');
-      }
-      // Session is picked up automatically: Electron forwards the pitchr://
-      // deep-link fragment to useAuth via IPC → setSession → onAuthStateChange fires.
+    if (!data?.url) { setError('Something went wrong. Please try again.'); return; }
+    // Validate the URL is a safe HTTPS URL before passing it to the system browser.
+    try {
+      const parsed = new URL(data.url);
+      if (parsed.protocol !== 'https:') throw new Error('insecure');
+    } catch {
+      setError('Something went wrong. Please try again.');
+      return;
+    }
+    if (window.electronAPI) {
+      // Start the local callback server first, then open the browser via the
+      // existing proven openExternal IPC. Server forwards ?code= via IPC →
+      // useAuth calls exchangeCodeForSession automatically.
+      window.electronAPI.startGoogleServer();
+      window.electronAPI.openExternal(data.url);
+      setMessage('A sign-in window has opened in your browser. Complete sign-in there to continue.');
+    } else {
+      window.open(data.url, '_blank');
     }
   }
 
