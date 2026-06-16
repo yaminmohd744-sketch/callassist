@@ -5,24 +5,37 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build-mac:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+
       - run: npm ci
-      - run: npm run electron:build
+
+      - name: Build Vite + Electron (Mac DMG)
+        run: npx tsc -b && npx vite build && npx electron-builder --mac dmg --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
-      - name: Rename Mac artifact
+          SKIP_NOTARIZATION: true
+
+      - name: Find and rename DMG
         run: |
-          DMG=$(ls release/*.dmg | head -1)
+          DMG=$(find release -name "*.dmg" ! -name "*.blockmap" | head -1)
+          echo "Found: $DMG"
           cp "$DMG" release/Pitchr.dmg
+
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_name }}
           files: release/Pitchr.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -31,20 +44,29 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+
       - run: npm ci
-      - run: npm run electron:build
+
+      - name: Build Vite + Electron (Windows)
+        run: npx tsc -b && npx vite build && npx electron-builder --win portable --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
-      - name: Rename Windows artifact
+
+      - name: Find and rename EXE
         shell: pwsh
         run: |
-          $exe = Get-ChildItem release -Filter "*.exe" | Select-Object -First 1
+          $exe = Get-ChildItem release -Recurse -Filter "*.exe" | Where-Object { $_.Name -notlike "*blockmap*" } | Select-Object -First 1
+          Write-Host "Found: $($exe.FullName)"
           Copy-Item $exe.FullName release/Pitchr-Setup.exe
+
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_name }}
           files: release/Pitchr-Setup.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
