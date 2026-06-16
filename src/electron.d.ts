@@ -1,10 +1,16 @@
 import type { AISuggestion, CallStage } from './types';
 
+export interface OverlayTranscriptEntry {
+  speaker: 'rep' | 'prospect';
+  text: string;
+}
+
 export interface OverlayData {
   suggestions: AISuggestion[];
   closeProbability: number;
   callStage: CallStage;
   prospectName: string;
+  transcript?: OverlayTranscriptEntry[];
 }
 
 export interface ElectronAPI {

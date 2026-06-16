@@ -32,6 +32,10 @@ const DEMO_DATA: OverlayData = {
       streaming: false,
     },
   ],
+  transcript: [
+    { speaker: 'rep',      text: 'I wanted to walk you through our pricing options today.' },
+    { speaker: 'prospect', text: 'That sounds interesting — what does the ROI typically look like?' },
+  ],
 };
 
 export function OverlayScreen() {
@@ -47,11 +51,12 @@ export function OverlayScreen() {
     return cleanup;
   }, []);
 
-  const suggestions = data?.suggestions ?? [];
-  const prob        = data?.closeProbability ?? 0;
-  const stage       = data?.callStage ?? 'opener';
-  const name        = data?.prospectName ?? '';
-  const latest      = suggestions.length > 0 ? suggestions[suggestions.length - 1] : null;
+  const suggestions  = data?.suggestions ?? [];
+  const prob         = data?.closeProbability ?? 0;
+  const stage        = data?.callStage ?? 'opener';
+  const name         = data?.prospectName ?? '';
+  const transcript   = data?.transcript ?? [];
+  const latest       = suggestions.length > 0 ? suggestions[suggestions.length - 1] : null;
 
   return (
     <div className="ov">
@@ -59,9 +64,7 @@ export function OverlayScreen() {
       <div className="ov__bar">
         <div className="ov__brand">
           <span className="ov__dot" />
-          <span className="ov__logo">
-            PITCHR
-          </span>
+          <span className="ov__logo">PITCHR</span>
           {name && <span className="ov__prospect">· {name}</span>}
         </div>
 
@@ -85,6 +88,14 @@ export function OverlayScreen() {
             </svg>
           </button>
           <button
+            className="ov__btn-restore"
+            onClick={() => window.electronAPI?.restoreMain()}
+            title="Restore Pitchr"
+            aria-label="Restore Pitchr"
+          >
+            ↗
+          </button>
+          <button
             className="ov__btn-end"
             onClick={() => window.electronAPI?.endCallFromOverlay()}
           >
@@ -93,24 +104,42 @@ export function OverlayScreen() {
         </div>
       </div>
 
-      {/* ── Suggestion row ── */}
       {expanded && (
-        <div className="ov__body">
-          {latest ? (
-            <>
-              <span className="ov__body-label">{TYPE_LABEL[latest.type]}</span>
-              <span className="ov__body-text">
-                {latest.body}
-                {latest.streaming && <span className="ov__cursor">▌</span>}
-              </span>
-            </>
+        <>
+          {/* ── Recent transcript ── */}
+          {transcript.length > 0 ? (
+            <div className="ov__transcript">
+              {transcript.map((entry, i) => (
+                <div key={i} className={`ov__transcript-entry ov__transcript-entry--${entry.speaker}`}>
+                  <span className="ov__transcript-speaker">
+                    {entry.speaker === 'rep' ? 'YOU' : 'THEM'}
+                  </span>
+                  <span className="ov__transcript-text">{entry.text}</span>
+                </div>
+              ))}
+            </div>
           ) : (
-            <>
+            <div className="ov__transcript ov__transcript--idle">
               <span className="ov__body-dot" />
               <span className="ov__body-idle">Listening to your call…</span>
-            </>
+            </div>
           )}
-        </div>
+
+          {/* ── Suggestion row ── */}
+          <div className="ov__body">
+            {latest ? (
+              <>
+                <span className="ov__body-label">{TYPE_LABEL[latest.type]}</span>
+                <span className="ov__body-text">
+                  {latest.body}
+                  {latest.streaming && <span className="ov__cursor">▌</span>}
+                </span>
+              </>
+            ) : (
+              <span className="ov__body-waiting">AI suggestions will appear here as the call progresses</span>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

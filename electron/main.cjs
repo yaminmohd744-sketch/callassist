@@ -1,4 +1,4 @@
-﻿const { app, BrowserWindow, ipcMain, screen, shell } = require('electron');
+﻿const { app, BrowserWindow, ipcMain, screen, shell, systemPreferences } = require('electron');
 const path = require('path');
 const http  = require('http');
 const https = require('https');
@@ -20,7 +20,7 @@ function waitForGoogleCallback() {
           ? '<p style="font-size:18px">✓ Signed in — you can close this window and return to Pitchr.</p>'
           : '<p style="font-size:18px">Sign in failed — please try again in Pitchr.</p>') +
         '</body></html>';
-      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end(html);
       server.close();
       if (code) resolve(code); else reject(new Error('google_oauth_cancelled'));
@@ -52,7 +52,6 @@ function waitForZoomCallback() {
       try {
         const url = new URL(req.url, ZOOM_REDIRECT_URI);
         const code  = url.searchParams.get('code');
-        const error = url.searchParams.get('error');
         const html  = '<html><body style="background:#0a0a0a;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
           (code
             ? '<p style="font-size:18px">✓ Connected to Zoom — you can close this window and return to Pitchr.</p>'
@@ -138,14 +137,15 @@ function createOverlayWindow() {
     return;
   }
 
-  const { width } = screen.getPrimaryDisplay().workAreaSize;
-  const overlayWidth = 500;
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  const overlayWidth = 540;
+  const overlayHeight = 310;
 
   overlayWindow = new BrowserWindow({
     width: overlayWidth,
-    height: 200,
+    height: overlayHeight,
     x: Math.floor((width - overlayWidth) / 2),
-    y: 16,
+    y: Math.floor((height - overlayHeight) / 2),
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -320,6 +320,12 @@ app.on('open-url', (event, url) => {
 });
 
 app.whenReady().then(() => {
+  // macOS: proactively request mic access so the system dialog fires before
+  // the user hits the live call screen. On Windows/Linux this is a no-op.
+  if (process.platform === 'darwin') {
+    systemPreferences.askForMediaAccess('microphone').catch(() => {});
+  }
+
   // Grant microphone (and camera) permissions so getUserMedia and
   // webkitSpeechRecognition both work without a prompt.
   const { session } = require('electron');

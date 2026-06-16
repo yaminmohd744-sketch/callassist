@@ -104,6 +104,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const [micWarning, setMicWarning] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [meetingExpanded, setMeetingExpanded] = useState(false);
+  const [systemStream, setSystemStream] = useState<MediaStream | null>(null);
+  const [audioSetupDone, setAudioSetupDone] = useState(false);
   const [draftRecovery, setDraftRecovery] = useState<{ transcript: TranscriptEntry[]; suggestions: AISuggestion[]; startedAt: string } | null>(null);
   const startedAtRef = useRef(new Date().toISOString());
   const recordingKeyRef = useRef(startedAtRef.current);
@@ -269,6 +271,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const { isListening, interimText, errorMessage, startListening, stopListening } = useSpeechRecognition({
     onFinalTranscript: handleFinalTranscript,
     language: config.language ?? 'en-US',
+    systemAudioStream: systemStream,
   });
 
   // Record when speech starts so we can measure utterance duration accurately.
@@ -320,13 +323,15 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   // Push live call data to the Electron overlay window whenever it changes.
   useEffect(() => {
     if (!window.electronAPI) return;
+    const recentTranscript = transcript.slice(-4).map(e => ({ speaker: e.speaker as 'rep' | 'prospect', text: e.text }));
     window.electronAPI.pushOverlayData({
       suggestions,
       closeProbability,
       callStage,
       prospectName: config.prospectName,
+      transcript: recentTranscript,
     });
-  }, [suggestions, closeProbability, callStage, config.prospectName]);
+  }, [suggestions, closeProbability, callStage, config.prospectName, transcript]);
 
   // Listen for the overlay's "End Session" button — restores main window and ends the call.
   // Uses a ref so the listener always calls the latest handleEndCall without re-registering.
@@ -338,11 +343,10 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   }, []);
 
   useEffect(() => {
-    // Run once on mount to start the call immediately. startTimer and
-    // startListening are stable callback refs that never change identity, so
-    // omitting them from the dep array is intentional — re-running this effect
-    // would restart the timer and mic mid-call.
-    dgSpeakerMapRef.current = null; // reset speaker map for fresh call
+    // Don't start until the user has made an audio setup choice.
+    if (!audioSetupDone) return;
+    // startTimer and startListening are stable callback refs — omit from deps intentionally.
+    dgSpeakerMapRef.current = null;
     setCallStatus('active');
     startTimer();
     startListening().catch(() => setMicWarning(true));
@@ -351,7 +355,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       if (flipDebounceRef.current) clearTimeout(flipDebounceRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [audioSetupDone]);
 
   // Clean up any dangling drag listeners if the component unmounts mid-drag.
   useEffect(() => {
@@ -438,6 +442,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     if (flipDebounceRef.current) { clearTimeout(flipDebounceRef.current); flipDebounceRef.current = null; }
     stopListening();
     stopTimer();
+    systemStream?.getTracks().forEach(t => t.stop());
     await stopRecording(recordingKeyRef.current);
     window.electronAPI?.closeOverlay();
     isSummarisingRef.current = true;
@@ -522,6 +527,22 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     setMobilePanel(p);
   }, []);
 
+  const handleCaptureSystemAudio = useCallback(async () => {
+    try {
+      // getDisplayMedia requires video to be present; we stop that track immediately
+      // and keep only the audio track (which includes system/meeting audio).
+      const ds = await navigator.mediaDevices.getDisplayMedia({
+        audio: true,
+        video: { frameRate: { max: 1 }, width: { max: 1 }, height: { max: 1 } },
+      });
+      ds.getVideoTracks().forEach(t => t.stop());
+      setSystemStream(ds);
+    } catch {
+      // User cancelled or denied — proceed with mic only
+    }
+    setAudioSetupDone(true);
+  }, []);
+
   const handleShareScreen = useCallback(() => {
     if (window.electronAPI) {
       // Electron: open a real always-on-top overlay window, minimize main window to taskbar.
@@ -556,6 +577,32 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     'tip':                'NEXT MOVE',
     'discovery':          'GO DEEPER',
   };
+
+  if (!audioSetupDone) {
+    return (
+      <div className="live-call live-call--audio-setup">
+        <div className="live-call__setup-card">
+          <div className="live-call__setup-icon">🎙</div>
+          <h2 className="live-call__setup-title">Capture both sides of the call?</h2>
+          <p className="live-call__setup-desc">
+            Pitchr can transcribe both you <em>and</em> the other person by capturing your system audio.
+            You'll be asked to share your screen — this is only used for audio and is never recorded or stored.
+          </p>
+          <p className="live-call__setup-hint">
+            When the picker appears, select <strong>Entire Screen</strong> to capture meeting audio.
+          </p>
+          <div className="live-call__setup-actions">
+            <button className="live-call__setup-btn live-call__setup-btn--primary" onClick={handleCaptureSystemAudio}>
+              Enable both-sides audio
+            </button>
+            <button className="live-call__setup-btn live-call__setup-btn--secondary" onClick={() => setAudioSetupDone(true)}>
+              Mic only — skip
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="live-call">

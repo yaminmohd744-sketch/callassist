@@ -90,9 +90,10 @@ interface DGResult {
 interface UseSpeechRecognitionOptions {
   onFinalTranscript: (text: string, speakerIndex?: number) => void;
   language?: string; // BCP 47 code, e.g. 'en-US', 'es-ES'
+  systemAudioStream?: MediaStream | null; // system audio from getDisplayMedia — mixed with mic
 }
 
-export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: UseSpeechRecognitionOptions) {
+export function useSpeechRecognition({ onFinalTranscript, language = 'en-US', systemAudioStream }: UseSpeechRecognitionOptions) {
   const [isListening, setIsListening]   = useState(false);
   const [interimText, setInterimText]   = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -103,8 +104,11 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
   const streamRef       = useRef<MediaStream | null>(null);
   const wsrRef          = useRef<WSR | null>(null); // Web Speech Recognition fallback
   const activeRef       = useRef(false);
+  const audioCtxRef     = useRef<AudioContext | null>(null);
+  const sysStreamRef    = useRef<MediaStream | null | undefined>(systemAudioStream);
   const onFinalRef      = useRef(onFinalTranscript);
   useLayoutEffect(() => { onFinalRef.current = onFinalTranscript; }, [onFinalTranscript]);
+  useLayoutEffect(() => { sysStreamRef.current = systemAudioStream; }, [systemAudioStream]);
 
   // Utterance buffer - accumulates is_final chunks and flushes them as one entry
   // after a short silence, so fragmented mid-sentence commits get merged.
@@ -229,6 +233,9 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
     streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
 
+    audioCtxRef.current?.close().catch(() => {});
+    audioCtxRef.current = null;
+
     setIsListening(false);
     setInterimText('');
   }, [flushBuffer]);
@@ -315,7 +322,26 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US' }: 
           tryFallback();
           return;
         }
-        const mr = new MediaRecorder(stream, { mimeType });
+
+        // Mix mic + system audio when available.
+        // AudioContext merges both tracks into a single MediaStream for Deepgram.
+        let inputStream: MediaStream = stream;
+        const sysStream = sysStreamRef.current;
+        const liveSysTracks = sysStream?.getAudioTracks().filter(t => t.readyState === 'live') ?? [];
+        if (liveSysTracks.length > 0) {
+          try {
+            const ctx = new AudioContext();
+            audioCtxRef.current = ctx;
+            const dest = ctx.createMediaStreamDestination();
+            ctx.createMediaStreamSource(stream).connect(dest);
+            ctx.createMediaStreamSource(sysStream!).connect(dest);
+            inputStream = dest.stream;
+          } catch {
+            // Mixing failed — fall back to mic only
+          }
+        }
+
+        const mr = new MediaRecorder(inputStream, { mimeType });
         mediaRecorderRef.current = mr;
         mr.ondataavailable = (e) => {
           if (e.data.size > 0 && ws.readyState === WebSocket.OPEN) ws.send(e.data);

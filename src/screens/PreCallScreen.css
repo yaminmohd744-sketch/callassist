@@ -335,6 +335,14 @@
   color: var(--color-accent-red);
 }
 
+.precall__optional {
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 400;
+  font-size: 10px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 .precall__input,
 .precall__textarea {
   background: var(--color-bg-elevated);

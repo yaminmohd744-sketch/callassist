@@ -5,13 +5,13 @@ import { SUPPORTED_LANGUAGES } from '../lib/languages';
 import type { LanguageCode } from '../lib/languages';
 import { loadLeads } from '../lib/leads';
 import { genId } from '../lib/id';
-import type { CallConfig, CallType, CallPlatform, Lead, BusinessProfile, RepLearningProfile } from '../types';
+import type { CallConfig, CallPlatform, Lead, BusinessProfile, RepLearningProfile } from '../types';
 import { buildEnrichedContext } from '../lib/businessProfile';
 import { generateBattleCard, type BattleCard } from '../lib/ai';
 import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
 
-type StringConfigField = 'callGoal' | 'callType' | 'language' | 'prospectName' | 'meetingUrl';
+type StringConfigField = 'callGoal' | 'language' | 'prospectName' | 'meetingUrl';
 type StringConfigErrors = Partial<Record<StringConfigField, string>>;
 
 interface PreCallScreenProps {
@@ -49,16 +49,6 @@ const PLATFORM_URL_PLACEHOLDER: Partial<Record<CallPlatform, string>> = {
   teams: 'https://teams.microsoft.com/l/meetup-join/...',
 };
 
-const CALL_TYPES: { value: CallType; label: string }[] = [
-  { value: 'cold',        label: 'Cold call'      },
-  { value: 'warm',        label: 'Warm follow-up' },
-  { value: 'referral',    label: 'Referral'        },
-  { value: 'discovery',   label: 'Discovery'       },
-  { value: 'demo',        label: 'Demo'            },
-  { value: 'negotiation', label: 'Negotiation'     },
-  { value: 'close',       label: 'Closing call'    },
-];
-
 const EXP_SHORT: Record<string, string> = {
   beginner:     '🌱 Newcomer',
   intermediate: '📈 Getting confident',
@@ -72,64 +62,7 @@ const DEAL_SHORT: Record<string, string> = {
   enterprise:    '🏛 Enterprise',
 };
 
-function getGoalSuggestions(callType: CallType, dealType?: string): string[] {
-  const d = dealType ?? 'default';
-  const map: Record<string, Record<string, string[]>> = {
-    cold: {
-      transactional: ['Book a 15-min demo for later today', 'Qualify them and close on the spot if fit'],
-      'mid-market':  ['Book a 20-min discovery call this week', 'Get the right decision maker on the line'],
-      enterprise:    ['Secure a discovery call with the key stakeholder', 'Identify pain, budget range, and timeline'],
-      default:       ['Book a discovery call', 'Qualify budget, authority, and need'],
-    },
-    warm: {
-      transactional: ['Get a decision on this call', 'Follow up and close if they reviewed it'],
-      'mid-market':  ['Follow up on the proposal and confirm next steps', 'Handle remaining objections and set a timeline'],
-      enterprise:    ['Align all stakeholders on next steps', 'Surface and handle the final objection'],
-      default:       ['Follow up and confirm next steps', 'Identify any remaining blockers'],
-    },
-    referral: {
-      default:    ['Introduce myself and book a demo', 'Build rapport and qualify fit'],
-      enterprise: ['Understand their specific pain and map stakeholders', 'Get a meeting with the full buying team'],
-    },
-    discovery: {
-      transactional: ['Uncover the core need and propose a solution today'],
-      'mid-market':  ['Uncover budget, timeline, and key pain points', 'Identify decision criteria and who else is involved'],
-      enterprise:    ['Map all stakeholders and understand the buying process', 'Understand budget range and decision timeline'],
-      default:       ['Uncover budget, timeline, and key pain points', 'Identify who else is involved in the decision'],
-    },
-    demo: {
-      transactional: ['Show the core feature and close today'],
-      'mid-market':  ['Walk through the ROI story and handle their main concern'],
-      enterprise:    ['Demonstrate value to each stakeholder role and handle security questions'],
-      default:       ['Show the core value and address their top objection'],
-    },
-    negotiation: {
-      transactional: ['Close on price and confirm the deal on this call'],
-      'mid-market':  ['Agree on pricing and contract length', 'Handle the discount request and confirm a start date'],
-      enterprise:    ['Align on pricing, SLAs, and timeline', 'Handle procurement and legal requirements'],
-      default:       ['Agree on pricing and confirm the next step'],
-    },
-    close: {
-      transactional: ['Get a yes and confirm payment on this call'],
-      'mid-market':  ['Get a verbal yes and confirm the start date', 'Handle the final "I need to think about it"'],
-      enterprise:    ['Get a verbal commitment and align on contract timeline'],
-      default:       ['Get a verbal yes and confirm the start date'],
-    },
-  };
-  return map[callType]?.[d] ?? map[callType]?.['default'] ?? [];
-}
-
-// Defined outside component — stable, depends on no props/state
-const GOAL_PLACEHOLDERS: Record<string, string> = {
-  cold:        'e.g. Get them to agree to a 20-minute discovery call',
-  warm:        'e.g. Follow up on the proposal and confirm next steps',
-  referral:    'e.g. Introduce yourself and schedule a demo',
-  discovery:   'e.g. Uncover budget, timeline, and key pain points',
-  demo:        'e.g. Show the dashboard, address their data security concern',
-  negotiation: 'e.g. Agree on pricing, handle the contract length objection',
-  close:       'e.g. Get a verbal yes and confirm the start date',
-  default:     'e.g. What do you want to walk away with from this call?',
-};
+const GOAL_PLACEHOLDER = 'e.g. What do you want to walk away with from this call?';
 
 export function PreCallScreen({
   onStartCall,
@@ -142,7 +75,6 @@ export function PreCallScreen({
 }: PreCallScreenProps) {
   const t = useTranslations();
 
-  const [callType, setCallType]   = useState<CallType | undefined>(defaultConfig?.callType);
   const [platform, setPlatform]   = useState<CallPlatform | undefined>(defaultConfig?.platform);
   const [meetingUrl, setMeetingUrl] = useState(defaultConfig?.meetingUrl ?? '');
   const [inCrm, setInCrm]         = useState<boolean | null>(null);
@@ -191,10 +123,6 @@ export function PreCallScreen({
       crmSearchRef.current?.focus();
     }
   }, [inCrm, selectedLead]);
-
-  const handleCallType = useCallback((value: CallType) => {
-    setCallType(prev => prev === value ? undefined : value);
-  }, []);
 
   const handlePerkChange = useCallback((index: number, value: string) => {
     setPerks(prev => {
@@ -265,7 +193,6 @@ export function PreCallScreen({
       company:       selectedLead?.company ?? '',
       prospectTitle: selectedLead?.title ?? '',
       priorContext:  selectedLead?.priorContext ?? '',
-      callType,
       platform,
       meetingUrl:    meetingUrl.trim() || undefined,
       callGoal,
@@ -273,7 +200,7 @@ export function PreCallScreen({
       language,
       repContext,
     };
-  }, [perks, selectedLead, callType, platform, meetingUrl, callGoal, language, businessProfile, learningProfile]);
+  }, [perks, selectedLead, platform, meetingUrl, callGoal, language, businessProfile, learningProfile]);
 
   const handleSubmit = useCallback(() => {
     const newErrors: StringConfigErrors = {};
@@ -300,7 +227,7 @@ export function PreCallScreen({
         selectedLead?.name ?? '',
         selectedLead?.title ?? '',
         selectedLead?.company ?? '',
-        callType ?? 'cold',
+        'discovery',
         callGoal,
         filledPerks.join('\n'),
         selectedLead?.priorContext ?? '',
@@ -311,7 +238,7 @@ export function PreCallScreen({
     } finally {
       setBattleCardLoading(false);
     }
-  }, [battleCardOpen, battleCard, perks, selectedLead, callType, callGoal]);
+  }, [battleCardOpen, battleCard, perks, selectedLead, callGoal]);
 
   const filteredLeads = useMemo(() =>
     leads.filter(l =>
@@ -320,7 +247,7 @@ export function PreCallScreen({
     ),
   [leads, leadSearch]);
 
-  const goalPlaceholder = GOAL_PLACEHOLDERS[callType ?? ''] ?? GOAL_PLACEHOLDERS.default;
+  const goalPlaceholder = GOAL_PLACEHOLDER;
 
   return (
     <div className="precall">
@@ -364,23 +291,7 @@ export function PreCallScreen({
             </div>
           )}
 
-          {/* ── 1. Call Type ── */}
-          <div id="precall-calltype-label" className="precall__section-label">{t.precall.callTypeQuestion}</div>
-          <div className="precall__chips" role="group" aria-labelledby="precall-calltype-label">
-            {CALL_TYPES.map(ct => (
-              <button
-                key={ct.value}
-                type="button"
-                aria-pressed={callType === ct.value}
-                className={`precall__chip${callType === ct.value ? ' precall__chip--active' : ''}`}
-                onClick={() => handleCallType(ct.value)}
-              >
-                {ct.label}
-              </button>
-            ))}
-          </div>
-
-          {/* ── 2. Platform ── */}
+          {/* ── 1. Platform ── */}
           <div id="precall-platform-label" className="precall__section-label">WHERE IS THIS CALL HAPPENING?</div>
           <div className="precall__chips" role="group" aria-labelledby="precall-platform-label">
             {PLATFORMS.map(p => (
@@ -397,11 +308,13 @@ export function PreCallScreen({
             ))}
           </div>
 
-          {/* ── Meeting URL (video platforms only) ── */}
-          {platform && platform !== 'phone' && (
+          {/* ── Meeting URL (always shown unless Phone is explicitly selected) ── */}
+          {platform !== 'phone' && (
             <div className="precall__meeting-url-field">
               <label htmlFor="precall-meeting-url" className="precall__section-label">
-                MEETING LINK <span className="precall__required" aria-hidden="true">*</span>
+                MEETING LINK{platform && platform !== 'phone'
+                  ? <span className="precall__required" aria-hidden="true"> *</span>
+                  : <span className="precall__optional"> (optional)</span>}
               </label>
               <div className={`precall__field${errors.meetingUrl ? ' precall__field--error' : ''}`}>
                 <input
@@ -541,16 +454,6 @@ export function PreCallScreen({
             )}
           </div>
 
-          {callType && callGoal.trim() === '' && getGoalSuggestions(callType, businessProfile?.dealType).length > 0 && (
-            <div className="precall__goal-suggestions">
-              <span className="precall__goal-suggestions-label">Quick fill</span>
-              {getGoalSuggestions(callType, businessProfile?.dealType).map((s, i) => (
-                <button key={i} type="button" className="precall__goal-suggestion" onClick={() => setCallGoal(s)}>
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* ── 5. Your Perks ── */}
           <div id="precall-perks-label" className="precall__section-label">{t.precall.yourPerksLabel}</div>
