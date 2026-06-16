@@ -301,19 +301,21 @@ export function App() {
   }
 
   if (!isElectron && screen === 'preview') {
+    const handleDownload = () => {
+      const DESKTOP_PROTOCOL = 'pitchr://open' as const;
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = DESKTOP_PROTOCOL;
+      document.body.appendChild(iframe);
+      setTimeout(() => document.body.removeChild(iframe), 2000);
+      setTimeout(() => setScreen('auth'), 1800);
+    };
     return (
       <>
         <ErrorBoundary>
           <LandingScreen
-            onDownload={() => {
-              const DESKTOP_PROTOCOL = 'pitchr://open' as const;
-              const iframe = document.createElement('iframe');
-              iframe.style.display = 'none';
-              iframe.src = DESKTOP_PROTOCOL;
-              document.body.appendChild(iframe);
-              setTimeout(() => document.body.removeChild(iframe), 2000);
-              setTimeout(() => setScreen('auth'), 1800);
-            }}
+            onDownload={handleDownload}
+            onDownloadMac={handleDownload}
             onMarketingPlan={() => setScreen('marketing-plan')}
           />
         </ErrorBoundary>
