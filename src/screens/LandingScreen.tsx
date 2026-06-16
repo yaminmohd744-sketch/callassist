@@ -740,6 +740,9 @@ export function LandingScreen({ onDownload, onWaitlist: _onWaitlist, onMarketing
               <WinLogo /> Get for Windows
             </button>
             <p className="lp__sv-cta-note">No credit card · Windows 10 &amp; 11 · Free to start</p>
+            <p className="lp__sv-cta-note" style={{ marginTop: '0.5rem', opacity: 0.55, fontSize: '0.75rem' }}>
+              Windows may show a security warning on first run — click <strong>More info</strong> then <strong>Run anyway</strong>. This is normal for new apps.
+            </p>
           </div>
         </div>
       </div>
