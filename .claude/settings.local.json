@@ -181,10 +181,32 @@
       "Bash(cat railway.json)",
       "Bash(cat railway.toml)",
       "WebFetch(domain:resont.com)",
-      "PowerShell(\\(Get-Content \"c:\\\\Users\\\\User\\\\callassist\\\\src\\\\screens\\\\LandingScreen.tsx\" | Measure-Object -Line\\).Lines)"
+      "PowerShell(\\(Get-Content \"c:\\\\Users\\\\User\\\\callassist\\\\src\\\\screens\\\\LandingScreen.tsx\" | Measure-Object -Line\\).Lines)",
+      "Bash(start \"\" \"c:\\\\Users\\\\User\\\\callassist\\\\email-preview.html\")",
+      "Bash(node -e \"require\\('sharp'\\); console.log\\('sharp ok'\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); console.log\\(fs.readFileSync\\('pitchr-logo-b64.txt','utf8'\\)\\);\")",
+      "Bash(gh repo *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/cookiy-ai/user-research-skill/main/plugins/user-research/skills/user-research-cookiy/SKILL.md\")",
+      "Bash(curl -sL \"https://github.com/cookiy-ai/user-research-skill/tree/main/plugins/user-research/skills/user-research-cookiy\")",
+      "Bash(curl -sL \"https://github.com/cookiy-ai/user-research-skill/tree/main/references\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/cookiy-ai/user-research-skill/main/references/cookiy\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/cookiy-ai/user-research-skill/main/references/qualitative-research-planner\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/cookiy-ai/user-research-skill/main/references/synthesize-research-report\")",
+      "Bash(curl -sL \"https://github.com/cookiy-ai/user-research-skill/tree/main/references/cookiy\")",
+      "Bash(curl -sL \"https://github.com/cookiy-ai/user-research-skill/tree/main/references/qualitative-research-planner\")",
+      "Bash(curl -sL \"https://github.com/cookiy-ai/user-research-skill/tree/main/references/synthesize-research-report\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/cookiy-ai/user-research-skill/main/references/cookiy/cookiy.md\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/cookiy-ai/user-research-skill/main/references/qualitative-research-planner/qualitative-research-planner.md\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/cookiy-ai/user-research-skill/main/references/synthesize-research-report/synthesize-research-report.md\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/cookiy-ai/user-research-skill/main/references/cookiy/cookiy-qual.md\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/cookiy-ai/user-research-skill/main/references/cookiy/cookiy-quant.md\")",
+      "Bash(mkdir -p \"C:/Users/User/.claude/skills/user-research-cookiy\" 2>&1)"
     ],
     "additionalDirectories": [
-      "c:\\Users\\User\\callassist\\.claude\\skills"
+      "c:\\Users\\User\\callassist\\.claude\\skills",
+      "C:\\Users\\User\\.claude\\skills"
     ]
   }
 }

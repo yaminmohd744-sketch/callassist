@@ -48,9 +48,9 @@ function scoreTier(val: number, hi = 61, mid = 31): Tier { return val >= hi ? 'h
 // ── Line chart ─────────────────────────────────────────────────────────────────
 
 const TIER_COLORS: Record<Tier, string> = {
-  high:   '#22c55e',
+  high:   '#39d353',
   medium: '#eab308',
-  low:    '#ef4444',
+  low:    '#ff4444',
 };
 
 interface ChartPoint { label: string; value: number; tier: Tier; }

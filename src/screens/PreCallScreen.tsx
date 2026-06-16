@@ -7,6 +7,7 @@ import { loadLeads } from '../lib/leads';
 import { genId } from '../lib/id';
 import type { CallConfig, CallType, CallPlatform, Lead, BusinessProfile, RepLearningProfile } from '../types';
 import { buildEnrichedContext } from '../lib/businessProfile';
+import { generateBattleCard, type BattleCard } from '../lib/ai';
 import { useTranslations } from '../hooks/useTranslations';
 import './PreCallScreen.css';
 
@@ -165,6 +166,9 @@ export function PreCallScreen({
   });
   const [language, setLanguage]     = useState<string>(defaultLanguage);
   const [errors, setErrors]         = useState<StringConfigErrors>({});
+  const [battleCard, setBattleCard] = useState<BattleCard | null>(null);
+  const [battleCardOpen, setBattleCardOpen] = useState(false);
+  const [battleCardLoading, setBattleCardLoading] = useState(false);
   const loadedRef      = useRef(false);
   const perkInputRefs  = useRef<(HTMLInputElement | null)[]>([]);
   const crmSearchRef   = useRef<HTMLInputElement>(null);
@@ -284,6 +288,30 @@ export function PreCallScreen({
   const handleSkip = useCallback(() => {
     onStartCall(buildConfig());
   }, [onStartCall, buildConfig]);
+
+  const handleToggleBattleCard = useCallback(async () => {
+    if (battleCardOpen) { setBattleCardOpen(false); return; }
+    setBattleCardOpen(true);
+    if (battleCard) return; // already generated
+    setBattleCardLoading(true);
+    try {
+      const filledPerks = perks.filter(p => p.text.trim()).map(p => p.text);
+      const card = await generateBattleCard(
+        selectedLead?.name ?? '',
+        selectedLead?.title ?? '',
+        selectedLead?.company ?? '',
+        callType ?? 'cold',
+        callGoal,
+        filledPerks.join('\n'),
+        selectedLead?.priorContext ?? '',
+      );
+      setBattleCard(card);
+    } catch {
+      setBattleCardOpen(false);
+    } finally {
+      setBattleCardLoading(false);
+    }
+  }, [battleCardOpen, battleCard, perks, selectedLead, callType, callGoal]);
 
   const filteredLeads = useMemo(() =>
     leads.filter(l =>
@@ -574,6 +602,71 @@ export function PreCallScreen({
               </button>
             ))}
           </div>
+
+          {/* ── Pre-call intel / battle card ── */}
+          {(callGoal.trim() || selectedLead) && (
+            <div className="precall__battlecard">
+              <button
+                type="button"
+                className={`precall__battlecard-trigger${battleCardOpen ? ' precall__battlecard-trigger--open' : ''}`}
+                onClick={handleToggleBattleCard}
+                aria-expanded={battleCardOpen}
+              >
+                <span className="precall__battlecard-trigger-icon" aria-hidden="true">◈</span>
+                PRE-CALL INTEL
+                <em className="precall__battlecard-trigger-chevron" aria-hidden="true">▾</em>
+              </button>
+              {battleCardOpen && (
+                battleCardLoading ? (
+                  <div className="precall__battlecard-loading">
+                    <div className="precall__battlecard-spinner" aria-hidden="true" />
+                    Preparing your battle card…
+                  </div>
+                ) : battleCard ? (
+                  <div className="precall__battlecard-body">
+                    {battleCard.suggestedOpener && (
+                      <div>
+                        <div className="precall__bc-section-label">Suggested opener</div>
+                        <div className="precall__bc-opener">"{battleCard.suggestedOpener}"</div>
+                      </div>
+                    )}
+                    {battleCard.contextInsight && (
+                      <div>
+                        <div className="precall__bc-section-label">Context insight</div>
+                        <div className="precall__bc-insight">{battleCard.contextInsight}</div>
+                      </div>
+                    )}
+                    {battleCard.powerQuestions.length > 0 && (
+                      <div>
+                        <div className="precall__bc-section-label">Power questions to ask</div>
+                        <ul className="precall__bc-questions" role="list">
+                          {battleCard.powerQuestions.map((q, i) => (
+                            <li key={i} className="precall__bc-question">
+                              <span className="precall__bc-question-num">{i + 1}.</span>
+                              {q}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {battleCard.likelyObjections.length > 0 && (
+                      <div>
+                        <div className="precall__bc-section-label">Likely objections + responses</div>
+                        <div className="precall__bc-objections">
+                          {battleCard.likelyObjections.map((obj, i) => (
+                            <div key={i} className="precall__bc-objection">
+                              <div className="precall__bc-obj-q">⚡ {obj.objection}</div>
+                              <div className="precall__bc-obj-a">{obj.response}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : null
+              )}
+            </div>
+          )}
 
           {/* ── Actions ── */}
           <div className="precall__actions">

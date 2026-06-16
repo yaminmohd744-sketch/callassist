@@ -4,194 +4,78 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pitchr Email Preview</title>
-<link rel="preconnect" href="https://api.fontshare.com">
-<link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #07050f;
-    font-family: 'Clash Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-    padding: 36px 20px 60px;
-    min-height: 100vh;
-  }
-  .header {
-    text-align: center;
-    margin-bottom: 36px;
-  }
-  .header h1 {
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: #444;
-    margin-bottom: 6px;
-    font-weight: 600;
-  }
-  .header p { font-size: 11px; color: #2e2e2e; }
-  .cols {
-    display: flex;
-    gap: 24px;
-    max-width: 1180px;
-    margin: 0 auto;
-    align-items: flex-start;
-  }
-  .col { flex: 1; min-width: 0; }
-  .mode-label {
-    text-align: center;
-    margin-bottom: 14px;
-    font-size: 10px;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    font-weight: 700;
-    color: #555;
-  }
+  body { background: #07050f; font-family: Arial, Helvetica, sans-serif; padding: 36px 20px 60px; }
+  .header { text-align: center; margin-bottom: 36px; }
+  .header h1 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #444; margin-bottom: 6px; }
+  .cols { display: flex; gap: 40px; max-width: 1180px; margin: 0 auto; align-items: flex-start; justify-content: center; }
+  .col { width: 544px; min-width: 0; }
+  .mode-label { text-align: center; margin-bottom: 14px; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 700; color: #555; }
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>Pitchr — Waitlist Email Preview</h1>
-  <p>Live preview · two device modes side by side</p>
 </div>
 
 <div class="cols">
 
-  <!-- ═══════════════ LIGHT MODE ═══════════════ -->
+  <!-- ═══════════════ PREVIEW ═══════════════ -->
   <div class="col">
-    <div class="mode-label" style="color:#9b6dd4;">☀&nbsp; Light Mode</div>
+    <div class="mode-label" style="color:#9b6dd4;">Email Preview</div>
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#ede8f5;padding:36px 0;">
-    <tr><td align="center">
-    <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
-    <tr><td style="
-      background:#ffffff;
-      border:2px solid #814ac8;
-      border-radius:14px;
-      padding:0;
-      box-shadow:0 0 0 1px rgba(129,74,200,0.25),0 0 18px rgba(129,74,200,0.18),0 0 36px rgba(129,74,200,0.09);
-    ">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:544px;width:100%;border:1px solid #c9b0ee;border-radius:16px;overflow:hidden;">
 
-      <!-- Logo row — PITCHR text only -->
-      <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="
-        padding:20px 28px 18px;
-        border-bottom:1px solid rgba(129,74,200,0.22);
-        background:linear-gradient(180deg,rgba(129,74,200,0.07) 0%,rgba(129,74,200,0) 100%);
-        border-radius:12px 12px 0 0;
-      ">
-        <img src="public/pitchr-email-logo.png" alt="PITCHR" width="140" height="30" style="display:block;border:0;" />
-      </td></tr></table>
+      <!-- Dark gradient header -->
+      <tr><td align="center" bgcolor="#2a0d52" style="background:linear-gradient(180deg,#0d0020 0%,#2a0d52 50%,#4a1d8a 100%);padding:36px 28px 30px;border-radius:16px 16px 0 0;">
+        <p style="margin:0 0 8px;font-size:30px;font-weight:bold;letter-spacing:0;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">PITCHR</p>
+        <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#c084f5;font-family:Arial,Helvetica,sans-serif;">AI SALES COACH</p>
+      </td></tr>
 
-      <!-- Body -->
-      <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:26px 28px 0;">
+      <!-- White body -->
+      <tr><td style="background:#ffffff;padding:28px 28px 0;">
 
-        <p style="margin:0 0 7px;font-size:10px;font-weight:600;letter-spacing:2px;color:#814ac8;text-transform:uppercase;">Waitlist confirmed</p>
-        <h1 style="margin:0 0 10px;font-size:23px;font-weight:700;color:#111111;line-height:1.25;font-family:'Clash Display',-apple-system,sans-serif;">You're in early, Yamin.</h1>
-        <p style="margin:0 0 22px;font-size:14px;color:#555555;line-height:1.65;">You're #4 on the Pitchr waitlist. We're building the AI coach that tells you exactly what to say on every call, in real time, before the prospect hangs up.</p>
+        <p style="margin:0 0 7px;font-size:10px;font-weight:700;letter-spacing:2px;color:#814ac8;text-transform:uppercase;">Waitlist confirmed</p>
+        <h1 style="margin:0 0 10px;font-size:24px;font-weight:800;color:#111111;line-height:1.25;font-family:Arial,Helvetica,sans-serif;">You're in early, Yamin.</h1>
+        <p style="margin:0 0 24px;font-size:14px;color:#555555;line-height:1.65;font-family:Arial,Helvetica,sans-serif;">You're #4 on the Pitchr waitlist. We're building the AI coach that tells you exactly what to say on every call, in real time, before the prospect hangs up.</p>
 
         <!-- Position -->
         <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3effe;border:1px solid #c9b0ee;border-radius:10px;margin-bottom:12px;">
         <tr><td style="padding:16px 20px;">
-          <p style="margin:0 0 2px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#9b8aaa;font-weight:600;">Your position</p>
-          <svg xmlns="http://www.w3.org/2000/svg" width="65" height="52" viewBox="0 0 65 52" style="display:block;overflow:visible;">
-            <defs><linearGradient id="ng-l" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#814ac8"/><stop offset="100%" stop-color="#df7afe"/></linearGradient></defs>
-            <text x="0" y="45" font-family="'Clash Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="42" font-weight="700" fill="url(#ng-l)">#4</text>
-          </svg>
+          <p style="margin:0 0 4px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#9b8aaa;font-weight:700;font-family:Arial,Helvetica,sans-serif;">Your position</p>
+          <p style="margin:0;font-size:42px;font-weight:900;color:#3a1570;font-family:Arial,Helvetica,sans-serif;">#4</p>
         </td></tr></table>
 
         <!-- Referral -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3effe;border:1px solid #c9b0ee;border-radius:10px;margin-bottom:22px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3effe;border:1px solid #c9b0ee;border-radius:10px;margin-bottom:24px;">
         <tr><td style="padding:16px 20px;">
-          <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#814ac8;">Move up the list →</p>
-          <p style="margin:0 0 10px;font-size:13px;color:#555555;line-height:1.5;">Share your link. Every signup through it bumps you higher.</p>
+          <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#814ac8;font-family:Arial,Helvetica,sans-serif;">Move up the list →</p>
+          <p style="margin:0 0 10px;font-size:13px;color:#555555;line-height:1.5;font-family:Arial,Helvetica,sans-serif;">Share your link. Every signup through it bumps you higher.</p>
           <p style="margin:0 0 12px;background:#ede6fa;border:1px solid #c9b0ee;border-radius:6px;padding:9px 12px;font-size:11px;color:#6b3db0;font-family:monospace;word-break:break-all;">https://pitchr.org?ref=ABCD1234</p>
-          <span style="display:inline-block;background:linear-gradient(135deg,#814ac8,#df7afe);color:#ffffff;text-decoration:none;border-radius:100px;padding:10px 22px;font-size:13px;font-weight:700;">Share your link</span>
+          <span style="display:inline-block;background:linear-gradient(135deg,#814ac8,#df7afe);color:#ffffff;border-radius:100px;padding:10px 22px;font-size:13px;font-weight:700;font-family:Arial,Helvetica,sans-serif;">Share your link</span>
         </td></tr></table>
 
         <!-- What's next -->
-        <p style="margin:0 0 10px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888888;">What's next</p>
+        <p style="margin:0 0 10px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888888;font-family:Arial,Helvetica,sans-serif;">What's next</p>
         <table width="100%" cellpadding="0" cellspacing="0">
-          <tr><td style="padding:9px 0;border-bottom:1px solid #e8dff5;font-size:13px;color:#444444;"><strong>First to know</strong> the moment Pitchr drops</td></tr>
-          <tr><td style="padding:9px 0;border-bottom:1px solid #e8dff5;font-size:13px;color:#444444;">Early <strong>offers and deals</strong> before anyone else sees them</td></tr>
-          <tr><td style="padding:9px 0;font-size:13px;color:#444444;">We'll keep you <strong>in the loop</strong> as we build. No spam, ever.</td></tr>
+          <tr><td style="padding:9px 0;border-bottom:1px solid #e8dff5;font-size:13px;color:#444444;font-family:Arial,Helvetica,sans-serif;"><strong>First to know</strong> the moment Pitchr drops</td></tr>
+          <tr><td style="padding:9px 0;border-bottom:1px solid #e8dff5;font-size:13px;color:#444444;font-family:Arial,Helvetica,sans-serif;">Early <strong>offers and deals</strong> before anyone else sees them</td></tr>
+          <tr><td style="padding:9px 0;font-size:13px;color:#444444;font-family:Arial,Helvetica,sans-serif;">We'll keep you <strong>in the loop</strong> as we build. No spam, ever.</td></tr>
         </table>
 
       </td></tr>
-      <tr><td style="padding:20px 28px 24px;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#aaaaaa;">You signed up at <a href="https://pitchr.org" style="color:#814ac8;text-decoration:none;">pitchr.org</a> · © 2026 Pitchr</p>
-      </td></tr></table>
 
-    </td></tr></table>
-    </td></tr></table>
-  </div>
-
-  <!-- ═══════════════ DARK MODE ═══════════════ -->
-  <div class="col">
-    <div class="mode-label" style="color:#6a3da8;">◑&nbsp; Dark Mode</div>
-
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0d0d0d;padding:36px 0;">
-    <tr><td align="center">
-    <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
-    <tr><td style="
-      background:#111111;
-      border:2px solid #5a2d9a;
-      border-radius:14px;
-      padding:0;
-      box-shadow:0 0 0 1px rgba(129,74,200,0.5),0 0 24px rgba(129,74,200,0.55),0 0 56px rgba(129,74,200,0.28),0 0 90px rgba(223,122,254,0.1);
-    ">
-
-      <!-- Logo row — PITCHR text only -->
-      <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="
-        padding:20px 28px 18px;
-        border-bottom:1px solid rgba(129,74,200,0.2);
-        background:linear-gradient(180deg,rgba(129,74,200,0.14) 0%,rgba(129,74,200,0) 100%);
-        border-radius:12px 12px 0 0;
-      ">
-        <svg xmlns="http://www.w3.org/2000/svg" width="120" height="28" viewBox="0 0 120 28" style="display:block;overflow:visible;">
-          <defs><linearGradient id="tg-d" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#814ac8"/><stop offset="100%" stop-color="#df7afe"/></linearGradient></defs>
-          <text x="0" y="23" font-family="'Clash Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="22" font-weight="700" letter-spacing="2" fill="url(#tg-d)">PITCHR</text>
-        </svg>
-      </td></tr></table>
-
-      <!-- Body -->
-      <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:26px 28px 0;">
-
-        <p style="margin:0 0 7px;font-size:10px;font-weight:600;letter-spacing:2px;color:#814ac8;text-transform:uppercase;">Waitlist confirmed</p>
-        <h1 style="margin:0 0 10px;font-size:23px;font-weight:700;color:#ffffff;line-height:1.25;font-family:'Clash Display',-apple-system,sans-serif;">You're in early, Yamin.</h1>
-        <p style="margin:0 0 22px;font-size:14px;color:#999999;line-height:1.65;">You're #4 on the Pitchr waitlist. We're building the AI coach that tells you exactly what to say on every call, in real time, before the prospect hangs up.</p>
-
-        <!-- Position -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1025;border:1px solid #3d1f70;border-radius:10px;margin-bottom:12px;">
-        <tr><td style="padding:16px 20px;">
-          <p style="margin:0 0 2px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#666666;font-weight:600;">Your position</p>
-          <svg xmlns="http://www.w3.org/2000/svg" width="65" height="52" viewBox="0 0 65 52" style="display:block;overflow:visible;">
-            <defs><linearGradient id="ng-d" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#814ac8"/><stop offset="100%" stop-color="#df7afe"/></linearGradient></defs>
-            <text x="0" y="45" font-family="'Clash Display',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="42" font-weight="700" fill="url(#ng-d)">#4</text>
-          </svg>
-        </td></tr></table>
-
-        <!-- Referral -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1025;border:1px solid #3d1f70;border-radius:10px;margin-bottom:22px;">
-        <tr><td style="padding:16px 20px;">
-          <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#c084f5;">Move up the list →</p>
-          <p style="margin:0 0 10px;font-size:13px;color:#999999;line-height:1.5;">Share your link. Every signup through it bumps you higher.</p>
-          <p style="margin:0 0 12px;background:#0d0a14;border:1px solid #2a1a3e;border-radius:6px;padding:9px 12px;font-size:11px;color:#c084f5;font-family:monospace;word-break:break-all;">https://pitchr.org?ref=ABCD1234</p>
-          <span style="display:inline-block;background:linear-gradient(135deg,#814ac8,#df7afe);color:#ffffff;text-decoration:none;border-radius:100px;padding:10px 22px;font-size:13px;font-weight:700;">Share your link</span>
-        </td></tr></table>
-
-        <!-- What's next -->
-        <p style="margin:0 0 10px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#666666;">What's next</p>
-        <table width="100%" cellpadding="0" cellspacing="0">
-          <tr><td style="padding:9px 0;border-bottom:1px solid #222222;font-size:13px;color:#aaaaaa;"><strong>First to know</strong> the moment Pitchr drops</td></tr>
-          <tr><td style="padding:9px 0;border-bottom:1px solid #222222;font-size:13px;color:#aaaaaa;">Early <strong>offers and deals</strong> before anyone else sees them</td></tr>
-          <tr><td style="padding:9px 0;font-size:13px;color:#aaaaaa;">We'll keep you <strong>in the loop</strong> as we build. No spam, ever.</td></tr>
-        </table>
-
+      <!-- Footer -->
+      <tr><td style="background:#f7f4fc;padding:18px 28px;text-align:center;border-top:1px solid #e8dff5;border-radius:0 0 16px 16px;">
+        <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#999999;font-family:Arial,Helvetica,sans-serif;">Pitchr — AI sales coach</p>
+        <p style="margin:0;font-size:11px;color:#bbbbbb;font-family:Arial,Helvetica,sans-serif;">
+          <a href="https://pitchr.org" style="color:#814ac8;text-decoration:none;">pitchr.org</a> · © 2026 Pitchr. All rights reserved.
+        </p>
       </td></tr>
-      <tr><td style="padding:20px 28px 24px;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#3a3a3a;">You signed up at <a href="https://pitchr.org" style="color:#814ac8;text-decoration:none;">pitchr.org</a> · © 2026 Pitchr</p>
-      </td></tr></table>
 
-    </td></tr></table>
-    </td></tr></table>
+    </table>
   </div>
 
 </div>

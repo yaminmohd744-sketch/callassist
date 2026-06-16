@@ -589,6 +589,162 @@
   line-height: 1.5;
 }
 
+/* ─── Battle card / pre-call intel ─────────────────────────── */
+
+.precall__battlecard {
+  margin-top: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  animation: precall-fadein 0.22s ease both;
+}
+
+.precall__battlecard-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-4);
+  background: var(--_purple-a08);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-accent-purple);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  text-align: left;
+}
+.precall__battlecard-trigger:hover {
+  background: var(--_purple-a14);
+  color: var(--color-accent-magenta);
+}
+.precall__battlecard-trigger:focus-visible {
+  outline: 2px solid var(--color-accent-purple);
+  outline-offset: -2px;
+}
+.precall__battlecard-trigger-icon { font-size: 14px; flex-shrink: 0; }
+.precall__battlecard-trigger-chevron {
+  margin-left: auto;
+  opacity: 0.5;
+  transition: transform var(--transition-fast);
+  font-style: normal;
+  font-size: 10px;
+}
+.precall__battlecard-trigger--open .precall__battlecard-trigger-chevron { transform: rotate(180deg); }
+
+.precall__battlecard-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-bg-elevated);
+  font-family: var(--font-display);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+.precall__battlecard-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent-purple);
+  border-radius: 50%;
+  animation: precall-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes precall-spin { to { transform: rotate(360deg); } }
+
+.precall__battlecard-body {
+  background: var(--color-bg-elevated);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.precall__bc-section-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.precall__bc-opener {
+  font-family: var(--font-display);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  background: var(--_purple-a08);
+  border-left: 2px solid var(--color-accent-purple);
+  border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+  padding: var(--space-3) var(--space-3);
+}
+
+.precall__bc-insight {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.precall__bc-questions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.precall__bc-question {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.precall__bc-question-num {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--color-accent-purple);
+  flex-shrink: 0;
+  min-width: 16px;
+  padding-top: 1px;
+}
+
+.precall__bc-objections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.precall__bc-objection {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+}
+.precall__bc-obj-q {
+  padding: var(--space-2) var(--space-3);
+  background: rgba(239, 68, 68, 0.06);
+  font-family: var(--font-display);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-accent-red);
+  line-height: 1.4;
+}
+.precall__bc-obj-a {
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
 /* ─── Actions ──────────────────────────────────────────────── */
 
 .precall__actions {
