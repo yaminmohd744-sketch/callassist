@@ -45,8 +45,8 @@
 }
 
 .prob-meter__fill--high {
-  background: linear-gradient(90deg, #7c3aed, #c026d3);
-  box-shadow: 0 0 12px rgba(124,58,237,0.5);
+  background: linear-gradient(90deg, #111111, #111111);
+  box-shadow: 0 0 12px rgba(0,0,0,0.5);
 }
 
 .prob-meter__fill--medium {

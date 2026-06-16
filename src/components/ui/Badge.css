@@ -20,14 +20,14 @@
 
 .badge--cyan, .badge--purple {
   color: var(--color-accent-purple);
-  border-color: rgba(124,58,237,0.35);
-  background: rgba(124,58,237,0.1);
+  border-color: rgba(0,0,0,0.35);
+  background: rgba(0,0,0,0.1);
 }
 
 .badge--magenta {
   color: var(--color-accent-magenta);
-  border-color: rgba(192,38,211,0.35);
-  background: rgba(192,38,211,0.1);
+  border-color: rgba(0,0,0,0.35);
+  background: rgba(0,0,0,0.1);
 }
 
 .badge--green {

@@ -21,7 +21,7 @@
   position: relative;
   z-index: 100;
   background: transparent;
-  border-bottom: 1px solid rgba(124, 58, 237, 0.15);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 /* Gradient shimmer line at bottom */
@@ -35,9 +35,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(124,58,237,0.6) 25%,
-    rgba(192,38,211,0.7) 55%,
-    rgba(124,58,237,0.4) 80%,
+    rgba(0,0,0,0.6) 25%,
+    rgba(0,0,0,0.7) 55%,
+    rgba(0,0,0,0.4) 80%,
     transparent 100%
   );
 }
@@ -79,12 +79,12 @@
 
 .app-shell__tab:hover {
   color: var(--color-text-secondary);
-  background: rgba(124, 58, 237, 0.1);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .app-shell__tab--active {
   color: var(--color-text-primary);
-  background: rgba(124, 58, 237, 0.18);
+  background: rgba(0, 0, 0, 0.18);
 }
 
 /* Solid accent underline on active tab */
@@ -258,18 +258,18 @@
   cursor: pointer;
   letter-spacing: 0.04em;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
-  box-shadow: 0 2px 8px rgba(124,58,237,0.25);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
 }
 
 .app-shell__btn-primary:hover {
   background: var(--color-accent-purple-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 
 .app-shell__btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(124,58,237,0.2);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
 /* ─── Profile avatar ─────────────────────────────────────────────────────── */
@@ -283,7 +283,7 @@
   height: 32px;
   border-radius: 50%;
   background: var(--color-accent-gradient);
-  border: 1px solid rgba(124,58,237,0.3);
+  border: 1px solid rgba(0,0,0,0.3);
   color: var(--color-text-on-accent);
   font-family: var(--font-display);
   font-size: 12px;
@@ -296,12 +296,12 @@
   flex-shrink: 0;
   overflow: hidden;
   transition: box-shadow var(--transition-fast), transform var(--transition-fast);
-  box-shadow: 0 1px 6px rgba(124,58,237,0.3);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.3);
 }
 
 .app-shell__avatar:hover {
   transform: translateY(-1px);
-  box-shadow: 0 3px 12px rgba(124,58,237,0.4);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.4);
 }
 
 .app-shell__avatar-img {
@@ -341,7 +341,7 @@
   height: 40px;
   border-radius: 50%;
   background: var(--color-accent-gradient);
-  border: 1px solid rgba(124,58,237,0.3);
+  border: 1px solid rgba(0,0,0,0.3);
   color: var(--color-text-on-accent);
   font-family: var(--font-display);
   font-size: 15px;

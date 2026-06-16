@@ -323,7 +323,7 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US', sy
         startWebSpeechFallback();
       };
 
-      ws.onopen = () => {
+      ws.onopen = async () => {
         const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
           ? 'audio/webm;codecs=opus'
           : MediaRecorder.isTypeSupported('audio/webm')

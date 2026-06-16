@@ -15,7 +15,7 @@
   left: 0;
   right: 0;
   height: 280px;
-  background: radial-gradient(ellipse 70% 280px at 50% 0%, rgba(124, 58, 237, 0.13) 0%, transparent 100%);
+  background: radial-gradient(ellipse 70% 280px at 50% 0%, rgba(0, 0, 0, 0.13) 0%, transparent 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -155,12 +155,12 @@
 
 /* ── Floating Bubble (share-screen minimize mode) ────────────────────────────*/
 .live-call__bubble {
-  --_purple-a07: rgba(124, 58, 237, 0.07);
-  --_purple-a14: rgba(124, 58, 237, 0.14);
-  --_purple-a16: rgba(124, 58, 237, 0.16);
-  --_purple-a20: rgba(124, 58, 237, 0.20);
-  --_purple-a35: rgba(124, 58, 237, 0.35);
-  --_purple-a55: rgba(124, 58, 237, 0.55);
+  --_purple-a07: rgba(0, 0, 0, 0.07);
+  --_purple-a14: rgba(0, 0, 0, 0.14);
+  --_purple-a16: rgba(0, 0, 0, 0.16);
+  --_purple-a20: rgba(0, 0, 0, 0.20);
+  --_purple-a35: rgba(0, 0, 0, 0.35);
+  --_purple-a55: rgba(0, 0, 0, 0.55);
   position: fixed;
   top: 16px;
   left: 50%;
@@ -495,10 +495,10 @@
 /* ─── Crash recovery banner ───────────────────────────────── */
 
 .live-call__recovery-banner {
-  --_purple-a14: rgba(124, 58, 237, 0.14);
-  --_purple-a28: rgba(124, 58, 237, 0.28);
-  --_purple-a35: rgba(124, 58, 237, 0.35);
-  --_purple-a55: rgba(124, 58, 237, 0.55);
+  --_purple-a14: rgba(0, 0, 0, 0.14);
+  --_purple-a28: rgba(0, 0, 0, 0.28);
+  --_purple-a35: rgba(0, 0, 0, 0.35);
+  --_purple-a55: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -597,8 +597,8 @@
   color: rgba(255, 255, 255, 0.35);
   line-height: 1.5;
   margin: 0;
-  background: rgba(124, 58, 237, 0.1);
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   padding: 10px 14px;
 }
@@ -623,13 +623,13 @@
 }
 
 .live-call__setup-btn--primary {
-  background: rgba(124, 58, 237, 0.9);
+  background: rgba(0, 0, 0, 0.9);
   color: #fff;
-  border-color: rgba(124, 58, 237, 0.6);
+  border-color: rgba(0, 0, 0, 0.6);
 }
 
 .live-call__setup-btn--primary:hover {
-  background: rgba(124, 58, 237, 1);
+  background: rgba(0, 0, 0, 1);
 }
 
 .live-call__setup-btn--secondary {

@@ -13,13 +13,13 @@
 /* ─── Shell ──────────────────────────────────────────────────── */
 
 .dashboard {
-  --_purple-a08: rgba(124, 58, 237, 0.08);
-  --_purple-a12: rgba(124, 58, 237, 0.12);
-  --_purple-a15: rgba(124, 58, 237, 0.15);
-  --_purple-a18: rgba(124, 58, 237, 0.18);
-  --_purple-a22: rgba(124, 58, 237, 0.22);
-  --_purple-a35: rgba(124, 58, 237, 0.35);
-  --_purple-a50: rgba(124, 58, 237, 0.50);
+  --_purple-a08: rgba(0, 0, 0, 0.08);
+  --_purple-a12: rgba(0, 0, 0, 0.12);
+  --_purple-a15: rgba(0, 0, 0, 0.15);
+  --_purple-a18: rgba(0, 0, 0, 0.18);
+  --_purple-a22: rgba(0, 0, 0, 0.22);
+  --_purple-a35: rgba(0, 0, 0, 0.35);
+  --_purple-a50: rgba(0, 0, 0, 0.50);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -84,7 +84,7 @@
 
 .dashboard__stat-card:hover {
   background: var(--_purple-a18);
-  border-color: rgba(124, 58, 237, 0.5);
+  border-color: rgba(0, 0, 0, 0.5);
   box-shadow: 0 0 40px var(--_purple-a22), 0 2px 16px rgba(0, 0, 0, 0.4);
 }
 
@@ -164,7 +164,7 @@
 }
 .dashboard__coaching-text {
   font-size: 13px;
-  color: var(--color-text-primary, #f0ebff);
+  color: var(--color-text-primary, #111111);
   line-height: 1.55;
   margin: 0;
 }
@@ -336,7 +336,7 @@
 }
 
 .dashboard__call-stage--opener    { background: var(--color-bg-elevated); color: var(--color-text-muted); }
-.dashboard__call-stage--discovery { background: rgba(124,58,237,0.08); color: var(--color-accent-purple); }
+.dashboard__call-stage--discovery { background: rgba(0,0,0,0.08); color: var(--color-accent-purple); }
 .dashboard__call-stage--pitch     { background: rgba(234,179,8,0.08);  color: var(--color-accent-yellow); }
 .dashboard__call-stage--close     { background: rgba(34,197,94,0.08);  color: var(--color-accent-green); }
 

@@ -81,6 +81,6 @@
 }
 
 .status-bar__stat-val--red    { color: var(--color-accent-red); }
-.status-bar__stat-val--high   { color: var(--color-accent-purple); text-shadow: 0 0 8px rgba(124,58,237,0.4); }
+.status-bar__stat-val--high   { color: var(--color-accent-purple); text-shadow: 0 0 8px rgba(0,0,0,0.4); }
 .status-bar__stat-val--medium { color: var(--color-accent-yellow); }
 .status-bar__stat-val--low    { color: var(--color-accent-red); }

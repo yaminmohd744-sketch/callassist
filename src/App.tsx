@@ -32,7 +32,8 @@ const AnalyticsScreen  = lazy(() => import('./screens/AnalyticsScreen').then(m =
 const UploadCallScreen = lazy(() => import('./screens/UploadCallScreen').then(m => ({ default: m.UploadCallScreen })));
 const LeadsScreen      = lazy(() => import('./screens/LeadsScreen').then(m => ({ default: m.LeadsScreen })));
 const AuthScreen       = lazy(() => import('./screens/AuthScreen').then(m => ({ default: m.AuthScreen })));
-const OnboardingScreen = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
+const OnboardingScreen   = lazy(() => import('./screens/OnboardingScreen').then(m => ({ default: m.OnboardingScreen })));
+const LazyDesignPreview  = lazy(() => import('./screens/DesignPreviewScreen').then(m => ({ default: m.DesignPreviewScreen })));
 
 // One-time migration: move localStorage outcomes into Supabase call_sessions rows
 async function migrateOutcomes(userId: string): Promise<void> {
@@ -281,6 +282,11 @@ export function App() {
 
   // Must be above all early returns — hooks cannot be called conditionally.
   const onboardingData = useMemo(() => getOnboardingData(), [onboardingVersion]);
+
+  // ── Design preview — access via ?design-preview=1 ────────────────────────
+  if (window.location.search.includes('design-preview=1')) {
+    return <Suspense fallback={<div className="app-loading" />}><LazyDesignPreview /></Suspense>;
+  }
 
   // ── Demo tour (no auth required) — access via ?demo=1 ────────────────────
   if (window.location.search.includes('demo=1')) return <Suspense fallback={<div className="app-loading" />}><DemoTourScreen /></Suspense>;

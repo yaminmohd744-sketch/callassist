@@ -82,14 +82,14 @@
 .transcript-panel__mic:hover {
   border-color: var(--color-accent-purple);
   color: var(--color-accent-purple);
-  background: rgba(124,58,237,0.08);
+  background: rgba(0,0,0,0.08);
 }
 
 .transcript-panel__mic--active {
-  background: rgba(124,58,237,0.12);
-  border-color: rgba(124,58,237,0.45);
+  background: rgba(0,0,0,0.12);
+  border-color: rgba(0,0,0,0.45);
   color: var(--color-accent-magenta);
-  box-shadow: 0 0 10px rgba(124,58,237,0.2);
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
 .transcript-panel__mic--unsupported {
@@ -104,7 +104,7 @@
   position: absolute;
   inset: -5px;
   border-radius: var(--border-radius-pill);
-  border: 1px solid rgba(124,58,237,0.5);
+  border: 1px solid rgba(0,0,0,0.5);
   animation: pulse-ring 1.4s ease-out infinite;
   pointer-events: none;
 }
@@ -154,7 +154,7 @@
 }
 
 .transcript-entry:hover {
-  background: rgba(124,58,237,0.04);
+  background: rgba(0,0,0,0.04);
 }
 
 .transcript-entry--neutral      { border-left-color: var(--color-border); }
@@ -163,7 +163,7 @@
 .transcript-entry--system       { opacity: 0.55; }
 .transcript-entry--interim      {
   border-left-color: var(--color-accent-purple);
-  background: rgba(124,58,237,0.06);
+  background: rgba(0,0,0,0.06);
   opacity: 0.72;
 }
 
@@ -252,8 +252,8 @@
 }
 
 .transcript-panel__speaker-btn--active-rep {
-  background: rgba(124,58,237,0.12);
-  border-color: rgba(124,58,237,0.4);
+  background: rgba(0,0,0,0.12);
+  border-color: rgba(0,0,0,0.4);
   color: var(--color-accent-purple);
 }
 

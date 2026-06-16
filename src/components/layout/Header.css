@@ -22,8 +22,8 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(124,58,237,0.5) 30%,
-    rgba(192,38,211,0.6) 60%,
+    rgba(0,0,0,0.5) 30%,
+    rgba(0,0,0,0.6) 60%,
     transparent 100%
   );
 }
@@ -95,8 +95,8 @@
   padding: 0 14px;
   height: 30px;
   border-radius: var(--border-radius-pill);
-  background: rgba(124,58,237,0.12);
-  border: 1px solid rgba(124,58,237,0.35);
+  background: rgba(0,0,0,0.12);
+  border: 1px solid rgba(0,0,0,0.35);
   color: var(--color-accent-magenta);
   font-family: var(--font-display);
   font-size: var(--font-size-xs);
@@ -108,9 +108,9 @@
 }
 
 .header__minimize:hover {
-  background: rgba(124,58,237,0.22);
-  border-color: rgba(192,38,211,0.5);
-  box-shadow: 0 0 12px rgba(192,38,211,0.2);
+  background: rgba(0,0,0,0.22);
+  border-color: rgba(0,0,0,0.5);
+  box-shadow: 0 0 12px rgba(0,0,0,0.2);
 }
 
 .header__coaching-badge {
@@ -118,13 +118,13 @@
   align-items: center;
   gap: 5px;
   padding: 3px 12px;
-  background: rgba(192,38,211,0.1);
-  border: 1px solid rgba(192,38,211,0.35);
+  background: rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.35);
   border-radius: var(--border-radius-pill);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--color-accent-magenta);
   white-space: nowrap;
-  box-shadow: 0 0 12px rgba(192,38,211,0.15);
+  box-shadow: 0 0 12px rgba(0,0,0,0.15);
 }

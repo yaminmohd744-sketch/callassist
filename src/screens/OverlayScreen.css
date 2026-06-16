@@ -9,7 +9,7 @@
 .ov {
   width: 100vw;
   background: #111111;
-  border: 1px solid rgba(124, 58, 237, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.55);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -18,8 +18,8 @@
   overflow: hidden;
   box-shadow:
     0 8px 40px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(124, 58, 237, 0.14),
-    0 0 32px rgba(124, 58, 237, 0.2);
+    0 0 0 1px rgba(0, 0, 0, 0.14),
+    0 0 32px rgba(0, 0, 0, 0.2);
   user-select: none;
 }
 
@@ -31,7 +31,7 @@
   padding: 10px 14px;
   -webkit-app-region: drag;
   cursor: grab;
-  background: rgba(124, 58, 237, 0.07);
+  background: rgba(0, 0, 0, 0.07);
 }
 
 
@@ -91,13 +91,13 @@
   padding: 3px 8px;
   border-radius: 6px;
   white-space: nowrap;
-  background: rgba(124, 58, 237, 0.22);
-  color: #7c3aed;
-  border: 1px solid rgba(124, 58, 237, 0.4);
+  background: rgba(0, 0, 0, 0.22);
+  color: #111111;
+  border: 1px solid rgba(0, 0, 0, 0.4);
 }
 
 .ov__stage--discovery { background: rgba(99, 179, 237, 0.12); color: #63b3ed; border-color: rgba(99, 179, 237, 0.25); }
-.ov__stage--pitch     { background: rgba(124, 58, 237, 0.2); color: #c026d3; border-color: rgba(124, 58, 237, 0.4); }
+.ov__stage--pitch     { background: rgba(0, 0, 0, 0.2); color: #111111; border-color: rgba(0, 0, 0, 0.4); }
 .ov__stage--close     { background: rgba(57, 211, 83, 0.12);  color: #39d353; border-color: rgba(57, 211, 83, 0.25); }
 
 .ov__prob {
@@ -192,7 +192,7 @@
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: #c026d3;
+  color: #111111;
   white-space: nowrap;
   padding-top: 2px;
   flex-shrink: 0;
@@ -269,7 +269,7 @@
 }
 
 .ov__transcript-entry--rep .ov__transcript-speaker {
-  color: rgba(124, 58, 237, 0.8);
+  color: rgba(0, 0, 0, 0.8);
 }
 
 .ov__transcript-entry--prospect .ov__transcript-speaker {

@@ -464,17 +464,17 @@ function injectFonts() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 const C = {
-  black:     '#05030f',
-  surface:   '#0a0714',
-  elevated:  '#100c1e',
-  purple:    '#7c3aed',
-  magenta:   '#c026d3',
-  nearWhite: '#f0ebff',
+  black:     '#ffffff',
+  surface:   '#f7f7f7',
+  elevated:  '#efefef',
+  purple:    '#111111',
+  magenta:   '#111111',
+  nearWhite: '#111111',
   white:     '#ffffff',
-  green:     '#22c55e',
-  red:       '#ef4444',
-  grad:      'linear-gradient(135deg, #7c3aed 0%, #c026d3 100%)',
-  gradDark:  'linear-gradient(135deg, #05030f 0%, #2d1561 50%, #7c3aed 100%)',
+  green:     '#16a34a',
+  red:       '#dc2626',
+  grad:      'linear-gradient(135deg, #111111 0%, #333333 100%)',
+  gradDark:  'linear-gradient(135deg, #ffffff 0%, #efefef 50%, #111111 100%)',
 };
 
 // ══════════════════════════════════════════════════════════════════════════════

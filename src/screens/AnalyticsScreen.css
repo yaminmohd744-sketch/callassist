@@ -102,7 +102,7 @@
   gap: 2px;
   padding: 0 var(--space-8) var(--space-4);
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .analytics__tab {
@@ -120,9 +120,9 @@
 }
 
 .analytics__tab--active {
-  background: rgba(124, 58, 237, 0.18);
+  background: rgba(0, 0, 0, 0.18);
   color: var(--color-accent-purple);
-  border-color: rgba(124, 58, 237, 0.45);
+  border-color: rgba(0, 0, 0, 0.45);
 }
 
 .analytics__tab:hover:not(.analytics__tab--active) {
@@ -149,22 +149,22 @@
 }
 
 .analytics__stat-card {
-  background: rgba(124, 58, 237, 0.12);
-  border: 1px solid rgba(124, 58, 237, 0.35);
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.35);
   border-radius: var(--border-radius-lg);
   padding: var(--space-5) var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  box-shadow: 0 0 32px rgba(124, 58, 237, 0.15), 0 2px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.15), 0 2px 16px rgba(0, 0, 0, 0.4);
   animation: an-stat-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) var(--an-delay, 0ms) both;
   transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .analytics__stat-card:hover {
-  background: rgba(124, 58, 237, 0.18);
-  border-color: rgba(124, 58, 237, 0.5);
-  box-shadow: 0 0 40px rgba(124, 58, 237, 0.22), 0 2px 16px rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.18);
+  border-color: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.22), 0 2px 16px rgba(0, 0, 0, 0.4);
 }
 
 .analytics__stat-val {
@@ -195,22 +195,22 @@
 }
 
 .analytics__chart-card {
-  background: rgba(124, 58, 237, 0.08);
-  border: 1px solid rgba(124, 58, 237, 0.35);
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.35);
   border-radius: var(--border-radius-lg);
   padding: var(--space-5) var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  box-shadow: 0 0 32px rgba(124, 58, 237, 0.15), 0 2px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.15), 0 2px 16px rgba(0, 0, 0, 0.4);
   animation: an-chart-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) var(--an-delay, 200ms) both;
   transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .analytics__chart-card:hover {
-  background: rgba(124, 58, 237, 0.12);
-  border-color: rgba(124, 58, 237, 0.5);
-  box-shadow: 0 0 40px rgba(124, 58, 237, 0.2), 0 2px 16px rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.12);
+  border-color: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.2), 0 2px 16px rgba(0, 0, 0, 0.4);
 }
 
 .analytics__chart-card--wide {
@@ -385,7 +385,7 @@
   transition: border-color var(--transition-fast), transform 0.15s ease;
 }
 .analytics__chart-card--clickable:hover {
-  border-color: rgba(124, 58, 237, 0.55);
+  border-color: rgba(0, 0, 0, 0.55);
   transform: translateY(-2px);
 }
 .analytics__chart-card--clickable:active { transform: translateY(0); }
@@ -578,8 +578,8 @@
 .analytics__lb-row:hover { background: var(--color-bg-elevated); }
 
 .analytics__lb-row--you {
-  background: rgba(124, 58, 237, 0.05);
-  border-color: rgba(124, 58, 237, 0.22);
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.22);
 }
 
 .analytics__lb-cell {
@@ -628,7 +628,7 @@
   border: 1px solid var(--color-accent-purple);
   border-radius: var(--border-radius-pill);
   padding: 1px 5px;
-  background: rgba(124, 58, 237, 0.08);
+  background: rgba(0, 0, 0, 0.08);
   flex-shrink: 0;
 }
 
@@ -737,7 +737,7 @@
   font-size: var(--font-size-xs);
   color: var(--color-accent-cyan);
   padding: var(--space-2) var(--space-3);
-  background: rgba(124, 58, 237, 0.08);
+  background: rgba(0, 0, 0, 0.08);
   border-radius: var(--border-radius-md);
 }
 
