@@ -1,0 +1,11 @@
+node_modules
+electron
+release
+dist
+.DS_Store
+*.log
+carousels
+marketing
+bw-preview.html
+email-preview.html
+pitchr-logo-b64.txt

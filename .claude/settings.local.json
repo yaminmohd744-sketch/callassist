@@ -270,7 +270,10 @@
       "Bash(nohup npm run electron:dev > /tmp/pitchr-dev.log 2>&1 & echo \"PID $!\")",
       "Bash(awk '{print $1, $2, $11, $12}')",
       "Bash(npx electron *)",
-      "Bash(python3 -c \"import json,sys; p=json.load\\(sys.stdin\\); print\\(p.get\\('homepage','no homepage'\\)\\); [print\\(k,':',v\\) for k,v in p.get\\('scripts',{}\\).items\\(\\)]\")"
+      "Bash(python3 -c \"import json,sys; p=json.load\\(sys.stdin\\); print\\(p.get\\('homepage','no homepage'\\)\\); [print\\(k,':',v\\) for k,v in p.get\\('scripts',{}\\).items\\(\\)]\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://www.pitchr.org)",
+      "Bash(curl -s https://www.pitchr.org)",
+      "Bash(python3 -)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\callassist\\.claude\\skills",

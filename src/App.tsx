@@ -125,6 +125,7 @@ export function App() {
   const [learningLog, setLearningLog] = useState<LearningLogEntry[]>(() => loadLearningLog());
 
   const [screen, setScreen]             = useState<Screen>(isElectron ? 'auth' : 'landing');
+  useEffect(() => { window.scrollTo(0, 0); }, [screen]);
   const [callConfig, setCallConfig]     = useState<CallConfig | null>(null);
   const [callSession, setCallSession]   = useState<CallSession | null>(null);
   const [pastSessions, setPastSessions] = useState<CallSession[]>([]);

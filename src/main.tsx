@@ -16,6 +16,9 @@ if (sentryDsn) {
   });
 }
 
+history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+
 const isOverlay = window.location.hash === '#overlay';
 
 if (isOverlay) {

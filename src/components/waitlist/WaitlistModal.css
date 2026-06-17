@@ -28,7 +28,11 @@
   animation: wl-slide-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-[data-theme="dark"] .wl-modal,
+[data-theme="dark"] .wl-modal {
+  background: #0a0a0a;
+  border-color: #222;
+}
+
 @media (prefers-color-scheme: dark) {
   .wl-modal {
     background: #0a0a0a;

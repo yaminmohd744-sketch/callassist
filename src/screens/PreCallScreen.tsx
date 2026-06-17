@@ -312,7 +312,7 @@ export function PreCallScreen({
           {platform !== 'phone' && (
             <div className="precall__meeting-url-field">
               <label htmlFor="precall-meeting-url" className="precall__section-label">
-                MEETING LINK{platform && platform !== 'phone'
+                MEETING LINK{platform
                   ? <span className="precall__required" aria-hidden="true"> *</span>
                   : <span className="precall__optional"> (optional)</span>}
               </label>
@@ -321,7 +321,7 @@ export function PreCallScreen({
                   id="precall-meeting-url"
                   className="precall__input precall__meeting-url-input"
                   type="url"
-                  placeholder={PLATFORM_URL_PLACEHOLDER[platform] ?? 'https://...'}
+                  placeholder={(platform ? PLATFORM_URL_PLACEHOLDER[platform] : undefined) ?? 'https://...'}
                   value={meetingUrl}
                   aria-required="true"
                   aria-invalid={!!errors.meetingUrl}
