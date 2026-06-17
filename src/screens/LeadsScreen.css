@@ -837,8 +837,8 @@
 }
 
 .leads-screen__score-pill--medium {
-  background: rgba(255, 165, 0, 0.12);
-  color: #ffaa00;
+  background: rgba(234, 88, 12, 0.12);
+  color: var(--color-accent-orange);
 }
 
 .leads-screen__score-pill--low {
@@ -858,7 +858,7 @@
 }
 
 .leads-screen__stage-badge--opener   { border-color: color-mix(in srgb, var(--color-accent-purple) 40%, transparent); color: var(--color-accent-purple); }
-.leads-screen__stage-badge--discovery { border-color: rgba(0, 161, 224, 0.4); color: #00A1E0; }
+.leads-screen__stage-badge--discovery { border-color: rgba(234, 88, 12, 0.4); color: var(--color-accent-orange); }
 .leads-screen__stage-badge--pitch    { border-color: rgba(234, 179, 8, 0.4);  color: var(--color-accent-yellow); }
 .leads-screen__stage-badge--close    { border-color: rgba(34, 197, 94, 0.4);  color: var(--color-accent-green); }
 

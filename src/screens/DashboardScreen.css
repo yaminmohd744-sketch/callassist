@@ -120,7 +120,7 @@
 /* ─── Coaching Focus Card ──────────────────────────────────────────────────── */
 .dashboard__coaching-card {
   background: var(--color-bg-elevated, #111);
-  border: 1px solid rgba(129, 74, 200, 0.2);
+  border: 1px solid var(--color-accent-purple-dim);
   border-radius: 12px;
   padding: 16px 20px;
   display: flex;
@@ -133,7 +133,7 @@
   gap: 8px;
 }
 .dashboard__coaching-icon {
-  color: var(--color-accent, #814ac8);
+  color: var(--color-text-accent);
   font-size: 14px;
 }
 .dashboard__coaching-title {
@@ -444,12 +444,12 @@
 }
 
 .dashboard__tab--active .dashboard__tab-count {
-  background: rgba(129, 74, 200, 0.18);
+  background: var(--color-accent-purple-dim);
   color: var(--color-accent-magenta, #df7afe);
 }
 
 .dashboard__tab-count--accent {
-  background: rgba(129, 74, 200, 0.18);
+  background: var(--color-accent-purple-dim);
   color: var(--color-accent-magenta, #df7afe);
 }
 

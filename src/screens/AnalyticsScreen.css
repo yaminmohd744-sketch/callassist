@@ -406,7 +406,7 @@
   cursor: pointer;
   transition: color var(--transition-fast), border-color var(--transition-fast);
 }
-.analytics__back-btn:hover { color: var(--color-text-primary); border-color: rgba(129,74,200,0.5); }
+.analytics__back-btn:hover { color: var(--color-text-primary); border-color: var(--color-border-bright); }
 
 /* ── Full detail view ────────────────────────────────────────────────────────*/
 
@@ -1075,7 +1075,7 @@
 
 .analytics__day-bar {
   width: 100%;
-  background: rgba(129,74,200,0.4);
+  background: var(--color-border-bright);
   border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
   transition: height 0.6s ease;
 }

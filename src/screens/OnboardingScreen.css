@@ -98,14 +98,11 @@
   font-size: 18px;
   font-weight: 900;
   letter-spacing: 0.06em;
-  background: linear-gradient(135deg, #814ac8, #df7afe);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-text-primary);
   margin-bottom: -8px;
 }
-.ob__logo-plus { color: #111111; }
-.ob__logo-sym  { color: #111111; }
+.ob__logo-plus { color: var(--color-text-primary); }
+.ob__logo-sym  { color: var(--color-text-primary); }
 
 /* Slide content */
 .ob__slide {

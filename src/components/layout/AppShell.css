@@ -606,12 +606,12 @@
 .app-shell__account-badge--connected:not(:hover) { }
 
 .app-shell__account-badge--disconnected {
-  background: rgba(129, 74, 200, 0.12);
-  border-color: rgba(129, 74, 200, 0.35);
-  color: var(--color-accent-magenta);
+  background: var(--color-accent-purple-dim);
+  border-color: var(--color-border-bright);
+  color: var(--color-text-primary);
 }
 .app-shell__account-badge--disconnected:hover {
-  background: rgba(129, 74, 200, 0.2);
+  background: var(--color-bg-hover);
 }
 
 .app-shell__account-badge--pending {

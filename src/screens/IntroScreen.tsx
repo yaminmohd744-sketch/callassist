@@ -8,7 +8,7 @@ interface IntroScreenProps {
 type Phase = 'dark' | 'plus' | 'words' | 'tag' | 'exit';
 
 const PITCH = ['P', 'I', 'T', 'C', 'H'];
-const PLUS  = ['P', 'L', 'U', 'S'];
+const PLUS  = ['R'];
 
 export function IntroScreen({ onDone }: IntroScreenProps) {
   const [phase, setPhase] = useState<Phase>('dark');

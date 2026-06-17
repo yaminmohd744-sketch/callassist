@@ -369,7 +369,7 @@ export function App() {
             setBusinessProfile(profile);
           } catch { toast.error('Storage full — your preferences may not be saved.'); }
           setOnboardingVersion(v => v + 1);
-          setAppLanguage(data.language as LanguageCode);
+          if (data.language) setAppLanguage(data.language as LanguageCode);
           setShowOnboarding(false);
         }} />
       </Suspense>

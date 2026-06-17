@@ -1160,7 +1160,7 @@ export function mockGenerateProspectSummary(session: CallSession): string {
   const { config, transcript, finalCloseProbability, callStage, durationSeconds, aiSummary } = session;
   const name = config.prospectName || 'there';
   const mins = Math.floor(durationSeconds / 60);
-  const minsLabel = mins > 0 ? `${mins} minute` : 'a brief';
+  const minsLabel = mins > 0 ? `${mins}-minute` : 'brief';
 
   const repLines = transcript.filter(e => e.speaker === 'rep').map(e => e.text);
   const prospectLines = transcript.filter(e => e.speaker === 'prospect').map(e => e.text);
@@ -1176,7 +1176,7 @@ export function mockGenerateProspectSummary(session: CallSession): string {
     return [
       `Hi ${name},`,
       ``,
-      `Thanks for taking the time for our ${minsLabel}-minute call today.`,
+      `Thanks for taking the time for our ${minsLabel} call today.`,
       ``,
       firstPara,
       ``,
@@ -1202,7 +1202,7 @@ export function mockGenerateProspectSummary(session: CallSession): string {
   return [
     `Hi ${name},`,
     ``,
-    `Thanks for the ${minsLabel}-minute call today. We had a solid ${stage} and I wanted to send a quick recap while everything is fresh.`,
+    `Thanks for the ${minsLabel} call today. We had a solid ${stage} and I wanted to send a quick recap while everything is fresh.`,
     ``,
     repLines.length > 0
       ? `On my end, I walked you through ${config.yourPitch ? config.yourPitch.slice(0, 80) + (config.yourPitch.length > 80 ? '…' : '') : 'what I had in mind for you'}.`

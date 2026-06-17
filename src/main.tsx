@@ -21,6 +21,11 @@ window.scrollTo(0, 0);
 
 const isOverlay = window.location.hash === '#overlay';
 
+// Landing page always starts in light mode
+if (!isOverlay) {
+  document.documentElement.setAttribute('data-theme', 'light');
+}
+
 if (isOverlay) {
   document.documentElement.style.background = 'transparent';
   document.body.style.background = 'transparent';

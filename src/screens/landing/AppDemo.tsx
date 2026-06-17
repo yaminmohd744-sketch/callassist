@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './AppDemo.css';
 
 // ── Scene data — three real moments from a live call ─────────────────────────
@@ -105,9 +105,24 @@ const SCENES: Array<{
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+const SCENE_DURATION_MS = 5000;
+
 export function AppDemo() {
   const [scene, setScene] = useState(0);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const s = SCENES[scene];
+
+  const goToScene = (idx: number) => {
+    if (timer.current) clearTimeout(timer.current);
+    setScene(idx);
+  };
+
+  useEffect(() => {
+    timer.current = setTimeout(() => {
+      setScene(prev => (prev + 1) % SCENES.length);
+    }, SCENE_DURATION_MS);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [scene]);
 
   const signalLabel = (sig: string | null) => {
     if (sig === 'buying-signal') return 'Signal';
@@ -337,7 +352,7 @@ export function AppDemo() {
           <button
             key={sc.id}
             className={`appdemo__scene-btn${scene === i ? ' appdemo__scene-btn--active' : ''}`}
-            onClick={() => setScene(i)}
+            onClick={() => goToScene(i)}
           >
             <span className={`appdemo__scene-dot ${scene === i ? '' : sc.dotClass}`} />
             {sc.label}
