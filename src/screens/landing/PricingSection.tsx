@@ -1,5 +1,16 @@
 import type { ReactNode } from 'react';
 
+function WinLogo() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <path d="M0 0h7.5v7.5H0z"/>
+      <path d="M8.5 0H16v7.5H8.5z"/>
+      <path d="M0 8.5h7.5V16H0z"/>
+      <path d="M8.5 8.5H16V16H8.5z"/>
+    </svg>
+  );
+}
+
 const PRICING_FAQ = [
   {
     q: 'Can my prospect hear or tell that I\'m using AI coaching during the call?',
@@ -145,10 +156,10 @@ export function PricingSection({ billingCycle, setBillingCycle, openFaq, setOpen
                 ))}
               </ul>
               <button
-                className={`lp__btn lp__btn--${plan.ctaStyle} lp__pricing-cta`}
+                className={`lp__win-btn${plan.ctaStyle === 'outline' ? ' lp__win-btn--outline' : ''} lp__pricing-cta`}
                 onClick={onDownload}
               >
-                {plan.cta}
+                {plan.cta} <WinLogo />
               </button>
             </div>
           ))}

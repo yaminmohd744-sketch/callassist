@@ -188,6 +188,15 @@
   box-shadow: none;
   filter: none;
 }
+[data-theme="dark"] .lp__win-btn--outline {
+  background: rgba(255,255,255,0.88);
+  color: #000000;
+  border-color: rgba(255,255,255,0.88);
+}
+[data-theme="dark"] .lp__win-btn--outline:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+}
 
 /* Nav download CTA — fades in on scroll */
 .lp__nav-cta-win {
@@ -1197,6 +1206,22 @@
   z-index: 2;
 }
 
+[data-theme="dark"] .lp__pricing-card {
+  border-color: rgba(255,255,255,0.10);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 0 40px rgba(255,255,255,0.04);
+}
+[data-theme="dark"] .lp__pricing-card:hover {
+  border-color: rgba(255,255,255,0.25);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.18), 0 0 50px rgba(255,255,255,0.10);
+}
+[data-theme="dark"] .lp__pricing-card--pro {
+  border-color: rgba(255,255,255,0.18);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 0 60px rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .lp__pricing-card--pro:hover {
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.22), 0 0 70px rgba(255,255,255,0.12);
+}
+
 .lp__pricing-badge {
   position: absolute;
   top: -14px;
@@ -1720,14 +1745,14 @@
   font-family: var(--font-display);
   font-size: clamp(2rem, 3.5vw, 3.2rem);
   font-weight: 700;
-  color: rgba(240, 235, 255, 0.1);
+  color: var(--color-text-primary);
   line-height: 1;
   letter-spacing: -0.04em;
   user-select: none;
   transition: color 0.18s ease-out;
 }
 .lp__sv-frow:hover .lp__sv-frow-num {
-  color: rgba(0, 0, 0, 0.4);
+  color: var(--color-text-primary);
 }
 
 .lp__sv-frow-body {
@@ -2229,9 +2254,9 @@
 
 .lp__sv-demo {
   margin-top: auto;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 10px;
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
   padding: 14px;
   font-size: 11px;
   font-family: var(--font-display);
@@ -2240,6 +2265,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.10);
 }
 
 /* ── Demo 0: Real-time coaching ─── */
@@ -2342,8 +2368,8 @@
   gap: 8px;
   padding: 5px 8px;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
 }
 .demo-lesson-icon { font-size: 10px; width: 12px; flex-shrink: 0; }
 .demo-lesson-name { flex: 1; color: var(--color-text-secondary); }
@@ -2355,7 +2381,7 @@
 
 .demo-bar-track {
   height: 3px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-elevated);
   border-radius: 2px;
   overflow: hidden;
   margin: -2px 0 2px 20px;
@@ -2481,7 +2507,7 @@
 .demo-prob-pct   { font-size: 11px; font-weight: 700; color: var(--color-accent-green); }
 .demo-prob-track {
   height: 4px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-elevated);
   border-radius: 2px;
   overflow: hidden;
   margin-bottom: 8px;
