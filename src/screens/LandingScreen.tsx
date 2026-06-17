@@ -293,9 +293,9 @@ export function LandingScreen({ onDownload, onWaitlist: _onWaitlist, onMarketing
   const [langIdx, setLangIdx]                   = useState(0);
   const [demoPhase, setDemoPhase]               = useState<'expanded' | 'clicking' | 'minimized' | 'endclicking' | 'postcall'>('expanded');
   const [desktopSceneIdx, setDesktopSceneIdx]   = useState(0);
-  const [desktopShowSuggestion, setDesktopShowSuggestion] = useState(false);
+  const [_desktopShowSuggestion, setDesktopShowSuggestion] = useState(false);
   const [postcallTab, setPostcallTab]           = useState<'summary' | 'transcript' | 'email' | 'scorecard' | 'share'>('summary');
-  const [spotlight, setSpotlight]               = useState<'transcript' | 'ai' | 'notes' | null>(null);
+  const [_spotlight, setSpotlight]               = useState<'transcript' | 'ai' | 'notes' | null>(null);
 
   // Named demo steps — step 0 is the live-call screen; suggestion fades in automatically after 1.8s
   type DemoStep = { phase: typeof demoPhase; tab: typeof postcallTab };
@@ -308,7 +308,7 @@ export function LandingScreen({ onDownload, onWaitlist: _onWaitlist, onMarketing
     { phase: 'postcall',  tab: 'scorecard' },
     { phase: 'postcall',  tab: 'share' },
   ];
-  const [demoStep, setDemoStep] = useState(0);
+  const [, setDemoStep] = useState(0);
   const autoTimer         = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sugTimer          = useRef<ReturnType<typeof setTimeout> | null>(null);
   const spotTimers        = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -372,14 +372,6 @@ export function LandingScreen({ onDownload, onWaitlist: _onWaitlist, onMarketing
     const t = setTimeout(() => setVisibleFrames(v => v + 1), FRAME_ADVANCE_MS);
     return () => clearTimeout(t);
   }, [visibleFrames]);
-
-  function handleDemoNav(dir: -1 | 1) {
-    if (autoTimer.current) clearTimeout(autoTimer.current);
-    if (sugTimer.current)  clearTimeout(sugTimer.current);
-    const next = (demoStep + dir + DEMO_STEPS.length) % DEMO_STEPS.length;
-    applyStep(next);
-    scheduleNext(next);
-  }
 
   useEffect(() => {
     if (activeSection !== 'features') return;

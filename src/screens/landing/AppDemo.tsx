@@ -3,7 +3,17 @@ import './AppDemo.css';
 
 // ── Scene data — three real moments from a live call ─────────────────────────
 
-const SCENES = [
+type Note = { ts: string; text: string; type?: 'objection' | 'signal' };
+
+const SCENES: Array<{
+  id: string; label: string; dotClass: string; time: string; objections: number;
+  closeProb: number; probLevel: 'green' | 'yellow' | 'red';
+  stage: string;
+  transcript: Array<{ speaker: string; time: string; text: string; signal: string | null }>;
+  interim: { speaker: string; text: string } | null;
+  ai: { type: string; badge: string; say: string; why: string; triggeredBy: string; time: string };
+  notes: Note[];
+}> = [
   {
     id: 'objection',
     label: 'Objection Handled',
