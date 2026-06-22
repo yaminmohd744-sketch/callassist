@@ -28,6 +28,23 @@ export interface ElectronAPI {
   onOAuthCallback:     (callback: (url: string) => void) => () => void;
   onOAuthCode:         (callback: (code: string) => void) => () => void;
   startGoogleServer:   () => void;
+  recall?: RecallAPI;
+}
+
+export interface RecallEvent {
+  type: 'meeting-detected' | 'meeting-closed' | 'recording-started' | 'recording-ended' | 'realtime-event' | 'error';
+  event?: string;            // realtime sub-event, e.g. 'transcript.data'
+  data?: unknown;            // realtime payload
+  window?: { id: string; title?: string; platform?: string };
+  message?: string;          // error message
+}
+
+export interface RecallAPI {
+  isAvailable:        () => Promise<boolean>;
+  requestPermissions: () => Promise<{ ok: boolean; error?: string }>;
+  start:              (uploadToken: string) => Promise<{ ok: boolean; windowId?: string; error?: string }>;
+  stop:               () => Promise<{ ok: boolean; error?: string }>;
+  onEvent:            (callback: (evt: RecallEvent) => void) => () => void;
 }
 
 declare global {

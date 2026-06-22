@@ -65,4 +65,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   startGoogleServer: () => ipcRenderer.send('google-start-server'),
   startZoomOAuth: (clientId, clientSecret) =>
     ipcRenderer.invoke('zoom-start-oauth', { clientId, clientSecret }),
+
+  // ── Recall.ai Desktop SDK ──────────────────────────────────────────────────
+  recall: {
+    isAvailable:        () => ipcRenderer.invoke('recall:available'),
+    requestPermissions: () => ipcRenderer.invoke('recall:request-permissions'),
+    start:              (uploadToken) => ipcRenderer.invoke('recall:start', { uploadToken }),
+    stop:               () => ipcRenderer.invoke('recall:stop'),
+    // Subscribe to all Recall events (meeting-detected, realtime-event, etc.).
+    // Returns an unsubscribe function.
+    onEvent: (callback) => {
+      const handler = (_, payload) => callback(payload);
+      ipcRenderer.on('recall:event', handler);
+      return () => ipcRenderer.removeListener('recall:event', handler);
+    },
+  },
 });

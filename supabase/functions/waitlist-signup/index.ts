@@ -26,10 +26,6 @@ function generateReferralCode(): string {
   return Array.from(bytes, b => chars[b % chars.length]).join("");
 }
 
-function positionSvg(pos: number): string {
-  return `<p style="margin:0;font-size:42px;font-weight:900;line-height:1.1;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#2a0d52,#4a1d8a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:#3a1570;">#${pos}</p>`;
-}
-
 function buildWelcomeEmail(firstName: string, position: number, referralCode: string): string {
   const referralUrl = `${APP_URL}?ref=${referralCode}`;
   const positionText = position === 1 ? "the very first person" : `#${position}`;
@@ -39,76 +35,85 @@ function buildWelcomeEmail(firstName: string, position: number, referralCode: st
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <title>You're on the Pitchr waitlist</title>
 <style>
-  body, .wrap { background:#f0ecfa !important; }
-  .body-cell { background:#ffffff !important; }
-  .heading { color:#111111 !important; }
-  .sub { color:#555555 !important; }
-  .label { color:#888888 !important; }
-  .pos-box { background:#f3effe !important; border-color:#c9b0ee !important; }
-  .pos-label { color:#9b8aaa !important; }
-  .ref-box { background:#f3effe !important; border-color:#c9b0ee !important; }
-  .ref-title { color:#814ac8 !important; }
-  .ref-url { background:#ede6fa !important; color:#6b3db0 !important; border-color:#c9b0ee !important; }
-  .item { color:#444444 !important; border-color:#e8dff5 !important; }
-  .footer-cell { background:#f7f4fc !important; }
-  .footer-text { color:#999999 !important; }
+  @media (prefers-color-scheme: dark) {
+    body, .wrap   { background:#0a0a0a !important; }
+    .card         { border-color:#2a2a2a !important; }
+    .body-cell    { background:#141414 !important; }
+    .eyebrow      { color:#bbbbbb !important; }
+    .heading      { color:#f0f0f0 !important; }
+    .sub          { color:#8a8a8a !important; }
+    .label        { color:#777777 !important; }
+    .box          { background:#1e1e1e !important; border-color:#2a2a2a !important; }
+    .pos-label    { color:#777777 !important; }
+    .pos-num      { color:#f0f0f0 !important; }
+    .ref-title    { color:#f0f0f0 !important; }
+    .ref-url      { background:#0a0a0a !important; color:#cccccc !important; border-color:#2a2a2a !important; }
+    .btn          { background:#ffffff !important; color:#111111 !important; }
+    .item         { color:#cccccc !important; border-color:#2a2a2a !important; }
+    .footer-cell  { background:#141414 !important; border-color:#2a2a2a !important; }
+    .footer-title { color:#aaaaaa !important; }
+    .footer-text  { color:#666666 !important; }
+    .footer-link  { color:#f0f0f0 !important; }
+  }
 </style>
 </head>
-<body class="wrap" style="margin:0;padding:0;background:#f0ecfa;font-family:Arial,Helvetica,sans-serif;">
-<table class="wrap" width="100%" cellpadding="0" cellspacing="0" style="background:#f0ecfa;padding:32px 12px;">
+<body class="wrap" style="margin:0;padding:0;background:#f7f7f7;font-family:Arial,Helvetica,sans-serif;">
+<table class="wrap" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f7;padding:32px 12px;">
 <tr><td align="center">
-<table width="100%" cellpadding="0" cellspacing="0" style="max-width:544px;width:100%;border:1px solid #c9b0ee;border-radius:16px;overflow:hidden;">
+<table class="card" width="100%" cellpadding="0" cellspacing="0" style="max-width:544px;width:100%;border:1px solid rgba(0,0,0,0.12);border-radius:16px;overflow:hidden;">
 
-  <!-- ── DARK GRADIENT HEADER (BackRow-style) ── -->
-  <tr><td align="center" bgcolor="#2a0d52" style="background:linear-gradient(180deg,#0d0020 0%,#2a0d52 50%,#4a1d8a 100%);padding:36px 28px 30px;border-radius:16px 16px 0 0;">
+  <!-- ── BLACK GRADIENT HEADER ── -->
+  <tr><td align="center" bgcolor="#000000" style="background:linear-gradient(135deg,#000000 0%,#1a1a1a 55%,#333333 100%);padding:36px 28px 30px;border-radius:16px 16px 0 0;">
     <p style="margin:0 0 8px;font-size:30px;font-weight:bold;letter-spacing:0;color:#ffffff !important;font-family:Arial,Helvetica,sans-serif;">PITCHR</p>
-    <p style="margin:0;font-size:10px;font-weight:bold;letter-spacing:3px;text-transform:uppercase;color:#c084f5 !important;font-family:Arial,Helvetica,sans-serif;">AI SALES COACH</p>
+    <p style="margin:0;font-size:10px;font-weight:bold;letter-spacing:3px;text-transform:uppercase;color:#999999 !important;font-family:Arial,Helvetica,sans-serif;">AI SALES COACH</p>
   </td></tr>
 
-  <!-- ── WHITE BODY ── -->
+  <!-- ── BODY ── -->
   <tr><td class="body-cell" style="background:#ffffff;padding:24px 20px 0;">
 
-    <p style="margin:0 0 7px;font-size:10px;font-weight:700;letter-spacing:2px;color:#814ac8;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Waitlist confirmed</p>
+    <p class="eyebrow" style="margin:0 0 7px;font-size:10px;font-weight:700;letter-spacing:2px;color:#111111;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Waitlist confirmed</p>
     <h1 class="heading" style="margin:0 0 10px;font-size:24px;font-weight:800;color:#111111;line-height:1.25;font-family:Arial,Helvetica,sans-serif;">You're in${position <= 100 ? " early" : ""}${firstName ? `, ${firstName}` : ""}.</h1>
     <p class="sub" style="margin:0 0 24px;font-size:14px;color:#555555;line-height:1.65;font-family:Arial,Helvetica,sans-serif;">
       You're ${positionText} on the Pitchr waitlist. We're building the AI coach that tells you exactly what to say on every call, in real time, before the prospect hangs up.
     </p>
 
     <!-- Position -->
-    <table class="pos-box" width="100%" cellpadding="0" cellspacing="0" style="background:#f3effe;border:1px solid #c9b0ee;border-radius:10px;margin-bottom:12px;">
+    <table class="box" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f7;border:1px solid rgba(0,0,0,0.12);border-radius:10px;margin-bottom:12px;">
       <tr><td style="padding:16px 20px;">
-        <p class="pos-label" style="margin:0 0 4px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#9b8aaa;font-weight:700;font-family:Arial,Helvetica,sans-serif;">Your position</p>
-        ${positionSvg(position)}
+        <p class="pos-label" style="margin:0 0 4px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999999;font-weight:700;font-family:Arial,Helvetica,sans-serif;">Your position</p>
+        <p class="pos-num" style="margin:0;font-size:42px;font-weight:900;line-height:1.1;color:#111111;font-family:Arial,Helvetica,sans-serif;">#${position}</p>
       </td></tr>
     </table>
 
     <!-- Referral -->
-    <table class="ref-box" width="100%" cellpadding="0" cellspacing="0" style="background:#f3effe;border:1px solid #c9b0ee;border-radius:10px;margin-bottom:24px;">
+    <table class="box" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f7;border:1px solid rgba(0,0,0,0.12);border-radius:10px;margin-bottom:24px;">
       <tr><td style="padding:16px 20px;">
-        <p class="ref-title" style="margin:0 0 4px;font-size:13px;font-weight:700;color:#814ac8;font-family:Arial,Helvetica,sans-serif;">Move up the list →</p>
+        <p class="ref-title" style="margin:0 0 4px;font-size:13px;font-weight:700;color:#111111;font-family:Arial,Helvetica,sans-serif;">Move up the list →</p>
         <p class="sub" style="margin:0 0 10px;font-size:13px;color:#555555;line-height:1.5;font-family:Arial,Helvetica,sans-serif;">Share your link. Every signup through it bumps you higher.</p>
-        <p class="ref-url" style="margin:0 0 12px;background:#ede6fa;border:1px solid #c9b0ee;border-radius:6px;padding:9px 12px;font-size:11px;color:#6b3db0;font-family:monospace;word-break:break-all;">${referralUrl}</p>
-        <a href="${referralUrl}" style="display:inline-block;background:linear-gradient(135deg,#814ac8,#df7afe);color:#ffffff;text-decoration:none;border-radius:100px;padding:10px 22px;font-size:13px;font-weight:700;font-family:Arial,Helvetica,sans-serif;">Share your link</a>
+        <p class="ref-url" style="margin:0 0 12px;background:#efefef;border:1px solid rgba(0,0,0,0.12);border-radius:6px;padding:9px 12px;font-size:11px;color:#333333;font-family:monospace;word-break:break-all;">${referralUrl}</p>
+        <a class="btn" href="${referralUrl}" style="display:inline-block;background:linear-gradient(135deg,#111111,#333333);color:#ffffff;text-decoration:none;border-radius:100px;padding:10px 22px;font-size:13px;font-weight:700;font-family:Arial,Helvetica,sans-serif;">Share your link</a>
       </td></tr>
     </table>
 
     <!-- What's next -->
-    <p class="label" style="margin:0 0 10px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888888;font-family:Arial,Helvetica,sans-serif;">What's next</p>
+    <p class="label" style="margin:0 0 10px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#999999;font-family:Arial,Helvetica,sans-serif;">What's next</p>
     <table width="100%" cellpadding="0" cellspacing="0">
-      <tr><td class="item" style="padding:9px 0;border-bottom:1px solid #e8dff5;font-size:13px;color:#444444;font-family:Arial,Helvetica,sans-serif;"><strong>First to know</strong> the moment Pitchr drops</td></tr>
-      <tr><td class="item" style="padding:9px 0;border-bottom:1px solid #e8dff5;font-size:13px;color:#444444;font-family:Arial,Helvetica,sans-serif;">Early <strong>offers and deals</strong> before anyone else sees them</td></tr>
+      <tr><td class="item" style="padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.08);font-size:13px;color:#444444;font-family:Arial,Helvetica,sans-serif;"><strong>First to know</strong> the moment Pitchr drops</td></tr>
+      <tr><td class="item" style="padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.08);font-size:13px;color:#444444;font-family:Arial,Helvetica,sans-serif;">Early <strong>offers and deals</strong> before anyone else sees them</td></tr>
       <tr><td class="item" style="padding:9px 0;font-size:13px;color:#444444;font-family:Arial,Helvetica,sans-serif;">We'll keep you <strong>in the loop</strong> as we build. No spam, ever.</td></tr>
     </table>
 
   </td></tr>
 
   <!-- ── FOOTER ── -->
-  <tr><td class="footer-cell" style="background:#f7f4fc;padding:18px 20px;text-align:center;border-top:1px solid #e8dff5;border-radius:0 0 16px 16px;">
-    <p class="footer-text" style="margin:0 0 4px;font-size:12px;font-weight:700;color:#999999;font-family:Arial,Helvetica,sans-serif;">Pitchr — AI sales coach</p>
-    <p style="margin:0;font-size:11px;color:#bbbbbb;font-family:Arial,Helvetica,sans-serif;">
-      <a href="${APP_URL}" style="color:#814ac8;text-decoration:none;">pitchr.org</a> · © 2026 Pitchr. All rights reserved.
+  <tr><td class="footer-cell" style="background:#f7f7f7;padding:18px 20px;text-align:center;border-top:1px solid rgba(0,0,0,0.08);border-radius:0 0 16px 16px;">
+    <p class="footer-title" style="margin:0 0 4px;font-size:12px;font-weight:700;color:#999999;font-family:Arial,Helvetica,sans-serif;">Pitchr — AI sales coach</p>
+    <p class="footer-text" style="margin:0;font-size:11px;color:#bbbbbb;font-family:Arial,Helvetica,sans-serif;">
+      <a class="footer-link" href="${APP_URL}" style="color:#111111;text-decoration:none;">pitchr.org</a> · © 2026 Pitchr. All rights reserved.
     </p>
   </td></tr>
 

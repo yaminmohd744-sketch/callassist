@@ -8,6 +8,7 @@ import { AIIntelligencePanel } from '../components/panels/AIIntelligencePanel';
 import { LeadProfilePanel } from '../components/panels/LeadProfilePanel';
 import { useCallTimer } from '../hooks/useCallTimer';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
+import { useRecallTranscription } from '../hooks/useRecallTranscription';
 import { useAICoach } from '../hooks/useAICoach';
 import { generateSessionSummary, classifySignalAI } from '../lib/ai';
 import { classifySignal, PROSPECT_PHRASES, REP_PHRASES, PROSPECT_REACTIONS } from '../lib/keywords';
@@ -274,14 +275,32 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     systemAudioStream: systemStream,
   });
 
+  // Recall.ai Desktop SDK — invisible meeting capture (Electron only). When
+  // available it replaces the mic/system-audio path and feeds the same
+  // handleFinalTranscript, so the coaching loop is identical downstream.
+  const [recallInterim, setRecallInterim] = useState('');
+  const recall = useRecallTranscription({
+    onFinalTranscript: handleFinalTranscript,
+    onInterim: setRecallInterim,
+    language: config.language ?? 'en-US',
+  });
+  const useRecall = recall.available;
+  const recallAvailableRef = useRef(recall.available);
+  recallAvailableRef.current = recall.available;
+
+  // Unified live indicators — Recall path when active, otherwise Web/Deepgram.
+  const liveListening = useRecall ? recall.isRecording : isListening;
+  const liveInterim   = useRecall ? recallInterim : interimText;
+  const liveError     = useRecall ? recall.errorMessage : errorMessage;
+
   // Record when speech starts so we can measure utterance duration accurately.
   const prevInterimRef = useRef('');
   useEffect(() => {
-    if (interimText && !prevInterimRef.current) {
+    if (liveInterim && !prevInterimRef.current) {
       speechStartRef.current = Date.now();
     }
-    prevInterimRef.current = interimText;
-  }, [interimText]);
+    prevInterimRef.current = liveInterim;
+  }, [liveInterim]);
 
   useEffect(() => {
     // Reset AI coach so each new call starts with a clean slate.
@@ -348,7 +367,12 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     dgSpeakerMapRef.current = null;
     setCallStatus('active');
     startTimer();
-    startListening().catch(() => setMicWarning(true));
+    if (recallAvailableRef.current) {
+      // Recall captures the meeting locally — no mic/system-audio stream needed.
+      recall.startListening().catch(() => setMicWarning(true));
+    } else {
+      startListening().catch(() => setMicWarning(true));
+    }
     if (recordingSupported) startRecording();
     return () => {
       if (flipDebounceRef.current) clearTimeout(flipDebounceRef.current);
@@ -440,6 +464,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     if (isSummarisingRef.current) return;
     if (flipDebounceRef.current) { clearTimeout(flipDebounceRef.current); flipDebounceRef.current = null; }
     stopListening();
+    recall.stopListening();
     stopTimer();
     systemStream?.getTracks().forEach(t => t.stop());
     await stopRecording(recordingKeyRef.current);
@@ -578,6 +603,29 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   };
 
   if (!audioSetupDone) {
+    // Recall Desktop SDK path: captures both sides invisibly, no screen share.
+    if (useRecall) {
+      return (
+        <div className="live-call live-call--audio-setup">
+          <div className="live-call__setup-card">
+            <div className="live-call__setup-icon">🎧</div>
+            <h2 className="live-call__setup-title">Ready to capture your call</h2>
+            <p className="live-call__setup-desc">
+              Pitchr will transcribe both you <em>and</em> the other person automatically once your
+              meeting starts. Nothing joins the call — capture runs privately on this device.
+            </p>
+            <p className="live-call__setup-hint">
+              You may be asked to grant microphone, screen-recording and accessibility access the first time.
+            </p>
+            <div className="live-call__setup-actions">
+              <button className="live-call__setup-btn live-call__setup-btn--primary" onClick={() => setAudioSetupDone(true)}>
+                Start coaching
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="live-call live-call--audio-setup">
         <div className="live-call__setup-card">
@@ -671,9 +719,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
             <ErrorBoundary>
               <TranscriptPanel
                 entries={transcript}
-                isListening={isListening}
-                interimText={interimText}
-                errorMessage={errorMessage}
+                isListening={liveListening}
+                interimText={liveInterim}
+                errorMessage={liveError}
                 onFlipSpeaker={handleFlipSpeaker}
               />
             </ErrorBoundary>

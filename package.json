@@ -40,6 +40,7 @@
     "@fontsource/figtree": "^5.2.10",
     "@fontsource/fragment-mono": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
+    "@recallai/desktop-sdk": "^2.0.19",
     "@sentry/react": "^10.49.0",
     "@supabase/supabase-js": "^2.99.1",
     "react": "^19.2.0",

@@ -1,0 +1,11 @@
+{
+  "name": "pitchr-reddit-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Monitors Reddit for posts relevant to Pitchr and alerts you. Read-only — never posts.",
+  "scripts": {
+    "start": "node src/index.ts",
+    "watch": "node src/index.ts --loop"
+  }
+}

@@ -3,6 +3,22 @@ const path = require('path');
 const http  = require('http');
 const https = require('https');
 
+// ── Recall.ai Desktop SDK (optional native module) ────────────────────────────
+// Records meeting audio locally — no bot joins the call — and streams real-time
+// transcription back to the renderer. Wrapped in try/catch so a missing/native
+// build failure never crashes the app; the renderer falls back to mic capture.
+let RecallSdk = null;
+try {
+  RecallSdk = require('@recallai/desktop-sdk');
+} catch (err) {
+  console.warn('[Pitchr] Recall Desktop SDK unavailable:', err && err.message);
+}
+const RECALL_API_URL = process.env.RECALL_API_URL || 'https://us-west-2.recall.ai';
+// The window id of the most recently detected meeting (set by the SDK event).
+let recallDetectedWindowId = null;
+let recallRecordingWindowId = null;
+let recallInitialized = false;
+
 // ── Google OAuth helpers ──────────────────────────────────────────────────────
 
 const GOOGLE_REDIRECT_URI = 'http://127.0.0.1:3457';
@@ -319,12 +335,108 @@ app.on('open-url', (event, url) => {
   }
 });
 
+// ── Recall.ai Desktop SDK wiring ──────────────────────────────────────────────
+
+function sendToRenderer(channel, payload) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(channel, payload);
+  }
+}
+
+// Initialise the SDK once and forward its events to the renderer over a single
+// 'recall:event' channel. Returns true if the SDK is available.
+async function ensureRecallInit() {
+  if (!RecallSdk) return false;
+  if (recallInitialized) return true;
+  try {
+    await RecallSdk.init({ apiUrl: RECALL_API_URL });
+
+    RecallSdk.addEventListener('meeting-detected', (evt) => {
+      recallDetectedWindowId = evt && evt.window && evt.window.id;
+      sendToRenderer('recall:event', { type: 'meeting-detected', window: evt.window });
+    });
+    RecallSdk.addEventListener('meeting-closed', (evt) => {
+      if (evt && evt.window && evt.window.id === recallDetectedWindowId) recallDetectedWindowId = null;
+      sendToRenderer('recall:event', { type: 'meeting-closed', window: evt && evt.window });
+    });
+    RecallSdk.addEventListener('recording-started', (evt) => {
+      recallRecordingWindowId = evt && evt.window && evt.window.id;
+      sendToRenderer('recall:event', { type: 'recording-started', window: evt && evt.window });
+    });
+    RecallSdk.addEventListener('recording-ended', (evt) => {
+      recallRecordingWindowId = null;
+      sendToRenderer('recall:event', { type: 'recording-ended', window: evt && evt.window });
+    });
+    RecallSdk.addEventListener('realtime-event', (evt) => {
+      // evt = { window, event: 'transcript.data'|'transcript.partial_data', data }
+      sendToRenderer('recall:event', { type: 'realtime-event', event: evt.event, data: evt.data });
+    });
+    RecallSdk.addEventListener('error', (evt) => {
+      sendToRenderer('recall:event', { type: 'error', message: evt && evt.message });
+    });
+
+    recallInitialized = true;
+    return true;
+  } catch (err) {
+    console.error('[Pitchr] Recall init failed:', err && err.message);
+    return false;
+  }
+}
+
+// Renderer asks: is the Recall SDK present in this build?
+ipcMain.handle('recall:available', () => !!RecallSdk);
+
+// Request the macOS permissions Recall needs (no-op on other platforms).
+ipcMain.handle('recall:request-permissions', async () => {
+  const ok = await ensureRecallInit();
+  if (!ok) return { ok: false, error: 'Recall SDK unavailable' };
+  try {
+    for (const perm of ['accessibility', 'microphone', 'screen-capture', 'system-audio']) {
+      await RecallSdk.requestPermission(perm).catch(() => {});
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err && err.message };
+  }
+});
+
+// Start recording the detected meeting with an upload token from the backend.
+ipcMain.handle('recall:start', async (_evt, { uploadToken }) => {
+  const ok = await ensureRecallInit();
+  if (!ok) return { ok: false, error: 'Recall SDK unavailable' };
+  const windowId = recallDetectedWindowId;
+  if (!windowId) return { ok: false, error: 'No meeting detected yet' };
+  if (!uploadToken) return { ok: false, error: 'Missing upload token' };
+  try {
+    await RecallSdk.startRecording({ windowId, uploadToken });
+    return { ok: true, windowId };
+  } catch (err) {
+    return { ok: false, error: err && err.message };
+  }
+});
+
+ipcMain.handle('recall:stop', async () => {
+  if (!RecallSdk) return { ok: false, error: 'Recall SDK unavailable' };
+  const windowId = recallRecordingWindowId || recallDetectedWindowId;
+  if (!windowId) return { ok: true };
+  try {
+    await RecallSdk.stopRecording({ windowId });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err && err.message };
+  }
+});
+
 app.whenReady().then(() => {
   // macOS: proactively request mic access so the system dialog fires before
   // the user hits the live call screen. On Windows/Linux this is a no-op.
   if (process.platform === 'darwin') {
     systemPreferences.askForMediaAccess('microphone').catch(() => {});
   }
+
+  // Kick off Recall SDK init in the background so meeting detection is ready
+  // by the time the user reaches the live call screen.
+  ensureRecallInit().catch(() => {});
 
   // Grant microphone (and camera) permissions so getUserMedia and
   // webkitSpeechRecognition both work without a prompt.
@@ -361,5 +473,12 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
+  }
+});
+
+// Cleanly shut down the Recall SDK so no native recorder process is orphaned.
+app.on('before-quit', () => {
+  if (RecallSdk && recallInitialized) {
+    try { RecallSdk.shutdown(); } catch { /* ignore */ }
   }
 });
