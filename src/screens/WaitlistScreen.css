@@ -183,10 +183,10 @@
   flex-shrink: 0;
 }
 .wl__avatar:first-child { margin-left: 0; }
-.wl__avatar--1 { background: #814ac8; }
-.wl__avatar--2 { background: #df7afe; }
-.wl__avatar--3 { background: #6b3db0; }
-.wl__avatar--4 { background: #a855f7; }
+.wl__avatar--1 { background: #2a2a2a; }
+.wl__avatar--2 { background: #4a4a4a; }
+.wl__avatar--3 { background: #1a1a1a; }
+.wl__avatar--4 { background: #3a3a3a; }
 .wl__avatar--5 { background: #111111; }
 
 .wl__social-text {

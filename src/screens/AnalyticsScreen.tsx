@@ -113,8 +113,8 @@ function LineChart({ chartId, points, maxVal, unit = '', style }: {
         <svg width={W} height={H} className="analytics__linechart" overflow="visible">
           <defs>
             <linearGradient id={`${chartId}-area`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgba(129,74,200,0.15)" />
-              <stop offset="100%" stopColor="rgba(129,74,200,0)" />
+              <stop offset="0%" stopColor="rgba(240,240,240,0.12)" />
+              <stop offset="100%" stopColor="rgba(240,240,240,0)" />
             </linearGradient>
             {pts.slice(0, -1).map((p, i) => (
               <linearGradient key={i} id={`${chartId}-s${i}`}

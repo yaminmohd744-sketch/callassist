@@ -96,7 +96,7 @@
   border: 1px solid rgba(0, 0, 0, 0.4);
 }
 
-.ov__stage--discovery { background: rgba(99, 179, 237, 0.12); color: #63b3ed; border-color: rgba(99, 179, 237, 0.25); }
+.ov__stage--discovery { background: rgba(255, 255, 255, 0.12); color: #f0f0f0; border-color: rgba(255, 255, 255, 0.25); }
 .ov__stage--pitch     { background: rgba(0, 0, 0, 0.2); color: #111111; border-color: rgba(0, 0, 0, 0.4); }
 .ov__stage--close     { background: rgba(57, 211, 83, 0.12);  color: #39d353; border-color: rgba(57, 211, 83, 0.25); }
 

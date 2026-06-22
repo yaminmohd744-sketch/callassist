@@ -181,6 +181,7 @@ export function PricingSection({ billingCycle, setBillingCycle, openFaq, setOpen
               <button
                 className="lp__sv-faq-q"
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                aria-expanded={openFaq === i}
               >
                 {item.q}
                 <span className="lp__sv-faq-toggle">{openFaq === i ? '−' : '+'}</span>
