@@ -126,7 +126,7 @@ export function AppShell({
         return next;
       });
     }).catch(() => {});
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
@@ -137,7 +137,7 @@ export function AppShell({
   useEffect(() => {
     const saved = localStorage.getItem('pitchr-theme');
     if (saved) document.documentElement.setAttribute('data-theme', saved);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   function handlePicClick() { picInputRef.current?.click(); }
   function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {

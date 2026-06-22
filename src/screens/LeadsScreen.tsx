@@ -253,7 +253,7 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
     } finally {
       setLoading(false);
     }
-  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
 

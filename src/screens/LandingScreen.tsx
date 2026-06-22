@@ -269,7 +269,7 @@ function WinLogo() {
 
 
 
-export function LandingScreen({ onDownload, onWaitlist: _onWaitlist, onMarketingPlan }: LandingScreenProps) {
+export function LandingScreen({ onDownload, onMarketingPlan }: LandingScreenProps) {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -454,7 +454,7 @@ export function LandingScreen({ onDownload, onWaitlist: _onWaitlist, onMarketing
   useEffect(() => {
     restartFeatureInterval();
     return () => { if (featureIntervalRef.current) clearInterval(featureIntervalRef.current); };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   function goFeatureTab(idx: number) {
     setFeatureTabIdx(idx);

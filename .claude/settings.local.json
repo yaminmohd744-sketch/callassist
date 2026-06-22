@@ -290,12 +290,23 @@
       "Bash(npm test *)",
       "Bash(grep -v \"^[0-9]*:@media \\(prefers-color-scheme: light\\) {$\")",
       "Bash(grep -n -E \"#[0-9a-fA-F]{3,6}\\\\b\" src/screens/LiveCallScreen.css)",
-      "Bash(npx vitest *)"
+      "Bash(npx vitest *)",
+      "Bash(echo \"=== EXIT: $? ===\")",
+      "WebFetch(domain:kie.ai)",
+      "WebFetch(domain:www.kie.ai)",
+      "WebFetch(domain:docs.kie.ai)",
+      "Bash(kill %1)",
+      "Bash(curl -s -X GET https://api.kie.ai/v1/models -H 'Authorization: Bearer 22ad80c895d9f6e45d81e2ed61c6a395' -H 'Content-Type: application/json')",
+      "Bash(mkdir -p /Users/yamin/kie-mcp && ls /Users/yamin/kie-mcp)",
+      "Bash(open -a \"Visual Studio Code\" /Users/yamin/.claude.json)",
+      "Bash(open /Users/yamin/.claude.json)",
+      "Bash(open -e /Users/yamin/.claude.json)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\callassist\\.claude\\skills",
       "C:\\Users\\User\\.claude\\skills",
-      "/private/tmp"
+      "/private/tmp",
+      "/Users/yamin"
     ]
   }
 }

@@ -295,7 +295,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
       if (!draft || draft.transcript.length === 0) return;
       setDraftRecovery({ transcript: draft.transcript, suggestions: draft.suggestions ?? [], startedAt: draft.startedAt });
     }).catch(() => { /* IndexedDB unavailable — silent */ });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Auto-save draft to IndexedDB every 10 seconds during an active call.
