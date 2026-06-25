@@ -7,7 +7,7 @@ import { TranscriptPanel } from '../components/panels/TranscriptPanel';
 import { AIIntelligencePanel } from '../components/panels/AIIntelligencePanel';
 import { LeadProfilePanel } from '../components/panels/LeadProfilePanel';
 import { useCallTimer } from '../hooks/useCallTimer';
-import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
+import { useSpeechRecognition, prefetchDeepgramToken } from '../hooks/useSpeechRecognition';
 import { useRecallTranscription } from '../hooks/useRecallTranscription';
 import { useAICoach } from '../hooks/useAICoach';
 import { generateSessionSummary, classifySignalAI } from '../lib/ai';
@@ -172,7 +172,13 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     // Deepgram diarization takes priority over all heuristics when available
     if (deepgramSpeaker !== undefined) {
       if (!dgSpeakerMapRef.current) {
-        dgSpeakerMapRef.current = new Map([[deepgramSpeaker, 'rep']]);
+        // Don't blindly assume the first diarized speaker is the rep — if the
+        // opening line reads as the prospect (strong prospect keywords, no rep
+        // keywords), seed the map the other way so every later turn stays correct.
+        const lower = text.toLowerCase();
+        const looksProspect = PROSPECT_PHRASES.some(p => lower.includes(p))
+          && !REP_PHRASES.some(p => lower.includes(p));
+        dgSpeakerMapRef.current = new Map([[deepgramSpeaker, looksProspect ? 'prospect' : 'rep']]);
       }
       const mapped = dgSpeakerMapRef.current.get(deepgramSpeaker);
       if (mapped) {
@@ -293,6 +299,11 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const liveInterim   = useRecall ? recallInterim : interimText;
   const liveError     = useRecall ? recall.errorMessage : errorMessage;
 
+  // Live rep talk-share (null until there's enough speech to be meaningful) —
+  // surfaces a "you're dominating" nudge in the status bar.
+  const _talkTotalSec = repSecondsRef.current + prospectSecondsRef.current;
+  const repTalkPct = _talkTotalSec > 5 ? Math.round((repSecondsRef.current / _talkTotalSec) * 100) : null;
+
   // Record when speech starts so we can measure utterance duration accurately.
   const prevInterimRef = useRef('');
   useEffect(() => {
@@ -305,6 +316,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   useEffect(() => {
     // Reset AI coach so each new call starts with a clean slate.
     resetCoach();
+    // Warm the Deepgram token cache now (while the user is on the audio-setup
+    // screen) so first transcription isn't delayed by the token round-trip.
+    prefetchDeepgramToken();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -339,11 +353,21 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   }, [callStatus, config]);
 
   // Push live call data to the Electron overlay window whenever it changes.
+  // Bound the payload (most-recent suggestions, truncated bodies, last 4
+  // transcript lines) so it never approaches the preload's 512KB IPC cap —
+  // an over-cap payload is silently dropped, which would freeze the overlay.
   useEffect(() => {
     if (!window.electronAPI) return;
-    const recentTranscript = transcript.slice(-4).map(e => ({ speaker: e.speaker as 'rep' | 'prospect', text: e.text }));
+    const recentTranscript = transcript.slice(-4).map(e => ({
+      speaker: e.speaker as 'rep' | 'prospect',
+      text: e.text.slice(0, 400),
+    }));
+    const boundedSuggestions = suggestions.slice(0, 6).map(s => ({
+      ...s,
+      body: s.body.length > 600 ? s.body.slice(0, 600) : s.body,
+    }));
     window.electronAPI.pushOverlayData({
-      suggestions,
+      suggestions: boundedSuggestions,
       closeProbability,
       callStage,
       prospectName: config.prospectName,
@@ -681,6 +705,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
             formattedTime={formattedTime}
             objectionsCount={objectionsCount}
             closeProbability={closeProbability}
+            repTalkPct={repTalkPct}
           />
           {micWarning && (
             <div className="livecall__mic-warning">

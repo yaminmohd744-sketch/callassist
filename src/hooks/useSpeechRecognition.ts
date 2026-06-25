@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
+import * as Sentry from '@sentry/react';
 import { getDeepgramCode } from '../lib/languages';
 import { FUNCTIONS_BASE, ANON_KEY, getAuthToken } from '../lib/api';
 
@@ -9,6 +10,15 @@ const TOKEN_CACHE_HEADROOM_MS = 120_000;   // refetch 2min before expiry
 
 let _deepgramTokenCache: { value: string; expiresAt: number } | null = null;
 export function clearDeepgramTokenCache() { _deepgramTokenCache = null; }
+
+/**
+ * Warm the Deepgram token cache ahead of the WebSocket connection. Call this
+ * the moment the user commits to starting a call so the ~1-2s token fetch
+ * overlaps with audio-permission prompts instead of delaying first transcription.
+ */
+export function prefetchDeepgramToken(): void {
+  void fetchDeepgramKey();
+}
 
 async function fetchDeepgramKey(): Promise<string | null> {
   if (_deepgramTokenCache && Date.now() + TOKEN_CACHE_HEADROOM_MS < _deepgramTokenCache.expiresAt) {
@@ -29,7 +39,10 @@ async function fetchDeepgramKey(): Promise<string | null> {
     const key = data.key ?? null;
     if (key) _deepgramTokenCache = { value: key, expiresAt: Date.now() + TOKEN_CACHE_TTL_MS };
     return key;
-  } catch {
+  } catch (err) {
+    // Token fetch failure forces the Web Speech fallback (no diarization) —
+    // surface it so production transcription degradations are observable.
+    Sentry.captureException(err, { tags: { section: 'deepgram-token' } });
     return null;
   }
 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import * as Sentry from '@sentry/react';
 import { FUNCTIONS_BASE, ANON_KEY, getAuthToken } from '../lib/api';
 import { getDeepgramCode } from '../lib/languages';
 import type { RecallEvent } from '../electron';
@@ -115,6 +116,7 @@ export function useRecallTranscription({
         break;
       case 'error':
         setErrorMessage(evt.message ?? 'Recall error');
+        Sentry.captureException(new Error(`Recall SDK: ${evt.message ?? 'unknown'}`), { tags: { section: 'recall-desktop' } });
         break;
       case 'realtime-event': {
         const payload = evt.data as RecallTranscriptData;
@@ -164,7 +166,8 @@ export function useRecallTranscription({
       const data = await res.json() as { uploadToken?: string };
       if (!data.uploadToken) { setErrorMessage('Recall did not return an upload token.'); return; }
       uploadTokenRef.current = data.uploadToken;
-    } catch {
+    } catch (err) {
+      Sentry.captureException(err, { tags: { section: 'recall-token' } });
       setErrorMessage('Could not reach the Recall token service.');
       return;
     }
