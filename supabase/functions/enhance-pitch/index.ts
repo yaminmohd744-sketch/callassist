@@ -1,7 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
+import { anthropicText, MODELS } from "../_shared/anthropic.ts";
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -48,31 +47,12 @@ Goal of this call: ${callGoal || "(not specified)"}
 
 Expand this into a clear pitch description the AI coaching system can use.`;
 
-    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
-        max_tokens: 400,
-        temperature: 0.6,
-      }),
-    });
-
-    const data = await response.json();
-    if (data.error) {
-      throw new Error(`OpenAI error: ${data.error.message ?? JSON.stringify(data.error)}`);
-    }
-    if (!data.choices?.length) throw new Error(`OpenAI returned no choices: ${JSON.stringify(data)}`);
-
-    const enhancedPitch = data.choices[0].message.content.trim();
+    const enhancedPitch = (await anthropicText({
+      model: MODELS.fast,
+      maxTokens: 400,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage }],
+    })).trim();
 
     return new Response(JSON.stringify({ enhancedPitch }), {
       headers: {

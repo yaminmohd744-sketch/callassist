@@ -127,15 +127,16 @@ export async function analyzeTranscript(
       if (done) break;
 
       const chunk = decoder.decode(value, { stream: true });
-      // Parse OpenAI SSE lines: "data: {...}" or "data: [DONE]"
+      // Parse Anthropic SSE lines: "data: {type:'content_block_delta', delta:{type:'text_delta', text}}".
+      // Other event lines (message_start, content_block_start/stop, message_delta/stop, ping) are ignored.
       for (const line of chunk.split('\n')) {
         const trimmed = line.trim();
         if (!trimmed.startsWith('data: ')) continue;
         const payload = trimmed.slice(6);
-        if (payload === '[DONE]') break;
         try {
-          const parsed = JSON.parse(payload) as { choices?: Array<{ delta?: { content?: string } }> };
-          const token = parsed.choices?.[0]?.delta?.content;
+          const parsed = JSON.parse(payload) as { type?: string; delta?: { type?: string; text?: string } };
+          if (parsed.type !== 'content_block_delta' || parsed.delta?.type !== 'text_delta') continue;
+          const token = parsed.delta.text;
           if (!token) continue;
           accumulated += token;
 

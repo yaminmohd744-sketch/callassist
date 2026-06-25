@@ -1,7 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
+import { anthropicText, parseJsonLoose, MODELS } from "../_shared/anthropic.ts";
 
 function sanitize(s: unknown, maxLen: number): string {
   if (typeof s !== "string") return "";
@@ -114,33 +113,15 @@ ${formattedTranscript || "(no transcript captured)"}
 AI suggestions triggered (${(suggestions as unknown[]).length} total):
 ${formattedSuggestions || "(none)"}`;
 
-    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
-        response_format: { type: "json_object" },
-        max_tokens: 2200,
-        temperature: 0.5,
-      }),
+    const raw = await anthropicText({
+      model: MODELS.deep,
+      maxTokens: 2200,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage }],
     });
-
-    const data = await response.json();
-    if (data.error) {
-      throw new Error(`OpenAI error: ${data.error.message ?? JSON.stringify(data.error)}`);
-    }
-    if (!data.choices?.length) throw new Error(`OpenAI returned no choices: ${JSON.stringify(data)}`);
     let result: Record<string, unknown>;
     try {
-      result = JSON.parse(data.choices[0].message.content);
+      result = parseJsonLoose(raw);
     } catch {
       return new Response(JSON.stringify({
         aiSummary: "Summary generation was interrupted. Please try again.",

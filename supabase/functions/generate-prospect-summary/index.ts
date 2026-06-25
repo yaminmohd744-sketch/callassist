@@ -1,7 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
+import { anthropicText, parseJsonLoose, MODELS } from "../_shared/anthropic.ts";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -76,30 +75,12 @@ ${formattedTranscript.slice(0, 2000)}
 
 Write the prospect-facing summary.`;
 
-    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
-        response_format: { type: "json_object" },
-        max_tokens: 500,
-        temperature: 0.6,
-      }),
-    });
-
-    const data = await response.json();
-    if (data.error) throw new Error(`OpenAI error: ${data.error.message}`);
-    if (!data.choices?.length) throw new Error("No choices returned");
-
-    const result = JSON.parse(data.choices[0].message.content);
+    const result = parseJsonLoose(await anthropicText({
+      model: MODELS.deep,
+      maxTokens: 500,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMessage }],
+    }));
     return new Response(JSON.stringify({ summary: typeof result.summary === "string" ? result.summary : "" }), {
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });

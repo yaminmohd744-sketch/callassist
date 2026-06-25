@@ -1,7 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
+import { anthropicText, MODELS } from "../_shared/anthropic.ts";
 
 const VALID_SIGNALS = ["objection", "buying-signal", "neutral"] as const;
 type Signal = typeof VALID_SIGNALS[number];
@@ -37,29 +36,12 @@ Deno.serve(async (req: Request) => {
 - "neutral": anything else
 Respond with ONLY the single word, no punctuation. The utterance may be in any language — classify the meaning regardless of language. Language hint: ${language}.`;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: text },
-        ],
-        max_tokens: 5,
-        temperature: 0,
-      }),
-    });
-
-    const data = await response.json();
-    if (data.error) {
-      throw new Error(`OpenAI error: ${data.error.message ?? JSON.stringify(data.error)}`);
-    }
-
-    const raw = (data.choices[0].message.content as string).trim().toLowerCase();
+    const raw = (await anthropicText({
+      model: MODELS.fast,
+      maxTokens: 8,
+      system: systemPrompt,
+      messages: [{ role: "user", content: text }],
+    })).trim().toLowerCase();
     const signal: Signal = (VALID_SIGNALS as readonly string[]).includes(raw)
       ? (raw as Signal)
       : "neutral";

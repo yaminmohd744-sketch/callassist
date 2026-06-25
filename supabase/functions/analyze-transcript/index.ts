@@ -1,7 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
+import { anthropicStream, MODELS } from "../_shared/anthropic.ts";
 
 function sanitize(s: unknown, maxLen: number): string {
   if (typeof s !== "string") return "";
@@ -122,31 +121,20 @@ Respond ONLY with valid JSON (no markdown). IMPORTANT: emit the "body" field fir
 - "phaseLabel": 3-6 word specific description of what's happening right now
 - "prospectTone": the prospect's emotional state inferred from their words — one of the enum values, or null if unclear`;
 
-    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: "Give your coaching suggestion." },
-        ],
-        stream: true,
-        max_tokens: 340,
-        temperature: 0.55,
-      }),
+    const response = await anthropicStream({
+      model: MODELS.live,
+      maxTokens: 340,
+      system: systemPrompt,
+      messages: [{ role: "user", content: "Give your coaching suggestion." }],
     });
 
     if (!response.ok || !response.body) {
-      throw new Error(`OpenAI returned ${response.status}`);
+      throw new Error(`Anthropic returned ${response.status}`);
     }
 
-    // Stream the SSE through to the client with our CORS headers.
-    // The client reads the raw OpenAI SSE format and assembles the JSON.
+    // Stream the Anthropic SSE through to the client with our CORS headers.
+    // The client reads the raw Anthropic SSE (content_block_delta / text_delta)
+    // and assembles the JSON — see src/lib/ai.ts.
     const { readable, writable } = new TransformStream();
     response.body.pipeTo(writable);
 

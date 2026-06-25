@@ -1,8 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { LANG_NAMES } from "../_shared/lang.ts";
-
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
+import { anthropicText, parseJsonLoose, MODELS } from "../_shared/anthropic.ts";
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -93,27 +92,13 @@ Respond ONLY with valid JSON:
 - "improvements": 1-2 concrete, actionable improvements tied to actual moments in this session. What should they do differently? Be specific — not "be more confident" but "when the prospect said X, you should have Y."
 - "keyTakeaway": One crisp sentence — the single most useful thing to take from this session.`;
 
-    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
     const langReminder = langName ? ` Respond entirely in ${langName}.` : '';
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "system", content: systemPrompt }, { role: "user", content: `Write the personalized session summary.${langReminder}` }],
-        response_format: { type: "json_object" },
-        max_tokens: 600,
-        temperature: 0.7,
-      }),
-    });
-
-    const data = await response.json();
-    if (data.error) throw new Error(`OpenAI error: ${data.error.message}`);
-    if (!data.choices?.length) throw new Error(`OpenAI returned no choices: ${JSON.stringify(data)}`);
-    const result = JSON.parse(data.choices[0].message.content);
+    const result = parseJsonLoose(await anthropicText({
+      model: MODELS.fast,
+      maxTokens: 600,
+      system: systemPrompt,
+      messages: [{ role: "user", content: `Write the personalized session summary.${langReminder}` }],
+    }));
 
     return new Response(JSON.stringify(result), {
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },

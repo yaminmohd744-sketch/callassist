@@ -1,8 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { LANG_NAMES } from "../_shared/lang.ts";
-
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
+import { anthropicText, parseJsonLoose, MODELS } from "../_shared/anthropic.ts";
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -96,27 +95,13 @@ Respond ONLY with valid JSON:
 - "toneCoach.move": What the rep should DO tactically right now — 1 sentence, specific and actionable. Sound like an elite closer whispering in the rep's ear.
 - "toneCoach.say": The exact words the rep should say next — natural, first-person, under 20 words${difficultyNote}`;
 
-    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
     const langReminder = langName ? ` Respond entirely in ${langName}.` : '';
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "system", content: systemPrompt }, { role: "user", content: `Give feedback on the rep's response.${langReminder}` }],
-        response_format: { type: "json_object" },
-        max_tokens: 400,
-        temperature: 0.6,
-      }),
-    });
-
-    const data = await response.json();
-    if (data.error) throw new Error(`OpenAI error: ${data.error.message}`);
-    if (!data.choices?.length) throw new Error(`OpenAI returned no choices: ${JSON.stringify(data)}`);
-    const result = JSON.parse(data.choices[0].message.content);
+    const result = parseJsonLoose(await anthropicText({
+      model: MODELS.fast,
+      maxTokens: 400,
+      system: systemPrompt,
+      messages: [{ role: "user", content: `Give feedback on the rep's response.${langReminder}` }],
+    }));
 
     return new Response(JSON.stringify(result), {
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
