@@ -1,8 +1,10 @@
-// Minimal Reddit API client using OAuth + native fetch. Zero dependencies.
+// Reads Reddit's public RSS feeds — no API key, no app, no auth. Zero dependencies.
+// Reddit gated the legacy Data API behind an approval request; RSS stays open and is
+// built for exactly this (polling a subreddit for new posts).
 
 export interface RedditPost {
-  id: string;
-  kind: "post" | "comment";
+  id: string; // e.g. t3_abc123
+  kind: "post";
   subreddit: string;
   title: string;
   body: string;
@@ -11,120 +13,81 @@ export interface RedditPost {
   createdUtc: number; // seconds
 }
 
-interface TokenState {
-  token: string;
-  expiresAt: number; // epoch ms
-}
-
-let cachedToken: TokenState | null = null;
-
 const env = (k: string) => (process.env[k] ?? "").trim();
+const userAgent = () => env("REDDIT_USER_AGENT") || "pitchr-monitor/1.0";
 
-function authHeader(): string {
-  const id = env("REDDIT_CLIENT_ID");
-  const secret = env("REDDIT_CLIENT_SECRET");
-  if (!id || !secret) {
-    throw new Error(
-      "Missing REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET. Copy .env.example to .env and fill them in."
-    );
+// Decode XML/HTML entities, including numeric ones. Run twice for double-encoded text.
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&amp;/g, "&"); // decode &amp; last so &amp;#39; -> &#39; survives one pass
+}
+
+// Reddit wraps the post body in HTML inside the <content> field. Turn it into plain text.
+function htmlToText(html: string): string {
+  let t = decodeEntities(html); // &lt;div&gt; -> <div>
+  t = t.replace(/<[^>]+>/g, " "); // strip tags
+  t = decodeEntities(t); // resolve remaining numeric entities
+  t = t.replace(/submitted by[\s\S]*$/i, " "); // drop the reddit "submitted by ... [link]" footer
+  return t.replace(/\s+/g, " ").trim();
+}
+
+function field(entry: string, re: RegExp): string {
+  const m = entry.match(re);
+  return m ? m[1] : "";
+}
+
+function parseEntries(xml: string): RedditPost[] {
+  const posts: RedditPost[] = [];
+  const entryRe = /<entry>([\s\S]*?)<\/entry>/g;
+  let m: RegExpExecArray | null;
+  while ((m = entryRe.exec(xml))) {
+    const e = m[1];
+    const id = field(e, /<id>(t3_[^<]+)<\/id>/);
+    if (!id) continue;
+    const published = field(e, /<published>([^<]+)<\/published>/);
+    const author = field(e, /<name>([^<]+)<\/name>/).replace(/^\/u\//, "");
+    posts.push({
+      id,
+      kind: "post",
+      subreddit: field(e, /<category term="([^"]+)"/),
+      title: decodeEntities(field(e, /<title>([\s\S]*?)<\/title>/)),
+      body: htmlToText(field(e, /<content[^>]*>([\s\S]*?)<\/content>/)),
+      author: author || "[unknown]",
+      url: field(e, /<link href="([^"]+)"/),
+      createdUtc: published ? Math.floor(Date.parse(published) / 1000) : 0,
+    });
   }
-  return "Basic " + Buffer.from(`${id}:${secret}`).toString("base64");
+  return posts;
 }
 
-async function getToken(): Promise<string> {
-  if (cachedToken && Date.now() < cachedToken.expiresAt - 60_000) {
-    return cachedToken.token;
+async function fetchRss(url: string): Promise<string> {
+  // Reddit throttles unauthenticated RSS hard, so retry on 429/5xx with backoff.
+  let lastStatus = 0;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, attempt * 4000));
+    const res = await fetch(url, {
+      headers: { "User-Agent": userAgent(), Accept: "application/atom+xml" },
+    });
+    if (res.ok) return res.text();
+    lastStatus = res.status;
+    if (res.status !== 429 && res.status < 500) break; // non-retryable
   }
-
-  const username = env("REDDIT_USERNAME");
-  const password = env("REDDIT_PASSWORD");
-
-  // Use password grant if creds provided, otherwise app-only read access.
-  const body =
-    username && password
-      ? new URLSearchParams({ grant_type: "password", username, password })
-      : new URLSearchParams({ grant_type: "client_credentials" });
-
-  const res = await fetch("https://www.reddit.com/api/v1/access_token", {
-    method: "POST",
-    headers: {
-      Authorization: authHeader(),
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": env("REDDIT_USER_AGENT") || "pitchr-monitor/1.0",
-    },
-    body,
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Reddit auth failed (${res.status}): ${text}`);
-  }
-
-  const json = (await res.json()) as { access_token: string; expires_in: number };
-  cachedToken = {
-    token: json.access_token,
-    expiresAt: Date.now() + json.expires_in * 1000,
-  };
-  return cachedToken.token;
+  throw new Error(`RSS fetch failed (${lastStatus})`);
 }
 
-async function apiGet(path: string): Promise<any> {
-  const token = await getToken();
-  const res = await fetch(`https://oauth.reddit.com${path}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "User-Agent": env("REDDIT_USER_AGENT") || "pitchr-monitor/1.0",
-    },
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Reddit API error (${res.status}) on ${path}: ${text}`);
-  }
-  return res.json();
-}
-
-function mapPost(child: any): RedditPost {
-  const d = child.data;
-  return {
-    id: d.name, // fullname e.g. t3_abc123
-    kind: "post",
-    subreddit: d.subreddit,
-    title: d.title ?? "",
-    body: d.selftext ?? "",
-    author: d.author ?? "[deleted]",
-    url: `https://www.reddit.com${d.permalink}`,
-    createdUtc: d.created_utc,
-  };
-}
-
-function mapComment(child: any): RedditPost {
-  const d = child.data;
-  return {
-    id: d.name, // t1_...
-    kind: "comment",
-    subreddit: d.subreddit,
-    title: d.link_title ?? "(comment)",
-    body: d.body ?? "",
-    author: d.author ?? "[deleted]",
-    url: `https://www.reddit.com${d.permalink}`,
-    createdUtc: d.created_utc,
-  };
-}
-
+// Fetches the newest posts across ALL given subreddits in a single combined feed
+// (r/a+b+c/new.rss). One request per poll keeps us under Reddit's rate limits.
 export async function fetchNewPosts(
-  subreddit: string,
+  subreddits: string[],
   limit: number
 ): Promise<RedditPost[]> {
-  const json = await apiGet(`/r/${subreddit}/new?limit=${Math.min(limit, 100)}`);
-  return (json?.data?.children ?? []).map(mapPost);
-}
-
-export async function fetchNewComments(
-  subreddit: string,
-  limit: number
-): Promise<RedditPost[]> {
-  const json = await apiGet(
-    `/r/${subreddit}/comments?limit=${Math.min(limit, 100)}`
-  );
-  return (json?.data?.children ?? []).map(mapComment);
+  const subs = subreddits.map((s) => encodeURIComponent(s)).join("+");
+  const url = `https://www.reddit.com/r/${subs}/new.rss?limit=${Math.min(limit, 100)}`;
+  return parseEntries(await fetchRss(url));
 }

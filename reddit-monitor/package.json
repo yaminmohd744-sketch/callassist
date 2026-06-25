@@ -6,6 +6,7 @@
   "description": "Monitors Reddit for posts relevant to Pitchr and alerts you. Read-only — never posts.",
   "scripts": {
     "start": "node src/index.ts",
-    "watch": "node src/index.ts --loop"
+    "watch": "node src/index.ts --loop",
+    "dashboard": "node src/server.ts"
   }
 }

@@ -3,7 +3,7 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { fetchNewPosts, fetchNewComments, type RedditPost } from "./reddit.ts";
+import { fetchNewPosts, type RedditPost } from "./reddit.ts";
 import { scorePosts } from "./filter.ts";
 import { printMatches, sendSlack } from "./notify.ts";
 import { loadSeen, saveSeen } from "./store.ts";
@@ -17,7 +17,6 @@ interface Config {
   pollIntervalMinutes: number;
   lookbackHours: number;
   maxPostsPerSubreddit: number;
-  scanComments: boolean;
   minRelevanceScore: number;
   useAiFilter: boolean;
 }
@@ -55,22 +54,15 @@ async function runOnce(cfg: Config): Promise<void> {
   const cutoff = Date.now() / 1000 - cfg.lookbackHours * 3600;
   const fresh: RedditPost[] = [];
 
-  for (const sub of cfg.subreddits) {
-    try {
-      const posts = await fetchNewPosts(sub, cfg.maxPostsPerSubreddit);
-      let items = posts;
-      if (cfg.scanComments) {
-        const comments = await fetchNewComments(sub, cfg.maxPostsPerSubreddit);
-        items = items.concat(comments);
-      }
-      for (const p of items) {
-        if (p.createdUtc < cutoff) continue;
-        if (seen.has(p.id)) continue;
-        fresh.push(p);
-      }
-    } catch (err) {
-      console.error(`r/${sub}: ${(err as Error).message}`);
+  try {
+    const items = await fetchNewPosts(cfg.subreddits, cfg.maxPostsPerSubreddit);
+    for (const p of items) {
+      if (p.createdUtc < cutoff) continue;
+      if (seen.has(p.id)) continue;
+      fresh.push(p);
     }
+  } catch (err) {
+    console.error((err as Error).message);
   }
 
   const scored = await scorePosts(
