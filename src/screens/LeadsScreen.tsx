@@ -7,6 +7,7 @@ import {
   assignLead, loadLeadPackageMap, getLeadsForPackage,
 } from '../lib/packagesSupabase';
 import { formatDuration, formatDateShort } from '../lib/formatters';
+import { SampleDataBanner } from '../components/SampleDataBanner';
 import { useAppContext } from '../contexts/AppContext';
 import type { Lead, CallSession, CrmPackage } from '../types';
 import './LeadsScreen.css';
@@ -202,6 +203,7 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
   const [leads,          setLeads]          = useState<Lead[]>([]);
   const [packages,       setPackages]       = useState<CrmPackage[]>([]);
   const [leadPackageMap, setLeadPackageMap] = useState<Record<string, string>>({});
+  const [usingSampleData, setUsingSampleData] = useState(false);
   const [loading,        setLoading]        = useState(true);
   const [loadError,      setLoadError]      = useState(false);
 
@@ -243,10 +245,12 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
         setLeads(MOCK_LEADS);
         setPackages(MOCK_PACKAGES);
         setLeadPackageMap(MOCK_LEAD_PACKAGE_MAP);
+        setUsingSampleData(true);
       } else {
         setLeads(data);
         setPackages(pkgs);
         setLeadPackageMap(lmap);
+        setUsingSampleData(false);
       }
     } catch {
       setLoadError(true);
@@ -528,6 +532,7 @@ export function LeadsScreen({ userId, onCallLead, pastSessions }: LeadsScreenPro
       {/* ── Leads view ─────────────────────────────────────────────────────────── */}
       {view === 'leads' && (
         <div className="leads-screen" key="leads">
+          {usingSampleData && <SampleDataBanner label="Sample leads" />}
           <div className="leads-screen__header">
             <div className="leads-screen__header-left">
               <button className="leads-screen__back-btn" onClick={goBackToPackages}>← CRM</button>

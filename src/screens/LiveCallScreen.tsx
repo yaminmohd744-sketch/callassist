@@ -641,6 +641,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
             <p className="live-call__setup-hint">
               You may be asked to grant microphone, screen-recording and accessibility access the first time.
             </p>
+            <p className="live-call__setup-consent">
+              ⚖ Make sure you have consent to record and transcribe this call where your jurisdiction requires it.
+            </p>
             <div className="live-call__setup-actions">
               <button className="live-call__setup-btn live-call__setup-btn--primary" onClick={() => setAudioSetupDone(true)}>
                 Start coaching
@@ -661,6 +664,9 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           </p>
           <p className="live-call__setup-hint">
             When the picker appears, select <strong>Entire Screen</strong> to capture meeting audio.
+          </p>
+          <p className="live-call__setup-consent">
+            ⚖ Make sure you have consent to record and transcribe this call where your jurisdiction requires it.
           </p>
           <div className="live-call__setup-actions">
             <button className="live-call__setup-btn live-call__setup-btn--primary" onClick={handleCaptureSystemAudio}>

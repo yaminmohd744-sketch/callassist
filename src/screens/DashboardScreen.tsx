@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Button } from '../components/ui/Button';
+import { SampleDataBanner } from '../components/SampleDataBanner';
 import type { CallSession, LearningLogEntry } from '../types';
 import { getStreak } from '../lib/streak';
 import { formatDuration, formatDateShort } from '../lib/formatters';
@@ -466,6 +467,8 @@ export function DashboardScreen({
   return (
     <div className="dashboard">
       <main className="dashboard__main">
+
+        {isDemo && <SampleDataBanner />}
 
         {/* Greeting */}
         <div className="dashboard__greeting db-anim" style={animStyle(0)}>

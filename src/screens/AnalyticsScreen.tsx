@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { SampleDataBanner } from '../components/SampleDataBanner';
 import { useTranslations } from '../hooks/useTranslations';
 import { useAppLanguage } from '../hooks/useAppLanguage';
 import type { CallSession } from '../types';
@@ -496,6 +497,7 @@ export function AnalyticsScreen({ pastSessions }: AnalyticsScreenProps) {
 
   return (
     <div className="analytics">
+      {useMockPerf && <SampleDataBanner />}
       <div className="analytics__topbar">
         {detailView ? (
           <button className="analytics__back-btn" onClick={() => setDetailView(null)}>← {t.analytics.title}</button>
