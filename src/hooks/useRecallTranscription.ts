@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Sentry from '@sentry/react';
 import { FUNCTIONS_BASE, ANON_KEY, getAuthToken } from '../lib/api';
 import { getDeepgramCode } from '../lib/languages';
+import { extractText, extractParticipant, type RecallTranscriptData } from '../lib/recallTranscript';
 import type { RecallEvent } from '../electron';
 
 interface UseRecallTranscriptionOptions {
@@ -23,31 +24,6 @@ interface UseRecallTranscriptionResult {
   errorMessage: string | null;
   startListening: () => Promise<void>;
   stopListening: () => void;
-}
-
-// ── Realtime transcript payload parsing ──────────────────────────────────────
-// Recall's transcript.data realtime payload nests the words + participant under
-// `data`. We read defensively because the exact envelope can vary by provider.
-interface RecallWord { text?: string }
-interface RecallParticipant { id?: number | string; name?: string; is_host?: boolean }
-interface RecallTranscriptData {
-  data?: { words?: RecallWord[]; participant?: RecallParticipant };
-  words?: RecallWord[];
-  participant?: RecallParticipant;
-  transcript?: { text?: string };
-  text?: string;
-}
-
-function extractText(payload: RecallTranscriptData): string {
-  const words = payload?.data?.words ?? payload?.words;
-  if (Array.isArray(words) && words.length > 0) {
-    return words.map(w => w?.text ?? '').join(' ').replace(/\s+/g, ' ').trim();
-  }
-  return (payload?.transcript?.text ?? payload?.text ?? '').trim();
-}
-
-function extractParticipant(payload: RecallTranscriptData): RecallParticipant | undefined {
-  return payload?.data?.participant ?? payload?.participant;
 }
 
 export function useRecallTranscription({

@@ -7,6 +7,40 @@ function formatTime(seconds: number) {
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
+// Memoized row — transcript entry objects keep stable refs in LiveCallScreen,
+// so on each new line only the new row renders instead of re-reconciling all
+// (up to 100) rows. Keeps long calls smooth without a virtualization dependency.
+const TranscriptRow = memo(function TranscriptRow({
+  entry, label, isFlippable, onFlipSpeaker,
+}: {
+  entry: TranscriptEntry;
+  label: string;
+  isFlippable: boolean;
+  onFlipSpeaker?: (id: string) => void;
+}) {
+  return (
+    <div className={`transcript-entry transcript-entry--${entry.signal} transcript-entry--${entry.speaker}`}>
+      <div className="transcript-entry__meta">
+        {isFlippable && onFlipSpeaker ? (
+          <button
+            type="button"
+            className="transcript-entry__speaker transcript-entry__speaker--flip"
+            onClick={() => onFlipSpeaker(entry.id)}
+            aria-label={`${label} — click to reassign speaker`}
+            title="Click to reassign speaker"
+          >
+            {label}<span className="transcript-entry__flip-icon" aria-hidden="true">⇄</span>
+          </button>
+        ) : (
+          <span className="transcript-entry__speaker">{label}</span>
+        )}
+        <span className="transcript-entry__time">{formatTime(entry.timestampSeconds)}</span>
+      </div>
+      <div className="transcript-entry__text">{entry.text}</div>
+    </div>
+  );
+});
+
 interface TranscriptPanelProps {
   entries: TranscriptEntry[];
   isListening: boolean;
@@ -53,34 +87,15 @@ export const TranscriptPanel = memo(function TranscriptPanel({
           </div>
         )}
 
-        {entries.slice(-100).map(entry => {
-          const isFlippable = entry.speaker !== 'system' && !!onFlipSpeaker;
-          const label = entry.speaker === 'rep' ? t.liveCall.you : entry.speaker === 'prospect' ? t.liveCall.prospect : t.liveCall.system;
-          return (
-            <div
-              key={entry.id}
-              className={`transcript-entry transcript-entry--${entry.signal} transcript-entry--${entry.speaker}`}
-            >
-              <div className="transcript-entry__meta">
-                {isFlippable ? (
-                  <button
-                    type="button"
-                    className="transcript-entry__speaker transcript-entry__speaker--flip"
-                    onClick={() => onFlipSpeaker(entry.id)}
-                    aria-label={`${label} — click to reassign speaker`}
-                    title="Click to reassign speaker"
-                  >
-                    {label}<span className="transcript-entry__flip-icon" aria-hidden="true">⇄</span>
-                  </button>
-                ) : (
-                  <span className="transcript-entry__speaker">{label}</span>
-                )}
-                <span className="transcript-entry__time">{formatTime(entry.timestampSeconds)}</span>
-              </div>
-              <div className="transcript-entry__text">{entry.text}</div>
-            </div>
-          );
-        })}
+        {entries.slice(-100).map(entry => (
+          <TranscriptRow
+            key={entry.id}
+            entry={entry}
+            label={entry.speaker === 'rep' ? t.liveCall.you : entry.speaker === 'prospect' ? t.liveCall.prospect : t.liveCall.system}
+            isFlippable={entry.speaker !== 'system' && !!onFlipSpeaker}
+            onFlipSpeaker={onFlipSpeaker}
+          />
+        ))}
 
         {interimText && (
           <div className="transcript-entry transcript-entry--interim">
