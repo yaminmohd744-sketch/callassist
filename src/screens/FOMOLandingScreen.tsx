@@ -13,7 +13,7 @@ function StatCounter({ stat }: { stat: string }) {
     const match = stat.match(/(\d+)/);
     if (!match) { setDisplay(stat); return; }
 
-    const target = parseInt(match[1]);
+    const target = parseInt(match[1], 10);
     const prefix = stat.slice(0, match.index ?? 0);
     const suffix = stat.slice((match.index ?? 0) + match[1].length);
 
@@ -179,7 +179,7 @@ function PreviewGate({ onUnlock }: { onUnlock: () => void }) {
         onChange={e => setPw(e.target.value)}
         onKeyDown={e => { if (e.key === 'Enter') attempt(); if (e.key === 'Escape') setOpen(false); }}
       />
-      <button className="fl__preview-go" onClick={attempt}>→</button>
+      <button className="fl__preview-go" onClick={attempt} aria-label="Submit">→</button>
     </div>
   );
 }
