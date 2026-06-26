@@ -162,15 +162,19 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
 
   // Automatically classify each mic utterance as rep or prospect based on content.
   // Only prospect entries trigger AI analysis.
-  const handleFinalTranscript = useCallback((text: string, deepgramSpeaker?: number) => {
+  const handleFinalTranscript = useCallback((text: string, deepgramSpeaker?: number, explicitSpeaker?: TranscriptSpeaker) => {
     const isFirst = transcriptRef.current.length === 0;
     const mentionsProspect = config.prospectName.trim().length > 0 &&
       text.toLowerCase().includes(config.prospectName.trim().toLowerCase());
 
     let speaker: TranscriptSpeaker;
 
-    // Deepgram diarization takes priority over all heuristics when available
-    if (deepgramSpeaker !== undefined) {
+    // Dual-stream capture knows the speaker from the audio source itself
+    // (mic = rep, system audio = prospect) — trust it over every heuristic.
+    if (explicitSpeaker) {
+      speaker = explicitSpeaker;
+    // Deepgram diarization takes priority over the remaining heuristics
+    } else if (deepgramSpeaker !== undefined) {
       if (!dgSpeakerMapRef.current) {
         // Don't blindly assume the first diarized speaker is the rep — if the
         // opening line reads as the prospect (strong prospect keywords, no rep
@@ -202,7 +206,10 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     }
 
     // First time a strong prospect keyword fires — lock the pattern and retroactively correct.
-    const isLockIn = deepgramSpeaker === undefined &&
+    // Skipped entirely in dual-stream mode: the speaker is already known per source,
+    // so heuristic retro-correction would only introduce errors.
+    const isLockIn = !explicitSpeaker &&
+      deepgramSpeaker === undefined &&
       !speakerLockedRef.current &&
       speaker === 'prospect' &&
       PROSPECT_PHRASES.some(p => text.toLowerCase().includes(p));
@@ -664,6 +671,7 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
           </p>
           <p className="live-call__setup-hint">
             When the picker appears, select <strong>Entire Screen</strong> to capture meeting audio.
+            For the sharpest speaker separation, wear <strong>headphones</strong> so your voice and theirs stay on separate channels.
           </p>
           <p className="live-call__setup-consent">
             ⚖ Make sure you have consent to record and transcribe this call where your jurisdiction requires it.

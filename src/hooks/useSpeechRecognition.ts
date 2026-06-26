@@ -98,12 +98,36 @@ interface DGResult {
   channel: { alternatives: Array<{ transcript: string; words?: DGWord[] }> };
 }
 
+type SpeakerRole = 'rep' | 'prospect';
+
+// One independent Deepgram pipeline (WebSocket + MediaRecorder + utterance buffer)
+// bound to a single audio source. Dual-stream mode runs two of these — mic→rep and
+// system-audio→prospect — so the speaker is KNOWN per source, not diarized/guessed.
+interface DGConnection {
+  label: SpeakerRole | 'mixed';
+  role?: SpeakerRole;        // explicit speaker (dual mode); undefined → diarize + index
+  diarize: boolean;
+  stream: MediaStream;
+  ownsStream: boolean;       // true → stop tracks on teardown (we created it)
+  primary: boolean;          // mic connection — drives Web Speech fallback on failure
+  ws: WebSocket | null;
+  recorder: MediaRecorder | null;
+  watchdog: ReturnType<typeof setTimeout> | null;
+  buffer: string[];
+  flushTimer: ReturnType<typeof setTimeout> | null;
+  isFlushing: boolean;
+  currentSpeaker?: number;   // diarized index (mixed mode only)
+  audioStarted: boolean;
+}
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 interface UseSpeechRecognitionOptions {
-  onFinalTranscript: (text: string, speakerIndex?: number) => void;
+  // explicitSpeaker is set when the audio source unambiguously identifies the
+  // speaker (dual-stream mode); speakerIndex is the diarized index (mixed mode).
+  onFinalTranscript: (text: string, speakerIndex?: number, explicitSpeaker?: SpeakerRole) => void;
   language?: string; // BCP 47 code, e.g. 'en-US', 'es-ES'
-  systemAudioStream?: MediaStream | null; // system audio from getDisplayMedia — mixed with mic
+  systemAudioStream?: MediaStream | null; // system audio from getDisplayMedia — captured as its own "prospect" channel
 }
 
 export function useSpeechRecognition({ onFinalTranscript, language = 'en-US', systemAudioStream }: UseSpeechRecognitionOptions) {
@@ -111,55 +135,48 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US', sy
   const [interimText, setInterimText]   = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const wsRef               = useRef<WebSocket | null>(null);
-  const watchdogTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mediaRecorderRef    = useRef<MediaRecorder | null>(null);
-  const streamRef           = useRef<MediaStream | null>(null);
+  const connectionsRef      = useRef<DGConnection[]>([]);
   const wsrRef              = useRef<WSR | null>(null); // Web Speech Recognition fallback
   const activeRef           = useRef(false);
-  const audioCtxRef         = useRef<AudioContext | null>(null);
   const sysStreamRef        = useRef<MediaStream | null | undefined>(systemAudioStream);
   const wsrNetworkErrRef    = useRef(0); // consecutive Web Speech network errors
-  const onFinalRef      = useRef(onFinalTranscript);
+  const didFallbackRef      = useRef(false);
+  const onFinalRef          = useRef(onFinalTranscript);
   useLayoutEffect(() => { onFinalRef.current = onFinalTranscript; }, [onFinalTranscript]);
   useLayoutEffect(() => { sysStreamRef.current = systemAudioStream; }, [systemAudioStream]);
 
-  // Utterance buffer - accumulates is_final chunks and flushes them as one entry
-  // after a short silence, so fragmented mid-sentence commits get merged.
-  // Capped at MAX_BUFFER_CHUNKS to prevent unbounded memory growth on very long calls.
-  const bufferRef = useRef<string[]>([]);
-  const flushTimerRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isFlushingRef      = useRef(false);
-  // Tracks the Deepgram speaker index for the current utterance (updated per chunk).
-  const dgCurrentSpeakerRef = useRef<number | undefined>(undefined);
-
-  const flushBuffer = useCallback((immediate = false) => {
-    if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
-    if (immediate) {
-      // Guard against concurrent flushes from rapid final-chunk bursts
-      if (isFlushingRef.current) return;
-      isFlushingRef.current = true;
-      const combined = bufferRef.current.join(' ').trim();
-      const speaker = dgCurrentSpeakerRef.current;
-      bufferRef.current = [];
-      dgCurrentSpeakerRef.current = undefined;
-      isFlushingRef.current = false;
-      if (combined) onFinalRef.current(combined, speaker);
-    } else {
-      flushTimerRef.current = setTimeout(() => {
-        if (isFlushingRef.current) return;
-        isFlushingRef.current = true;
-        const combined = bufferRef.current.join(' ').trim();
-        const speaker = dgCurrentSpeakerRef.current;
-        bufferRef.current = [];
-        dgCurrentSpeakerRef.current = undefined;
-        isFlushingRef.current = false;
-        if (combined) onFinalRef.current(combined, speaker);
-      }, FLUSH_DEBOUNCE_MS);
-    }
+  // ── Per-connection utterance buffer ────────────────────────────────────────
+  // Accumulates is_final chunks and flushes them as one entry after a short
+  // silence, so fragmented mid-sentence commits merge into one transcript line.
+  // Each connection has its own buffer so the rep's and prospect's words never
+  // bleed into each other. Capped at MAX_BUFFER_CHUNKS to bound memory.
+  const flushConn = useCallback((conn: DGConnection, immediate = false) => {
+    if (conn.flushTimer) { clearTimeout(conn.flushTimer); conn.flushTimer = null; }
+    const doFlush = () => {
+      if (conn.isFlushing) return;
+      conn.isFlushing = true;
+      const combined = conn.buffer.join(' ').trim();
+      const speaker = conn.currentSpeaker;
+      conn.buffer = [];
+      conn.currentSpeaker = undefined;
+      conn.isFlushing = false;
+      if (combined) onFinalRef.current(combined, conn.role ? undefined : speaker, conn.role);
+    };
+    if (immediate) doFlush();
+    else conn.flushTimer = setTimeout(doFlush, FLUSH_DEBOUNCE_MS);
   }, []);
 
-  // ── Web Speech API fallback ────────────────────────────────────────────────
+  const teardownConn = useCallback((conn: DGConnection) => {
+    if (conn.watchdog) { clearTimeout(conn.watchdog); conn.watchdog = null; }
+    if (conn.flushTimer) { clearTimeout(conn.flushTimer); conn.flushTimer = null; }
+    try { conn.recorder?.stop(); } catch { /* ignore */ }
+    conn.recorder = null;
+    try { conn.ws?.close(); } catch { /* ignore */ }
+    conn.ws = null;
+    if (conn.ownsStream) conn.stream.getTracks().forEach(t => t.stop());
+  }, []);
+
+  // ── Web Speech API fallback (mic only, no speaker labels) ───────────────────
 
   const startWebSpeechFallback = useCallback(() => {
     if (!activeRef.current) return;
@@ -235,218 +252,193 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US', sy
     }
   }, [language]);
 
+  // Fired only when the PRIMARY (mic) Deepgram pipeline fails — drop to Web Speech.
+  // A failure on the secondary (system-audio) pipeline is non-fatal: we just lose
+  // the prospect channel and keep coaching off the rep's mic.
+  const fallbackToWebSpeech = useCallback(() => {
+    if (didFallbackRef.current) return;
+    didFallbackRef.current = true;
+    // Tear down every Deepgram pipeline before switching engines.
+    connectionsRef.current.forEach(teardownConn);
+    connectionsRef.current = [];
+    setErrorMessage('Switched to browser speech recognition — speaker labels unavailable.');
+    startWebSpeechFallback();
+  }, [teardownConn, startWebSpeechFallback]);
+
   // ── Stop ──────────────────────────────────────────────────────────────────
 
   const stopListening = useCallback(() => {
     activeRef.current = false;
-    if (watchdogTimerRef.current) { clearTimeout(watchdogTimerRef.current); watchdogTimerRef.current = null; }
-
-    flushBuffer(true);
+    // Flush any buffered finals before tearing down so the last line isn't lost.
+    connectionsRef.current.forEach(conn => flushConn(conn, true));
+    connectionsRef.current.forEach(teardownConn);
+    connectionsRef.current = [];
 
     if (wsrRef.current) {
       try { wsrRef.current.abort(); } catch { /* ignore */ }
       wsrRef.current = null;
     }
 
-    try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
-    mediaRecorderRef.current = null;
-
-    try { wsRef.current?.close(); } catch { /* ignore */ }
-    wsRef.current = null;
-
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    streamRef.current = null;
-
-    audioCtxRef.current?.close().catch(() => {});
-    audioCtxRef.current = null;
-
     wsrNetworkErrRef.current = 0;
-
     setIsListening(false);
     setInterimText('');
-  }, [flushBuffer]);
+  }, [flushConn, teardownConn]);
 
-  // ── Start (Deepgram primary, Web Speech fallback) ─────────────────────────
+  // ── Open one Deepgram pipeline for a single source ──────────────────────────
+
+  const openConnection = useCallback((conn: DGConnection, deepgramKey: string) => {
+    const url = [
+      'wss://api.deepgram.com/v1/listen',
+      '?model=nova-2',
+      `&language=${getDeepgramCode(language)}`,
+      '&interim_results=true',
+      '&smart_format=true',
+      '&endpointing=250',
+      '&utterance_end_ms=1000',
+      // Diarization is only needed for the mixed/mic-only path. In dual-stream
+      // mode the source itself identifies the speaker, so we skip it.
+      ...(conn.diarize ? ['&diarize=true'] : []),
+      ...DG_KEYWORD_BOOSTS.map(k => `&keywords=${k}`),
+    ].join('');
+
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(url, ['token', deepgramKey]);
+    } catch {
+      if (conn.primary) fallbackToWebSpeech();
+      else teardownConn(conn);
+      return;
+    }
+    conn.ws = ws;
+
+    const onFail = () => {
+      if (conn.ws !== ws) return;
+      teardownConn(conn);
+      if (conn.primary) fallbackToWebSpeech();
+    };
+
+    ws.onopen = () => {
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+          ? 'audio/webm'
+          : null;
+      if (!mimeType) { onFail(); return; }
+
+      let mr: MediaRecorder;
+      try {
+        mr = new MediaRecorder(conn.stream, { mimeType });
+      } catch { onFail(); return; }
+      conn.recorder = mr;
+      mr.ondataavailable = (e) => {
+        if (e.data.size > 0 && ws.readyState === WebSocket.OPEN) {
+          ws.send(e.data);
+          // First audio chunk flowing = capture works → clear the failure watchdog.
+          if (!conn.audioStarted) {
+            conn.audioStarted = true;
+            if (conn.watchdog) { clearTimeout(conn.watchdog); conn.watchdog = null; }
+          }
+        }
+      };
+      try { mr.start(250); } catch { onFail(); return; }
+      setIsListening(true);
+      setErrorMessage(null);
+      // If no audio data flows within 10s, assume a silent capture failure.
+      conn.watchdog = setTimeout(() => { if (!conn.audioStarted) onFail(); }, WATCHDOG_TIMEOUT_MS);
+    };
+
+    ws.onmessage = (event) => {
+      if (conn.ws !== ws) return;
+      let data: DGResult;
+      try { data = JSON.parse(event.data as string) as DGResult; } catch { return; }
+      if (data.type !== 'Results') return;
+      const alt = data.channel?.alternatives?.[0];
+      const transcript = alt?.transcript;
+      // Diarized (mixed) mode: pick the majority speaker from word-level labels.
+      if (conn.diarize && alt?.words && alt.words.length > 0) {
+        const counts = new Map<number, number>();
+        for (const w of alt.words) counts.set(w.speaker, (counts.get(w.speaker) ?? 0) + 1);
+        const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0]);
+        conn.currentSpeaker = sorted[0][0];
+      }
+      if (!transcript) return;
+      if (data.is_final) {
+        const text = transcript.trim();
+        if (!text) return;
+        conn.buffer.push(text);
+        setInterimText('');
+        flushConn(conn, data.speech_final || conn.buffer.length >= MAX_BUFFER_CHUNKS);
+      } else {
+        setInterimText(transcript);
+      }
+    };
+
+    ws.onerror = () => onFail();
+
+    ws.onclose = (e) => {
+      if (conn.ws !== ws) return;
+      if (e.code === 4001) {
+        _deepgramTokenCache = null;
+        console.warn('[Pitchr] Deepgram auth error (4001), token cache cleared');
+      }
+      // Unexpected close → treat as failure (drives fallback only if primary).
+      if (e.code !== 1000 && e.code !== 1001 && activeRef.current) {
+        onFail();
+      } else {
+        teardownConn(conn);
+        if (connectionsRef.current.every(c => c.ws === null)) setIsListening(false);
+      }
+    };
+  }, [language, flushConn, teardownConn, fallbackToWebSpeech]);
+
+  // ── Start (dual-stream Deepgram primary, Web Speech fallback) ───────────────
 
   const startListening = useCallback(async () => {
     if (activeRef.current) return;
     activeRef.current = true;
+    didFallbackRef.current = false;
 
-    // Fetch a short-lived Deepgram key from the Edge Function proxy.
-    // Falls back to Web Speech if the proxy isn't configured or the fetch fails.
     const rawKey = await fetchDeepgramKey();
-
-    // WebSocket subprotocol tokens must be valid RFC 7230 tchar sequences —
-    // no spaces, angle brackets, colons, slashes, or control characters.
-    // Trim whitespace first (copy-paste or env var trailing newlines are common).
     const deepgramKey = rawKey?.trim() ?? null;
+    // WebSocket subprotocol tokens must be valid RFC 7230 tchar sequences.
     const keyIsValid = !!deepgramKey && /^[!#$%&'*+\-.^_`|~\w]+$/.test(deepgramKey);
-
     if (!keyIsValid) {
       startWebSpeechFallback();
       return;
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
+      const micStream = await navigator.mediaDevices.getUserMedia({
+        // Echo cancellation reduces the prospect's voice bleeding into the mic
+        // when the user isn't on headphones — keeps the "rep" channel cleaner.
+        audio: { echoCancellation: true, noiseSuppression: true },
+      });
       if (!activeRef.current) {
-        stream.getTracks().forEach(t => t.stop());
+        micStream.getTracks().forEach(t => t.stop());
         return;
       }
 
-      // Kill any stale connection from React StrictMode double-invoke.
-      streamRef.current?.getTracks().forEach(t => t.stop());
-      streamRef.current = stream;
-      try { wsRef.current?.close(); } catch { /* ignore */ }
+      // Tear down anything stale (StrictMode double-invoke).
+      connectionsRef.current.forEach(teardownConn);
+      connectionsRef.current = [];
 
-      const url = [
-        'wss://api.deepgram.com/v1/listen',
-        '?model=nova-2',
-        `&language=${getDeepgramCode(language)}`,
-        '&interim_results=true',
-        '&smart_format=true',
-        '&endpointing=250',
-        '&utterance_end_ms=1000',
-        '&diarize=true',
-        ...DG_KEYWORD_BOOSTS.map(k => `&keywords=${k}`),
-      ].join('');
+      const sysStream = sysStreamRef.current;
+      const liveSysTracks = sysStream?.getAudioTracks().filter(t => t.readyState === 'live') ?? [];
+      const dualStream = liveSysTracks.length > 0;
 
-      // WebSocket constructor throws synchronously if the subprotocol token is
-      // rejected by the browser — catch it here and fall back to Web Speech.
-      let ws: WebSocket;
-      try {
-        ws = new WebSocket(url, ['token', deepgramKey]);
-      } catch {
-        stream.getTracks().forEach(t => t.stop());
-        streamRef.current = null;
-        startWebSpeechFallback();
-        return;
+      const conns: DGConnection[] = [];
+      if (dualStream) {
+        // ── Dual-stream: each source is a KNOWN speaker — no diarization guessing.
+        conns.push(mkConn('rep', micStream, true, true));
+        conns.push(mkConn('prospect', sysStream!, false, false));
+      } else {
+        // ── Mic-only: can't separate by source, so fall back to diarization.
+        const mixed = mkConn('mixed', micStream, true, true);
+        mixed.diarize = true;
+        conns.push(mixed);
       }
-      wsRef.current = ws;
-
-      // One-shot guard: onerror, onclose, and watchdog can all fire for the same failure.
-      // Ensure only the first one triggers the fallback.
-      let didFallback = false;
-      const tryFallback = () => {
-        if (didFallback) return;
-        didFallback = true;
-        if (watchdogTimerRef.current) { clearTimeout(watchdogTimerRef.current); watchdogTimerRef.current = null; }
-        setErrorMessage('Switched to browser speech recognition — speaker labels unavailable.');
-        startWebSpeechFallback();
-      };
-
-      ws.onopen = async () => {
-        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : MediaRecorder.isTypeSupported('audio/webm')
-            ? 'audio/webm'
-            : null;
-        if (!mimeType) {
-          stream.getTracks().forEach(t => t.stop());
-          streamRef.current = null;
-          tryFallback();
-          return;
-        }
-
-        // Mix mic + system audio when available.
-        // AudioContext merges both tracks into a single MediaStream for Deepgram.
-        let inputStream: MediaStream = stream;
-        const sysStream = sysStreamRef.current;
-        const liveSysTracks = sysStream?.getAudioTracks().filter(t => t.readyState === 'live') ?? [];
-        if (liveSysTracks.length > 0) {
-          try {
-            const ctx = new AudioContext();
-            audioCtxRef.current = ctx;
-            // AudioContext starts suspended in many browsers due to autoplay policy.
-            // Resume it immediately so audio actually flows through the graph.
-            if (ctx.state === 'suspended') await ctx.resume();
-            const dest = ctx.createMediaStreamDestination();
-            ctx.createMediaStreamSource(stream).connect(dest);
-            ctx.createMediaStreamSource(sysStream!).connect(dest);
-            inputStream = dest.stream;
-          } catch {
-            // Mixing failed — fall back to mic only
-          }
-        }
-
-        const mr = new MediaRecorder(inputStream, { mimeType });
-        mediaRecorderRef.current = mr;
-        mr.ondataavailable = (e) => {
-          if (e.data.size > 0 && ws.readyState === WebSocket.OPEN) ws.send(e.data);
-        };
-        mr.start(250);
-        setIsListening(true);
-        setErrorMessage(null);
-        // If no audio data arrives within 10s of connecting, assume silent failure and fall back.
-        watchdogTimerRef.current = setTimeout(() => tryFallback(), WATCHDOG_TIMEOUT_MS);
-      };
-
-      ws.onmessage = (event) => {
-        if (wsRef.current !== ws) return;
-        if (watchdogTimerRef.current) { clearTimeout(watchdogTimerRef.current); watchdogTimerRef.current = null; }
-        let data: DGResult;
-        try { data = JSON.parse(event.data as string) as DGResult; } catch { return; }
-        if (data.type !== 'Results') return;
-        const alt = data.channel?.alternatives?.[0];
-        const transcript = alt?.transcript;
-        // Extract majority speaker from word-level diarization when available.
-        // Sort descending by count so the highest-count speaker is always first (ties broken by lower speaker index).
-        if (alt?.words && alt.words.length > 0) {
-          const counts = new Map<number, number>();
-          for (const w of alt.words) counts.set(w.speaker, (counts.get(w.speaker) ?? 0) + 1);
-          const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0]);
-          dgCurrentSpeakerRef.current = sorted[0][0];
-        }
-        if (!transcript) return;
-        if (data.is_final) {
-          const text = transcript.trim();
-          if (!text) return;
-          bufferRef.current.push(text);
-          setInterimText('');
-          // Flush immediately if the buffer is getting too large so memory stays bounded,
-          // or if Deepgram signals the utterance is complete.
-          flushBuffer(data.speech_final || bufferRef.current.length >= MAX_BUFFER_CHUNKS);
-        } else {
-          setInterimText(transcript);
-        }
-      };
-
-      ws.onerror = () => {
-        if (wsRef.current !== ws) return;
-        if (watchdogTimerRef.current) { clearTimeout(watchdogTimerRef.current); watchdogTimerRef.current = null; }
-        // Deepgram auth/connection failed - silently fall back to browser speech.
-        wsRef.current = null;
-        try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
-        mediaRecorderRef.current = null;
-        stream.getTracks().forEach(t => t.stop());
-        streamRef.current = null;
-        tryFallback();
-      };
-
-      ws.onclose = (e) => {
-        if (wsRef.current !== ws) return;
-        if (watchdogTimerRef.current) { clearTimeout(watchdogTimerRef.current); watchdogTimerRef.current = null; }
-        // Clean up media resources before attempting fallback so they don't leak.
-        try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
-        mediaRecorderRef.current = null;
-        streamRef.current?.getTracks().forEach(t => t.stop());
-        streamRef.current = null;
-        // Auth error — token is invalid; clear cache so next call fetches a fresh one.
-        if (e.code === 4001) {
-          _deepgramTokenCache = null;
-          console.warn('[Pitchr] Deepgram auth error (4001), token cache cleared');
-        }
-        // Unexpected close → fall back to browser speech.
-        // Only set isListening=false on a clean/intentional close to avoid a flicker
-        // when tryFallback() immediately sets it back to true via Web Speech start.
-        if (e.code !== 1000 && e.code !== 1001 && activeRef.current) {
-          tryFallback();
-        } else {
-          setIsListening(false);
-        }
-      };
-
+      connectionsRef.current = conns;
+      conns.forEach(c => openConnection(c, deepgramKey!));
     } catch (err) {
       activeRef.current = false;
       const msg = err instanceof Error ? err.message : String(err);
@@ -456,7 +448,25 @@ export function useSpeechRecognition({ onFinalTranscript, language = 'en-US', sy
         setErrorMessage('Could not start microphone: ' + msg);
       }
     }
-  }, [startWebSpeechFallback, flushBuffer, language]);
+
+    function mkConn(label: SpeakerRole | 'mixed', stream: MediaStream, ownsStream: boolean, primary: boolean): DGConnection {
+      return {
+        label,
+        role: label === 'mixed' ? undefined : label,
+        diarize: false,
+        stream,
+        ownsStream,
+        primary,
+        ws: null,
+        recorder: null,
+        watchdog: null,
+        buffer: [],
+        flushTimer: null,
+        isFlushing: false,
+        audioStarted: false,
+      };
+    }
+  }, [startWebSpeechFallback, teardownConn, openConnection]);
 
   // If the language changes while the Web Speech fallback is active mid-call,
   // abort the stale recognition and restart it with the new language.
