@@ -63,8 +63,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('oauth-callback-code', handler);
   },
   startGoogleServer: () => ipcRenderer.send('google-start-server'),
-  startZoomOAuth: (clientId, clientSecret) =>
-    ipcRenderer.invoke('zoom-start-oauth', { clientId, clientSecret }),
+  startZoomOAuth: (clientId) =>
+    ipcRenderer.invoke('zoom-start-oauth', { clientId }),
 
   // ── Recall.ai Desktop SDK ──────────────────────────────────────────────────
   recall: {

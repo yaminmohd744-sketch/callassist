@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sjinn": {
+      "command": "node",
+      "args": ["tools/sjinn-mcp/server.mjs"],
+      "env": {
+        "SJINN_API_KEY": "${SJINN_API_KEY}"
+      }
+    }
+  }
+}

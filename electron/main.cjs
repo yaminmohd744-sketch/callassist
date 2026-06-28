@@ -1,7 +1,6 @@
 ﻿const { app, BrowserWindow, ipcMain, screen, shell, systemPreferences, desktopCapturer } = require('electron');
 const path = require('path');
 const http  = require('http');
-const https = require('https');
 
 // ── Recall.ai Desktop SDK (optional native module) ────────────────────────────
 // Records meeting audio locally — no bot joins the call — and streams real-time
@@ -87,37 +86,6 @@ function waitForZoomCallback() {
   });
 }
 
-function exchangeZoomCode(code, clientId, clientSecret) {
-  return new Promise((resolve, reject) => {
-    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-    const body = `grant_type=authorization_code&code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(ZOOM_REDIRECT_URI)}`;
-    const options = {
-      hostname: 'zoom.us',
-      path: '/oauth/token',
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(body),
-      },
-    };
-    const req = https.request(options, res => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed.access_token) resolve(parsed);
-          else reject(new Error(parsed.reason || 'zoom_token_exchange_failed'));
-        } catch (e) { reject(e); }
-      });
-    });
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
-}
-
 // Enable Chromium's speech recognition service inside Electron.
 // Without these flags webkitSpeechRecognition fires a 'network' error
 // because the renderer can't reach Google's speech endpoint.
@@ -193,15 +161,16 @@ ipcMain.on('open-external', (_, url) => {
   }
 });
 
-// Zoom OAuth: start local server, open browser, exchange code for token
-ipcMain.handle('zoom-start-oauth', async (_, { clientId, clientSecret }) => {
+// Zoom OAuth: start local server, open browser, return the authorization code.
+// The code→token exchange happens server-side (Supabase Edge Function) so the
+// Zoom client secret never has to live in the desktop app.
+ipcMain.handle('zoom-start-oauth', async (_, { clientId }) => {
   try {
     const callbackPromise = waitForZoomCallback();
     const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(ZOOM_REDIRECT_URI)}`;
     shell.openExternal(authUrl);
-    const code      = await callbackPromise;
-    const tokenData = await exchangeZoomCode(code, clientId, clientSecret);
-    return { success: true, tokenData };
+    const code = await callbackPromise;
+    return { success: true, code };
   } catch (err) {
     return { success: false, error: err.message };
   }
