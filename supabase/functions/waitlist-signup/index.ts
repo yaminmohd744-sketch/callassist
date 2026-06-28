@@ -9,7 +9,8 @@ const APP_URL          = "https://pitchr.org";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type",
+  "Access-Control-Allow-Headers": "content-type, authorization, apikey",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 function respond(data: unknown, status = 200) {
