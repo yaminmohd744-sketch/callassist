@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
+import { FUNCTIONS_BASE, ANON_KEY } from '../../lib/api';
 import './WaitlistModal.css';
 
 interface WaitlistResult {
@@ -20,7 +21,7 @@ function getRefFromUrl(): string {
   } catch { return ''; }
 }
 
-const FUNCTION_URL = 'https://ovxajejzqaktpomyadgo.supabase.co/functions/v1/waitlist-signup';
+const FUNCTION_URL = `${FUNCTIONS_BASE}/waitlist-signup`;
 
 export function WaitlistModal({ onClose }: Props) {
   const [step, setStep]         = useState<'form' | 'success'>('form');
@@ -54,7 +55,11 @@ export function WaitlistModal({ onClose }: Props) {
     try {
       const res = await fetch(FUNCTION_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': ANON_KEY,
+          'Authorization': `Bearer ${ANON_KEY}`,
+        },
         body: JSON.stringify({
           email: email.trim(),
           name: name.trim(),

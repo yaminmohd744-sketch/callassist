@@ -1,6 +1,8 @@
+import { FUNCTIONS_BASE, ANON_KEY } from './api';
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]{2,}\.[a-zA-Z]{2,}$/;
 
-const FUNCTION_URL = 'https://ovxajejzqaktpomyadgo.supabase.co/functions/v1/waitlist-signup';
+const FUNCTION_URL = `${FUNCTIONS_BASE}/waitlist-signup`;
 
 export type WaitlistResult =
   | { ok: true }
@@ -13,7 +15,11 @@ export async function joinWaitlist(email: string, source = 'landing'): Promise<W
   try {
     const res = await fetch(FUNCTION_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': `Bearer ${ANON_KEY}`,
+      },
       body: JSON.stringify({ email: trimmed, source }),
     });
     const data = await res.json() as { success?: boolean; error?: string };
