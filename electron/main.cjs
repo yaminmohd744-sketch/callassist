@@ -1,4 +1,4 @@
-﻿const { app, BrowserWindow, ipcMain, screen, shell, systemPreferences } = require('electron');
+﻿const { app, BrowserWindow, ipcMain, screen, shell, systemPreferences, desktopCapturer } = require('electron');
 const path = require('path');
 const http  = require('http');
 const https = require('https');
@@ -448,6 +448,22 @@ app.whenReady().then(() => {
   session.defaultSession.setPermissionCheckHandler((_webContents, permission) => {
     return ALLOWED_PERMISSIONS.includes(permission);
   });
+
+  // ── System-audio loopback for the DIY dual-stream capture path ──────────────
+  // In Electron, getDisplayMedia() returns no audio track unless we satisfy the
+  // request here. We hand back a screen video source plus 'loopback' audio so
+  // the renderer can capture the *other* party's voice (everything coming out of
+  // the speakers) as its own "prospect" channel — clean per-source speaker
+  // separation with no bot, no screen picker, and no Recall.ai API key. The
+  // renderer immediately drops the video track and keeps only the audio.
+  // Requires macOS 13+ (ScreenCaptureKit) for loopback on Mac; Windows works on
+  // all supported versions. If unavailable, the audio track is simply absent and
+  // the renderer degrades to mic-only diarization.
+  session.defaultSession.setDisplayMediaRequestHandler((_request, callback) => {
+    desktopCapturer.getSources({ types: ['screen'] }).then((sources) => {
+      callback(sources.length ? { video: sources[0], audio: 'loopback' } : {});
+    }).catch(() => callback({}));
+  }, { useSystemPicker: false });
 
   // Grant the same permissions to any webview session (meeting panels use their own session)
   app.on('web-contents-created', (_, contents) => {

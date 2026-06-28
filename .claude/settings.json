@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(claude-api)",
+      "Skill(claude-api:*)",
+      "WebSearch",
+      "WebFetch(domain:sjinn.ai)",
+      "Bash(awk -F= '/^[A-Za-z]/ { key=$1; val=substr\\($0, index\\($0,\"=\"\\)+1\\); if \\(length\\(val\\)>0\\) { mask=substr\\(val,1,4\\) \"…\\(\" length\\(val\\) \" chars\\)\" } else { mask=\"\\(empty\\)\" }; printf \"%-32s %s\\\\n\", key, mask }' .env.local)"
+    ]
+  }
+}

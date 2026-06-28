@@ -8,7 +8,6 @@ import { AIIntelligencePanel } from '../components/panels/AIIntelligencePanel';
 import { LeadProfilePanel } from '../components/panels/LeadProfilePanel';
 import { useCallTimer } from '../hooks/useCallTimer';
 import { useSpeechRecognition, prefetchDeepgramToken } from '../hooks/useSpeechRecognition';
-import { useRecallTranscription } from '../hooks/useRecallTranscription';
 import { useAICoach } from '../hooks/useAICoach';
 import { generateSessionSummary, classifySignalAI } from '../lib/ai';
 import { classifySignal, PROSPECT_PHRASES, REP_PHRASES, PROSPECT_REACTIONS } from '../lib/keywords';
@@ -111,6 +110,11 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   const startedAtRef = useRef(new Date().toISOString());
   const recordingKeyRef = useRef(startedAtRef.current);
   const { startRecording, stopRecording, isSupported: recordingSupported, recordingError } = useCallRecorder();
+
+  // In the desktop app we capture the other party's voice via system-audio
+  // loopback (set up in electron/main.cjs), so there's no screen picker and no
+  // headphones requirement — the prospect arrives on a clean separate channel.
+  const isElectron = !!window.electronAPI;
 
   const bubbleRef = useRef<HTMLDivElement>(null);
   const meetingContainerRef = useRef<HTMLDivElement>(null);
@@ -288,23 +292,15 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     systemAudioStream: systemStream,
   });
 
-  // Recall.ai Desktop SDK — invisible meeting capture (Electron only). When
-  // available it replaces the mic/system-audio path and feeds the same
-  // handleFinalTranscript, so the coaching loop is identical downstream.
-  const [recallInterim, setRecallInterim] = useState('');
-  const recall = useRecallTranscription({
-    onFinalTranscript: handleFinalTranscript,
-    onInterim: setRecallInterim,
-    language: config.language ?? 'en-US',
-  });
-  const useRecall = recall.available;
-  const recallAvailableRef = useRef(recall.available);
-  recallAvailableRef.current = recall.available;
-
-  // Unified live indicators — Recall path when active, otherwise Web/Deepgram.
-  const liveListening = useRecall ? recall.isRecording : isListening;
-  const liveInterim   = useRecall ? recallInterim : interimText;
-  const liveError     = useRecall ? recall.errorMessage : errorMessage;
+  // The DIY dual-stream capture path (mic = rep, system-audio loopback =
+  // prospect) is now the transcription engine on web AND desktop. Recall.ai is
+  // retired: it required a paid API key per recording, while loopback gives the
+  // same clean per-source speaker separation for free. The Recall hook and the
+  // Electron SDK wiring remain in the codebase, dormant, in case we ever revive
+  // that path.
+  const liveListening = isListening;
+  const liveInterim   = interimText;
+  const liveError     = errorMessage;
 
   // Live rep talk-share (null until there's enough speech to be meaningful) —
   // surfaces a "you're dominating" nudge in the status bar.
@@ -398,12 +394,8 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     dgSpeakerMapRef.current = null;
     setCallStatus('active');
     startTimer();
-    if (recallAvailableRef.current) {
-      // Recall captures the meeting locally — no mic/system-audio stream needed.
-      recall.startListening().catch(() => setMicWarning(true));
-    } else {
-      startListening().catch(() => setMicWarning(true));
-    }
+    // mic → "rep", system-audio loopback → "prospect" (when captured at setup).
+    startListening().catch(() => setMicWarning(true));
     if (recordingSupported) startRecording();
     return () => {
       if (flipDebounceRef.current) clearTimeout(flipDebounceRef.current);
@@ -495,7 +487,6 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
     if (isSummarisingRef.current) return;
     if (flipDebounceRef.current) { clearTimeout(flipDebounceRef.current); flipDebounceRef.current = null; }
     stopListening();
-    recall.stopListening();
     stopTimer();
     systemStream?.getTracks().forEach(t => t.stop());
     await stopRecording(recordingKeyRef.current);
@@ -634,44 +625,23 @@ export function LiveCallScreen({ config, onEndCall }: LiveCallScreenProps) {
   };
 
   if (!audioSetupDone) {
-    // Recall Desktop SDK path: captures both sides invisibly, no screen share.
-    if (useRecall) {
-      return (
-        <div className="live-call live-call--audio-setup">
-          <div className="live-call__setup-card">
-            <div className="live-call__setup-icon">🎧</div>
-            <h2 className="live-call__setup-title">Ready to capture your call</h2>
-            <p className="live-call__setup-desc">
-              Pitchr will transcribe both you <em>and</em> the other person automatically once your
-              meeting starts. Nothing joins the call — capture runs privately on this device.
-            </p>
-            <p className="live-call__setup-hint">
-              You may be asked to grant microphone, screen-recording and accessibility access the first time.
-            </p>
-            <p className="live-call__setup-consent">
-              ⚖ Make sure you have consent to record and transcribe this call where your jurisdiction requires it.
-            </p>
-            <div className="live-call__setup-actions">
-              <button className="live-call__setup-btn live-call__setup-btn--primary" onClick={() => setAudioSetupDone(true)}>
-                Start coaching
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
     return (
       <div className="live-call live-call--audio-setup">
         <div className="live-call__setup-card">
-          <div className="live-call__setup-icon">🎙</div>
+          <div className="live-call__setup-icon">{isElectron ? '🎧' : '🎙'}</div>
           <h2 className="live-call__setup-title">Capture both sides of the call?</h2>
           <p className="live-call__setup-desc">
             Pitchr can transcribe both you <em>and</em> the other person by capturing your system audio.
-            You'll be asked to share your screen — this is only used for audio and is never recorded or stored.
+            {isElectron
+              ? ' Capture runs privately on this device — nothing joins the call and audio is never recorded or stored.'
+              : " You'll be asked to share your screen — this is only used for audio and is never recorded or stored."}
           </p>
           <p className="live-call__setup-hint">
-            When the picker appears, select <strong>Entire Screen</strong> to capture meeting audio.
-            For the sharpest speaker separation, wear <strong>headphones</strong> so your voice and theirs stay on separate channels.
+            {isElectron ? (
+              <>You may be asked to grant <strong>microphone</strong> and <strong>screen-recording</strong> access the first time. The other person's voice is captured straight from your speakers, so no headphones are needed.</>
+            ) : (
+              <>When the picker appears, select <strong>Entire Screen</strong> and tick <strong>Share system audio</strong> to capture meeting audio. For the sharpest speaker separation, wear <strong>headphones</strong> so your voice and theirs stay on separate channels.</>
+            )}
           </p>
           <p className="live-call__setup-consent">
             ⚖ Make sure you have consent to record and transcribe this call where your jurisdiction requires it.
