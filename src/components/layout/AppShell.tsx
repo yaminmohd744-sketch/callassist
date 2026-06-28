@@ -5,8 +5,14 @@ import { useTranslations } from '../../hooks/useTranslations';
 import { useAppContext } from '../../contexts/AppContext';
 import { PitchrLogo } from '../ui/PitchrLogo';
 import { STORAGE_KEYS } from '../../lib/storageKeys';
-import { connectZoom, disconnectZoom, isZoomConnected } from '../../lib/zoomAuth';
+import type { MeetingPlatform } from '../../electron';
 import './AppShell.css';
+
+const PLATFORM_LABEL: Record<MeetingPlatform, string> = {
+  zoom:  'Zoom',
+  meet:  'Google Meet',
+  teams: 'Microsoft Teams',
+};
 
 // ── Connected accounts ────────────────────────────────────────────────────────
 
@@ -74,26 +80,17 @@ export function AppShell({
   });
   const [connected, setConnected]   = useState<Set<AccountId>>(() => loadConnected());
   const [pending, setPending]       = useState<Set<AccountId>>(new Set());
-  const [connecting, setConnecting] = useState<AccountId | null>(null);
+  const [detectedMeeting, setDetectedMeeting] = useState<MeetingPlatform | null>(null);
   const langRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const picInputRef = useRef<HTMLInputElement>(null);
 
-  // Step 1: start OAuth (real for Zoom, open URL for others)
-  const openConnect = useCallback(async (acc: ConnectedAccount) => {
-    if (acc.id === 'zoom') {
-      setConnecting('zoom');
-      const result = await connectZoom();
-      setConnecting(null);
-      if (result.success) {
-        setConnected(prev => { const n = new Set(prev); n.add('zoom'); saveConnected(n); return n; });
-      } else {
-        alert(`Zoom connection failed: ${result.error}`);
-      }
-    } else {
-      window.open(acc.connectUrl, '_blank');
-      setPending(prev => new Set(prev).add(acc.id));
-    }
+  // Open the platform's sign-in page; the user confirms once signed in. No OAuth
+  // or account linking is required for coaching — live calls are auto-detected and
+  // captured via system-audio loopback regardless of which platform is connected.
+  const openConnect = useCallback((acc: ConnectedAccount) => {
+    window.open(acc.connectUrl, '_blank');
+    setPending(prev => new Set(prev).add(acc.id));
   }, []);
 
   // Step 2: user confirms they've signed in
@@ -111,21 +108,16 @@ export function AppShell({
   const disconnect = useCallback((id: AccountId) => {
     setConnected(prev => { const n = new Set(prev); n.delete(id); saveConnected(n); return n; });
     setPending(prev => { const n = new Set(prev); n.delete(id); return n; });
-    if (id === 'zoom') disconnectZoom().catch(() => {});
   }, []);
 
-  // Sync Zoom connection state from Supabase on mount
+  // Auto-detect a live Zoom/Meet/Teams call (desktop app only) and offer to start
+  // coaching. No integration needed — the main process watches window titles.
   useEffect(() => {
-    isZoomConnected().then(live => {
-      setConnected(prev => {
-        const hadZoom = prev.has('zoom');
-        if (live === hadZoom) return prev;
-        const next = new Set(prev);
-        if (live) next.add('zoom'); else next.delete('zoom');
-        saveConnected(next);
-        return next;
-      });
-    }).catch(() => {});
+    const api = window.electronAPI;
+    if (!api?.onMeetingDetected) return;
+    const offDetected = api.onMeetingDetected(p => setDetectedMeeting(p));
+    const offEnded    = api.onMeetingEnded?.(() => setDetectedMeeting(null));
+    return () => { offDetected?.(); offEnded?.(); };
   }, []);
 
   useEffect(() => {
@@ -332,10 +324,6 @@ export function AppShell({
                             >
                               ✓ Connected
                             </button>
-                          ) : connecting === acc.id ? (
-                            <span className="app-shell__account-badge app-shell__account-badge--pending">
-                              Connecting…
-                            </span>
                           ) : isPending ? (
                             <button
                               className="app-shell__account-badge app-shell__account-badge--pending"
@@ -372,6 +360,29 @@ export function AppShell({
 
         </div>
       </header>
+
+      {/* ── Auto-detected meeting prompt ── */}
+      {detectedMeeting && (
+        <div className="app-shell__meeting-banner" role="status">
+          <span className="app-shell__meeting-banner-dot" aria-hidden="true" />
+          <span className="app-shell__meeting-banner-text">
+            <strong>{PLATFORM_LABEL[detectedMeeting]}</strong> call detected — start live coaching?
+          </span>
+          <button
+            className="app-shell__meeting-banner-start"
+            onClick={() => { setDetectedMeeting(null); onStartCall(); }}
+          >
+            Start coaching
+          </button>
+          <button
+            className="app-shell__meeting-banner-dismiss"
+            onClick={() => setDetectedMeeting(null)}
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* ── Page content ── */}
       <div className="app-shell__content">

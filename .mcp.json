@@ -1,10 +1,10 @@
 {
   "mcpServers": {
-    "sjinn": {
+    "fal": {
       "command": "node",
-      "args": ["tools/sjinn-mcp/server.mjs"],
+      "args": ["tools/fal-mcp/server.mjs"],
       "env": {
-        "SJINN_API_KEY": "${SJINN_API_KEY}"
+        "FAL_KEY": "${FAL_KEY}"
       }
     }
   }

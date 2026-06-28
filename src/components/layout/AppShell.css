@@ -664,3 +664,75 @@
   min-width: 0;
 }
 
+/* ── Auto-detected meeting prompt ── */
+.app-shell__meeting-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 24px 0;
+  padding: 12px 16px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-bright);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  animation: app-shell-banner-in 220ms ease;
+}
+
+@keyframes app-shell-banner-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.app-shell__meeting-banner-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--color-accent-green);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-green) 28%, transparent);
+  flex-shrink: 0;
+}
+
+.app-shell__meeting-banner-text {
+  flex: 1;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.app-shell__meeting-banner-text strong { color: var(--color-text-primary); }
+
+.app-shell__meeting-banner-start {
+  padding: 7px 16px;
+  border: none;
+  border-radius: var(--border-radius-pill);
+  background: var(--color-accent-gradient);
+  color: var(--color-text-on-accent);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: var(--glow-btn);
+  transition: var(--transition-fast);
+}
+
+.app-shell__meeting-banner-start:hover { filter: brightness(1.06); }
+.app-shell__meeting-banner-start:active { transform: translateY(1px); }
+
+.app-shell__meeting-banner-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.app-shell__meeting-banner-dismiss:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+

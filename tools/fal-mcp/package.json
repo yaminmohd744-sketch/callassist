@@ -1,11 +1,11 @@
 {
-  "name": "sjinn-mcp",
+  "name": "fal-mcp",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "MCP server wrapping the SJinn.ai generation API (Kling 3.0, Sora2, GPT-Image-2) for Pitchr marketing content.",
+  "description": "MCP server wrapping the fal.ai generation API (Kling, Veo3, Flux) for Pitchr marketing content. Pay-as-you-go, no subscription.",
   "bin": {
-    "sjinn-mcp": "server.mjs"
+    "fal-mcp": "server.mjs"
   },
   "scripts": {
     "start": "node server.mjs"

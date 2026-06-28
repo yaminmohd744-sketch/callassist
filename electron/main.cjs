@@ -1,6 +1,7 @@
 ﻿const { app, BrowserWindow, ipcMain, screen, shell, systemPreferences, desktopCapturer } = require('electron');
 const path = require('path');
 const http  = require('http');
+const meetingDetector = require('./meetingDetector.cjs');
 
 // ── Recall.ai Desktop SDK (optional native module) ────────────────────────────
 // Records meeting audio locally — no bot joins the call — and streams real-time
@@ -54,37 +55,6 @@ ipcMain.on('google-start-server', async () => {
     // Silently ignore cancellations; the renderer will just stay on the auth screen
   }
 });
-
-// ── Zoom OAuth helpers ────────────────────────────────────────────────────────
-
-const ZOOM_REDIRECT_URI = 'http://127.0.0.1:3456';
-
-// Spins up a one-shot local HTTP server that waits for Zoom to redirect back
-// with ?code=XXX, then closes itself and resolves with the code.
-function waitForZoomCallback() {
-  return new Promise((resolve, reject) => {
-    const server = http.createServer((req, res) => {
-      try {
-        const url = new URL(req.url, ZOOM_REDIRECT_URI);
-        const code  = url.searchParams.get('code');
-        const html  = '<html><body style="background:#0a0a0a;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
-          (code
-            ? '<p style="font-size:18px">✓ Connected to Zoom — you can close this window and return to Pitchr.</p>'
-            : '<p style="font-size:18px">Authorization failed — please try again in Pitchr.</p>') +
-          '</body></html>';
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(html);
-      } catch { res.end(); }
-      server.close();
-      const code = new URL(req.url, ZOOM_REDIRECT_URI).searchParams.get('code');
-      if (code) resolve(code); else reject(new Error('zoom_oauth_cancelled'));
-    });
-    server.listen(3456, '127.0.0.1');
-    server.on('error', reject);
-    // Auto-close after 5 minutes
-    setTimeout(() => { server.close(); reject(new Error('zoom_oauth_timeout')); }, 300_000);
-  });
-}
 
 // Enable Chromium's speech recognition service inside Electron.
 // Without these flags webkitSpeechRecognition fires a 'network' error
@@ -158,21 +128,6 @@ function createOverlayWindow() {
 ipcMain.on('open-external', (_, url) => {
   if (typeof url === 'string' && (url.startsWith('https://') || url.startsWith('http://127.0.0.1'))) {
     shell.openExternal(url);
-  }
-});
-
-// Zoom OAuth: start local server, open browser, return the authorization code.
-// The code→token exchange happens server-side (Supabase Edge Function) so the
-// Zoom client secret never has to live in the desktop app.
-ipcMain.handle('zoom-start-oauth', async (_, { clientId }) => {
-  try {
-    const callbackPromise = waitForZoomCallback();
-    const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(ZOOM_REDIRECT_URI)}`;
-    shell.openExternal(authUrl);
-    const code = await callbackPromise;
-    return { success: true, code };
-  } catch (err) {
-    return { success: false, error: err.message };
   }
 });
 
@@ -433,6 +388,15 @@ app.whenReady().then(() => {
       callback(sources.length ? { video: sources[0], audio: 'loopback' } : {});
     }).catch(() => callback({}));
   }, { useSystemPicker: false });
+
+  // ── Integration-free meeting auto-detection ─────────────────────────────────
+  // Watch for a Zoom/Meet/Teams call window appearing and tell the renderer, so
+  // it can offer to start coaching automatically — no OAuth or account linking.
+  meetingDetector.start((platform) => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    if (platform) mainWindow.webContents.send('meeting-detected', platform);
+    else          mainWindow.webContents.send('meeting-ended');
+  });
 
   // Grant the same permissions to any webview session (meeting panels use their own session)
   app.on('web-contents-created', (_, contents) => {

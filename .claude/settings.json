@@ -4,7 +4,6 @@
       "Skill(claude-api)",
       "Skill(claude-api:*)",
       "WebSearch",
-      "WebFetch(domain:sjinn.ai)",
       "Bash(awk -F= '/^[A-Za-z]/ { key=$1; val=substr\\($0, index\\($0,\"=\"\\)+1\\); if \\(length\\(val\\)>0\\) { mask=substr\\(val,1,4\\) \"…\\(\" length\\(val\\) \" chars\\)\" } else { mask=\"\\(empty\\)\" }; printf \"%-32s %s\\\\n\", key, mask }' .env.local)",
       "Bash(grep -rInE 'sk-[A-Za-z0-9]{20,}|sk-ant-|AIza[0-9A-Za-z_-]{30,}|Bearer [A-Za-z0-9._-]{20,}' src electron index.html)",
       "Bash(npx tsc *)",
@@ -13,7 +12,9 @@
       "Bash(timeout 3 node server.mjs)",
       "Bash(echo \"exit=$? \\(124 = started and waited, which is correct\\)\")",
       "Bash(node --input-type=module -e ' *)",
-      "Bash(SJINN_API_KEY=\"5ae13895-7765-481a-bf2c-b0f0ada6718f\" node /private/tmp/claude-501/-Users-yamin-callassist-callassist/d7670e63-37dd-40bc-aca4-b920a06c0bcd/scratchpad/sjinn-test.mjs)"
+      "WebFetch(domain:fal.ai)",
+      "WebFetch(domain:docs.fal.ai)",
+      "Read(//Users/yamin/**)"
     ]
   }
 }

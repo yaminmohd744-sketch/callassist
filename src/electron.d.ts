@@ -1,5 +1,7 @@
 import type { AISuggestion, CallStage } from './types';
 
+export type MeetingPlatform = 'zoom' | 'meet' | 'teams';
+
 export interface OverlayTranscriptEntry {
   speaker: 'rep' | 'prospect';
   text: string;
@@ -28,6 +30,8 @@ export interface ElectronAPI {
   onOAuthCallback:     (callback: (url: string) => void) => () => void;
   onOAuthCode:         (callback: (code: string) => void) => () => void;
   startGoogleServer:   () => void;
+  onMeetingDetected:   (callback: (platform: MeetingPlatform) => void) => () => void;
+  onMeetingEnded:      (callback: () => void) => () => void;
   recall?: RecallAPI;
 }
 

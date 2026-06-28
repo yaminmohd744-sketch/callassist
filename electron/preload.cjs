@@ -63,8 +63,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('oauth-callback-code', handler);
   },
   startGoogleServer: () => ipcRenderer.send('google-start-server'),
-  startZoomOAuth: (clientId) =>
-    ipcRenderer.invoke('zoom-start-oauth', { clientId }),
+
+  // Integration-free meeting auto-detection (Zoom/Meet/Teams via window titles).
+  onMeetingDetected: (callback) => {
+    const handler = (_, platform) => callback(platform);
+    ipcRenderer.on('meeting-detected', handler);
+    return () => ipcRenderer.removeListener('meeting-detected', handler);
+  },
+  onMeetingEnded: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('meeting-ended', handler);
+    return () => ipcRenderer.removeListener('meeting-ended', handler);
+  },
 
   // ── Recall.ai Desktop SDK ──────────────────────────────────────────────────
   recall: {

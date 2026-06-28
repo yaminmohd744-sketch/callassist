@@ -363,7 +363,14 @@
       "Read(//tmp/**)",
       "Bash(curl -sS -X POST https://ovxajejzqaktpomyadgo.supabase.co/functions/v1/waitlist-signup -H 'Content-Type: application/json' -H 'apikey: __TRACKED_VAR__' -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Origin: https://www.pitchr.org' -d '{\"email\":\"probe.debug@example.com\",\"source\":\"e2e-check\"}' -w '\\\\nHTTP %{http_code}\\\\n')",
       "Bash(curl -sS -X OPTIONS https://ovxajejzqaktpomyadgo.supabase.co/functions/v1/waitlist-signup -H 'Origin: https://www.pitchr.org' -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: content-type,apikey,authorization' -D - -o /dev/null)",
-      "Bash(grep -rinE \"price|tier|/mo|per month|\\\\\\\\\\\\$[0-9]\" src/screens/landing/PricingSection.tsx)"
+      "Bash(grep -rinE \"price|tier|/mo|per month|\\\\\\\\\\\\$[0-9]\" src/screens/landing/PricingSection.tsx)",
+      "Bash(cd /Users/yamin/callassist/callassist *)",
+      "Read(//Users/yamin/kie-mcp/**)",
+      "Bash(node --input-type=module -e ' *)",
+      "Bash(node --check electron/meetingDetector.cjs)",
+      "Bash(rm -f __TRACKED_VAR__/sjinn-test.mjs)",
+      "Bash(rm -rf /Users/yamin/kie-mcp)",
+      "Bash(git restore *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\callassist\\.claude\\skills",
