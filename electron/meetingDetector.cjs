@@ -33,6 +33,11 @@ function detectPlatform(sources) {
   return null;
 }
 
+// Debug logging for tuning the title patterns against real windows.
+// Turn on by launching the app with PITCHR_DEBUG_MEETINGS=1 — it prints every
+// open window title each tick plus what (if anything) matched. Leave off otherwise.
+const DEBUG = process.env.PITCHR_DEBUG_MEETINGS === '1';
+
 let timer = null;
 let current = null; // platform string while a call is detected, else null
 
@@ -46,12 +51,21 @@ function start(onChange, intervalMs = 4000) {
     try {
       const sources = await desktopCapturer.getSources({ types: ['window'] });
       detected = detectPlatform(sources);
-    } catch {
+      if (DEBUG) {
+        const titles = sources.map((s) => s.name).filter(Boolean);
+        console.log(
+          `[meetingDetector] matched=${detected ?? 'none'} · ${titles.length} windows:\n` +
+          titles.map((t) => `    • ${t}`).join('\n'),
+        );
+      }
+    } catch (err) {
       // Source enumeration can transiently fail (e.g. permission prompt); skip tick.
+      if (DEBUG) console.log('[meetingDetector] getSources failed:', err.message);
       return;
     }
     if (detected !== current) {
       current = detected;
+      if (DEBUG) console.log(`[meetingDetector] → transition: ${detected ?? 'meeting ended'}`);
       onChange(detected);
     }
   };

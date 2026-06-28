@@ -370,7 +370,8 @@
       "Bash(node --check electron/meetingDetector.cjs)",
       "Bash(rm -f __TRACKED_VAR__/sjinn-test.mjs)",
       "Bash(rm -rf /Users/yamin/kie-mcp)",
-      "Bash(git restore *)"
+      "Bash(git restore *)",
+      "Bash(FAL_KEY=\"cb212e7c-30ab-48df-9401-4c819c7c9402:089f7bf98650d24bc984599c70931b22\" node /private/tmp/claude-501/-Users-yamin-callassist-callassist/d7670e63-37dd-40bc-aca4-b920a06c0bcd/scratchpad/fal-test.mjs)"
     ],
     "additionalDirectories": [
       "c:\\Users\\User\\callassist\\.claude\\skills",
