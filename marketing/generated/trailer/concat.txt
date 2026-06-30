@@ -1,0 +1,3 @@
+file 'beat1_proc.mp4'
+file 'beat2_proc.mp4'
+file 'beat3_proc.mp4'

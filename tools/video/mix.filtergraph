@@ -1,0 +1,8 @@
+[1:a]atrim=0:10,asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.6[a0];
+[2:a]atrim=0:6.5,asetpts=PTS-STARTPTS[b0];
+[a0][b0]acrossfade=d=1.3:c1=tri:c2=tri,volume=0.5[music];
+[3:a]afade=t=out:st=0.05:d=0.35,volume=0.45,adelay=5000|5000[ping];
+[4:a]afade=t=out:st=0.08:d=0.62,volume=0.85,adelay=9800|9800[boom];
+[5:a]highpass=f=250,afade=t=in:st=0:d=1.6,afade=t=out:st=1.65:d=0.35,volume=0.32,atrim=0:2,adelay=8100|8100[riser];
+[music][ping][boom][riser]amix=inputs=4:duration=longest:normalize=0[mixed];
+[mixed]atrim=0:15,afade=t=out:st=14.3:d=0.7,loudnorm=I=-16:TP=-1.5:LRA=11[aout]

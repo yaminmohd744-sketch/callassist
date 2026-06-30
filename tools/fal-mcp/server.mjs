@@ -18,10 +18,26 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import { z } from "zod";
 
 const QUEUE = "https://queue.fal.run";
-const API_KEY = process.env.FAL_KEY;
+
+// Key resolution: env first, then a gitignored key.local file next to this
+// server (so the key never has to be exported into the shell and can never be
+// committed). The file should contain only the key on a single line.
+function resolveKey() {
+  if (process.env.FAL_KEY) return process.env.FAL_KEY.trim();
+  try {
+    const here = dirname(fileURLToPath(import.meta.url));
+    return readFileSync(join(here, "key.local"), "utf8").trim();
+  } catch {
+    return "";
+  }
+}
+const API_KEY = resolveKey();
 
 function ok(text) {
   return { content: [{ type: "text", text }] };
@@ -231,14 +247,29 @@ server.tool(
   },
   async ({ request_id, model_id }) => {
     try {
-      const status = await falJson(
-        `${QUEUE}/${model_id}/requests/${request_id}/status`,
-        { headers: authHeaders() },
-      );
+      // fal's queue endpoints live at the "application" base, which for some
+      // models is the full model id and for others (e.g. Kling) is just the
+      // first two path segments. Try the full path, fall back to the app base.
+      const candidates = [
+        model_id,
+        model_id.split("/").slice(0, 2).join("/"),
+      ].filter((v, i, a) => a.indexOf(v) === i);
+      let base = null;
+      let status = null;
+      for (const c of candidates) {
+        const res = await fetch(`${QUEUE}/${c}/requests/${request_id}/status`, {
+          headers: authHeaders(),
+        });
+        if (res.status === 404 || res.status === 405) continue;
+        base = c;
+        status = await res.json().catch(() => ({}));
+        break;
+      }
+      if (!base) throw new Error("could not resolve fal status endpoint for this model");
       if (status?.status !== "COMPLETED") {
         return ok(`Still processing (status ${status?.status ?? "unknown"}). Poll again shortly.`);
       }
-      const result = await falJson(`${QUEUE}/${model_id}/requests/${request_id}`, {
+      const result = await falJson(`${QUEUE}/${base}/requests/${request_id}`, {
         headers: authHeaders(),
       });
       const urls = extractUrls(result);
